@@ -23,12 +23,22 @@ SOFTWARE.
 
 "use strict";
 
+var isBrowser=new Function("try {return this===window;}catch(e){ return false;}");
+
 var Documents = require("./documents")
     , Constants = require("./constants")
-    , https = require("https")
+    //, https = require("https")
     , url = require("url")
     , querystring = require("querystring")
-    , RetryUtility = require("./retryUtility");
+    , RetryUtility = require("./retryUtility")
+    , superagent = require("superagent");
+
+var https;
+if (isBrowser) {
+    https = require("stream-http");
+} else {
+    https = require("https");
+}
 
 //----------------------------------------------------------------------------
 // Utility methods
@@ -58,7 +68,7 @@ function createRequestObject(connectionPolicy, requestOptions, callback) {
     }
 
     var isMedia = (requestOptions.path.indexOf("//media") === 0);
-
+    
     var httpsRequest = https.request(requestOptions, function (response) {
         // In case of media response, return the stream to the user and the user will need to handle reading the stream.
         if (isMedia && connectionPolicy.MediaReadMode === Documents.MediaReadMode.Streamed) {
