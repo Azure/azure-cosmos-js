@@ -190,7 +190,7 @@ var RequestHandler = {
 
         var requestOptions = parse(url);
         requestOptions.method = method;
-        requestOptions.path = path;
+        requestOptions.path += path;
         requestOptions.headers = headers;
         requestOptions.agent = requestAgent;
         requestOptions.secureProtocol = "TLSv1_client_method";

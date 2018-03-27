@@ -23,7 +23,7 @@ SOFTWARE.
 
 // [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine")]
 var masterKey = process.env.ACCOUNT_KEY || "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
-var host = process.env.ACCOUNT_HOST || "https://localhost:443";
+var host = process.env.ACCOUNT_HOST || "https://localhost:8081";
 
 var adminUtilitiesPath = "../../../../../bin/x64/Debug/Product/AdminUtilities/Microsoft.Azure.Documents.Tools.AdminUtilities.exe"
 

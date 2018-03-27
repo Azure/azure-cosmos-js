@@ -1,42 +1,15 @@
-/*
-The MIT License (MIT)
-Copyright (c) 2017 Microsoft Corporation
+import { Base } from "../base";
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+export type Key = string | Buffer | number;
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-
-"use strict";
-
-var Base = require("../base");
-
-//SCRIPT START
-var MurmurHash = Base.defineClass(
-    undefined, 
-    undefined,
-    {
+export class MurmurHash {
         /**
          * Hashes a string, a unsigned 32-bit integer, or a Buffer into a new unsigned 32-bit integer that represents the output hash.
          * @param {string, number of Buffer} key  - The preimage of the hash
          * @param {number} seed                   - Optional value used to initialize the hash generator
          * @returns {} 
          */
-        hash: function (key, seed) {
+        public static hash(key: Key, seed: number) {
             key = key || '';
             seed = seed || 0;
             
@@ -55,9 +28,9 @@ var MurmurHash = Base.defineClass(
             }
             
             return MurmurHash._hashBytes(buffer, seed);
-        },
-        /** @ignore */
-        _throwIfInvalidKey: function (key) {
+        }
+        
+        private static _throwIfInvalidKey(key: Key) {
             if (key instanceof Buffer) {
                 return;
             }
@@ -71,38 +44,38 @@ var MurmurHash = Base.defineClass(
             }
             
             throw new Error("Invalid argument: 'key' has to be a Buffer, string, or number.");
-        },
-        /** @ignore */
-        _throwIfInvalidSeed: function (seed) {
+        }
+        
+        private static _throwIfInvalidSeed(seed: number) {
             if (isNaN(seed)) {
                 throw new Error("Invalid argument: 'seed' is not and cannot be converted to a number.");
             }
-        },
-        /** @ignore */
-        _getBufferFromString: function (key) {
-            var buffer = new Buffer(key);
+        }
+        
+        private static _getBufferFromString(s: string): Buffer {
+            var buffer = new Buffer(s);
             return buffer;
-        },
-        /** @ignore */
-        _getBufferFromNumber: function (i) {
+        }
+        
+        private static _getBufferFromNumber(i: number): Buffer {
             i = i >>> 0;
             
-            var buffer = new Uint8Array([
+            const buffer = new Uint8Array([
                 i >>> 0,
                 i >>> 8,
                 i >>> 16,
                 i >>> 24
             ]);
 
-            return buffer;
-        },
-        /** @ignore */
-        _hashBytes: function (bytes, seed) {
-            var c1 = 0xcc9e2d51;
-            var c2 = 0x1b873593;
+            return buffer as Buffer;
+        }
+        
+        private static _hashBytes(bytes: Buffer, seed: number) {
+            const c1 = 0xcc9e2d51;
+            const c2 = 0x1b873593;
             
-            var h1 = seed;
-            var reader = new Uint32Array(bytes);
+            let h1 = seed;
+            const reader = new Uint32Array(bytes);
             {
                 for (var i = 0; i < bytes.length - 3; i += 4) {
                     var k1 = MurmurHash._readUInt32(reader, i);
@@ -117,7 +90,7 @@ var MurmurHash = Base.defineClass(
                 }
             }
             
-            var k = 0;
+            let k = 0;
             switch (bytes.length & 3) {
                 case 3:
                     k ^= reader[i + 2] << 16;
@@ -148,23 +121,17 @@ var MurmurHash = Base.defineClass(
             h1 ^= h1 >>> 16;
             
             return h1 >>> 0;
-        },
-        /** @ignore */
-        _rotateLeft: function (n, numBits) {
+        }
+
+        private static _rotateLeft(n: number, numBits: number) {
             return (n << numBits) | (n >>> (32 - numBits));
-        },
-        /** @ignore */
-        _multiply: function (m, n) {
+        }
+        
+        private static _multiply(m: number, n: number) {
             return ((m & 0xffff) * n) + ((((m >>> 16) * n) & 0xffff) << 16);
-        },
-        /** @ignore */
-        _readUInt32: function (uintArray, i) {
+        }
+        
+        private static _readUInt32(uintArray: Uint32Array, i: number) {
             return (uintArray[i]) | (uintArray[i + 1] << 8) | (uintArray[i + 2] << 16) | (uintArray[i + 3] << 24) >>> 0;
         }
-    });
-
-//SCRIPT END
-
-if (typeof exports !== "undefined") {
-    exports.MurmurHash = MurmurHash;
-}
+    }

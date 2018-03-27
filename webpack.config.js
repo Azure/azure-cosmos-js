@@ -4,6 +4,7 @@ var webpack = require("webpack");
 module.exports = {
     entry: "./index.js",
     node: {
+        buffer: true,
         net: "mock",
         tls: "mock"
     },

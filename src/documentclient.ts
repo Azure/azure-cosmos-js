@@ -68,6 +68,7 @@ var DocumentClient = Base.defineClass(
                     this.resourceTokens[resourceId] = auth.permissionFeed[i]._token;
                 }
             }
+            this.tokenProvider = auth.tokenProvider;
         }
 
         this.connectionPolicy = connectionPolicy || new AzureDocuments.ConnectionPolicy();
@@ -1880,12 +1881,14 @@ var DocumentClient = Base.defineClass(
             initialHeaders[Constants.HttpHeaders.Accept] = Constants.MediaTypes.Any;
             var attachmentId = Base.getAttachmentIdFromMediaId(resourceInfo.objectBody.id).toLowerCase();
 
-            var headers = Base.getHeaders(this, initialHeaders, "get", path, attachmentId, "media", {});
+            var headersPromise = Base.getHeaders(this, initialHeaders, "get", path, attachmentId, "media", {});
 
             var that = this;
-            // readMedia will always use WriteEndpoint since it's not replicated in readable Geo regions
-            this._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                that.get(writeEndpoint, path, headers, callback);
+            headersPromise.then(function(headers) {
+                // readMedia will always use WriteEndpoint since it's not replicated in readable Geo regions
+                that._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
+                    that.get(writeEndpoint, path, headers, callback);
+                });
             });
         },
 
@@ -1923,12 +1926,15 @@ var DocumentClient = Base.defineClass(
             var resourceInfo = Base.parseLink(mediaLink);
             var path = "/" + mediaLink;
             var attachmentId = Base.getAttachmentIdFromMediaId(resourceInfo.objectBody.id).toLowerCase();
-            var headers = Base.getHeaders(this, initialHeaders, "put", path, attachmentId, "media", options);
+            var headersPromise = Base.getHeaders(this, initialHeaders, "put", path, attachmentId, "media", options);
 
             // updateMedia will use WriteEndpoint since it uses PUT operation
             var that = this;
-            this._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                that.put(writeEndpoint, path, readableStream, headers, callback);
+            
+            headersPromise.then(function(headers) {
+                that._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
+                    that.put(writeEndpoint, path, readableStream, headers, callback);
+                });
             });
         },
 
@@ -1966,12 +1972,14 @@ var DocumentClient = Base.defineClass(
             var path = this.getPathFromLink(sprocLink, "", isNameBased);
             var id = this.getIdFromLink(sprocLink, isNameBased);
 
-            var headers = Base.getHeaders(this, initialHeaders, "post", path, id, "sprocs", options);
+            var headersPromise = Base.getHeaders(this, initialHeaders, "post", path, id, "sprocs", options);
 
             // executeStoredProcedure will use WriteEndpoint since it uses POST operation
             var that = this;
-            this._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                that.post(writeEndpoint, path, params, headers, callback);
+            headersPromise.then(function(headers) {
+                that._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
+                    that.post(writeEndpoint, path, params, headers, callback);
+                });
             });
         },
 
@@ -2053,26 +2061,29 @@ var DocumentClient = Base.defineClass(
 
             var urlConnection = options.urlConnection || this.urlConnection;
 
-            var headers = Base.getHeaders(this, this.defaultHeaders, "get", "", "", "", {});
-            this.get(urlConnection, "", headers, function (err, result, headers) {
-                if (err) return callback(err);
+            var headersPromise = Base.getHeaders(this, this.defaultHeaders, "get", "", "", "", {});
+            var that = this;
+            headersPromise.then(function(headers) {
+                that.get(urlConnection, "", headers, function (err, result, headers) {
+                    if (err) return callback(err);
 
-                var databaseAccount = new AzureDocuments.DatabaseAccount();
-                databaseAccount.DatabasesLink = "/dbs/";
-                databaseAccount.MediaLink = "/media/";
-                databaseAccount.MaxMediaStorageUsageInMB = headers[Constants.HttpHeaders.MaxMediaStorageUsageInMB];
-                databaseAccount.CurrentMediaStorageUsageInMB = headers[Constants.HttpHeaders.CurrentMediaStorageUsageInMB];
-                databaseAccount.ConsistencyPolicy = result.userConsistencyPolicy;
+                    var databaseAccount = new AzureDocuments.DatabaseAccount();
+                    databaseAccount.DatabasesLink = "/dbs/";
+                    databaseAccount.MediaLink = "/media/";
+                    databaseAccount.MaxMediaStorageUsageInMB = headers[Constants.HttpHeaders.MaxMediaStorageUsageInMB];
+                    databaseAccount.CurrentMediaStorageUsageInMB = headers[Constants.HttpHeaders.CurrentMediaStorageUsageInMB];
+                    databaseAccount.ConsistencyPolicy = result.userConsistencyPolicy;
 
-                // WritableLocations and ReadableLocations properties will be available only for geo-replicated database accounts
-                if (Constants.WritableLocations in result) {
-                    databaseAccount._writableLocations = result[Constants.WritableLocations];
-                }
-                if (Constants.ReadableLocations in result) {
-                    databaseAccount._readableLocations = result[Constants.ReadableLocations];
-                }
+                    // WritableLocations and ReadableLocations properties will be available only for geo-replicated database accounts
+                    if (Constants.WritableLocations in result && result.id !== "localhost") {
+                        databaseAccount._writableLocations = result[Constants.WritableLocations];
+                    }
+                    if (Constants.ReadableLocations in result && result.id !== "localhost") {
+                        databaseAccount._readableLocations = result[Constants.ReadableLocations];
+                    }
 
-                callback(undefined, databaseAccount, headers);
+                    callback(undefined, databaseAccount, headers);
+                });
             });
         },
 
@@ -2186,16 +2197,19 @@ var DocumentClient = Base.defineClass(
         create: function (body, path, type, id, initialHeaders, options, callback) {
             initialHeaders = initialHeaders || Base.extend({}, this.defaultHeaders);
             initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
-            var headers = Base.getHeaders(this, initialHeaders, "post", path, id, type, options);
+            var headersPromise = Base.getHeaders(this, initialHeaders, "post", path, id, type, options);
 
             var that = this;
-            this.applySessionToken(path, headers);
 
             // create will use WriteEndpoint since it uses POST operation
-            this._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                that.post(writeEndpoint, path, body, headers, function (err, result, resHeaders) {
-                    that.captureSessionToken(path, Constants.OperationTypes.Create, headers, resHeaders);
-                    callback(err, result, resHeaders);
+            headersPromise.then(function(headers) {
+                that.applySessionToken(path, headers);
+
+                that._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
+                    that.post(writeEndpoint, path, body, headers, function (err, result, resHeaders) {
+                        that.captureSessionToken(path, Constants.OperationTypes.Create, headers, resHeaders);
+                        callback(err, result, resHeaders);
+                    });
                 });
             });
         },
@@ -2204,17 +2218,20 @@ var DocumentClient = Base.defineClass(
         upsert: function (body, path, type, id, initialHeaders, options, callback) {
             initialHeaders = initialHeaders || Base.extend({}, this.defaultHeaders);
             initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
-            var headers = Base.getHeaders(this, initialHeaders, "post", path, id, type, options);
-            this.setIsUpsertHeader(headers);
-
+            var headersPromise = Base.getHeaders(this, initialHeaders, "post", path, id, type, options);
+            
             var that = this;
-            this.applySessionToken(path, headers);
+            
+            headersPromise.then(function(headers) {
+                that.setIsUpsertHeader(headers);
+                that.applySessionToken(path, headers);
 
-            // upsert will use WriteEndpoint since it uses POST operation
-            this._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                that.post(writeEndpoint, path, body, headers, function (err, result, resHeaders) {
-                    that.captureSessionToken(path, Constants.OperationTypes.Upsert, headers, resHeaders);
-                    callback(err, result, resHeaders);
+                // upsert will use WriteEndpoint since it uses POST operation
+                that._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
+                    that.post(writeEndpoint, path, body, headers, function (err, result, resHeaders) {
+                        that.captureSessionToken(path, Constants.OperationTypes.Upsert, headers, resHeaders);
+                        callback(err, result, resHeaders);
+                    });
                 });
             });
         },
@@ -2223,16 +2240,19 @@ var DocumentClient = Base.defineClass(
         replace: function (resource, path, type, id, initialHeaders, options, callback) {
             initialHeaders = initialHeaders || Base.extend({}, this.defaultHeaders);
             initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
-            var headers = Base.getHeaders(this, initialHeaders, "put", path, id, type, options);
+            var headersPromise = Base.getHeaders(this, initialHeaders, "put", path, id, type, options);
 
             var that = this;
-            this.applySessionToken(path, headers);
+            
+            headersPromise.then(function(headers) {
+                that.applySessionToken(path, headers);
 
-            // replace will use WriteEndpoint since it uses PUT operation
-            this._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                that.put(writeEndpoint, path, resource, headers, function (err, result, resHeaders) {
-                    that.captureSessionToken(path, Constants.OperationTypes.Replace, headers, resHeaders);
-                    callback(err, result, resHeaders);
+                // replace will use WriteEndpoint since it uses PUT operation
+                that._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
+                    that.put(writeEndpoint, path, resource, headers, function (err, result, resHeaders) {
+                        that.captureSessionToken(path, Constants.OperationTypes.Replace, headers, resHeaders);
+                        callback(err, result, resHeaders);
+                    });
                 });
             });
         },
@@ -2241,18 +2261,21 @@ var DocumentClient = Base.defineClass(
         read: function (path, type, id, initialHeaders, options, callback) {
             initialHeaders = initialHeaders || Base.extend({}, this.defaultHeaders);
             initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
-            var headers = Base.getHeaders(this, initialHeaders, "get", path, id, type, options);
+            var headersPromise = Base.getHeaders(this, initialHeaders, "get", path, id, type, options);
 
             var that = this;
-            this.applySessionToken(path, headers);
+            
+            headersPromise.then(function(headers) {
+                that.applySessionToken(path, headers);
 
-            var request = { "path": path, "operationType": Constants.OperationTypes.Read, "client": this, "endpointOverride": null };
+                var request = { "path": path, "operationType": Constants.OperationTypes.Read, "client": this, "endpointOverride": null };
 
-            // read will use ReadEndpoint since it uses GET operation
-            this._globalEndpointManager.getReadEndpoint(function (readEndpoint) {
-                that.get(readEndpoint, request, headers, function (err, result, resHeaders) {
-                    that.captureSessionToken(path, Constants.OperationTypes.Read, headers, resHeaders);
-                    callback(err, result, resHeaders);
+                // read will use ReadEndpoint since it uses GET operation
+                that._globalEndpointManager.getReadEndpoint(function (readEndpoint) {
+                    that.get(readEndpoint, request, headers, function (err, result, resHeaders) {
+                        that.captureSessionToken(path, Constants.OperationTypes.Read, headers, resHeaders);
+                        callback(err, result, resHeaders);
+                    });
                 });
             });
         },
@@ -2261,19 +2284,21 @@ var DocumentClient = Base.defineClass(
         deleteResource: function (path, type, id, initialHeaders, options, callback) {
             initialHeaders = initialHeaders || Base.extend({}, this.defaultHeaders);
             initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
-            var headers = Base.getHeaders(this, initialHeaders, "delete", path, id, type, options);
+            var headersPromise = Base.getHeaders(this, initialHeaders, "delete", path, id, type, options);
 
             var that = this;
-            this.applySessionToken(path, headers);
+            headersPromise.then(function(headers) {
 
-            // deleteResource will use WriteEndpoint since it uses DELETE operation
-            this._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                that.delete(writeEndpoint, path, headers, function (err, result, resHeaders) {
-                    if (Base.parseLink(path).type != "colls")
-                        that.captureSessionToken(path, Constants.OperationTypes.Delete, headers, resHeaders);
-                    else
-                        that.clearSessionToken(path);
-                    callback(err, result, resHeaders);
+                that.applySessionToken(path, headers);
+                // deleteResource will use WriteEndpoint since it uses DELETE operation
+                that._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
+                    that.delete(writeEndpoint, path, headers, function (err, result, resHeaders) {
+                        if (Base.parseLink(path).type != "colls")
+                            that.captureSessionToken(path, Constants.OperationTypes.Delete, headers, resHeaders);
+                        else
+                            that.clearSessionToken(path);
+                        callback(err, result, resHeaders);
+                    });
                 });
             });
         },
@@ -2379,12 +2404,14 @@ var DocumentClient = Base.defineClass(
                 var initialHeaders = Base.extend({}, documentclient.defaultHeaders);
                 initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
                 if (query === undefined) {
-                    var headers = Base.getHeaders(documentclient, initialHeaders, "get", path, id, type, options, partitionKeyRangeId);
-                    that.applySessionToken(path, headers);
-
-                    documentclient.get(readEndpoint, request, headers, function (err, result, resHeaders) {
-                        that.captureSessionToken(path, Constants.OperationTypes.Query, headers, resHeaders);
-                        successCallback(err, result, resHeaders);
+                    var headersPromise = Base.getHeaders(documentclient, initialHeaders, "get", path, id, type, options, partitionKeyRangeId);
+                    headersPromise.then(function(headers) {
+                        that.applySessionToken(path, headers);
+                        
+                        documentclient.get(readEndpoint, request, headers, function (err, result, resHeaders) {
+                            that.captureSessionToken(path, Constants.OperationTypes.Query, headers, resHeaders);
+                            successCallback(err, result, resHeaders);
+                        });
                     });
                 } else {
                     initialHeaders[Constants.HttpHeaders.IsQuery] = "true";
@@ -2402,12 +2429,14 @@ var DocumentClient = Base.defineClass(
                             break;
                     }
 
-                    var headers = Base.getHeaders(documentclient, initialHeaders, "post", path, id, type, options, partitionKeyRangeId);
-                    that.applySessionToken(path, headers);
+                    var headersPromise = Base.getHeaders(documentclient, initialHeaders, "post", path, id, type, options, partitionKeyRangeId);
+                    headersPromise.then(function(headers) {
+                        that.applySessionToken(path, headers);
 
-                    documentclient.post(readEndpoint, request, query, headers, function (err, result, resHeaders) {
-                        that.captureSessionToken(path, Constants.OperationTypes.Query, headers, resHeaders);
-                        successCallback(err, result, resHeaders);
+                        documentclient.post(readEndpoint, request, query, headers, function (err, result, resHeaders) {
+                            that.captureSessionToken(path, Constants.OperationTypes.Query, headers, resHeaders);
+                            successCallback(err, result, resHeaders);
+                        });
                     });
                 }
             });
@@ -2659,20 +2688,6 @@ var DocumentClient = Base.defineClass(
 * @property {string} [slug]                                               -         HTTP Slug header value.
 * @property {string} [contentType=application/octet-stream]               -         HTTP ContentType header value.
 *
-*/
-
-/**
- * The Sql query parameter.
- * @typedef {Object} SqlParameter
- * @property {string} name         -       The name of the parameter.
- * @property {string} value        -       The value of the parameter.
- */
-
-/**
-* The Sql query specification.
-* @typedef {Object} SqlQuerySpec
-* @property {string} query                       -       The body of the query.
-* @property {Array<SqlParameter>} parameters     -       The array of {@link SqlParameter}.
 */
 
 /**
