@@ -1,6 +1,5 @@
 import { AuthHandler } from "./auth";
-import { Constants } from "./common";
-import { Platform } from "./platform";
+import { Constants, Platform } from "./common";
 
 /*
 //SCRIPT START
@@ -127,6 +126,12 @@ function derive(baseClass, constructor, instanceMembers, staticMembers) {
 }
 */
 export class Base {
+    static extend(arg0: any, arg1: any): any {
+        throw new Error("Method not implemented.");
+    }
+    static map(arg0: any, arg1: any): any {
+        throw new Error("Method not implemented.");
+    }
     public static NotImplementedException: string = "NotImplementedException";
 
     // TODO: Remove. These aren't needed.

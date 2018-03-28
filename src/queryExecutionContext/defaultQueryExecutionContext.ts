@@ -1,6 +1,7 @@
 import { IHeaders } from ".";
 import { Base } from "../base";
-import { Constants } from "../constants";
+import { Constants } from "../common";
+import { DocumentClient } from "../documentclient";
 import { SqlParameter, SqlQuerySpec } from "./SqlQuerySpec";
 
 export type FetchFunctionCallback = (options: any) => Promise<[any, IHeaders]>;
@@ -13,14 +14,14 @@ enum STATES {
 
 export class DefaultQueryExecutionContext {
     private static readonly STATES = STATES;
-    private documentclient: any; // TODO: any documentclient
-    private query: string | SqlQuerySpec; // TODO: any SqlQuerySpec
+    private documentclient: DocumentClient;
+    private query: string | SqlQuerySpec;
     private resources: any; // TODO: any resources
     private currentIndex: number;
     private currentPartitionIndex: number;
     private fetchFunctions: FetchFunctionCallback[];
     private options: any; // TODO: any options
-    private continuation: any; // TODO: any continuation
+    public continuation: any; // TODO: any continuation
     private state: STATES;
     /**
      * Provides the basic Query Execution Context.
@@ -33,10 +34,10 @@ export class DefaultQueryExecutionContext {
      *                          An array of functions may be used to query more than one partition.
      * @ignore
      */
-    constructor(documentclient: any,
+    constructor(documentclient: DocumentClient,
                 query: string | SqlQuerySpec,
                 options: any,
-                fetchFunctions: FetchFunctionCallback | FetchFunctionCallback[]) { // TODO: any documentclient options
+                fetchFunctions: FetchFunctionCallback | FetchFunctionCallback[]) { // TODO: any options
         this.documentclient = documentclient;
         this.query = query;
         this.resources = [];

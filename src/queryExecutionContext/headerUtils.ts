@@ -1,7 +1,6 @@
 ﻿import * as assert from "assert";
 import * as util from "util";
-import { Base } from "../base";
-import { Constants } from "../constants";
+import { Constants } from "../common";
 
 export interface IHeaders {
     [key: string]: string | boolean | number;

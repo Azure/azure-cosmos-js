@@ -1,9 +1,9 @@
 import * as assert from "assert";
-import { SqlQuerySpec, FetchFunctionCallback } from ".";
-import { Base } from "../base";
-import { Constants } from "../constants";
-import { StatusCodes, SubStatusCodes } from "../statusCodes";
+import { FetchFunctionCallback, SqlQuerySpec } from ".";
+import { Constants, StatusCodes, SubStatusCodes } from "../common";
+import { DocumentClient } from "../documentclient";
 import { DefaultQueryExecutionContext } from "./defaultQueryExecutionContext";
+import { FetchResult, FetchResultType } from "./FetchResult";
 import { HeaderUtils, IHeaders } from "./headerUtils";
 
 const HttpHeaders = Constants;
@@ -22,7 +22,7 @@ export class DocumentProducer {
     private collectionLink: string;
     private query: string | SqlQuerySpec;
     private targetPartitionKeyRange: any; // TODO: any partitionkeyrange
-    private fetchResults: any[];
+    private fetchResults: FetchResult[];
     private state: DocumentProducerStates;
     private allFetched: boolean;
     private err: Error;
@@ -41,7 +41,7 @@ export class DocumentProducer {
      * @ignore
      */
     constructor(
-        documentclient: any, // TODO: any documentclient
+        documentclient: DocumentClient, // TODO: any documentclient
         collectionLink: string,
         query: SqlQuerySpec,
         targetPartitionKeyRange: any, // TODO: any partition key range
@@ -77,7 +77,7 @@ export class DocumentProducer {
                     "docs",
                     id,
                     (result: any) => result.Documents, // TODO: any
-                    (parent: any, body: any) =>  body, // TODO: any
+                    (parent: any, body: any) => body, // TODO: any
                     query,
                     options,
                     callback,
@@ -94,9 +94,9 @@ export class DocumentProducer {
      * @ignore
      */
     public peekBufferedItems() {
-        var bufferedResults = [];
-        for (var i = 0, done = false; i < this.fetchResults.length && !done; i++) {
-            var fetchResult = this.fetchResults[i];
+        const bufferedResults = [];
+        for (let i = 0, done = false; i < this.fetchResults.length && !done; i++) {
+            const fetchResult = this.fetchResults[i];
             switch (fetchResult.fetchResultType) {
                 case FetchResultType.Done:
                     done = true;
@@ -113,13 +113,13 @@ export class DocumentProducer {
     }
 
     public hasMoreResults() {
-        return this.internalExecutionContext.hasMoreResults() || this.fetchResults.length != 0;
+        return this.internalExecutionContext.hasMoreResults() || this.fetchResults.length !== 0;
     }
 
     public gotSplit() {
-        var fetchResult = this.fetchResults[0];
-        if (fetchResult.fetchResultType == FetchResultType.Exception) {
-            if (this._needPartitionKeyRangeCacheRefresh(fetchResult.error)) {
+        const fetchResult = this.fetchResults[0];
+        if (fetchResult.fetchResultType === FetchResultType.Exception) {
+            if (DocumentProducer._needPartitionKeyRangeCacheRefresh(fetchResult.error)) {
                 return true;
             }
         }
@@ -127,28 +127,31 @@ export class DocumentProducer {
         return false;
     }
 
-    /**
-     * Synchronously gives the buffered items if any and moves inner indices.
-     * @returns {Object}       - buffered current items if any
-     * @ignore
-     */
-    public consumeBufferedItems() {
-        var res = this._getBufferedResults();
-        this.fetchResults = [];
-        this._updateStates(undefined, this.continuationToken === null || this.continuationToken === undefined);
-        return res;
-    }
+    // no one calls this and it doesn't work, so I'm going to remove it. (Chris A)
+    // /**
+    //  * Synchronously gives the buffered items if any and moves inner indices.
+    //  * @returns {Object}       - buffered current items if any
+    //  * @ignore
+    //  */
+    // public consumeBufferedItems() {
+    //     // I don't think this method works...
+    //     throw new Error("Not yet implemented");
+    //     // const res = this._getBufferedResults(); // _getBufferedResults doesn't exist
+    //     // this.fetchResults = [];
+    //     // this._updateStates(undefined, this.continuationToken === null || this.continuationToken === undefined);
+    //     // return res;
+    // }
 
     private _getAndResetActiveResponseHeaders() {
-        var ret = this.respHeaders;
+        const ret = this.respHeaders;
         this.respHeaders = HeaderUtils.getInitialHeader();
         return ret;
     }
 
-    private _updateStates(err, allFetched) {
+    private _updateStates(err: any, allFetched: boolean) { // TODO: any Error
         if (err) {
             this.state = DocumentProducer.STATES.ended;
-            this.err = err
+            this.err = err;
             return;
         }
         if (allFetched) {
@@ -165,8 +168,10 @@ export class DocumentProducer {
         this.continuationToken = this.internalExecutionContext.continuation;
     }
 
-    private _needPartitionKeyRangeCacheRefresh(error) {
-        return (error.code === StatusCodes.Gone) && ('substatus' in error) && (error['substatus'] === SubStatusCodes.PartitionKeyRangeGone);
+    private static _needPartitionKeyRangeCacheRefresh(error: any) { // TODO: error
+        return (error.code === StatusCodes.Gone)
+            && ("substatus" in error)
+            && (error["substatus"] === SubStatusCodes.PartitionKeyRangeGone);
     }
 
     /**
@@ -175,39 +180,36 @@ export class DocumentProducer {
      * @instance
      * @param {callback} callback - Function to execute for next page of result.
      *                              the function takes three parameters error, resources, headerResponse.
-    */
-    public bufferMore(callback) {
-        var that = this;
-        if (that.err) {
-            return callback(that.err);
+     */
+    public async bufferMore() {
+        if (this.err) {
+            throw this.err;
         }
 
-        this.internalExecutionContext.fetchMore(function (err, resources, headerResponse) {
-            if (err) {
-                if (that._needPartitionKeyRangeCacheRefresh(err)) {
-                    // Split just happend
-                    // Buffer the error so the execution context can still get the feedResponses in the itemBuffer
-                    var bufferedError = new FetchResult(undefined, err);
-                    that.fetchResults.push(bufferedError);
-                    // Putting a dummy result so that the rest of code flows
-                    return callback(undefined, [bufferedError], headerResponse);
-                }
-                else {
-                    that._updateStates(err, resources === undefined);
-                    return callback(err, undefined, headerResponse);
-                }
-            }
-
-            that._updateStates(undefined, resources === undefined);
-            if (resources != undefined) {
+        try {
+            const [resources, headerResponse] = await this.internalExecutionContext.fetchMore();
+            this._updateStates(undefined, resources === undefined);
+            if (resources !== undefined) {
                 // some more results
-                resources.forEach(function (element) {
-                    that.fetchResults.push(new FetchResult(element, undefined));
+                resources.forEach((element: any) => { // TODO: resources any
+                    this.fetchResults.push(new FetchResult(element, undefined));
                 });
             }
 
-            return callback(undefined, resources, headerResponse);
-        });
+            return [resources, headerResponse];
+        } catch (err) { // TODO: any error
+            if (DocumentProducer._needPartitionKeyRangeCacheRefresh(err)) {
+                // Split just happend
+                // Buffer the error so the execution context can still get the feedResponses in the itemBuffer
+                const bufferedError = new FetchResult(undefined, err);
+                this.fetchResults.push(bufferedError);
+                // Putting a dummy result so that the rest of code flows
+                return [[bufferedError], err.headers];
+            } else {
+                this._updateStates(err, err.resources === undefined);
+                throw err;
+            }
+        }
     }
 
     /**
@@ -217,118 +219,81 @@ export class DocumentProducer {
      */
     public getTargetParitionKeyRange() {
         return this.targetPartitionKeyRange;
-    },
+    }
 
     /**
-    * Execute a provided function on the next element in the DocumentProducer.
-    * @memberof DocumentProducer
-    * @instance
-    * @param {callback} callback - Function to execute for each element. the function takes two parameters error, element.
-    */
-    public nextItem(callback) {
-        var that = this;
-        if (that.err) {
-            that._updateStates(err, undefined);
-            return callback(that.err);
+     * Execute a provided function on the next element in the DocumentProducer.
+     * @memberof DocumentProducer
+     * @instance
+     * @param {callback} callback - Function to execute for each element. the function \
+     * takes two parameters error, element.
+     */
+    public async nextItem() {
+        if (this.err) {
+            this._updateStates(this.err, undefined);
+            throw this.err;
         }
 
-        this.current(function (err, item, headers) {
-            if (err) {
-                that._updateStates(err, item === undefined);
-                return callback(err, undefined, headers);
-            }
+        try {
+            const [item, headers] = await this.current();
 
-            var fetchResult = that.fetchResults.shift();
-            that._updateStates(undefined, item === undefined);
+            const fetchResult = this.fetchResults.shift();
+            this._updateStates(undefined, item === undefined);
             assert.equal(fetchResult.feedResponse, item);
             switch (fetchResult.fetchResultType) {
                 case FetchResultType.Done:
-                    return callback(undefined, undefined, headers);
+                    return [undefined, headers];
                 case FetchResultType.Exception:
-                    return callback(fetchResult.error, undefined, headers);
+                    fetchResult.error.headers = headers;
+                    throw fetchResult.error;
                 case FetchResultType.Result:
-                    return callback(undefined, fetchResult.feedResponse, headers);
+                    return [fetchResult.feedResponse, headers];
             }
-        });
+        } catch (err) {
+            this._updateStates(err, err.item === undefined);
+            throw err;
+        }
     }
 
     /**
      * Retrieve the current element on the DocumentProducer.
      * @memberof DocumentProducer
      * @instance
-     * @param {callback} callback - Function to execute for the current element. the function takes two parameters error, element.
+     * @param {callback} callback - Function to execute for the current element. \
+     * the function takes two parameters error, element.
      */
-    public current(callback) {
+    public async current(): Promise<[any, IHeaders]> {
         // If something is buffered just give that
         if (this.fetchResults.length > 0) {
-            var fetchResult = this.fetchResults[0];
-            //Need to unwrap fetch results
+            const fetchResult = this.fetchResults[0];
+            // Need to unwrap fetch results
             switch (fetchResult.fetchResultType) {
                 case FetchResultType.Done:
-                    return callback(undefined, undefined, this._getAndResetActiveResponseHeaders());
+                    return [undefined, this._getAndResetActiveResponseHeaders()];
                 case FetchResultType.Exception:
-                    return callback(fetchResult.error, undefined, this._getAndResetActiveResponseHeaders());
+                    fetchResult.error.headers = this._getAndResetActiveResponseHeaders();
+                    throw fetchResult.error;
                 case FetchResultType.Result:
-                    return callback(undefined, fetchResult.feedResponse, this._getAndResetActiveResponseHeaders());
+                    return [fetchResult.feedResponse, this._getAndResetActiveResponseHeaders()];
             }
         }
 
         // If there isn't anymore items left to fetch then let the user know.
         if (this.allFetched) {
-            return callback(undefined, undefined, this._getAndResetActiveResponseHeaders());
+            return [undefined, this._getAndResetActiveResponseHeaders()];
         }
 
         // If there are no more bufferd items and there are still items to be fetched then buffer more
-        var that = this;
-        this.bufferMore(function (err, items, headers) {
-            if (err) {
-                return callback(err, undefined, headers);
-            }
-
+        try {
+            const [items, headers] = await this.bufferMore();
             if (items === undefined) {
-                return callback(undefined, undefined, headers);
+                return [undefined, headers];
             }
-            HeaderUtils.mergeHeaders(that.respHeaders, headers);
+            HeaderUtils.mergeHeaders(this.respHeaders, headers);
 
-            that.current(callback);
-        });
-    }
-}
-
-var FetchResultType = {
-    "Done": 0,
-    "Exception": 1,
-    "Result": 2
-};
-
-var FetchResult = Base.defineClass(
-    /**
-     * Wraps fetch results for the document producer.
-     * This allows the document producer to buffer exceptions so that actual results don't get flushed during splits.
-     * @constructor DocumentProducer
-     * @param {object} feedReponse                  - The response the document producer got back on a successful fetch
-     * @param {object} error                        - The exception meant to be buffered on an unsuccessful fetch
-     * @ignore
-     */
-    function (feedResponse, error) {
-        if (feedResponse) {
-            this.feedResponse = feedResponse;
-            this.fetchResultType = FetchResultType.Result;
-        } else {
-            this.error = error;
-            this.fetchResultType = FetchResultType.Exception;
-        }
-    },
-    {
-    },
-    {
-        DoneResult: {
-            fetchResultType: FetchResultType.Done
+            return this.current();
+        } catch (err) {
+            throw err;
         }
     }
-);
-//SCRIPT END
-
-if (typeof exports !== "undefined") {
-    module.exports = DocumentProducer;
 }
