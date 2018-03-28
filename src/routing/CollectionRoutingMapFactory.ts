@@ -1,7 +1,7 @@
 
 import * as _ from "underscore";
-import { Constants } from "../constants";
-import { InMemoryCollectionRoutingMap } from "./inMemoryCollectionRoutingMap";
+import { InMemoryCollectionRoutingMap } from ".";
+import { Constants } from "../common";
 
 export class CollectionRoutingMapFactory {
     public static createCompleteRoutingMap(partitionKeyRangeInfoTuppleList: any[], collectionUniqueId: string) {

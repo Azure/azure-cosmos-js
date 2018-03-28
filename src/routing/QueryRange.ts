@@ -1,4 +1,4 @@
-import { Constants } from "../constants";
+import { Constants } from "../common";
 
 export class QueryRange {
     public min: string;
@@ -22,10 +22,11 @@ export class QueryRange {
         this.isMaxInclusive = isMaxInclusive;
     }
     public overlaps(other: QueryRange) {
+        // tslint:disable-next-line:no-this-assignment
         const range1 = this;
         const range2 = other;
-        if (range1 === undefined || range2 === undefined) { return false; };
-        if (range1.isEmpty() || range2.isEmpty()) { return false; };
+        if (range1 === undefined || range2 === undefined) { return false; }
+        if (range1.isEmpty() || range2.isEmpty()) { return false; }
 
         if (range1.min <= range2.max || range2.min <= range1.max) {
             if ((range1.min === range2.max && !(range1.isMinInclusive && range2.isMaxInclusive))
@@ -56,7 +57,7 @@ export class QueryRange {
      * @returns QueryRange
      * @ignore
      */
-    parseFromDict(queryRangeDict: any) { // TODO: queryRangeDictionary
+    public parseFromDict(queryRangeDict: any) { // TODO: queryRangeDictionary
         return new QueryRange(
             queryRangeDict.min,
             queryRangeDict.max,

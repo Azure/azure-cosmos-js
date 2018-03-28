@@ -1,8 +1,6 @@
 import * as assert from "assert";
 import * as bs from "binary-search-bounds"; // TODO: missing types
-import * as _ from "underscore";
-import { Base } from "../base";
-import { Constants } from "../constants";
+import { Constants } from "../common";
 import { QueryRange } from "./QueryRange";
 
 export class InMemoryCollectionRoutingMap {
@@ -68,10 +66,10 @@ export class InMemoryCollectionRoutingMap {
     }
 
     private static _vbCompareFunction(x: any, y: any) { // TODO: What is x & y? A bs type?
-        if (x.v > y.v) { return 1; };
-        if (x.v < y.v) { return -1; };
-        if (x.b > y.b) { return 1; };
-        if (x.b < y.b) { return -1; };
+        if (x.v > y.v) { return 1; }
+        if (x.v < y.v) { return -1; }
+        if (x.b > y.b) { return 1; }
+        if (x.b < y.b) { return -1; }
         return 0;
     }
 
@@ -86,13 +84,7 @@ export class InMemoryCollectionRoutingMap {
     }
 
     public getOverlappingRanges(providedQueryRanges: QueryRange | QueryRange[]) {
-        let pqr: QueryRange[];
-        if (!_.isArray(providedQueryRanges)) {
-            pqr = [providedQueryRanges];
-        } else {
-            pqr = providedQueryRanges;
-        }
-
+        const pqr: QueryRange[] = Array.isArray(providedQueryRanges) ? providedQueryRanges : [providedQueryRanges];
         const minToPartitionRange: any = {}; // TODO: any
         const sortedLow = this.orderedRanges.map(
             (r) => {
@@ -130,9 +122,10 @@ export class InMemoryCollectionRoutingMap {
             }
         }
 
-        const overlappingPartitionKeyRanges = _.values(minToPartitionRange);
+        const overlappingPartitionKeyRanges = Object.keys(minToPartitionRange)
+                                                .map((k) => minToPartitionRange[k]);
 
-        return _.sortBy(overlappingPartitionKeyRanges, (r) => {
+        return overlappingPartitionKeyRanges.sort((r) => {
             return r[Constants.PartitionKeyRange.MinInclusive];
         });
     }

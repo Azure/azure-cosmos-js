@@ -10,7 +10,7 @@ export const Constants = {
         SQL: "application/sql",
         TextHtml: "text/html",
         TextPlain: "text/plain",
-        Xml: "application/xml"
+        Xml: "application/xml",
     },
 
     HttpMethods: {
@@ -19,7 +19,7 @@ export const Constants = {
         Put: "PUT",
         Delete: "DELETE",
         Head: "HEAD",
-        Options: "OPTIONS"
+        Options: "OPTIONS",
     },
 
     HttpHeaders: {
@@ -70,7 +70,7 @@ export const Constants = {
         Location: "Location",
         Referer: "referer",
         A_IM: "A-IM",
-        
+
         // Query
         Query: "x-ms-documentdb-query",
         IsQuery: "x-ms-documentdb-isquery",
@@ -102,7 +102,7 @@ export const Constants = {
         // Version headers and values
         Version: "x-ms-version",
 
-        //Owner name
+        // Owner name
         OwnerFullName: "x-ms-alt-content-path",
 
         // Owner ID used for name based request in session token.
@@ -110,9 +110,9 @@ export const Constants = {
 
         // Partition Key
         PartitionKey: "x-ms-documentdb-partitionkey",
-        PartitionKeyRangeID: 'x-ms-documentdb-partitionkeyrangeid',
+        PartitionKeyRangeID: "x-ms-documentdb-partitionkeyrangeid",
 
-        //Quota Info
+        // Quota Info
         MaxEntityCount: "x-ms-root-entity-max-count",
         CurrentEntityCount: "x-ms-root-entity-current-count",
         CollectionQuotaInMb: "x-ms-collection-quota-mb",
@@ -144,14 +144,14 @@ export const Constants = {
 
         // StoredProcedure related headers
         EnableScriptLogging: "x-ms-documentdb-script-enable-logging",
-        ScriptLogResults: "x-ms-documentdb-script-log-results"
+        ScriptLogResults: "x-ms-documentdb-script-log-results",
     },
 
     // GlobalDB related constants
-    WritableLocations: 'writableLocations',
-    ReadableLocations: 'readableLocations',
-    Name: 'name',
-    DatabaseAccountEndpoint: 'databaseAccountEndpoint',
+    WritableLocations: "writableLocations",
+    ReadableLocations: "readableLocations",
+    Name: "name",
+    DatabaseAccountEndpoint: "databaseAccountEndpoint",
 
     // Client generated retry count response header
     ThrottleRetryCount: "x-ms-throttle-retry-count",
@@ -166,21 +166,21 @@ export const Constants = {
         DefaultNumberHashPrecision: 3,
         DefaultNumberRangePrecision: -1,
         DefaultStringHashPrecision: 3,
-        DefaultStringRangePrecision: -1
+        DefaultStringRangePrecision: -1,
     },
 
     ConsistentHashRing: {
-        DefaultVirtualNodesPerCollection: 128
+        DefaultVirtualNodesPerCollection: 128,
     },
 
     RegularExpressions: {
         TrimLeftSlashes: new RegExp("^[/]+"),
         TrimRightSlashes: new RegExp("[/]+$"),
-        IllegalResourceIdCharacters: new RegExp("[/\\\\?#]")
+        IllegalResourceIdCharacters: new RegExp("[/\\\\?#]"),
     },
 
     Quota: {
-        CollectionSize: "collectionSize"
+        CollectionSize: "collectionSize",
     },
 
     Path: {
@@ -195,7 +195,7 @@ export const Constants = {
         ConflictsPathSegment: "conflicts",
         AttachmentsPathSegment: "attachments",
         PartitionKeyRangesPathSegment: "pkranges",
-        SchemasPathSegment: "schemas"
+        SchemasPathSegment: "schemas",
     },
 
     OperationTypes: {
@@ -208,20 +208,20 @@ export const Constants = {
     },
 
     PartitionKeyRange: {
-        //Partition Key Range Constants
+        // Partition Key Range Constants
         MinInclusive: "minInclusive",
         MaxExclusive: "maxExclusive",
-        Id: "id"
-    },    
-    
-    QueryRangeConstants: {
-        //Partition Key Range Constants
-        MinInclusive: "minInclusive",
-        MaxExclusive: "maxExclusive",
-        min: "min"
+        Id: "id",
     },
-    
-    EffectiveParitionKeyConstants:{
+
+    QueryRangeConstants: {
+        // Partition Key Range Constants
+        MinInclusive: "minInclusive",
+        MaxExclusive: "maxExclusive",
+        min: "min",
+    },
+
+    EffectiveParitionKeyConstants: {
         MinimumInclusiveEffectivePartitionKey: "",
         MaximumExclusiveEffectivePartitionKey: "FF",
     },

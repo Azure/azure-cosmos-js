@@ -1,5 +1,5 @@
 import { AuthHandler } from "./auth";
-import { Constants } from "./constants";
+import { Constants } from "./common";
 import { Platform } from "./platform";
 
 /*

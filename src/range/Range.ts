@@ -1,0 +1,105 @@
+
+export type CompareFunction = (x: string, y: string) => number;
+
+export class Range {
+    public readonly low: string;
+    public readonly high: string;
+
+    /**
+     * Represents a range object used by the RangePartitionResolver in the Azure Cosmos DB database service.
+     * @class Range
+     * @param {object} options                   - The Range constructor options.
+     * @param {any} options.low                  - The low value in the range.
+     * @param {any} options.high                 - The high value in the range.
+     */
+    constructor(options: any) { // TODO: any options
+        if (options === undefined) {
+            options = {};
+        }
+        if (options === null) {
+            throw new Error("Invalid argument: 'options' is null");
+        }
+        if (typeof options !== "object") {
+            throw new Error("Invalid argument: 'options' is not an object");
+        }
+        if (options.high === undefined) {
+            options.high = options.low;
+        }
+        this.low = options.low;
+        this.high = options.high;
+    }
+
+    private _compare(x: string, y: string, compareFunction?: CompareFunction) {
+        // Same semantics as Array.sort
+        // http://www.ecma-international.org/ecma-262/6.0/#sec-sortcompare
+        if (x === undefined && y === undefined) {
+            return 0;
+        }
+        if (x === undefined) {
+            return 1;
+        }
+        if (y === undefined) {
+            return -1;
+        }
+        if (compareFunction !== undefined) {
+            const v = Number(compareFunction(x, y));
+            if (Number.isNaN(v)) {
+                return 0;
+            }
+            return v;
+        }
+        const xString = String(x);
+        const yString = String(y);
+        if (xString < yString) {
+            return -1;
+        }
+        if (xString > yString) {
+            return 1;
+        }
+        return 0;
+    }
+
+    public contains(other: string | Range, compareFunction?: CompareFunction) {
+        if (Range.isRange(other)) {
+            return this._containsRange(other as Range, compareFunction);
+        } else {
+            return this._containsPoint(other as string, compareFunction);
+        }
+    }
+
+    private _containsPoint(point: string, compareFunction?: CompareFunction) {
+        return this._compare(point, this.low, compareFunction) >= 0
+            && this._compare(point, this.high, compareFunction) <= 0;
+    }
+
+    private _containsRange(range: Range, compareFunction?: CompareFunction) {
+        return this._compare(range.low, this.low, compareFunction) >= 0
+            && this._compare(range.high, this.high, compareFunction) <= 0;
+    }
+
+    public intersect(range: Range, compareFunction?: CompareFunction) {
+        if (range === undefined || range === null) {
+            throw new Error("Invalid Argument: 'other' is undefined or null");
+        }
+        const maxLow = this._compare(this.low, range.low, compareFunction) >= 0 ? this.low : range.low;
+        const minHigh = this._compare(this.high, range.high, compareFunction) <= 0 ? this.high : range.high;
+        return this._compare(maxLow, minHigh, compareFunction) <= 0;
+    }
+
+    public toString() {
+        return String(this.low) + "," + String(this.high);
+    }
+
+    public static isRange(pointOrRange: string | Range) {
+        if (pointOrRange === undefined) {
+            return false;
+        }
+        if (pointOrRange === null) {
+            return false;
+        }
+        if (typeof pointOrRange !== "object") {
+            return false;
+        }
+        return ("low" in pointOrRange && "high" in pointOrRange);
+    }
+}

@@ -1,5 +1,4 @@
 import * as semaphore from "semaphore";
-import { Base } from "../base";
 import { CollectionRoutingMapFactory, InMemoryCollectionRoutingMap, QueryRange } from "./";
 
 export class PartitionKeyRangeCache {
@@ -79,7 +78,7 @@ export class PartitionKeyRangeCache {
      * @ignore
      */
     public async getOverlappingRanges(collectionLink: string, queryRanges: QueryRange) {
-        const crm = await this._onCollectionRoutingMap(collectionLink);
+        const crm = await this.onCollectionRoutingMap(collectionLink);
         return crm.getOverlappingRanges(queryRanges);
     }
 }

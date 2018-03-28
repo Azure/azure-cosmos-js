@@ -1,11 +1,11 @@
-﻿import {Constants} from "./constants";
-import * as os from "os";
-import * as util from "util";
+﻿import * as os from "os";
 import * as semaphore from "semaphore";
+import * as util from "util";
+import { Constants } from ".";
 
 export class Platform {
-    public static getPlatformDefaultHeaders(): {[key: string]: string} {
-        const defaultHeaders: {[key: string]: string} = {};
+    public static getPlatformDefaultHeaders(): { [key: string]: string } {
+        const defaultHeaders: { [key: string]: string } = {};
         defaultHeaders[Constants.HttpHeaders.UserAgent] = Platform.getUserAgent();
         return defaultHeaders;
     }
@@ -14,7 +14,7 @@ export class Platform {
         const buffer = new Buffer(encodedData, "base64");
         return buffer.length;
     }
-    
+
     public static getUserAgent() {
         // gets the user agent in the following format
         // "{OSName}/{OSVersion} Nodejs/{NodejsVersion} documentdb-nodejs-sdk/{SDKVersion}"
@@ -25,21 +25,21 @@ export class Platform {
         const osVersion = Platform._getSafeUserAgentSegmentInfo(os.release());
         const nodejsVersion = Platform._getSafeUserAgentSegmentInfo(process.version);
 
-        const userAgent = 
-            `${osName}/${osVersion} Nodejs/${nodejsVersion} ${Constants.SDKName}/${Constants.SDKVersion}`
+        const userAgent =
+            `${osName}/${osVersion} Nodejs/${nodejsVersion} ${Constants.SDKName}/${Constants.SDKVersion}`;
         return userAgent;
     }
-    
+
     public static _getSafeUserAgentSegmentInfo(s: string) {
         // catch null, undefined, etc
-        if (typeof (s) !== 'string') {
+        if (typeof (s) !== "string") {
             s = "unknown";
         }
         // remove all white spaces
-        s = s.replace(/\s+/g, '');
+        s = s.replace(/\s+/g, "");
         if (!s) {
             s = "unknown";
         }
-        return s
+        return s;
     }
 }
