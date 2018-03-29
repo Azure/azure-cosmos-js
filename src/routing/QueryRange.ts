@@ -57,7 +57,7 @@ export class QueryRange {
      * @returns QueryRange
      * @ignore
      */
-    public parseFromDict(queryRangeDict: any) { // TODO: queryRangeDictionary
+    public static parseFromDict(queryRangeDict: any) { // TODO: queryRangeDictionary
         return new QueryRange(
             queryRangeDict.min,
             queryRangeDict.max,

@@ -21,13 +21,13 @@ export class DocumentProducer {
     private documentclient: any; // TODO: any documentclient
     private collectionLink: string;
     private query: string | SqlQuerySpec;
-    private targetPartitionKeyRange: any; // TODO: any partitionkeyrange
-    private fetchResults: FetchResult[];
+    public targetPartitionKeyRange: any; // TODO: any partitionkeyrange
+    public fetchResults: FetchResult[];
     private state: DocumentProducerStates;
     private allFetched: boolean;
     private err: Error;
     private previousContinuationToken: string;
-    private continuationToken: string;
+    public continuationToken: string;
     private respHeaders: IHeaders;
     private internalExecutionContext: DefaultQueryExecutionContext;
 

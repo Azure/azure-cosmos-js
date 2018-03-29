@@ -10,24 +10,28 @@ const PartitionedQueryContants = {
     RewrittenQueryPath: ["queryInfo", "rewrittenQuery"],
 };
 
+export interface PartitionedQueryExecutionContextInfo {
+    [key: string]: any;
+}
+
 // TODO: any partitionedQueryExecutionInfo
 export class PartitionedQueryExecutionContextInfoParser {
-    public parseRewrittenQuery(partitionedQueryExecutionInfo: { [key: string]: any }) {
+    public static parseRewrittenQuery(partitionedQueryExecutionInfo: { [key: string]: any }) {
         return this._extract(partitionedQueryExecutionInfo, PartitionedQueryContants.RewrittenQueryPath);
     }
-    public parseQueryRanges(partitionedQueryExecutionInfo: { [key: string]: any }) {
+    public static parseQueryRanges(partitionedQueryExecutionInfo: { [key: string]: any }) {
         return this._extract(partitionedQueryExecutionInfo, PartitionedQueryContants.QueryRangesPath);
     }
-    public parseOrderBy(partitionedQueryExecutionInfo: { [key: string]: any }) {
+    public static parseOrderBy(partitionedQueryExecutionInfo: { [key: string]: any }) {
         return this._extract(partitionedQueryExecutionInfo, PartitionedQueryContants.OrderByPath);
     }
-    public parseAggregates(partitionedQueryExecutionInfo: { [key: string]: any }) {
+    public static parseAggregates(partitionedQueryExecutionInfo: { [key: string]: any }) {
         return this._extract(partitionedQueryExecutionInfo, PartitionedQueryContants.AggregatePath);
     }
-    public parseTop(partitionedQueryExecutionInfo: { [key: string]: any }) {
+    public static parseTop(partitionedQueryExecutionInfo: { [key: string]: any }) {
         return this._extract(partitionedQueryExecutionInfo, PartitionedQueryContants.TopPath);
     }
-    private _extract(partitionedQueryExecutionInfo: { [key: string]: any }, path: string | string[]) {
+    private static _extract(partitionedQueryExecutionInfo: { [key: string]: any }, path: string | string[]) {
         let item = partitionedQueryExecutionInfo;
         if (typeof path === "string") {
             return item[path];

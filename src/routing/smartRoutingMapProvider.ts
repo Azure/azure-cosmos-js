@@ -3,7 +3,7 @@ import * as util from "util";
 import { Constants } from "../common";
 import { CollectionRoutingMapFactory, InMemoryCollectionRoutingMap, PartitionKeyRangeCache, QueryRange } from "./";
 
-const PARITIONKEYRANGE = Constants.PartitionKeyRange;
+export const PARITIONKEYRANGE = Constants.PartitionKeyRange;
 
 export class SmartRoutingMapProvider {
     private partitionKeyRangeCache: PartitionKeyRangeCache;
