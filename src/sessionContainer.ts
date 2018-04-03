@@ -1,4 +1,5 @@
 ﻿import * as BigInt from "big-integer";
+import { Base } from "./base";
 import { Constants, EMPTY, ResourceId } from "./common";
 import { IHeaders } from "./queryExecutionContext";
 
@@ -93,7 +94,7 @@ export class SessionContainer {
                     ownerFullName = Base._trimSlashes(request["resourceAddress"]);
                 }
 
-                const collectionName = Base.getCollectionLink(ownerFullName);
+                const collectionName = Base.getCollectionLink(ownerFullName as string);
 
                 const ownerId = !request["isNameBased"] ? request["resourceId"]
                     : resHeaders[Constants.HttpHeaders.OwnerId] || request["resourceId"];

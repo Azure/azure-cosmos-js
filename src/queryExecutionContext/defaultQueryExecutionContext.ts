@@ -1,4 +1,4 @@
-import { IHeaders } from ".";
+import { IExecutionContext, IHeaders } from ".";
 import { Base } from "../base";
 import { Constants } from "../common";
 import { DocumentClient } from "../documentclient";
@@ -12,7 +12,7 @@ enum STATES {
     ended = "ended",
 }
 
-export class DefaultQueryExecutionContext {
+export class DefaultQueryExecutionContext implements IExecutionContext {
     private static readonly STATES = STATES;
     private documentclient: DocumentClient;
     private query: string | SqlQuerySpec;
@@ -34,10 +34,11 @@ export class DefaultQueryExecutionContext {
      *                          An array of functions may be used to query more than one partition.
      * @ignore
      */
-    constructor(documentclient: DocumentClient,
-                query: string | SqlQuerySpec,
-                options: any,
-                fetchFunctions: FetchFunctionCallback | FetchFunctionCallback[]) { // TODO: any options
+    constructor(
+        documentclient: DocumentClient,
+        query: string | SqlQuerySpec,
+        options: any,
+        fetchFunctions: FetchFunctionCallback | FetchFunctionCallback[]) { // TODO: any options
         this.documentclient = documentclient;
         this.query = query;
         this.resources = [];
@@ -54,7 +55,7 @@ export class DefaultQueryExecutionContext {
      * @memberof DefaultQueryExecutionContext
      * @instance
      */
-    public async nextItem() {
+    public async nextItem(): Promise<[any, IHeaders]> {
         const [resources, headers] = await this.current();
         ++this.currentIndex;
         return [resources, headers];
@@ -112,9 +113,9 @@ export class DefaultQueryExecutionContext {
      * @memberof DefaultQueryExecutionContext
      * @instance
      */
-    public async fetchMore() {
+    public async fetchMore(): Promise<[any, IHeaders]> {
         if (this.currentPartitionIndex >= this.fetchFunctions.length) {
-            return [];
+            return [undefined, undefined];
         }
 
         // Keep to the original continuation and to restore the value after fetchFunction call
@@ -123,7 +124,7 @@ export class DefaultQueryExecutionContext {
 
         // Return undefined if there is no more results
         if (this.currentPartitionIndex >= this.fetchFunctions.length) {
-            return [];
+            return [undefined, undefined];
         }
 
         const fetchFunction = this.fetchFunctions[this.currentPartitionIndex];

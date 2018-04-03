@@ -1,23 +1,39 @@
 import { Constants } from "./common";
-import {} from "./queryExecutionContext";
+import { DocumentClient } from "./documentclient";
+import {
+    FetchFunctionCallback,
+    IExecutionContext,
+    IHeaders,
+    ProxyQueryExecutionContext,
+    SqlQuerySpec,
+} from "./queryExecutionContext";
 
-var Base = require("./base"),
-    Constants = require("./constants"),
-    ProxyQueryExecutionContext = require("./queryExecutionContext/proxyQueryExecutionContext");
+export type QueryIteratorTuple = [any, IHeaders];
+export type QueryIteratorCallback = (err: any, elements?: any, headers?: IHeaders) => boolean | void;
 
-//SCRIPT START
-var QueryIterator = Base.defineClass(
+export class QueryIterator {
+    private toArrayTempResources: any[];
+    private toArrayLastResHeaders: IHeaders;
+    private queryExecutionContext: IExecutionContext;
     /**
-    * Represents a QueryIterator Object, an implmenetation of feed or query response that enables traversal and iterating over the response
-    * in the Azure Cosmos DB database service.
-    * @class QueryIterator
-    * @param {object} documentclient                - The documentclient object.
-    * @param {SqlQuerySpec | string} query          - A SQL query.
-    * @param {FeedOptions} options                  - Represents the feed options.
-    * @param {callback | callback[]} fetchFunctions - A function to retrieve each page of data. An array of functions may be used to query more than one partition.
-    * @param {string} [resourceLink]                - An optional parameter that represents the resourceLink (will be used in orderby/top/parallel query)
-    */
-    function (documentclient, query, options, fetchFunctions, resourceLink) {
+     * Represents a QueryIterator Object, an implmenetation of feed or query response that enables \
+     * traversal and iterating over the response
+     * in the Azure Cosmos DB database service.
+     * @class QueryIterator
+     * @param {object} documentclient                - The documentclient object.
+     * @param {SqlQuerySpec | string} query          - A SQL query.
+     * @param {FeedOptions} options                  - Represents the feed options.
+     * @param {callback | callback[]} fetchFunctions - A function to retrieve each page of data. \
+     * An array of functions may be used to query more than one partition.
+     * @param {string} [resourceLink]                - An optional parameter that represents the resourceLink \
+     * (will be used in orderby/top/parallel query)
+     */
+    constructor(
+        private documentclient: DocumentClient,
+        private query: SqlQuerySpec | string,
+        private options: any, // TODO: any options
+        private fetchFunctions: FetchFunctionCallback | FetchFunctionCallback[],
+        private resourceLink: string) {
 
         this.documentclient = documentclient;
         this.query = query;
@@ -25,149 +41,163 @@ var QueryIterator = Base.defineClass(
         this.options = options;
         this.resourceLink = resourceLink;
         this.queryExecutionContext = this._createQueryExecutionContext();
-    },
-    {
-        /**
-         * Execute a provided function once per feed element.
-         * @memberof QueryIterator
-         * @instance
-         * @param {callback} callback - Function to execute for each element. the function takes two parameters error, element.
-         * Note: the last element the callback will be called on will be undefined.
-         * If the callback explicitly returned false, the loop gets stopped.
-         */
-        forEach: function(callback) {
-            this.reset();
-            this._forEachImplementation(callback);
-        },
+    }
+    /**
+     * Execute a provided function once per feed element.
+     * @memberof QueryIterator
+     * @instance
+     * @param {callback} callback - Function to execute for each element. \
+     * the function takes two parameters error, element.
+     * Note: the last element the callback will be called on will be undefined.
+     * If the callback explicitly returned false, the loop gets stopped.
+     */
+    public forEach(callback: QueryIteratorCallback) {
+        this.reset();
+        this._forEachImplementation(callback);
+    }
 
-        /**
-        * Execute a provided function on the next element in the QueryIterator.
-        * @memberof QueryIterator
-        * @instance
-        * @param {callback} callback - Function to execute for each element. the function takes two parameters error, element.
-        */
-        nextItem: function (callback) {
-            this.queryExecutionContext.nextItem(callback);
-        },
-
-        /**
-         * Retrieve the current element on the QueryIterator.
-         * @memberof QueryIterator
-         * @instance
-         * @param {callback} callback - Function to execute for the current element. the function takes two parameters error, element.
-         */
-        current: function(callback) {
-            this.queryExecutionContext.current(callback);
-        },
-
-        /**
-         * @deprecated Instead check if callback(undefined, undefined) is invoked by nextItem(callback) or current(callback)
-         *
-         * Determine if there are still remaining resources to processs based on the value of the continuation token or the elements remaining on the current batch in the QueryIterator.
-         * @memberof QueryIterator
-         * @instance
-         * @returns {Boolean} true if there is other elements to process in the QueryIterator.
-         */
-        hasMoreResults: function () {
-            return this.queryExecutionContext.hasMoreResults();
-        },
-
-        /**
-         * Retrieve all the elements of the feed and pass them as an array to a function
-         * @memberof QueryIterator
-         * @instance
-         * @param {callback} callback - Function execute on the feed response, takes two parameters error, resourcesList
-         */
-        toArray: function (callback) {
-            this.reset();
-            this.toArrayTempResources = [];
-            this._toArrayImplementation(callback);
-        },
-
-        /**
-         * Retrieve the next batch of the feed and pass them as an array to a function
-         * @memberof QueryIterator
-         * @instance
-         * @param {callback} callback - Function execute on the feed response, takes two parameters error, resourcesList
-         */
-        executeNext: function(callback) {
-            this.queryExecutionContext.fetchMore(function(err, resources, responseHeaders) {
-                if (err) {
-                    return callback(err, undefined, responseHeaders);
-                }
-
-                callback(undefined, resources, responseHeaders);
-            });
-        },
-
-        /**
-         * Reset the QueryIterator to the beginning and clear all the resources inside it
-         * @memberof QueryIterator
-         * @instance
-         */
-        reset: function() {
-            this.queryExecutionContext = this._createQueryExecutionContext();
-        },
-
-        /** @ignore */
-        _toArrayImplementation: function(callback) {
-            var that = this;
-
-            this.queryExecutionContext.nextItem(function (err, resource, headers) {
-
-                if (err) {
-                    return callback(err, undefined, headers);
-                }
-                // concatinate the results and fetch more
-                that.toArrayLastResHeaders = headers;
-
-                if (resource === undefined) {
-
-                    // no more results
-                    return callback(undefined, that.toArrayTempResources, that.toArrayLastResHeaders);
-                }
-
-                that.toArrayTempResources.push(resource);
-
-                setImmediate(function () {
-                    that._toArrayImplementation(callback);
-                });
-            });
-        },
-
-        /** @ignore */
-        _forEachImplementation: function (callback) {
-            var that = this;
-            this.queryExecutionContext.nextItem(function (err, resource, headers) {
-                if (err) {
-                    return callback(err, undefined, headers);
-                }
-
-                if (resource === undefined) {
-                    // no more results. This is last iteration
-                    return callback(undefined, undefined, headers);
-                }
-
-                if (callback(undefined, resource, headers) === false) {
-                    // callback instructed to stop further iteration
-                    return;
-                }
-
-                // recursively call itself to iterate to the remaining elements
-                setImmediate(function () {
-                    that._forEachImplementation(callback);
-                });
-            });
-        },
-
-        /** @ignore */
-        _createQueryExecutionContext: function () {
-            return new ProxyQueryExecutionContext(this.documentclient, this.query, this.options, this.fetchFunctions, this.resourceLink);
+    /**
+     * Execute a provided function on the next element in the QueryIterator.
+     * @memberof QueryIterator
+     * @instance
+     * @param {callback} callback - Function to execute for each element. \
+     * the function takes two parameters error, element.
+     */
+    public nextItem(callback: QueryIteratorCallback): void | Promise<QueryIteratorTuple> {
+        const p = this.queryExecutionContext.nextItem();
+        if (callback) {
+            p.then<void>(([element, headers]) => {callback(undefined, element, headers); })
+            .catch((err) => {callback(err, undefined, err.headers); });
+        } else {
+            return p;
         }
     }
-);
-//SCRIPT END
 
-if (typeof exports !== "undefined") {
-    module.exports = QueryIterator;
+    /**
+     * Retrieve the current element on the QueryIterator.
+     * @memberof QueryIterator
+     * @instance
+     * @param {callback} callback - Function to execute for the current element. \
+     * the function takes two parameters error, element.
+     */
+    public current(callback: QueryIteratorCallback) {
+        const p = this.queryExecutionContext.current();
+        if (callback) {
+            p.then<void>(([element, headers]) => {callback(undefined, element, headers); })
+            .catch((err) => {callback(err, undefined, err.headers); });
+        } else {
+            return p;
+        }
+    }
+
+    /**
+     * @deprecated Instead check if callback(undefined, undefined) is invoked by nextItem(callback) or current(callback)
+     *
+     * Determine if there are still remaining resources to processs based on the value of the continuation token or the\
+     * elements remaining on the current batch in the QueryIterator.
+     * @memberof QueryIterator
+     * @instance
+     * @returns {Boolean} true if there is other elements to process in the QueryIterator.
+     */
+    public hasMoreResults() {
+        return this.queryExecutionContext.hasMoreResults();
+    }
+
+    /**
+     * Retrieve all the elements of the feed and pass them as an array to a function
+     * @memberof QueryIterator
+     * @instance
+     * @param {callback} callback - Function execute on the feed response, takes two parameters error, resourcesList
+     */
+    public toArray(callback: QueryIteratorCallback) {
+        this.reset();
+        this.toArrayTempResources = [];
+        const p = this._toArrayImplementation();
+        if (callback) {
+            p.then<void>(([element, headers]) => {callback(undefined, element, headers); })
+            .catch((err) => {callback(err, undefined, err.headers); });
+        } else {
+            return p;
+        }
+    }
+
+    /**
+     * Retrieve the next batch of the feed and pass them as an array to a function
+     * @memberof QueryIterator
+     * @instance
+     * @param {callback} callback - Function execute on the feed response, takes two parameters error, resourcesList
+     */
+    public executeNext(callback: QueryIteratorCallback) {
+        const p = this.queryExecutionContext.fetchMore();
+        if (callback) {
+            p.then<void>(([element, headers]) => {callback(undefined, element, headers); })
+            .catch((err) => {callback(err, undefined, err.headers); });
+        } else {
+            return p;
+        }
+    }
+
+    /**
+     * Reset the QueryIterator to the beginning and clear all the resources inside it
+     * @memberof QueryIterator
+     * @instance
+     */
+    public reset() {
+        this.queryExecutionContext = this._createQueryExecutionContext();
+    }
+
+    /** @ignore */
+    private async _toArrayImplementation(): Promise<[any, IHeaders]> {
+        try {
+            const [resource, headers] = await this.queryExecutionContext.nextItem();
+            // concatinate the results and fetch more
+            this.toArrayLastResHeaders = headers;
+
+            if (resource === undefined) {
+
+                // no more results
+                return [this.toArrayTempResources, this.toArrayLastResHeaders];
+            }
+
+            this.toArrayTempResources.push(resource);
+
+            return this._toArrayImplementation();
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    /** @ignore */
+    private async _forEachImplementation(
+        callback: QueryIteratorCallback) { // TODO: any error
+        try {
+            const [resource, headers] = await this.queryExecutionContext.nextItem();
+            if (resource === undefined) {
+                // no more results. This is last iteration
+                return callback(undefined, undefined, headers);
+            }
+
+            if (callback(undefined, resource, headers) === false) {
+                // callback instructed to stop further iteration
+                return;
+            }
+
+            // recursively call itself to iterate to the remaining elements
+            setImmediate(() => {
+                this._forEachImplementation(callback);
+            });
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    /** @ignore */
+    private _createQueryExecutionContext() {
+        return new ProxyQueryExecutionContext(
+            this.documentclient,
+            this.query,
+            this.options,
+            this.fetchFunctions,
+            this.resourceLink);
+    }
 }

@@ -1,6 +1,7 @@
 ﻿
 import * as url from "url";
 import { Constants } from "./common";
+import { DocumentClient } from "./documentclient";
 
 /**
  * This internal class implements the logic for endpoint management for geo-replicated database accounts.
@@ -13,7 +14,6 @@ import { Constants } from "./common";
  * @property {bool} isEndpointCacheInitialized     - Flag to determine whether the endpoint cache is initialized or not.
  */
 export class GlobalEndpointManager {
-    private client: any; // TODO: any documentclient
     private defaultEndpoint: string;
     private readEndpoint: string;
     private writeEndpoint: string;
@@ -25,8 +25,7 @@ export class GlobalEndpointManager {
      * @constructor GlobalEndpointManager
      * @param {object} client                          - The document client instance.
      */
-    constructor(client: any) { // TODO: any documentclient
-        this.client = client;
+    constructor(private client: DocumentClient) {
         this.defaultEndpoint = client.urlConnection;
         this.readEndpoint = client.urlConnection;
         this.writeEndpoint = client.urlConnection;
@@ -34,7 +33,9 @@ export class GlobalEndpointManager {
         this.preferredLocations = client.connectionPolicy.PreferredLocations;
         this.isEndpointCacheInitialized = false;
     }
-    /** Gets the current read endpoint from the endpoint cache.
+
+    /**
+     * Gets the current read endpoint from the endpoint cache.
      * @memberof GlobalEndpointManager
      * @instance
      * @param {function} callback        - The callback function which takes readEndpoint(string) as an argument.
@@ -49,7 +50,8 @@ export class GlobalEndpointManager {
         }
     }
 
-    /** Sets the current read endpoint.
+    /**
+     * Sets the current read endpoint.
      * @memberof GlobalEndpointManager
      * @instance
      * @param {string} readEndpoint        - The endpoint to be set as readEndpoint.
@@ -58,7 +60,8 @@ export class GlobalEndpointManager {
         this.readEndpoint = readEndpoint;
     }
 
-    /** Gets the current write endpoint from the endpoint cache.
+    /**
+     * Gets the current write endpoint from the endpoint cache.
      * @memberof GlobalEndpointManager
      * @instance
      * @param {function} callback        - The callback function which takes writeEndpoint(string) as an argument.
@@ -73,7 +76,8 @@ export class GlobalEndpointManager {
         }
     }
 
-    /** Sets the current write endpoint.
+    /**
+     * Sets the current write endpoint.
      * @memberof GlobalEndpointManager
      * @instance
      * @param {string} writeEndpoint        - The endpoint to be set as writeEndpoint.
@@ -82,19 +86,21 @@ export class GlobalEndpointManager {
         this.writeEndpoint = writeEndpoint;
     }
 
-    /** Refreshes the endpoint list by retrieving the writable and readable locations
-        from the geo-replicated database account and then updating the locations cache.
-        We skip the refreshing if EnableEndpointDiscovery is set to False
+    /**
+     * Refreshes the endpoint list by retrieving the writable and readable locations
+     *  from the geo-replicated database account and then updating the locations cache.
+     *   We skip the refreshing if EnableEndpointDiscovery is set to False
      * @memberof GlobalEndpointManager
      * @instance
-     * @param {function} callback        - The callback function which takes writeEndpoint(string) and readEndpoint(string) as arguments.
-    */
+     * @param {function} callback        - The callback function which takes writeEndpoint(string) \
+     * and readEndpoint(string) as arguments.
+     */
     public refreshEndpointList(callback) {
-        var writableLocations = [];
-        var readableLocations = [];
-        var databaseAccount;
+        const writableLocations = [];
+        const readableLocations = [];
+        const databaseAccount;
 
-        var that = this;
+        const that = this;
         if (this.enableEndpointDiscovery) {
             this._getDatabaseAccount(function (databaseAccount) {
                 if (databaseAccount) {
@@ -102,7 +108,8 @@ export class GlobalEndpointManager {
                     readableLocations = databaseAccount.ReadableLocations;
                 }
 
-                // Read and Write endpoints will be initialized to default endpoint if we were not able to get the database account info
+                // Read and Write endpoints will be initialized to default endpoint if we were not able 
+                // to get the database account info
                 that._updateLocationsCache(writableLocations, readableLocations, function (endpoints) {
                     that.writeEndpoint = endpoints[0];
                     that.readEndpoint = endpoints[1];
@@ -115,26 +122,30 @@ export class GlobalEndpointManager {
         }
     }
 
-    /** Gets the database account first by using the default endpoint, and if that doesn't returns
-       use the endpoints for the preferred locations in the order they are specified to get 
-       the database account.
+    /**
+     * Gets the database account first by using the default endpoint, and if that doesn't returns
+     * use the endpoints for the preferred locations in the order they are specified to get 
+     * the database account.
      * @memberof GlobalEndpointManager
      * @instance
      * @param {function} callback        - The callback function which takes databaseAccount(object) as an argument.
      */
     private _getDatabaseAccount(callback) {
-        var that = this;
-        var options = { urlConnection: this.defaultEndpoint };
+        const that = this;
+        const options = { urlConnection: this.defaultEndpoint };
         this.client.getDatabaseAccount(options, function (err, databaseAccount) {
-            // If for any reason(non - globaldb related), we are not able to get the database account from the above call to getDatabaseAccount,
-            // we would try to get this information from any of the preferred locations that the user might have specified(by creating a locational endpoint)
-            // and keeping eating the exception until we get the database account and return None at the end, if we are not able to get that info from any endpoints
+            // If for any reason(non - globaldb related), we are not able to get the database 
+            // account from the above call to getDatabaseAccount,
+            // we would try to get this information from any of the preferred locations that the user 
+            // might have specified(by creating a locational endpoint)
+            // and keeping eating the exception until we get the database account and return None at the end, 
+            // if we are not able to get that info from any endpoints
 
             if (err) {
-                var func = function (defaultEndpoint, preferredLocations, index) {
+                const func = function (defaultEndpoint, preferredLocations, index) {
                     if (index < preferredLocations.length) {
-                        var locationalEndpoint = that._getLocationalEndpoint(defaultEndpoint, preferredLocations[index]);
-                        var options = { urlConnection: locationalEndpoint };
+                        const locationalEndpoint = that._getLocationalEndpoint(defaultEndpoint, preferredLocations[index]);
+                        const options = { urlConnection: locationalEndpoint };
                         that.client.getDatabaseAccount(options, function (err, databaseAccount) {
                             if (err) {
                                 func(defaultEndpoint, preferredLocations, index + 1);
@@ -154,7 +165,8 @@ export class GlobalEndpointManager {
         });
     }
 
-    /** Gets the locational endpoint using the location name passed to it using the default endpoint.
+    /**
+     * Gets the locational endpoint using the location name passed to it using the default endpoint.
      * @memberof GlobalEndpointManager
      * @instance
      * @param {string} defaultEndpoint - The default endpoint to use for teh endpoint.
@@ -162,21 +174,25 @@ export class GlobalEndpointManager {
      */
     private static _getLocationalEndpoint(defaultEndpoint, locationName) {
         // For defaultEndpoint like 'https://contoso.documents.azure.com:443/' parse it to generate URL format
-        // This defaultEndpoint should be global endpoint(and cannot be a locational endpoint) and we agreed to document that
-        var endpointUrl = url.parse(defaultEndpoint, true, true);
+        // This defaultEndpoint should be global endpoint(and cannot be a locational endpoint)
+        // and we agreed to document that
+        const endpointUrl = url.parse(defaultEndpoint, true, true);
 
         // hostname attribute in endpointUrl will return 'contoso.documents.azure.com'
         if (endpointUrl.hostname) {
-            var hostnameParts = (endpointUrl.hostname).toString().toLowerCase().split(".");
+            const hostnameParts = (endpointUrl.hostname).toString().toLowerCase().split(".");
             if (hostnameParts) {
                 // globalDatabaseAccountName will return 'contoso'
-                var globalDatabaseAccountName = hostnameParts[0];
+                const globalDatabaseAccountName = hostnameParts[0];
 
                 // Prepare the locationalDatabaseAccountName as contoso-EastUS for location_name 'East US'
-                var locationalDatabaseAccountName = globalDatabaseAccountName + "-" + locationName.replace(" ", "");
+                const locationalDatabaseAccountName = globalDatabaseAccountName + "-" + locationName.replace(" ", "");
 
-                // Replace 'contoso' with 'contoso-EastUS' and return locationalEndpoint as https://contoso-EastUS.documents.azure.com:443/
-                var locationalEndpoint = defaultEndpoint.toLowerCase().replace(globalDatabaseAccountName, locationalDatabaseAccountName);
+                // Replace 'contoso' with 'contoso-EastUS' and
+                // return locationalEndpoint as https://contoso-EastUS.documents.azure.com:443/
+                const locationalEndpoint = defaultEndpoint
+                    .toLowerCase()
+                    .replace(globalDatabaseAccountName, locationalDatabaseAccountName);
                 return locationalEndpoint;
             }
         }
@@ -184,7 +200,8 @@ export class GlobalEndpointManager {
         return null;
     }
 
-    /** Updates the read and write endpoints from the passed-in readable and writable locations.
+    /**
+     * Updates the read and write endpoints from the passed-in readable and writable locations.
      * @memberof GlobalEndpointManager
      * @instance
      * @param {Array} writableLocations     - The list of writable locations for the geo-enabled database account.
@@ -192,8 +209,8 @@ export class GlobalEndpointManager {
      * @param {function} callback           - The function to be called as callback after executing this method.
      */
     private _updateLocationsCache(writableLocations, readableLocations, callback) {
-        var writeEndpoint;
-        var readEndpoint;
+        const writeEndpoint;
+        const readEndpoint;
         // Use the default endpoint as Read and Write endpoints if EnableEndpointDiscovery
         // is set to False.
         if (!this.enableEndpointDiscovery) {
@@ -223,19 +240,19 @@ export class GlobalEndpointManager {
                 return callback([writeEndpoint, readEndpoint]);
             }
 
-            for (var i = 0; i < this.preferredLocations.length; i++) {
-                var preferredLocation = this.preferredLocations[i];
+            for (const i = 0; i < this.preferredLocations.length; i++) {
+                const preferredLocation = this.preferredLocations[i];
                 // Use the first readable location as Read endpoint from the preferred locations
-                for (var j = 0; j < readableLocations.length; j++) {
-                    var readLocation = readableLocations[j];
+                for (const j = 0; j < readableLocations.length; j++) {
+                    const readLocation = readableLocations[j];
                     if (readLocation[Constants.Name] === preferredLocation) {
                         readEndpoint = readLocation[Constants.DatabaseAccountEndpoint];
                         return callback([writeEndpoint, readEndpoint]);
                     }
                 }
                 // Else, use the first writable location as Read endpoint from the preferred locations
-                for (var k = 0; k < writableLocations.length; k++) {
-                    var writeLocation = writableLocations[k];
+                for (const k = 0; k < writableLocations.length; k++) {
+                    const writeLocation = writableLocations[k];
                     if (writeLocation[Constants.Name] === preferredLocation) {
                         readEndpoint = writeLocation[Constants.DatabaseAccountEndpoint];
                         return callback([writeEndpoint, readEndpoint]);

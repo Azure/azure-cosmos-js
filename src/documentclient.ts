@@ -2,7 +2,7 @@ import { Base } from "./base";
 import { Agent, RequestOptions } from "https"; // TODO: Move this to request? 
 import * as url from "url";
 import * as tunnel from "tunnel";
-import { ConnectionPolicy, ConsistencyLevel, QueryCompatibilityMode } from "./documents";
+import { ConnectionPolicy, ConsistencyLevel, QueryCompatibilityMode, DatabaseAccount } from "./documents";
 import { QueryIterator } from "./queryIterator";
 import { RequestHandler } from "./request";
 import { RetryOptions } from "./retry";
@@ -2091,13 +2091,16 @@ export class DocumentClient {
         });
     }
 
-    /** Gets the Database account information.
-   * @memberof DocumentClient
-   * @instance
-   * @param {string} [options.urlConnection]   - The endpoint url whose database account needs to be retrieved. If not present, current client's url will be used.
-   * @param {RequestCallback} callback         - The callback for the request. The second parameter of the callback will be of type {@link DatabaseAccount}.
-   */
-    public getDatabaseAccount(options, callback) {
+    /** 
+     * Gets the Database account information.
+     * @memberof DocumentClient
+     * @instance
+     * @param {string} [options.urlConnection]   - The endpoint url whose database account needs to be retrieved. \
+     * If not present, current client's url will be used.
+     * @param {RequestCallback} callback         - The callback for the request. The second parameter of the \
+     * callback will be of type {@link DatabaseAccount}.
+     */
+    public async getDatabaseAccount(options, callback): void | Promise<[DatabaseAccount, Headers]> {
         var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
@@ -2105,19 +2108,22 @@ export class DocumentClient {
         var urlConnection = options.urlConnection || this.urlConnection;
 
         var headersPromise = Base.getHeaders(this, this.defaultHeaders, "get", "", "", "", {});
-        var that = this;
-        headersPromise.then(function (headers) {
-            that.get(urlConnection, "", headers, function (err, result, headers) {
-                if (err) return callback(err);
+        
+        headersPromise.then((headers) => {
+            this.get(urlConnection, "", headers, function (err, result, headers) {
+                if (err) { return callback(err); }
 
                 var databaseAccount = new AzureDocuments.DatabaseAccount();
                 databaseAccount.DatabasesLink = "/dbs/";
                 databaseAccount.MediaLink = "/media/";
-                databaseAccount.MaxMediaStorageUsageInMB = headers[Constants.HttpHeaders.MaxMediaStorageUsageInMB];
-                databaseAccount.CurrentMediaStorageUsageInMB = headers[Constants.HttpHeaders.CurrentMediaStorageUsageInMB];
+                databaseAccount.MaxMediaStorageUsageInMB = 
+                    headers[Constants.HttpHeaders.MaxMediaStorageUsageInMB];
+                databaseAccount.CurrentMediaStorageUsageInMB = 
+                    headers[Constants.HttpHeaders.CurrentMediaStorageUsageInMB];
                 databaseAccount.ConsistencyPolicy = result.userConsistencyPolicy;
 
-                // WritableLocations and ReadableLocations properties will be available only for geo-replicated database accounts
+                // WritableLocations and ReadableLocations properties will be available 
+                // only for geo-replicated database accounts
                 if (Constants.WritableLocations in result && result.id !== "localhost") {
                     databaseAccount._writableLocations = result[Constants.WritableLocations];
                 }
@@ -2347,28 +2353,73 @@ export class DocumentClient {
     }
 
     /** @ignore */
-    public get(url, request, headers, callback) {
-        return RequestHandler.request(this._globalEndpointManager, this.connectionPolicy, this.requestAgent, "GET", url, request, undefined, this.defaultUrlParams, headers, callback);
+    public get(url, request, headers) {
+        return RequestHandler.request(
+            this._globalEndpointManager, 
+            this.connectionPolicy, 
+            this.requestAgent, 
+            "GET", 
+            url, 
+            request, 
+            undefined, 
+            this.defaultUrlParams, 
+            headers);
     }
 
     /** @ignore */
-    public post(url, request, body, headers, callback) {
-        return RequestHandler.request(this._globalEndpointManager, this.connectionPolicy, this.requestAgent, "POST", url, request, body, this.defaultUrlParams, headers, callback);
+    public post(url, request, body, headers) {
+        return RequestHandler.request(
+            this._globalEndpointManager, 
+            this.connectionPolicy, 
+            this.requestAgent, 
+            "POST", 
+            url, 
+            request, 
+            body, 
+            this.defaultUrlParams, 
+            headers);
     }
 
     /** @ignore */
-    public put(url, request, body, headers, callback) {
-        return RequestHandler.request(this._globalEndpointManager, this.connectionPolicy, this.requestAgent, "PUT", url, request, body, this.defaultUrlParams, headers, callback);
+    public put(url, request, body, headers) {
+        return RequestHandler.request(
+            this._globalEndpointManager, 
+            this.connectionPolicy, 
+            this.requestAgent, 
+            "PUT", 
+            url, 
+            request, 
+            body, 
+            this.defaultUrlParams, 
+            headers);
     }
 
     /** @ignore */
-    public head(url, request, headers, callback) {
-        return RequestHandler.request(this._globalEndpointManager, this.connectionPolicy, this.requestAgent, "HEAD", url, request, undefined, this.defaultUrlParams, headers, callback);
+    public head(url, request, headers) {
+        return RequestHandler.request(
+            this._globalEndpointManager, 
+            this.connectionPolicy, 
+            this.requestAgent, 
+            "HEAD", 
+            url, 
+            request, 
+            undefined, 
+            this.defaultUrlParams, 
+            headers);
     }
 
     /** @ignore */
     public delete(url, request, headers, callback) {
-        return RequestHandler.request(this._globalEndpointManager, this.connectionPolicy, this.requestAgent, "DELETE", url, request, undefined, this.defaultUrlParams, headers, callback);
+        return RequestHandler.request(
+            this._globalEndpointManager, 
+            this.connectionPolicy, 
+            this.requestAgent, 
+            "DELETE", 
+            url, 
+            request, 
+            undefined, 
+            this.defaultUrlParams, 
+            headers);
     }
 
     /** Gets the partition key definition first by looking into the cache otherwise by reading the collection.

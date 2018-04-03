@@ -24,9 +24,9 @@ export class DocumentProducer {
     public targetPartitionKeyRange: any; // TODO: any partitionkeyrange
     public fetchResults: FetchResult[];
     private state: DocumentProducerStates;
-    private allFetched: boolean;
+    public allFetched: boolean;
     private err: Error;
-    private previousContinuationToken: string;
+    public previousContinuationToken: string;
     public continuationToken: string;
     private respHeaders: IHeaders;
     private internalExecutionContext: DefaultQueryExecutionContext;

@@ -21,6 +21,7 @@
     "@types/node": "^8.10.0",
     "@types/priorityqueuejs": "^1.0.1",
     "@types/semaphore": "^1.1.0",
+    "@types/tunnel": "0.0.0",
     "@types/underscore": "^1.8.8",
     "big-integer": "^1.6.27",
     "child_process": "*",

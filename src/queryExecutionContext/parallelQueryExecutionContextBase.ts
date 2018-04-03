@@ -29,7 +29,7 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
     private state: any;
     private static STATES = ParallelQueryExecutionContextBaseStates;
     private routingProvider: SmartRoutingMapProvider;
-    private sortOrders: any;
+    protected sortOrders: any;
     private pageSize: any;
     private requestContinuation: any;
     private respHeaders: IHeaders;
