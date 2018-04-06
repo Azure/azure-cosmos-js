@@ -1,5 +1,7 @@
 import { AuthHandler } from "./auth";
 import { Constants, Platform } from "./common";
+import { DocumentClient, FeedOptions, MediaOptions, Options, RequestOptions } from "./documentclient";
+import { IHeaders } from "./queryExecutionContext";
 
 /*
 //SCRIPT START
@@ -37,12 +39,12 @@ function initializeProperties(target, members, prefix) {
 }
 */
 /**
-*  Defines a new namespace with the specified name under the specified parent namespace.
-* @param {Object} parentNamespace - The parent namespace.
-* @param {String} name - The name of the new namespace.
-* @param {Object} members - The members of the new namespace.
-* @returns {Function} - The newly-defined namespace.
-*/
+ *  Defines a new namespace with the specified name under the specified parent namespace.
+ * @param {Object} parentNamespace - The parent namespace.
+ * @param {String} name - The name of the new namespace.
+ * @param {Object} members - The members of the new namespace.
+ * @returns {Function} - The newly-defined namespace.
+ */
 /*
 function defineWithParent(parentNamespace, name, members) {
     var currentNamespace = parentNamespace || {};
@@ -69,23 +71,24 @@ function defineWithParent(parentNamespace, name, members) {
 */
 
 /**
-*  Defines a new namespace with the specified name.
-* @param {String} name - The name of the namespace. This could be a dot-separated name for nested namespaces.
-* @param {Object} members - The members of the new namespace.
-* @returns {Function} - The newly-defined namespace.
-*/
+ *  Defines a new namespace with the specified name.
+ * @param {String} name - The name of the namespace. This could be a dot-separated name for nested namespaces.
+ * @param {Object} members - The members of the new namespace.
+ * @returns {Function} - The newly-defined namespace.
+ */
 /*
 function define(name, members) {
     return defineWithParent(undefined, name, members);
 }
 */
 /**
-*  Defines a class using the given constructor and the specified instance members.
-* @param {Function} constructor - A constructor function that is used to instantiate this class.
-* @param {Object} instanceMembers - The set of instance fields, properties, and methods to be made available on the class.
-* @param {Object} staticMembers - The set of static fields, properties, and methods to be made available on the class.
-* @returns {Function} - The newly-defined class.
-*/
+ *  Defines a class using the given constructor and the specified instance members.
+ * @param {Function} constructor - A constructor function that is used to instantiate this class.
+ * @param {Object} instanceMembers - The set of instance fields, properties, and methods to be made \
+ * available on the class.
+ * @param {Object} staticMembers - The set of static fields, properties, and methods to be made available on the class.
+ * @returns {Function} - The newly-defined class.
+ */
 /*
 function defineClass(constructor, instanceMembers, staticMembers) {
     constructor = constructor || function () { };
@@ -99,20 +102,22 @@ function defineClass(constructor, instanceMembers, staticMembers) {
 }
 */
 /**
-*  Creates a sub-class based on the supplied baseClass parameter, using prototypal inheritance.
-* @param {Function} baseClass - The class to inherit from.
-* @param {Function} constructor - A constructor function that is used to instantiate this class.
-* @param {Object} instanceMembers - The set of instance fields, properties, and methods to be made available on the class.
-* @param {Object} staticMembers - The set of static fields, properties, and methods to be made available on the class.
-* @returns {Function} - The newly-defined class.
-*/
+ *  Creates a sub-class based on the supplied baseClass parameter, using prototypal inheritance.
+ * @param {Function} baseClass - The class to inherit from.
+ * @param {Function} constructor - A constructor function that is used to instantiate this class.
+ * @param {Object} instanceMembers - The set of instance fields, properties, and methods to be made\
+ *  available on the class.
+ * @param {Object} staticMembers - The set of static fields, properties, and methods to be made available on the class.
+ * @returns {Function} - The newly-defined class.
+ */
 /*
 function derive(baseClass, constructor, instanceMembers, staticMembers) {
     if (baseClass) {
         constructor = constructor || function () { };
         var basePrototype = baseClass.prototype;
         constructor.prototype = Object.create(basePrototype);
-        Object.defineProperty(constructor.prototype, "constructor", { value: constructor, writable: true, configurable: true, enumerable: true });
+        Object.defineProperty(constructor.prototype, "constructor",
+        { value: constructor, writable: true, configurable: true, enumerable: true });
         if (instanceMembers) {
             initializeProperties(constructor.prototype, instanceMembers);
         }
@@ -126,22 +131,22 @@ function derive(baseClass, constructor, instanceMembers, staticMembers) {
 }
 */
 export class Base {
-    static extend(arg0: any, arg1: any): any {
+    public static extend(arg0: any, arg1: any): any {
         throw new Error("Method not implemented.");
     }
-    static map(arg0: any, arg1: any): any {
+    public static map(arg0: any, arg1: any): any {
         throw new Error("Method not implemented.");
     }
     public static NotImplementedException: string = "NotImplementedException";
 
     // TODO: Remove. These aren't needed.
-    //defineWithParent: defineWithParent,
+    // defineWithParent: defineWithParent,
 
-    //define: define,
+    // define: define,
 
-    //defineClass: defineClass,
+    // defineClass: defineClass,
 
-    //derive: derive,
+    // derive: derive,
 
     /*extend: function (obj, extent) {
         for (var property in extent) {
@@ -157,28 +162,27 @@ export class Base {
         for (var i = 0, n = list.length; i < n; i++) {
             result.push(fn(list[i]));
         }
-        
         return result;
     },*/
 
     /** @ignore */
-    public static jsonStringifyAndEscapeNonASCII(arg: string) {
+    public static jsonStringifyAndEscapeNonASCII(arg: any) { // TODO: better way for this? Not sure.
         // escapes non-ASCII characters as \uXXXX
-        return JSON.stringify(arg).replace(/[\u0080-\uFFFF]/g, function (m) {
+        return JSON.stringify(arg).replace(/[\u0080-\uFFFF]/g, (m) => {
             return "\\u" + ("0000" + m.charCodeAt(0).toString(16)).slice(-4);
         });
     }
 
     public static async getHeaders(
-        documentClient: any, // TODO
-        defaultHeaders: { [key: string]: string | boolean },
+        documentClient: DocumentClient,
+        defaultHeaders: IHeaders,
         verb: string, path: string,
         resourceId: string,
         resourceType: string,
-        options: any, // TODO 
-        partitionKeyRangeId: string): Promise<{ [key: string]: string | boolean }> {
+        options: Options,
+        partitionKeyRangeId: string): Promise<IHeaders> {
 
-        const headers: { [key: string]: string | boolean } = Object.assign({}, defaultHeaders);
+        const headers: IHeaders = { ...defaultHeaders };
         options = options || {};
 
         if (options.continuation) {
@@ -186,11 +190,17 @@ export class Base {
         }
 
         if (options.preTriggerInclude) {
-            headers[Constants.HttpHeaders.PreTriggerInclude] = options.preTriggerInclude.constructor === Array ? options.preTriggerInclude.join(",") : options.preTriggerInclude;
+            headers[Constants.HttpHeaders.PreTriggerInclude] =
+                options.preTriggerInclude.constructor === Array
+                    ? (options.preTriggerInclude as string[]).join(",")
+                    : options.preTriggerInclude as string;
         }
 
         if (options.postTriggerInclude) {
-            headers[Constants.HttpHeaders.PostTriggerInclude] = options.postTriggerInclude.constructor === Array ? options.postTriggerInclude.join(",") : options.postTriggerInclude;
+            headers[Constants.HttpHeaders.PostTriggerInclude] =
+                options.postTriggerInclude.constructor === Array
+                    ? (options.postTriggerInclude as string[]).join(",")
+                    : options.postTriggerInclude as string;
         }
 
         if (options.offerType) {
@@ -243,7 +253,7 @@ export class Base {
             headers[Constants.HttpHeaders.EnableCrossPartitionQuery] = options.enableCrossPartitionQuery;
         }
 
-        if (options.maxDegreeOfParallelism != undefined) {
+        if (options.maxDegreeOfParallelism !== undefined) {
             headers[Constants.HttpHeaders.ParallelizeCrossPartitionQuery] = true;
         }
 
@@ -252,11 +262,12 @@ export class Base {
         }
 
         // If the user is not using partition resolver, we add options.partitonKey to the header for elastic collections
-        if (documentClient.partitionResolver === undefined || documentClient.partitionResolver === null) {
+        if ((documentClient as any).partitionResolver === undefined // TODO: paritionResolver does not exist
+            || (documentClient as any).partitionResolver === null) {
             if (options.partitionKey !== undefined) {
                 let partitionKey = options.partitionKey;
                 if (partitionKey === null || partitionKey.constructor !== Array) {
-                    partitionKey = [partitionKey];
+                    partitionKey = [partitionKey as string];
                 }
                 headers[Constants.HttpHeaders.PartitionKey] = Base.jsonStringifyAndEscapeNonASCII(partitionKey);
             }
@@ -292,7 +303,8 @@ export class Base {
             headers[Constants.HttpHeaders.DisableRUPerMinuteUsage] = true;
         }
         if (documentClient.masterKey || documentClient.resourceTokens || documentClient.tokenProvider) {
-            const token = await AuthHandler.getAuthorizationHeader(documentClient, verb, path, resourceId, resourceType, headers)
+            const token = await AuthHandler.getAuthorizationHeader(
+                documentClient, verb, path, resourceId, resourceType, headers);
             headers[Constants.HttpHeaders.Authorization] = token;
         }
         return headers;
@@ -303,7 +315,7 @@ export class Base {
             /* for DatabaseAccount case, both type and objectBody will be undefined. */
             return {
                 type: undefined,
-                objectBody: undefined
+                objectBody: undefined,
             };
         }
 
@@ -316,14 +328,19 @@ export class Base {
         }
 
         /*
-        / The path will be in the form of /[resourceType]/[resourceId]/ .... /[resourceType]//[resourceType]/[resourceId]/ .... /[resourceType]/[resourceId]/
-        / or /[resourceType]/[resourceId]/ .... /[resourceType]/[resourceId]/[resourceType]/[resourceId]/ .... /[resourceType]/[resourceId]/
-        / The result of split will be in the form of [[[resourceType], [resourceId] ... ,[resourceType], [resourceId], ""]
-        / In the first case, to extract the resourceId it will the element before last ( at length -2 ) and the the type will before it ( at length -3 )
-        / In the second case, to extract the resource type it will the element before last ( at length -2 )
+         The path will be in the form of /[resourceType]/[resourceId]/ ....
+         /[resourceType]//[resourceType]/[resourceId]/ .... /[resourceType]/[resourceId]/
+         or /[resourceType]/[resourceId]/ .... /[resourceType]/[resourceId]/[resourceType]/[resourceId]/ ....
+          /[resourceType]/[resourceId]/
+         The result of split will be in the form of
+         [[[resourceType], [resourceId] ... ,[resourceType], [resourceId], ""]
+         In the first case, to extract the resourceId it will the element before last ( at length -2 )
+         and the the type will before it ( at length -3 )
+         In the second case, to extract the resource type it will the element before last ( at length -2 )
         */
         const pathParts = resourcePath.split("/");
-        let id, type;
+        let id;
+        let type;
         if (pathParts.length % 2 === 0) {
             // request in form /[resourceType]/[resourceId]/ .... /[resourceType]/[resourceId].
             id = pathParts[pathParts.length - 2];
@@ -335,11 +352,11 @@ export class Base {
         }
 
         const result = {
-            type: type,
+            type,
             objectBody: {
-                id: id,
-                self: resourcePath
-            }
+                id,
+                self: resourcePath,
+            },
         };
 
         return result;
@@ -349,21 +366,21 @@ export class Base {
         const pathParts = [];
         let currentIndex = 0;
 
-        const throwError = function () {
+        const throwError = () => {
             throw new Error("Path " + path + " is invalid at index " + currentIndex);
         };
 
-        const getEscapedToken = function () {
+        const getEscapedToken = () => {
             const quote = path[currentIndex];
             let newIndex = ++currentIndex;
 
             while (true) {
                 newIndex = path.indexOf(quote, newIndex);
-                if (newIndex == -1) {
+                if (newIndex === -1) {
                     throwError();
                 }
 
-                if (path[newIndex - 1] !== '\\') break;
+                if (path[newIndex - 1] !== "\\") { break; }
 
                 ++newIndex;
             }
@@ -373,14 +390,13 @@ export class Base {
             return token;
         };
 
-        const getToken = function () {
-            var newIndex = path.indexOf('/', currentIndex);
-            var token = null;
-            if (newIndex == -1) {
+        const getToken = () => {
+            const newIndex = path.indexOf("/", currentIndex);
+            let token = null;
+            if (newIndex === -1) {
                 token = path.substr(currentIndex);
                 currentIndex = path.length;
-            }
-            else {
+            } else {
                 token = path.substr(currentIndex, newIndex - currentIndex);
                 currentIndex = newIndex;
             }
@@ -390,16 +406,15 @@ export class Base {
         };
 
         while (currentIndex < path.length) {
-            if (path[currentIndex] !== '/') {
+            if (path[currentIndex] !== "/") {
                 throwError();
             }
 
-            if (++currentIndex == path.length) break;
+            if (++currentIndex === path.length) { break; }
 
-            if (path[currentIndex] === '\"' || path[currentIndex] === '\'') {
+            if (path[currentIndex] === '\"' || path[currentIndex] === "'") {
                 pathParts.push(getEscapedToken());
-            }
-            else {
+            } else {
                 pathParts.push(getToken());
             }
         }
@@ -408,26 +423,21 @@ export class Base {
     }
 
     public static getDatabaseLink(link: string) {
-        return link.split('/').slice(0, 2).join('/');
+        return link.split("/").slice(0, 2).join("/");
     }
 
     public static getCollectionLink(link: string) {
-        return link.split('/').slice(0, 4).join('/');
+        return link.split("/").slice(0, 4).join("/");
     }
 
     public static getAttachmentIdFromMediaId(mediaId: string) {
         // Replace - with / on the incoming mediaId.  This will preserve the / so that we can revert it later.
         const buffer = new Buffer(mediaId.replace(/-/g, "/"), "base64");
         const ResoureIdLength = 20;
-        let attachmentId = "";
-        if (buffer.length > ResoureIdLength) {
-            // After the base64 conversion, change the / back to a - to get the proper attachmentId
-            attachmentId = buffer.toString("base64", 0, ResoureIdLength).replace(/\//g, "-");
-        } else {
-            attachmentId = mediaId;
-        }
-
-        return attachmentId;
+        // After the base64 conversion, change the / back to a - to get the proper attachmentId
+        return buffer.length > ResoureIdLength
+            ? buffer.toString("base64", 0, ResoureIdLength).replace(/\//g, "-")
+            : mediaId;
     }
 
     public static getHexaDigit() {
@@ -474,24 +484,24 @@ export class Base {
         let firstId = "";
         let count = 0;
         // Get the first id from path.
-        for (var i = 0; i < parts.length; ++i) {
-            if (!parts[i]) {
+        for (const part of parts) {
+            if (!part) {
                 // Skip empty string.
                 continue;
             }
             ++count;
-            if (count === 1 && parts[i].toLowerCase() !== "dbs") {
+            if (count === 1 && part.toLowerCase() !== "dbs") {
                 return false;
             }
             if (count === 2) {
-                firstId = parts[i];
+                firstId = part;
                 break;
             }
         }
-        if (!firstId) return false;
-        if (firstId.length !== 8) return true;
-        var decodedDataLength = Platform.getDecodedDataLength(firstId);
-        if (decodedDataLength !== 4) return true;
+        if (!firstId) { return false; }
+        if (firstId.length !== 8) { return true; }
+        const decodedDataLength = Platform.getDecodedDataLength(firstId);
+        if (decodedDataLength !== 4) { return true; }
         return false;
     }
 
@@ -499,7 +509,6 @@ export class Base {
         return source.replace(Constants.RegularExpressions.TrimLeftSlashes, "")
             .replace(Constants.RegularExpressions.TrimRightSlashes, "");
     }
-
 
     public static _isValidCollectionLink(link: string) {
         if (typeof link !== "string") {

@@ -1,5 +1,6 @@
 import { Base } from "./base";
-import { Agent, RequestOptions } from "https"; // TODO: Move this to request? 
+import { RequestOptions } from "https"; // TODO: Move this to request? 
+import { Agent } from "http";
 import * as url from "url";
 import * as tunnel from "tunnel";
 import { ConnectionPolicy, ConsistencyLevel, QueryCompatibilityMode, DatabaseAccount } from "./documents";
@@ -27,7 +28,6 @@ import { IHeaders } from "./queryExecutionContext";
 //     , Platform = require("./platform")
 //     , SessionContainer = require("./sessionContainer");
 
-
 // if (typeof exports !== "undefined") {
 //     exports.DocumentClient = DocumentClient;
 //     exports.DocumentBase = AzureDocuments;
@@ -37,19 +37,19 @@ import { IHeaders } from "./queryExecutionContext";
 // }
 
 export class DocumentClient {
-    masterKey: string;
-    resourceTokens: { [key: string]: string };
-    tokenProvider: any;
-    connectionPolicy: ConnectionPolicy;
-    consistencyLevel: ConsistencyLevel;
-    defaultHeaders: IHeaders;
-    defaultUrlParams: string;
-    queryCompatibilityMode: QueryCompatibilityMode;
-    partitionResolvers: {};
-    partitionKeyDefinitionCache: {};
-    _globalEndpointManager: GlobalEndpointManager;
-    sessionContainer: SessionContainer;
-    requestAgent: Agent;
+    public masterKey: string;
+    public resourceTokens: { [key: string]: string };
+    public tokenProvider: any;
+    public connectionPolicy: ConnectionPolicy;
+    public consistencyLevel: ConsistencyLevel;
+    public defaultHeaders: IHeaders;
+    public defaultUrlParams: string;
+    public queryCompatibilityMode: QueryCompatibilityMode;
+    public partitionResolvers: {};
+    public partitionKeyDefinitionCache: {};
+    private _globalEndpointManager: GlobalEndpointManager;
+    public sessionContainer: SessionContainer;
+    public requestAgent: Agent;
     /**
      * Provides a client-side logical representation of the Azure Cosmos DB database account.
      * This client is used to configure and execute requests in the Azure Cosmos DB database service.
@@ -154,7 +154,7 @@ export class DocumentClient {
             });
         });
 
-        if(callback) {
+        if (callback) {
             p.then(callback, callback);
         } else {
             return p;
@@ -173,8 +173,8 @@ export class DocumentClient {
                 callback(readEndpoint);
             });
         });
-        
-        if(callback) {
+
+        if (callback) {
             p.then(callback, callback);
         } else {
             return p;
@@ -199,8 +199,8 @@ export class DocumentClient {
      * @param {RequestCallback} callback - The callback for the request.
      */
     public createDatabase(
-        body: object, 
-        options: RequestOptions, 
+        body: object,
+        options: RequestOptions,
         callback?: (err: any, database?: any)): Promise<any> { // TODO: any
         const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
@@ -220,9 +220,11 @@ export class DocumentClient {
      * Creates a collection.
      * <p>
      * A collection is a named logical container for documents. <br>
-     * A database may contain zero or more named collections and each collection consists of zero or more JSON documents. <br>
+     * A database may contain zero or more named collections and each collection consists of \
+     * zero or more JSON documents. <br>
      * Being schema-free, the documents in a collection do not need to share the same structure or fields. <br>
-     * Since collections are application resources, they can be authorized using either the master key or resource keys. <br>
+     * Since collections are application resources, they can be authorized using either the \
+     * master key or resource keys. <br>
      * </p>
      * @memberof DocumentClient
      * @instance
@@ -230,11 +232,12 @@ export class DocumentClient {
      * @param {object} body                          - Represents the body of the collection.
      * @param {string} body.id                       - The id of the collection.
      * @param {IndexingPolicy} body.indexingPolicy   - The indexing policy associated with the collection.
-     * @param {number} body.defaultTtl               - The default time to live in seconds for documents in a collection.
+     * @param {number} body.defaultTtl               - The default time to live in seconds for documents in \
+     * a collection.
      * @param {RequestOptions} [options]             - The request options.
      * @param {RequestCallback} callback             - The callback for the request.
      */
-    public createCollection(databaseLink, body, options, callback) {
+    public createCollection(databaseLink: string, body: any, options, callback) {
         var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
@@ -1441,7 +1444,7 @@ export class DocumentClient {
 
         if (options.partitionKey === undefined && options.skipGetPartitionKeyDefinition !== true) {
             this.getPartitionKeyDefinition(Base.getCollectionLink(documentLink), function (err, partitionKeyDefinition, response, headers) {
-                if (err) return callback(err, response, headers);
+                if (err) { return callback(err, response, headers); }
                 options.partitionKey = that.extractPartitionKey(newDocument, partitionKeyDefinition);
 
                 task();
@@ -2108,7 +2111,7 @@ export class DocumentClient {
         var urlConnection = options.urlConnection || this.urlConnection;
 
         var headersPromise = Base.getHeaders(this, this.defaultHeaders, "get", "", "", "", {});
-        
+
         headersPromise.then((headers) => {
             this.get(urlConnection, "", headers, function (err, result, headers) {
                 if (err) { return callback(err); }
@@ -2116,9 +2119,9 @@ export class DocumentClient {
                 var databaseAccount = new AzureDocuments.DatabaseAccount();
                 databaseAccount.DatabasesLink = "/dbs/";
                 databaseAccount.MediaLink = "/media/";
-                databaseAccount.MaxMediaStorageUsageInMB = 
+                databaseAccount.MaxMediaStorageUsageInMB =
                     headers[Constants.HttpHeaders.MaxMediaStorageUsageInMB];
-                databaseAccount.CurrentMediaStorageUsageInMB = 
+                databaseAccount.CurrentMediaStorageUsageInMB =
                     headers[Constants.HttpHeaders.CurrentMediaStorageUsageInMB];
                 databaseAccount.ConsistencyPolicy = result.userConsistencyPolicy;
 
@@ -2165,7 +2168,7 @@ export class DocumentClient {
 
         if (options.partitionKey === undefined && options.skipGetPartitionKeyDefinition !== true) {
             this.getPartitionKeyDefinition(collectionLink, function (err, partitionKeyDefinition, response, headers) {
-                if (err) return callback(err, response, headers);
+                if (err) { return callback(err, response, headers); }
                 options.partitionKey = that.extractPartitionKey(body, partitionKeyDefinition);
 
                 task();
@@ -2205,7 +2208,7 @@ export class DocumentClient {
 
         if (options.partitionKey === undefined && options.skipGetPartitionKeyDefinition !== true) {
             this.getPartitionKeyDefinition(collectionLink, function (err, partitionKeyDefinition, response, headers) {
-                if (err) return callback(err, response, headers);
+                if (err) { return callback(err, response, headers); }
                 options.partitionKey = that.extractPartitionKey(body, partitionKeyDefinition);
 
                 task();
@@ -2342,10 +2345,12 @@ export class DocumentClient {
             // deleteResource will use WriteEndpoint since it uses DELETE operation
             that._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
                 that.delete(writeEndpoint, path, headers, function (err, result, resHeaders) {
-                    if (Base.parseLink(path).type != "colls")
+                    if (Base.parseLink(path).type != "colls") {
                         that.captureSessionToken(path, Constants.OperationTypes.Delete, headers, resHeaders);
-                    else
+                    }
+                    else {
                         that.clearSessionToken(path);
+                    }
                     callback(err, result, resHeaders);
                 });
             });
@@ -2355,70 +2360,70 @@ export class DocumentClient {
     /** @ignore */
     public get(url, request, headers) {
         return RequestHandler.request(
-            this._globalEndpointManager, 
-            this.connectionPolicy, 
-            this.requestAgent, 
-            "GET", 
-            url, 
-            request, 
-            undefined, 
-            this.defaultUrlParams, 
+            this._globalEndpointManager,
+            this.connectionPolicy,
+            this.requestAgent,
+            "GET",
+            url,
+            request,
+            undefined,
+            this.defaultUrlParams,
             headers);
     }
 
     /** @ignore */
     public post(url, request, body, headers) {
         return RequestHandler.request(
-            this._globalEndpointManager, 
-            this.connectionPolicy, 
-            this.requestAgent, 
-            "POST", 
-            url, 
-            request, 
-            body, 
-            this.defaultUrlParams, 
+            this._globalEndpointManager,
+            this.connectionPolicy,
+            this.requestAgent,
+            "POST",
+            url,
+            request,
+            body,
+            this.defaultUrlParams,
             headers);
     }
 
     /** @ignore */
     public put(url, request, body, headers) {
         return RequestHandler.request(
-            this._globalEndpointManager, 
-            this.connectionPolicy, 
-            this.requestAgent, 
-            "PUT", 
-            url, 
-            request, 
-            body, 
-            this.defaultUrlParams, 
+            this._globalEndpointManager,
+            this.connectionPolicy,
+            this.requestAgent,
+            "PUT",
+            url,
+            request,
+            body,
+            this.defaultUrlParams,
             headers);
     }
 
     /** @ignore */
     public head(url, request, headers) {
         return RequestHandler.request(
-            this._globalEndpointManager, 
-            this.connectionPolicy, 
-            this.requestAgent, 
-            "HEAD", 
-            url, 
-            request, 
-            undefined, 
-            this.defaultUrlParams, 
+            this._globalEndpointManager,
+            this.connectionPolicy,
+            this.requestAgent,
+            "HEAD",
+            url,
+            request,
+            undefined,
+            this.defaultUrlParams,
             headers);
     }
 
     /** @ignore */
     public delete(url, request, headers, callback) {
         return RequestHandler.request(
-            this._globalEndpointManager, 
-            this.connectionPolicy, 
-            this.requestAgent, 
-            "DELETE", 
-            url, 
-            request, 
-            undefined, 
-            this.defaultUrlParams, 
+            this._globalEndpointManager,
+            this.connectionPolicy,
+            this.requestAgent,
+            "DELETE",
+            url,
+            request,
+            undefined,
+            this.defaultUrlParams,
             headers);
     }
 
@@ -2437,7 +2442,7 @@ export class DocumentClient {
         var that = this;
 
         this.readCollection(collectionLink, function (err, collection, headers) {
-            if (err) return callback(err, undefined, collection, headers);
+            if (err) { return callback(err, undefined, collection, headers); }
             callback(err, that.partitionKeyDefinitionCache[collectionLink], collection, headers);
         });
     }
@@ -2476,7 +2481,7 @@ export class DocumentClient {
         callback = optionsCallbackTuple.callback;
 
         var successCallback = function (err, result, responseHeaders) {
-            if (err) return callback(err, undefined, responseHeaders);
+            if (err) { return callback(err, undefined, responseHeaders); }
             var bodies;
             if (query) {
                 bodies = resultFn(result);
@@ -2490,23 +2495,32 @@ export class DocumentClient {
             callback(undefined, bodies, responseHeaders);
         };
 
-        // Query operations will use ReadEndpoint even though it uses GET(for queryFeed) and POST(for regular query operations)
-        this._globalEndpointManager.getReadEndpoint(function (readEndpoint) {
+        // Query operations will use ReadEndpoint even though it uses
+        // GET(for queryFeed) and POST(for regular query operations)
+        this._globalEndpointManager.getReadEndpoint(async (readEndpoint) => {
 
-            var request = { "path": path, "operationType": Constants.OperationTypes.Query, "client": this, "endpointOverride": null };
+            const request = {
+                path,
+                operationType: Constants.OperationTypes.Query,
+                client: this,
+                endpointOverride: null
+            };
 
-            var initialHeaders = Base.extend({}, documentclient.defaultHeaders);
+            const initialHeaders = Base.extend({}, documentclient.defaultHeaders);
             initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
             if (query === undefined) {
-                var headersPromise = Base.getHeaders(documentclient, initialHeaders, "get", path, id, type, options, partitionKeyRangeId);
-                headersPromise.then(function (headers) {
-                    that.applySessionToken(path, headers);
+                try{
+                    const headers = await Base.getHeaders(
+                        documentclient, initialHeaders, "get", path, id, type, options, partitionKeyRangeId);
+                    this.applySessionToken(path, headers);
 
                     documentclient.get(readEndpoint, request, headers, function (err, result, resHeaders) {
                         that.captureSessionToken(path, Constants.OperationTypes.Query, headers, resHeaders);
                         successCallback(err, result, resHeaders);
                     });
-                });
+                } catch (err) {
+                    throw err;
+                }
             } else {
                 initialHeaders[Constants.HttpHeaders.IsQuery] = "true";
                 switch (that.queryCompatibilityMode) {
@@ -2523,7 +2537,8 @@ export class DocumentClient {
                         break;
                 }
 
-                var headersPromise = Base.getHeaders(documentclient, initialHeaders, "post", path, id, type, options, partitionKeyRangeId);
+                const headersPromise = Base.getHeaders(
+                    documentclient, initialHeaders, "post", path, id, type, options, partitionKeyRangeId);
                 headersPromise.then(function (headers) {
                     that.applySessionToken(path, headers);
 
@@ -2544,7 +2559,10 @@ export class DocumentClient {
                 return false;
             }
 
-            if (resource.id.indexOf("/") !== -1 || resource.id.indexOf("\\") !== -1 || resource.id.indexOf("?") !== -1 || resource.id.indexOf("#") !== -1) {
+            if (resource.id.indexOf("/") !== -1
+                || resource.id.indexOf("\\") !== -1
+                || resource.id.indexOf("?") !== -1
+                || resource.id.indexOf("#") !== -1) {
                 err.message = "Id contains illegal chars.";
                 return false;
             }
@@ -2604,7 +2622,9 @@ export class DocumentClient {
         } else {
             return {
                 valid: false,
-                error: new Error(util.format("The partition resolver does not implement method %s. The type of %s is \"%s\"", functionName, functionName, typeof partionResolver[functionName]))
+                error: new Error(
+                    `The partition resolver does not implement method ${functionName}. \
+                    The type of ${functionName} is \"${typeof partionResolver[functionName]}\"`)
             };
         }
     }
@@ -2644,7 +2664,8 @@ export class DocumentClient {
         }
 
         if (!(headers instanceof Object)) {
-            throw new Error(util.format('The "headers" parameter must be an instance of "Object". Actual type is: "%s".', typeof headers));
+            throw new Error(
+                `The "headers" parameter must be an instance of "Object". Actual type is: "${typeof headers}".`);
         }
 
         headers[Constants.HttpHeaders.IsUpsert] = true;
@@ -2661,14 +2682,16 @@ export class DocumentClient {
             callback = optionsIn;
             options = new Object();
         } else if (typeof optionsIn !== 'object') {
-            throw new Error(util.format('The "options" parameter must be of type "object". Actual type is: "%s".', typeof optionsIn));
+            throw new Error(
+                `The "options" parameter must be of type "object". Actual type is: "${typeof optionsIn}".`);
         } else {
             options = optionsIn;
         }
 
         // callback
         if (callbackIn !== undefined && typeof callbackIn !== 'function') {
-            throw new Error(util.format('The "callback" parameter must be of type "function". Actual type is: "%s".', typeof callbackIn));
+            throw new Error(
+                `The "callback" parameter must be of type "function". Actual type is: "${typeof callbackIn}".`);
         } else if (typeof callbackIn === 'function') {
             callback = callbackIn
         }
@@ -2676,19 +2699,22 @@ export class DocumentClient {
         return { options: options, callback: callback };
     }
 
-    /** Gets the SessionToken for a given collectionLink
+    /**
+     * Gets the SessionToken for a given collectionLink
      * @memberof DocumentClient
      * @instance
-     * @param collectionLink              - The link of the collection for which the session token is needed 
-    */
+     * @param collectionLink              - The link of the collection for which the session token is needed
+     */
     public getSessionToken(collectionLink) {
-        if (!collectionLink)
+        if (!collectionLink) {
             throw new Error("collectionLink cannot be null");
+        }
 
         var paths = Base.parseLink(collectionLink);
 
-        if (paths == undefined)
+        if (paths == undefined) {
             return "";
+        }
 
         var request = this.getSessionParams(collectionLink);
         return this.sessionContainer.resolveGlobalSessionToken(request);
@@ -2697,17 +2723,20 @@ export class DocumentClient {
     public applySessionToken(path, reqHeaders) {
         var request = this.getSessionParams(path);
 
-        if (reqHeaders && reqHeaders[Constants.HttpHeaders.SessionToken])
+        if (reqHeaders && reqHeaders[Constants.HttpHeaders.SessionToken]) {
             return;
+        }
 
         var sessionConsistency = reqHeaders[Constants.HttpHeaders.ConsistencyLevel];
-        if (!sessionConsistency)
+        if (!sessionConsistency) {
             return;
+        }
 
         if (request['resourceAddress']) {
             var sessionToken = this.sessionContainer.resolveGlobalSessionToken(request);
-            if (sessionToken != "")
+            if (sessionToken != "") {
                 reqHeaders[Constants.HttpHeaders.SessionToken] = sessionToken;
+            }
         }
     }
 
@@ -2727,107 +2756,220 @@ export class DocumentClient {
         var resourceId = null;
         var resourceAddress = null;
         var parserOutput = Base.parseLink(resourceLink);
-        if (isNameBased)
+        if (isNameBased) {
             resourceAddress = parserOutput.objectBody.self;
+        }
         else {
             resourceAddress = parserOutput.objectBody.id;
             resourceId = parserOutput.objectBody.id;
         }
         var resourceType = parserOutput.type;
-        return { 'isNameBased': isNameBased, 'resourceId': resourceId, 'resourceAddress': resourceAddress, 'resourceType': resourceType };
+        return {
+            isNameBased: isNameBased,
+            resourceId: resourceId,
+            resourceAddress: resourceAddress,
+            resourceType: resourceType
+        };
     }
 }
-//SCRIPT END
 
 /**
  * The request options
- * @typedef {Object} RequestOptions                          -         Options that can be specified for a requested issued to the Azure Cosmos DB servers.
- * @property {object} [accessCondition]                      -         Conditions Associated with the request.
- * @property {string} accessCondition.type                   -         Conditional HTTP method header type (IfMatch or IfNoneMatch).
- * @property {string} accessCondition.condition              -         Conditional HTTP method header value (the _etag field from the last version you read).
- * @property {string} [consistencyLevel]                     -         Consistency level required by the client.
- * @property {boolean} [disableRUPerMinuteUsage]             -         DisableRUPerMinuteUsage is used to enable/disable Request Units(RUs)/minute capacity to serve the request if regular provisioned RUs/second is exhausted.
- * @property {boolean} [enableScriptLogging]                 -         Enables or disables logging in JavaScript stored procedures.
- * @property {string} [indexingDirective]                    -         Specifies indexing directives (index, do not index .. etc).
- * @property {boolean} [offerEnableRUPerMinuteThroughput]    -         Represents Request Units(RU)/Minute throughput is enabled/disabled for a collection in the Azure Cosmos DB database service.
- * @property {number} [offerThroughput]                      -         The offer throughput provisioned for a collection in measurement of Requests-per-Unit in the Azure Cosmos DB database service.
+ * @typedef {Object} RequestOptions                          -         \
+ * Options that can be specified for a requested issued to the Azure Cosmos DB servers.
+ * @property {object} [accessCondition]                      -         \
+ * Conditions Associated with the request.
+ * @property {string} accessCondition.type                   -         \
+ * Conditional HTTP method header type (IfMatch or IfNoneMatch).
+ * @property {string} accessCondition.condition              -         \
+ * Conditional HTTP method header value (the _etag field from the last version you read).
+ * @property {string} [consistencyLevel]                     -         \
+ * Consistency level required by the client.
+ * @property {boolean} [disableRUPerMinuteUsage]             -         \
+ * DisableRUPerMinuteUsage is used to enable/disable Request Units(RUs)/minute capacity to \
+ * serve the request if regular provisioned RUs/second is exhausted.
+ * @property {boolean} [enableScriptLogging]                 -         \
+ * Enables or disables logging in JavaScript stored procedures.
+ * @property {string} [indexingDirective]                    -         \
+ * Specifies indexing directives (index, do not index .. etc).
+ * @property {boolean} [offerEnableRUPerMinuteThroughput]    -         \
+ * Represents Request Units(RU)/Minute throughput is enabled/disabled for a collection \
+ * in the Azure Cosmos DB database service.
+ * @property {number} [offerThroughput]                      -         \
+ * The offer throughput provisioned for a collection in measurement of Requests-per-Unit \
+ * in the Azure Cosmos DB database service.
  * @property {string} [offerType]                            -         Offer type when creating document collections.
- *                                                                     <p>This option is only valid when creating a document collection.</p>
- * @property {string} [partitionKey]                         -         Specifies a partition key definition for a particular path in the Azure Cosmos DB database service.
- * @property {boolean} [populateQuotaInfo]                   -         Enables/disables getting document collection quota related stats for document collection read requests.
- * @property {string} [postTriggerInclude]                   -         Indicates what is the post trigger to be invoked after the operation.
- * @property {string} [preTriggerInclude]                    -         Indicates what is the pre trigger to be invoked before the operation.
- * @property {number} [resourceTokenExpirySeconds]           -         Expiry time (in seconds) for resource token associated with permission (applicable only for requests on permissions).
+ * <p>This option is only valid when creating a document collection.</p>
+ * @property {string} [partitionKey]                         -         \
+ * Specifies a partition key definition for a particular path in the Azure Cosmos DB database service.
+ * @property {boolean} [populateQuotaInfo]                   -         \
+ * Enables/disables getting document collection quota related stats for document collection read requests.
+ * @property {string} [postTriggerInclude]                   -         \
+ * Indicates what is the post trigger to be invoked after the operation.
+ * @property {string} [preTriggerInclude]                    -         \
+ * Indicates what is the pre trigger to be invoked before the operation.
+ * @property {number} [resourceTokenExpirySeconds]           -         \
+ * Expiry time (in seconds) for resource token associated with permission (applicable only for requests on permissions).
  * @property {string} [sessionToken]                         -         Token for use with Session consistency.
  */
 
+export interface RequestOptions {
+    accessCondition?: {
+        type: string;
+        condition: string;
+    };
+    consistencyLevel?: string;
+    disableRUPerMinuteUsage?: boolean;
+    enableScriptLogging?: boolean;
+    indexingDirective?: string;
+    offerEnableRUPerMinuteThroughput?: boolean;
+    offerThroughput?: number;
+    offerType?: string;
+    partitionKey?: string;
+    populateQuotaInfo?: boolean;
+    postTriggerInclude?: string | string[];
+    preTriggerInclude?: string | string[];
+    resourceTokenExpirySeconds?: number;
+    sessionToken?: string;
+}
+
 /**
  * The feed options
- * @typedef {Object} FeedOptions                    -       The feed options and query methods.
+ * @typedef {Object} FeedOptions                    -       \
+ * The feed options and query methods.
  * @property {string} [continuation]                -       Opaque token for continuing the enumeration.
- * @property {boolean} [disableRUPerMinuteUsage]    -       DisableRUPerMinuteUsage is used to enable/disable Request Units(RUs)/minute capacity to serve the request if regular provisioned RUs/second is exhausted.
- * @property {boolean} [enableCrossPartitionQuery]  -       A value indicating whether users are enabled to send more than one request to execute the query in the Azure Cosmos DB database service.
-                                                            <p>More than one request is necessary if the query is not scoped to single partition key value.</p>
- * @property {boolean} [enableScanInQuery]          -       Allow scan on the queries which couldn't be served as indexing was opted out on the requested paths.
- * @property {number} [maxDegreeOfParallelism]      -       The maximum number of concurrent operations that run client side during parallel query execution in the Azure Cosmos DB database service. Negative values make the system automatically decides the number of concurrent operations to run.
- * @property {number} [maxItemCount]                -       Max number of items to be returned in the enumeration operation.
- * @property {string} [partitionKey]                -       Specifies a partition key definition for a particular path in the Azure Cosmos DB database service.
+ * @property {boolean} [disableRUPerMinuteUsage]    -       \
+ * DisableRUPerMinuteUsage is used to enable/disable Request Units(RUs)/minute capacity to serve the \
+ * request if regular provisioned RUs/second is exhausted.
+ * @property {boolean} [enableCrossPartitionQuery]  -       \
+ * A value indicating whether users are enabled to send more than one request to execute the query \
+ * in the Azure Cosmos DB database service.
+ * <p>More than one request is necessary if the query is not scoped to single partition key value.</p>
+ * @property {boolean} [enableScanInQuery]          -       \
+ * Allow scan on the queries which couldn't be served as indexing was opted out on the requested paths.
+ * @property {number} [maxDegreeOfParallelism]      -       \
+ * The maximum number of concurrent operations that run client side during parallel query execution \
+ * in the Azure Cosmos DB database service. Negative values make the system automatically decides the \
+ * number of concurrent operations to run.
+ * @property {number} [maxItemCount]                -       \
+ * Max number of items to be returned in the enumeration operation.
+ * @property {string} [partitionKey]                -       \
+ * Specifies a partition key definition for a particular path in the Azure Cosmos DB database service.
  * @property {string} [sessionToken]                -       Token for use with Session consistency.
+ */
+export interface FeedOptions {
+    continuation?: string;
+    disableRUPerMinuteUsage?: boolean;
+    enableCrossPartitionQuery?: boolean;
+    enableScanInQuery?: boolean;
+    maxDegreeOfParallelism?: number;
+    maxItemCount?: number;
+    partitionKey?: string;
+    sessionToken?: string;
+}
+
+/**
+ * The media options
+ * @typedef {Object} MediaOptions                                   -         Options associated with upload media.
+ * @property {string} [slug]                                        -         HTTP Slug header value.
+ * @property {string} [contentType=application/octet-stream]        -         HTTP ContentType header value.
+ *
+ */
+export interface MediaOptions {
+    slug: string;
+    contentType: string;
+}
+
+/**
+ * The callback to execute after the request execution.
+ * @callback RequestCallback
+ * @param {object} error            -       Will contain error information if an error occurs, undefined otherwise.
+ * @param {number} error.code       -       The response code corresponding to the error.
+ * @param {string} error.body       -       A string represents the error information.
+ * @param {Object} resource         -       An object that represents the requested resource \
+ * (Db, collection, document ... etc) if no error happens.
+ * @param {object} responseHeaders  -       An object that contain the response headers.
+ */
+export interface RequestCallback {
+    error?: RequestError;
+    resource: any; // TODO: any
+    responseHeaders?: IHeaders;
+}
+
+export interface RequestError {
+    code?: number;
+    body: string;
+    headers?: IHeaders;
+}
+
+export interface Options {
+    accessCondition?: {
+        type: string;
+        condition: string;
+    };
+    consistencyLevel?: string;
+    disableRUPerMinuteUsage?: boolean;
+    enableScriptLogging?: boolean;
+    indexingDirective?: string;
+    offerEnableRUPerMinuteThroughput?: boolean;
+    offerThroughput?: number;
+    offerType?: string;
+    partitionKey?: string | string[];
+    populateQuotaInfo?: boolean;
+    postTriggerInclude?: string | string[];
+    preTriggerInclude?: string | string[];
+    resourceTokenExpirySeconds?: number;
+    sessionToken?: string;
+    continuation?: string;
+    disableRUPerMinuteUsage?: boolean;
+    enableCrossPartitionQuery?: boolean;
+    enableScanInQuery?: boolean;
+    maxDegreeOfParallelism?: number;
+    maxItemCount?: number;
+    partitionKey?: string;
+    sessionToken?: string;
+    slug?: string;
+    contentType?: string;
+    a_im?: string;
+}
+
+/**
+ * The Indexing Policy represents the indexing policy configuration for a collection.
+ * @typedef {Object} IndexingPolicy
+ * @property {boolean} automatic -         Specifies whether automatic indexing is enabled for a collection.
+ * <p>In automatic indexing, documents can be explicitly excluded from indexing using {@link RequestOptions}.
+ * In manual indexing, documents can be explicitly included. </p>
+ * @property {string} indexingMode -         The indexing mode (consistent or lazy) {@link IndexingMode}.
+ * @property {Array} IncludedPaths -         An array of {@link IncludedPath} represents the paths to be \
+ * included for indexing.
+ * @property {Array} ExcludedPaths -         An array of {@link ExcludedPath} represents the paths to be \
+ * excluded from indexing.
+ *
  */
 
 /**
-* The media options
-* @typedef {Object} MediaOptions                                          -         Options associated with upload media.
-* @property {string} [slug]                                               -         HTTP Slug header value.
-* @property {string} [contentType=application/octet-stream]               -         HTTP ContentType header value.
-*
-*/
+ * <p> Included path. <br>
+ * </p>
+ * @typedef {Object} IncludedPath
+ * @property {Array} Indexes                                               -         An array of {@link Indexes}.
+ * @property {string} Path                                                 -         Path to be indexed.
+ *
+ */
 
 /**
-* The callback to execute after the request execution.
-* @callback RequestCallback
-* @param {object} error            -       Will contain error information if an error occurs, undefined otherwise.
-* @param {number} error.code       -       The response code corresponding to the error.
-* @param {string} error.body       -       A string represents the error information.
-* @param {Object} resource         -       An object that represents the requested resource (Db, collection, document ... etc) if no error happens.
-* @param {object} responseHeaders  -       An object that contain the response headers.
-*/
+ * <p> Index specification. <br>
+ * </p>
+ * @typedef {Object} Indexes
+ * @property {string} Kind                                                  -         The index kind {@link IndexKind}.
+ * @property {string} DataType                                              -         The data type {@link DataType}.
+ * @property {number} Precision                                             -         The precision.
+ *
+ */
 
 /**
-* The Indexing Policy represents the indexing policy configuration for a collection.
-* @typedef {Object} IndexingPolicy
-* @property {boolean} automatic                                           -         Specifies whether automatic indexing is enabled for a collection.
-                                                                                   <p>In automatic indexing, documents can be explicitly excluded from indexing using {@link RequestOptions}.
-                                                                                   In manual indexing, documents can be explicitly included. </p>
-* @property {string} indexingMode                                         -         The indexing mode (consistent or lazy) {@link IndexingMode}.
-* @property {Array} IncludedPaths                                         -         An array of {@link IncludedPath} represents the paths to be included for indexing.
-* @property {Array} ExcludedPaths                                         -         An array of {@link ExcludedPath} represents the paths to be excluded from indexing.
-*
-*/
-
-/**
-* <p> Included path. <br>
-* </p>
-* @typedef {Object} IncludedPath
-* @property {Array} Indexes                                               -         An array of {@link Indexes}.
-* @property {string} Path                                                 -         Path to be indexed.
-*
-*/
-
-/**
-* <p> Index specification. <br>
-* </p>
-* @typedef {Object} Indexes
-* @property {string} Kind                                                  -         The index kind {@link IndexKind}.
-* @property {string} DataType                                              -         The data type {@link DataType}.
-* @property {number} Precision                                             -         The precision.
-*
-*/
-
-/**
-* <p> Excluded path. <br>
-* </p>
-* @typedef {Object} ExcludedPath
-* @property {string} Path                                                  -         Path to be indexed.
-*
-*/
+ * <p> Excluded path. <br>
+ * </p>
+ * @typedef {Object} ExcludedPath
+ * @property {string} Path                                                  -         Path to be indexed.
+ *
+ */

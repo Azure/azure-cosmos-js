@@ -1,5 +1,6 @@
 import * as assert from "assert";
 import { FetchFunctionCallback, SqlQuerySpec } from ".";
+import { Base } from "../base";
 import { Constants, StatusCodes, SubStatusCodes } from "../common";
 import { DocumentClient } from "../documentclient";
 import { DefaultQueryExecutionContext } from "./defaultQueryExecutionContext";
