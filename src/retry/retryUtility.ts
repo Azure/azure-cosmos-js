@@ -7,6 +7,7 @@ import { Constants } from "../common";
 import { ConnectionPolicy } from "../documents";
 import { GlobalEndpointManager } from "../globalEndpointManager";
 import { IHeaders } from "../queryExecutionContext";
+import { Response } from "../request";
 
 export interface Body {
     buffer?: Buffer;
@@ -15,7 +16,7 @@ export interface Body {
 
 export type CreateRequestObjectStubFunction =
     (connectionPolicy: ConnectionPolicy, requestOptions: RequestOptions)
-        => WriteStream | Promise<[any, IHeaders]>; // TODO: any response
+        => WriteStream | Promise<Response<any>>; // TODO: any response
 
 export class RetryUtility {
     /**
@@ -34,7 +35,7 @@ export class RetryUtility {
         createRequestObjectFunc: CreateRequestObjectStubFunction,
         connectionPolicy: ConnectionPolicy,
         requestOptions: RequestOptions,
-        request: any) { // TODO: any request
+        request: any): Promise<Response<any>> { // TODO: any request
         const r = typeof request !== "string" ? request
             : { path: "", operationType: "nonReadOps", client: null };
 
@@ -74,17 +75,17 @@ export class RetryUtility {
         requestOptions: RequestOptions,
         endpointDiscoveryRetryPolicy: EndpointDiscoveryRetryPolicy,
         resourceThrottleRetryPolicy: ResourceThrottleRetryPolicy,
-        sessionReadRetryPolicy: SessionReadRetryPolicy): Promise<[any, IHeaders]> { // TODO: any response
+        sessionReadRetryPolicy: SessionReadRetryPolicy): Promise<Response<any>> { // TODO: any response
         const httpsRequest = createRequestObjectFunc(connectionPolicy, requestOptions);
 
         if (httpsRequest) {
-            if ((httpsRequest as Promise<[any, IHeaders]>).then) {
+            if ((httpsRequest as Promise<Response<any>>).then) {
                 try {
-                    const [response, headers] = await (httpsRequest as Promise<[any, IHeaders]>);
+                    const {result, headers} = await (httpsRequest as Promise<Response<any>>);
                     headers[Constants.ThrottleRetryCount] = resourceThrottleRetryPolicy.currentRetryAttemptCount;
                     headers[Constants.ThrottleRetryWaitTimeInMs] =
                         resourceThrottleRetryPolicy.cummulativeWaitTimeinMilliseconds;
-                    return [response, headers];
+                    return {result, headers};
                 } catch (err) { // TODO: any error
                     let retryPolicy: any = null; // TODO: any Need an interface
                     const headers = err.headers || {};
@@ -104,9 +105,9 @@ export class RetryUtility {
                                     resourceThrottleRetryPolicy.currentRetryAttemptCount;
                                 headers[Constants.ThrottleRetryWaitTimeInMs] =
                                     resourceThrottleRetryPolicy.cummulativeWaitTimeinMilliseconds;
-                                return [err.response, headers];
+                                return {result: err.response, headers};
                             } else {
-                                return new Promise<[any, IHeaders]>((resolve, reject) => {
+                                return new Promise<Response<any>>((resolve, reject) => {
                                     setTimeout(async () => {
                                         if (typeof newUrl !== "undefined") {
                                             requestOptions = this.modifyRequestOptions(requestOptions, newUrl);

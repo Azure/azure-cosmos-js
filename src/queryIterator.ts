@@ -7,8 +7,8 @@ import {
     ProxyQueryExecutionContext,
     SqlQuerySpec,
 } from "./queryExecutionContext";
+import { Response } from "./request";
 
-export type QueryIteratorTuple = [any, IHeaders];
 export type QueryIteratorCallback = (err: any, elements?: any, headers?: IHeaders) => boolean | void;
 
 export class QueryIterator {
@@ -33,7 +33,7 @@ export class QueryIterator {
         private query: SqlQuerySpec | string,
         private options: any, // TODO: any options
         private fetchFunctions: FetchFunctionCallback | FetchFunctionCallback[],
-        private resourceLink: string) {
+        private resourceLink?: string) {
 
         this.documentclient = documentclient;
         this.query = query;
@@ -63,10 +63,10 @@ export class QueryIterator {
      * @param {callback} callback - Function to execute for each element. \
      * the function takes two parameters error, element.
      */
-    public nextItem(callback: QueryIteratorCallback): void | Promise<QueryIteratorTuple> {
+    public nextItem(callback?: QueryIteratorCallback): Promise<Response<any>> {
         const p = this.queryExecutionContext.nextItem();
         if (callback) {
-            p.then<void>(([element, headers]) => {callback(undefined, element, headers); })
+            p.then<void>(({result, headers}) => {callback(undefined, result, headers); })
             .catch((err) => {callback(err, undefined, err.headers); });
         } else {
             return p;
@@ -80,10 +80,10 @@ export class QueryIterator {
      * @param {callback} callback - Function to execute for the current element. \
      * the function takes two parameters error, element.
      */
-    public current(callback: QueryIteratorCallback) {
+    public current(callback?: QueryIteratorCallback) {
         const p = this.queryExecutionContext.current();
         if (callback) {
-            p.then<void>(([element, headers]) => {callback(undefined, element, headers); })
+            p.then<void>(({result, headers}) => {callback(undefined, result, headers); })
             .catch((err) => {callback(err, undefined, err.headers); });
         } else {
             return p;
@@ -109,12 +109,12 @@ export class QueryIterator {
      * @instance
      * @param {callback} callback - Function execute on the feed response, takes two parameters error, resourcesList
      */
-    public toArray(callback: QueryIteratorCallback) {
+    public toArray(callback?: QueryIteratorCallback) {
         this.reset();
         this.toArrayTempResources = [];
         const p = this._toArrayImplementation();
         if (callback) {
-            p.then<void>(([element, headers]) => {callback(undefined, element, headers); })
+            p.then<void>(({result, headers}) => {callback(undefined, result, headers); })
             .catch((err) => {callback(err, undefined, err.headers); });
         } else {
             return p;
@@ -127,10 +127,10 @@ export class QueryIterator {
      * @instance
      * @param {callback} callback - Function execute on the feed response, takes two parameters error, resourcesList
      */
-    public executeNext(callback: QueryIteratorCallback) {
+    public executeNext(callback?: QueryIteratorCallback) {
         const p = this.queryExecutionContext.fetchMore();
         if (callback) {
-            p.then<void>(([element, headers]) => {callback(undefined, element, headers); })
+            p.then<void>(({result, headers}) => {callback(undefined, result, headers); })
             .catch((err) => {callback(err, undefined, err.headers); });
         } else {
             return p;
@@ -147,19 +147,19 @@ export class QueryIterator {
     }
 
     /** @ignore */
-    private async _toArrayImplementation(): Promise<[any, IHeaders]> {
+    private async _toArrayImplementation(): Promise<Response<any>> {
         try {
-            const [resource, headers] = await this.queryExecutionContext.nextItem();
+            const {result, headers} = await this.queryExecutionContext.nextItem();
             // concatinate the results and fetch more
             this.toArrayLastResHeaders = headers;
 
-            if (resource === undefined) {
+            if (result === undefined) {
 
                 // no more results
-                return [this.toArrayTempResources, this.toArrayLastResHeaders];
+                return {result: this.toArrayTempResources, headers: this.toArrayLastResHeaders};
             }
 
-            this.toArrayTempResources.push(resource);
+            this.toArrayTempResources.push(result);
 
             return this._toArrayImplementation();
         } catch (err) {
@@ -171,13 +171,13 @@ export class QueryIterator {
     private async _forEachImplementation(
         callback: QueryIteratorCallback) { // TODO: any error
         try {
-            const [resource, headers] = await this.queryExecutionContext.nextItem();
-            if (resource === undefined) {
+            const {result, headers} = await this.queryExecutionContext.nextItem();
+            if (result === undefined) {
                 // no more results. This is last iteration
                 return callback(undefined, undefined, headers);
             }
 
-            if (callback(undefined, resource, headers) === false) {
+            if (callback(undefined, result, headers) === false) {
                 // callback instructed to stop further iteration
                 return;
             }

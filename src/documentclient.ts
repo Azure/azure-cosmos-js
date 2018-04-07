@@ -1,17 +1,20 @@
-import { Base } from "./base";
-import { RequestOptions } from "https"; // TODO: Move this to request? 
+import { resolvePtr } from "dns";
 import { Agent } from "http";
-import * as url from "url";
+import { RequestOptions } from "https"; // TODO: Move this to request?
+import { basename } from "path";
 import * as tunnel from "tunnel";
-import { ConnectionPolicy, ConsistencyLevel, QueryCompatibilityMode, DatabaseAccount } from "./documents";
-import { QueryIterator } from "./queryIterator";
-import { RequestHandler } from "./request";
-import { RetryOptions } from "./retry";
-import { GlobalEndpointManager } from "./globalEndpointManager";
-import { Constants, Helper, Platform } from "./common";
+import * as url from "url";
 import * as util from "util";
+import { Base, ResponseCallback } from "./base";
+import { Constants, Helper, Platform } from "./common";
+import { ConnectionPolicy, ConsistencyLevel, DatabaseAccount, Document, QueryCompatibilityMode } from "./documents";
+import { GlobalEndpointManager } from "./globalEndpointManager";
+import { FetchFunctionCallback, IHeaders, SqlQuerySpec } from "./queryExecutionContext";
+import { QueryIterator } from "./queryIterator";
+import { RequestHandler, Response } from "./request";
+import { RetryOptions } from "./retry";
 import { SessionContainer } from "./sessionContainer";
-import { IHeaders } from "./queryExecutionContext";
+import { DocumentClientBase } from "./DocumentClientBase";
 
 // var Base = require("./base")
 //     , https = require("https")
@@ -36,20 +39,7 @@ import { IHeaders } from "./queryExecutionContext";
 //     exports.Constants = Constants;
 // }
 
-export class DocumentClient {
-    public masterKey: string;
-    public resourceTokens: { [key: string]: string };
-    public tokenProvider: any;
-    public connectionPolicy: ConnectionPolicy;
-    public consistencyLevel: ConsistencyLevel;
-    public defaultHeaders: IHeaders;
-    public defaultUrlParams: string;
-    public queryCompatibilityMode: QueryCompatibilityMode;
-    public partitionResolvers: {};
-    public partitionKeyDefinitionCache: {};
-    private _globalEndpointManager: GlobalEndpointManager;
-    public sessionContainer: SessionContainer;
-    public requestAgent: Agent;
+export class DocumentClient extends DocumentClientBase {
     /**
      * Provides a client-side logical representation of the Azure Cosmos DB database account.
      * This client is used to configure and execute requests in the Azure Cosmos DB database service.
@@ -67,92 +57,20 @@ export class DocumentClient {
      * level. It can take any value from {@link ConsistencyLevel}.
      */
     constructor(
-        private urlConnection: string,
-        auth: any, connectionPolicy:
-            ConnectionPolicy,
+        public urlConnection: string,
+        auth: any,
+        connectionPolicy: ConnectionPolicy,
         consistencyLevel: ConsistencyLevel) { // TODO: any auth options
-        this.urlConnection = urlConnection;
-        if (auth !== undefined) {
-            this.masterKey = auth.masterKey;
-            this.resourceTokens = auth.resourceTokens;
-            if (auth.permissionFeed) {
-                this.resourceTokens = {};
-                for (var i = 0; i < auth.permissionFeed.length; i++) {
-                    var resourceId = Helper.getResourceIdFromPath(auth.permissionFeed[i].resource);
-                    if (!resourceId) {
-                        throw new Error(`authorization error: ${resourceId} \
-                            is an invalid resourceId in permissionFeed`);
-                    }
-
-                    this.resourceTokens[resourceId] = auth.permissionFeed[i]._token;
-                }
-            }
-            this.tokenProvider = auth.tokenProvider;
-        }
-
-        this.connectionPolicy = connectionPolicy || new ConnectionPolicy();
-        this.consistencyLevel = consistencyLevel;
-        this.defaultHeaders = {};
-        this.defaultHeaders[Constants.HttpHeaders.CacheControl] = "no-cache";
-        this.defaultHeaders[Constants.HttpHeaders.Version] = Constants.CurrentVersion;
-        if (consistencyLevel !== undefined) {
-            this.defaultHeaders[Constants.HttpHeaders.ConsistencyLevel] = consistencyLevel;
-        }
-
-        var platformDefaultHeaders = Platform.getPlatformDefaultHeaders() || {};
-        for (const platformDefaultHeader of Object.keys(platformDefaultHeaders)) {
-            this.defaultHeaders[platformDefaultHeader] = platformDefaultHeaders[platformDefaultHeader];
-        }
-
-        this.defaultHeaders[Constants.HttpHeaders.UserAgent] = Platform.getUserAgent();
-
-        // overide this for default query params to be added to the url.
-        this.defaultUrlParams = "";
-
-        // Query compatibility mode.
-        // Allows to specify compatibility mode used by client when making query requests. Should be removed when
-        // application/sql is no longer supported.
-        this.queryCompatibilityMode = QueryCompatibilityMode.Default;
-        this.partitionResolvers = {};
-
-        this.partitionKeyDefinitionCache = {};
-
-        this._globalEndpointManager = new GlobalEndpointManager(this);
-
-        this.sessionContainer = new SessionContainer(this.urlConnection);
-
-        // Initialize request agent
-        var requestAgentOptions: any = { keepAlive: true, maxSockets: Infinity }; // TODO: any
-        if (!!this.connectionPolicy.ProxyUrl) {
-            var proxyUrl = url.parse(this.connectionPolicy.ProxyUrl);
-            requestAgentOptions.proxy = {
-                host: proxyUrl.hostname,
-                port: proxyUrl.port
-            };
-
-            if (!!proxyUrl.auth) {
-                requestAgentOptions.proxy.proxyAuth = proxyUrl.auth;
-            }
-
-            this.requestAgent = proxyUrl.protocol.toLowerCase() === "https:" ?
-                tunnel.httpsOverHttps(requestAgentOptions) :
-                tunnel.httpsOverHttp(requestAgentOptions);
-        } else {
-            this.requestAgent = new Agent(requestAgentOptions); // TODO: Move to request?
-        }
+        super(urlConnection, auth, connectionPolicy, consistencyLevel);
     }
-    /** 
+    /**
      * Gets the curent write endpoint for a geo-replicated database account.
      * @memberof DocumentClient
      * @instance
      * @param {function} callback        - The callback function which takes endpoint(string) as an argument.
      */
-    public getWriteEndpoint(callback?: (writeEndPoint: string) => void): void | Promise<string> {
-        const p = new Promise<string>((resolve, reject) => {
-            this._globalEndpointManager.getWriteEndpoint((writeEndpoint: string) => {
-                resolve(writeEndpoint);
-            });
-        });
+    public async getWriteEndpoint(callback?: (writeEndPoint: string) => void): Promise<string> {
+        const p = this._globalEndpointManager.getWriteEndpoint();
 
         if (callback) {
             p.then(callback, callback);
@@ -161,18 +79,14 @@ export class DocumentClient {
         }
     }
 
-    /** 
+    /**
      * Gets the curent read endpoint for a geo-replicated database account.
      * @memberof DocumentClient
      * @instance
      * @param {function} callback        - The callback function which takes endpoint(string) as an argument.
      */
     public getReadEndpoint(callback?: (readEndPoint: string) => void): void | Promise<string> {
-        const p = new Promise<string>((resolve, reject) => {
-            this._globalEndpointManager.getReadEndpoint((readEndpoint: string) => {
-                callback(readEndpoint);
-            });
-        });
+        const p = this._globalEndpointManager.getReadEndpoint();
 
         if (callback) {
             p.then(callback, callback);
@@ -181,7 +95,7 @@ export class DocumentClient {
         }
     }
 
-    /** 
+    /**
      * Send a request for creating a database.
      * <p>
      *  A database manages users, permissions and a set of collections.  <br>
@@ -196,24 +110,24 @@ export class DocumentClient {
      * @param {Object} body              - A json object that represents The database to be created.
      * @param {string} body.id           - The id of the database.
      * @param {RequestOptions} [options] - The request options.
-     * @param {RequestCallback} callback - The callback for the request.
+     * @param {ResponseCallback<any>} callback - The callback for the request.
      */
     public createDatabase(
         body: object,
         options: RequestOptions,
-        callback?: (err: any, database?: any)): Promise<any> { // TODO: any
+        callback?: ResponseCallback<any>): Promise<Response<any>> { // TODO: any database
         const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        let err = {};
+        const err = {};
         if (!this.isResourceValid(body, err)) {
             callback(err);
             return;
         }
 
-        var path = "/dbs";
-        this.create(body, path, "dbs", undefined, undefined, options, callback);
+        const path = "/dbs"; // TODO: constant
+        this.create(body, path, "dbs", undefined, undefined, options);
     }
 
     /**
@@ -235,86 +149,118 @@ export class DocumentClient {
      * @param {number} body.defaultTtl               - The default time to live in seconds for documents in \
      * a collection.
      * @param {RequestOptions} [options]             - The request options.
-     * @param {RequestCallback} callback             - The callback for the request.
+     * @param {ResponseCallback<any>} callback             - The callback for the request.
      */
-    public createCollection(databaseLink: string, body: any, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+    public async createCollection(
+        databaseLink: string,
+        body: any,
+        options?: RequestOptions,
+        callback?: ResponseCallback<any>): Promise<Response<any>> {
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var err = {};
+        const err = {};
         if (!this.isResourceValid(body, err)) {
             callback(err);
             return;
         }
 
-        var isNameBased = Base.isLinkNameBased(databaseLink);
-        var path = this.getPathFromLink(databaseLink, "colls", isNameBased);
-        var id = this.getIdFromLink(databaseLink, isNameBased);
+        try {
+            const isNameBased = Base.isLinkNameBased(databaseLink);
+            const path = this.getPathFromLink(databaseLink, "colls", isNameBased);
+            const id = this.getIdFromLink(databaseLink, isNameBased);
 
-        this.create(body, path, "colls", id, undefined, options, callback);
+            const response = await this.create(body, path, "colls", id, undefined, options);
+            return Base.ResponseOrCallback(callback, response);
+        } catch (err) {
+            Base.ThrowOrCallback(callback, err);
+        }
     }
 
     /**
      * Create a document.
      * <p>
-     * There is no set schema for JSON documents. They may contain any number of custom properties as well as an optional list of attachments. <br>
+     * There is no set schema for JSON documents. They may contain any number of custom properties as \
+     * well as an optional list of attachments. <br>
      * A Document is an application resource and can be authorized using the master key or resource keys
      * </p>
      * @memberof DocumentClient
      * @instance
-     * @param {string} documentsFeedOrDatabaseLink               - The collection link or database link if using a partition resolver
-     * @param {object} body                                      - Represents the body of the document. Can contain any number of user defined properties.
-     * @param {string} [body.id]                                 - The id of the document, MUST be unique for each document.
-     * @param {number} body.ttl                                  - The time to live in seconds of the document.
-     * @param {RequestOptions} [options]                         - The request options.
-     * @param {boolean} [options.disableAutomaticIdGeneration]   - Disables the automatic id generation. If id is missing in the body and this option is true, an error will be returned.
-     * @param {RequestCallback} callback                         - The callback for the request.
+     * @param {string} documentsFeedOrDatabaseLink               - \
+     * The collection link or database link if using a partition resolver
+     * @param {object} body                                      - \
+     * Represents the body of the document. Can contain any number of user defined properties.
+     * @param {string} [body.id]                                 - \
+     * The id of the document, MUST be unique for each document.
+     * @param {number} body.ttl                                  - \
+     * The time to live in seconds of the document.
+     * @param {RequestOptions} [options]                         - \
+     * The request options.
+     * @param {boolean} [options.disableAutomaticIdGeneration]   - \
+     * Disables the automatic id generation. If id is missing in the body and this option is true, \
+     * an error will be returned.
+     * @param {ResponseCallback<Document>} callback                         - \
+     * The callback for the request.
      */
-    public createDocument(documentsFeedOrDatabaseLink, body, options, callback) {
-        var partitionResolver = this.partitionResolvers[documentsFeedOrDatabaseLink];
+    public async createDocument(
+        documentsFeedOrDatabaseLink: string, // TODO: bad name
+        body: any,
+        options?: RequestOptions,
+        callback?: ResponseCallback<Document>): Promise<Response<Document>> { // TODO: any error
+        const partitionResolver = this.partitionResolvers[documentsFeedOrDatabaseLink];
 
-        var collectionLink;
-        if (partitionResolver === undefined || partitionResolver === null) {
-            collectionLink = documentsFeedOrDatabaseLink;
-        } else {
-            collectionLink = this.resolveCollectionLinkForCreate(partitionResolver, body);
+        const collectionLink = (partitionResolver === undefined || partitionResolver === null)
+            ? documentsFeedOrDatabaseLink
+            : this.resolveCollectionLinkForCreate(partitionResolver, body);
+
+        try {
+            const response: Response<Document> = await this.createDocumentPrivate(collectionLink, body, options);
+            return Base.ResponseOrCallback(callback, response);
+        } catch (err) {
+            Base.ThrowOrCallback(callback, err);
         }
-
-        this.createDocumentPrivate(collectionLink, body, options, callback);
     }
 
     /**
      * Create an attachment for the document object.
      * <p>
-     * Each document may contain zero or more attachments. Attachments can be of any MIME type - text, image, binary data. <br>
-     * These are stored externally in Azure Blob storage. Attachments are automatically deleted when the parent document is deleted.
+     * Each document may contain zero or more attachments. Attachments can be of any MIME type - \
+     * text, image, binary data. <br>
+     * These are stored externally in Azure Blob storage. Attachments are automatically \
+     * deleted when the parent document is deleted.
      * </P>
      * @memberof DocumentClient
      * @instance
      * @param {string} documentLink         - The self-link of the document.
-     * @param {Object} body                 - The metadata the defines the attachment media like media, contentType. It can include any other properties as part of the metedata.
+     * @param {Object} body                 - The metadata the defines the attachment media like media, \
+     * contentType. It can include any other properties as part of the metedata.
      * @param {string} body.contentType     - The MIME contentType of the attachment.
      * @param {string} body.media           - Media link associated with the attachment content.
      * @param {RequestOptions} options      - The request options.
      * @param {RequestCallback} callback    - The callback for the request.
-    */
-    public createAttachment(documentLink, body, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+     */
+    public async createAttachment(documentLink: string, body: any, options?: RequestOptions, callback?: ) {
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var err = {};
+        const err = {};
         if (!this.isResourceValid(body, err)) {
-            callback(err);
+            Base.ThrowOrCallback(callback, err);
             return;
         }
 
-        var isNameBased = Base.isLinkNameBased(documentLink);
-        var path = this.getPathFromLink(documentLink, "attachments", isNameBased);
-        var id = this.getIdFromLink(documentLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(documentLink);
+        const path = this.getPathFromLink(documentLink, "attachments", isNameBased);
+        const id = this.getIdFromLink(documentLink, isNameBased);
 
-        this.create(body, path, "attachments", id, undefined, options, callback);
+        try {
+            const response = await this.create(body, path, "attachments", id, undefined, options);
+            return Base.ResponseOrCallback(callback, response);
+        } catch (err) {
+            Base.ThrowOrCallback(callback, err);
+        }
     }
 
     /**
@@ -327,27 +273,37 @@ export class DocumentClient {
      * @param {RequestOptions} [options]    - The request options.
      * @param {RequestCallback} callback    - The callback for the request.
      */
-    public createUser(databaseLink, body, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+    public async createUser(
+        databaseLink: string,
+        body: any,
+        options?: RequestOptions,
+        callback?: ResponseCallback<any>): Promise<Response<any>> { // TODO: any User
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var err = {};
+        const err = {};
         if (!this.isResourceValid(body, err)) {
-            callback(err);
+            Base.ThrowOrCallback(callback, err);
             return;
         }
 
-        var isNameBased = Base.isLinkNameBased(databaseLink);
-        var path = this.getPathFromLink(databaseLink, "users", isNameBased);
-        var id = this.getIdFromLink(databaseLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(databaseLink);
+        const path = this.getPathFromLink(databaseLink, "users", isNameBased);
+        const id = this.getIdFromLink(databaseLink, isNameBased);
 
-        this.create(body, path, "users", id, undefined, options, callback);
+        try {
+            const response = await this.create(body, path, "users", id, undefined, options);
+            return Base.ResponseOrCallback(callback, response);
+        } catch (err) {
+            Base.ThrowOrCallback(callback, err);
+        }
     }
 
     /**
      * Create a permission.
-     * <p> A permission represents a per-User Permission to access a specific resource e.g. Document or Collection.  </p>
+     * <p> A permission represents a per-User Permission to access a specific resource \
+     * e.g. Document or Collection.  </p>
      * @memberof DocumentClient
      * @instance
      * @param {string} userLink             - The self-link of the user.
@@ -356,45 +312,60 @@ export class DocumentClient {
      * @param {string} body.permissionMode  - The mode of the permission, must be a value of {@link PermissionMode}
      * @param {string} body.resource        - The link of the resource that the permission will be applied to.
      * @param {RequestOptions} [options]    - The request options.
-     * @param {RequestCallback} callback    - The callback for the request.
+     * @param {ResponseCallback<any>} callback    - The callback for the request. Promise won't return response.
      */
-    public createPermission(userLink, body, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+    public async createPermission(
+        userLink: string,
+        body: any,
+        options?: RequestOptions,
+        callback?: ResponseCallback<any>): Promise<Response<any>> { // TODO: any
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var err = {};
+        const err = {};
         if (!this.isResourceValid(body, err)) {
-            callback(err);
+            Base.ThrowOrCallback(callback, err);
             return;
         }
 
-        var isNameBased = Base.isLinkNameBased(userLink);
-        var path = this.getPathFromLink(userLink, "permissions", isNameBased);
-        var id = this.getIdFromLink(userLink, isNameBased);
-
-        this.create(body, path, "permissions", id, undefined, options, callback);
+        const isNameBased = Base.isLinkNameBased(userLink);
+        const path = this.getPathFromLink(userLink, "permissions", isNameBased);
+        const id = this.getIdFromLink(userLink, isNameBased);
+        try {
+            const response = await this.create(body, path, "permissions", id, undefined, options);
+            return Base.ResponseOrCallback(callback, response);
+        } catch (err) {
+            Base.ThrowOrCallback(callback, err);
+        }
     }
 
     /**
-    * Create a trigger.
-    * <p>
-    * Azure Cosmos DB supports pre and post triggers defined in JavaScript to be executed on creates, updates and deletes. <br>
-    * For additional details, refer to the server-side JavaScript API documentation.
-    * </p>
-    * @memberof DocumentClient
-    * @instance
-    * @param {string} collectionLink           - The self-link of the collection.
-    * @param {object} trigger                  - Represents the body of the trigger.
-    * @param {string} trigger.id             - The id of the trigger.
-    * @param {string} trigger.triggerType      - The type of the trigger, should be one of the values of {@link TriggerType}.
-    * @param {string} trigger.triggerOperation - The trigger operation, should be one of the values of {@link TriggerOperation}.
-    * @param {function} trigger.serverScript   - The body of the trigger, it can be passed as stringified too.
-    * @param {RequestOptions} [options]        - The request options.
-    * @param {RequestCallback} callback        - The callback for the request.
-    */
-    public createTrigger(collectionLink, trigger, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+     * Create a trigger.
+     * <p>
+     * Azure Cosmos DB supports pre and post triggers defined in JavaScript to be executed \
+     * on creates, updates and deletes. <br>
+     * For additional details, refer to the server-side JavaScript API documentation.
+     * </p>
+     * @memberof DocumentClient
+     * @instance
+     * @param {string} collectionLink           - The self-link of the collection.
+     * @param {object} trigger                  - Represents the body of the trigger.
+     * @param {string} trigger.id             - The id of the trigger.
+     * @param {string} trigger.triggerType      - The type of the trigger, \
+     * should be one of the values of {@link TriggerType}.
+     * @param {string} trigger.triggerOperation - The trigger operation, \
+     * should be one of the values of {@link TriggerOperation}.
+     * @param {function} trigger.serverScript   - The body of the trigger, it can be passed as stringified too.
+     * @param {RequestOptions} [options]        - The request options.
+     * @param {RequestCallback} callback        - The callback for the request.
+     */
+    public async createTrigger(
+        collectionLink: string,
+        trigger: any,
+        options?: RequestOptions,
+        callback?: ResponseCallback<any>): Promise<Response<any>> {
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
@@ -404,17 +375,22 @@ export class DocumentClient {
             trigger.body = trigger.body.toString();
         }
 
-        var err = {};
+        const err = {};
         if (!this.isResourceValid(trigger, err)) {
-            callback(err);
+            Base.ThrowOrCallback(callback, err);
             return;
         }
 
-        var isNameBased = Base.isLinkNameBased(collectionLink);
-        var path = this.getPathFromLink(collectionLink, "triggers", isNameBased);
-        var id = this.getIdFromLink(collectionLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(collectionLink);
+        const path = this.getPathFromLink(collectionLink, "triggers", isNameBased);
+        const id = this.getIdFromLink(collectionLink, isNameBased);
 
-        this.create(trigger, path, "triggers", id, undefined, options, callback);
+        try {
+            const response = await this.create(trigger, path, "triggers", id, undefined, options);
+            return Base.ResponseOrCallback(callback, response);
+        } catch (err) {
+            Base.ThrowOrCallback(callback, err);
+        }
     }
 
     /**
@@ -428,13 +404,19 @@ export class DocumentClient {
      * @param {string} collectionLink                - The self-link of the collection.
      * @param {object} udf                           - Represents the body of the userDefinedFunction.
      * @param {string} udf.id                      - The id of the udf.
-     * @param {string} udf.userDefinedFunctionType   - The type of the udf, it should be one of the values of {@link UserDefinedFunctionType}
-     * @param {function} udf.serverScript            - Represents the body of the udf, it can be passed as stringified too.
+     * @param {string} udf.userDefinedFunctionType   - The type of the udf, it should be one of the values \
+     * of {@link UserDefinedFunctionType}
+     * @param {function} udf.serverScript            - Represents the body of the udf, it can be passed as \
+     * stringified too.
      * @param {RequestOptions} [options]             - The request options.
      * @param {RequestCallback} callback             - The callback for the request.
      */
-    public createUserDefinedFunction(collectionLink, udf, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+    public async createUserDefinedFunction(
+        collectionLink: string,
+        udf: any,
+        options?: RequestOptions,
+        callback?: ResponseCallback<any>): Promise<Response<any>> { // TODO: any udf
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
@@ -444,24 +426,31 @@ export class DocumentClient {
             udf.body = udf.body.toString();
         }
 
-        var err = {};
+        const err = {};
         if (!this.isResourceValid(udf, err)) {
-            callback(err);
+            Base.ThrowOrCallback(callback, err);
             return;
         }
 
-        var isNameBased = Base.isLinkNameBased(collectionLink);
-        var path = this.getPathFromLink(collectionLink, "udfs", isNameBased);
-        var id = this.getIdFromLink(collectionLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(collectionLink);
+        const path = this.getPathFromLink(collectionLink, "udfs", isNameBased);
+        const id = this.getIdFromLink(collectionLink, isNameBased);
 
-        this.create(udf, path, "udfs", id, undefined, options, callback);
+        try {
+            const response = await this.create(udf, path, "udfs", id, undefined, options);
+            return Base.ResponseOrCallback(callback, response);
+        } catch (err) {
+            Base.ThrowOrCallback(callback, err);
+        }
     }
 
     /**
      * Create a StoredProcedure.
      * <p>
-     * Azure Cosmos DB allows stored procedures to be executed in the storage tier, directly against a document collection. The script <br>
-     * gets executed under ACID transactions on the primary storage partition of the specified collection. For additional details, <br>
+     * Azure Cosmos DB allows stored procedures to be executed in the storage tier, \
+     * directly against a document collection. The script <br>
+     * gets executed under ACID transactions on the primary storage partition of the \
+     * specified collection. For additional details, <br>
      * refer to the server-side JavaScript API documentation.
      * </p>
      * @memberof DocumentClient
@@ -473,8 +462,12 @@ export class DocumentClient {
      * @param {RequestOptions} [options]    - The request options.
      * @param {RequestCallback} callback    - The callback for the request.
      */
-    public createStoredProcedure(collectionLink, sproc, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+    public async createStoredProcedure(
+        collectionLink: string,
+        sproc: any,
+        options?: RequestOptions,
+        callback?: ResponseCallback<any>): Promise<Response<any>> { // TODO: any
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
@@ -484,17 +477,22 @@ export class DocumentClient {
             sproc.body = sproc.body.toString();
         }
 
-        var err = {};
+        const err = {};
         if (!this.isResourceValid(sproc, err)) {
-            callback(err);
+            Base.ThrowOrCallback(callback, err);
             return;
         }
 
-        var isNameBased = Base.isLinkNameBased(collectionLink);
-        var path = this.getPathFromLink(collectionLink, "sprocs", isNameBased);
-        var id = this.getIdFromLink(collectionLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(collectionLink);
+        const path = this.getPathFromLink(collectionLink, "sprocs", isNameBased);
+        const id = this.getIdFromLink(collectionLink, isNameBased);
 
-        this.create(sproc, path, "sprocs", id, undefined, options, callback);
+        try {
+            const response = await this.create(sproc, path, "sprocs", id, undefined, options);
+            return Base.ResponseOrCallback(callback, response);
+        } catch (err) {
+            Base.ThrowOrCallback(callback, err);
+        }
     }
 
     /**
@@ -504,14 +502,18 @@ export class DocumentClient {
      * @param {string} documentLink             - The self-link of the document.
      * @param {stream.Readable} readableStream  - the stream that represents the media itself that needs to be uploaded.
      * @param {MediaOptions} [options]          - The request options.
-     * @param {RequestCallback} callback        - The callback for the request.
-    */
-    public createAttachmentAndUploadMedia(documentLink, readableStream, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+     * @param {ResponseCallback} callback        - The callback for the request.
+     */
+    public async createAttachmentAndUploadMedia(
+        documentLink: string,
+        readableStream: ReadableStream,
+        options?: MediaOptions,
+        callback?: ResponseCallback<any>): Promise<Response<any>> { // TODO: any
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var initialHeaders = Base.extend({} this.defaultHeaders);
+        let initialHeaders = Base.extend({}, this.defaultHeaders);
         initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
 
         // Add required headers slug and content-type.
@@ -519,36 +521,46 @@ export class DocumentClient {
             initialHeaders[Constants.HttpHeaders.Slug] = options.slug;
         }
 
-        if (options.contentType) {
-            initialHeaders[Constants.HttpHeaders.ContentType] = options.contentType;
-        } else {
-            initialHeaders[Constants.HttpHeaders.ContentType] = Constants.MediaTypes.OctetStream;
+        initialHeaders[Constants.HttpHeaders.ContentType] = options.contentType || Constants.MediaTypes.OctetStream;
+
+        const isNameBased = Base.isLinkNameBased(documentLink);
+        const path = this.getPathFromLink(documentLink, "attachments", isNameBased);
+        const id = this.getIdFromLink(documentLink, isNameBased);
+
+        try {
+            const response = await this.create(readableStream, path, "attachments", id, initialHeaders, options);
+            return Base.ResponseOrCallback(callback, response);
+        } catch (err) {
+            Base.ThrowOrCallback(callback, err);
         }
-
-        var isNameBased = Base.isLinkNameBased(documentLink);
-        var path = this.getPathFromLink(documentLink, "attachments", isNameBased);
-        var id = this.getIdFromLink(documentLink, isNameBased);
-
-        this.create(readableStream, path, "attachments", id, initialHeaders, options, callback);
     }
 
-    /** Reads a database.
+    /**
+     * Reads a database.
      * @memberof DocumentClient
      * @instance
      * @param {string} databaseLink         - The self-link of the database.
      * @param {RequestOptions} [options]    - The request options.
-     * @param {RequestCallback} callback    - The callback for the request.
-    */
-    public readDatabase(databaseLink, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+     * @param {ResponseCallback} callback    - The callback for the request.
+     */
+    public async readDatabase(
+        databaseLink: string,
+        options?: RequestOptions,
+        callback?: ResponseCallback<any>): Promise<Response<any>> {
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var isNameBased = Base.isLinkNameBased(databaseLink);
-        var path = this.getPathFromLink(databaseLink, "", isNameBased);
-        var id = this.getIdFromLink(databaseLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(databaseLink);
+        const path = this.getPathFromLink(databaseLink, "", isNameBased);
+        const id = this.getIdFromLink(databaseLink, isNameBased);
 
-        this.read(path, "dbs", id, undefined, options, callback);
+        try {
+            const response = await this.read(path, "dbs", id, undefined, options);
+            return Base.ResponseOrCallback(callback, response);
+        } catch (err) {
+            Base.ThrowOrCallback(callback, err);
+        }
     }
 
     /**
@@ -557,23 +569,27 @@ export class DocumentClient {
      * @instance
      * @param {string} collectionLink       - The self-link of the collection.
      * @param {RequestOptions} [options]    - The request options.
-     * @param {RequestCallback} callback    - The callback for the request.
+     * @param {ResponseCallback} callback    - The callback for the request.
      */
-    public readCollection(collectionLink, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+    public async readCollection(
+        collectionLink: string,
+        options?: RequestOptions,
+        callback?: ResponseCallback<any>): Promise<Response<any>> {
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var isNameBased = Base.isLinkNameBased(collectionLink);
-        var path = this.getPathFromLink(collectionLink, "", isNameBased);
-        var id = this.getIdFromLink(collectionLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(collectionLink);
+        const path = this.getPathFromLink(collectionLink, "", isNameBased);
+        const id = this.getIdFromLink(collectionLink, isNameBased);
 
-        var that = this;
-        this.read(path, "colls", id, undefined, options, function (err, collection, headers) {
-            if (err) return callback(err, collection, headers);
-            that.partitionKeyDefinitionCache[collectionLink] = collection.partitionKey;
-            callback(err, collection, headers);
-        });
+        try {
+            const response = await this.read(path, "colls", id, undefined, options);
+            this.partitionKeyDefinitionCache[collectionLink] = response.result.partitionKey;
+            return Base.ResponseOrCallback(callback, response);
+        } catch (err) {
+            Base.ThrowOrCallback(callback, err);
+        }
     }
 
     /**
@@ -582,18 +598,25 @@ export class DocumentClient {
      * @instance
      * @param {string} documentLink         - The self-link of the document.
      * @param {RequestOptions} [options]    - The request options.
-     * @param {RequestCallback} callback    - The callback for the request.
+     * @param {ResponseCallback} callback    - The callback for the request.
      */
-    public readDocument(documentLink, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+    public async readDocument(
+        documentLink: string,
+        options?: RequestOptions,
+        callback?: ResponseCallback<Document>): Promise<Response<Document>> {
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var isNameBased = Base.isLinkNameBased(documentLink);
-        var path = this.getPathFromLink(documentLink, "", isNameBased);
-        var id = this.getIdFromLink(documentLink, isNameBased);
-
-        this.read(path, "docs", id, undefined, options, callback);
+        const isNameBased = Base.isLinkNameBased(documentLink);
+        const path = this.getPathFromLink(documentLink, "", isNameBased);
+        const id = this.getIdFromLink(documentLink, isNameBased);
+        try {
+            const response = await this.read(path, "docs", id, undefined, options);
+            return Base.ResponseOrCallback(callback, response);
+        } catch (err) {
+            Base.ThrowOrCallback(callback, err);
+        }
     }
 
     /**
@@ -602,18 +625,25 @@ export class DocumentClient {
      * @instance
      * @param {string} attachmentLink    - The self-link of the attachment.
      * @param {RequestOptions} [options] - The request options.
-     * @param {RequestCallback} callback - The callback for the request.
-    */
-    public readAttachment(attachmentLink, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+     * @param {ResponseCallback} callback - The callback for the request.
+     */
+    public async readAttachment(
+        attachmentLink: string,
+        options?: RequestOptions,
+        callback?: ResponseCallback<any>): Promise<Response<any>> {
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var isNameBased = Base.isLinkNameBased(attachmentLink);
-        var path = this.getPathFromLink(attachmentLink, "", isNameBased);
-        var id = this.getIdFromLink(attachmentLink, isNameBased);
-
-        this.read(path, "attachments", id, undefined, options, callback);
+        const isNameBased = Base.isLinkNameBased(attachmentLink);
+        const path = this.getPathFromLink(attachmentLink, "", isNameBased);
+        const id = this.getIdFromLink(attachmentLink, isNameBased);
+        try {
+            const response = await this.read(path, "attachments", id, undefined, options);
+            return Base.ResponseOrCallback(callback, response);
+        } catch (err) {
+            Base.ThrowOrCallback(callback, err);
+        }
     }
 
     /**
@@ -622,18 +652,26 @@ export class DocumentClient {
      * @instance
      * @param {string} userLink          - The self-link of the user.
      * @param {RequestOptions} [options] - The request options.
-     * @param {RequestCallback} callback - The callback for the request.
+     * @param {ResponseCallback} callback - The callback for the request.
      */
-    public readUser(userLink, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+    public async readUser(
+        userLink: string,
+        options?: RequestOptions,
+        callback?: ResponseCallback<any>) { // TODO: any user
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var isNameBased = Base.isLinkNameBased(userLink);
-        var path = this.getPathFromLink(userLink, "", isNameBased);
-        var id = this.getIdFromLink(userLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(userLink);
+        const path = this.getPathFromLink(userLink, "", isNameBased);
+        const id = this.getIdFromLink(userLink, isNameBased);
 
-        this.read(path, "users", id, undefined, options, callback);
+        try {
+            const response = await this.read(path, "users", id, undefined, options);
+            return Base.ResponseOrCallback(callback, response);
+        } catch (err) {
+            Base.ThrowOrCallback(callback, err);
+        }
     }
 
     /**
@@ -642,18 +680,26 @@ export class DocumentClient {
      * @instance
      * @param {string} permissionLink    - The self-link of the permission.
      * @param {RequestOptions} [options] - The request options.
-     * @param {RequestCallback} callback - The callback for the request.
+     * @param {ResponseCallback} callback - The callback for the request.
      */
-    public readPermission(permissionLink, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+    public async readPermission(
+        permissionLink: string,
+        options?: RequestOptions,
+        callback?: ResponseCallback<any>): Promise<Response<any>> {
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var isNameBased = Base.isLinkNameBased(permissionLink);
-        var path = this.getPathFromLink(permissionLink, "", isNameBased);
-        var id = this.getIdFromLink(permissionLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(permissionLink);
+        const path = this.getPathFromLink(permissionLink, "", isNameBased);
+        const id = this.getIdFromLink(permissionLink, isNameBased);
 
-        this.read(path, "permissions", id, undefined, options, callback);
+        try {
+            const response = await this.read(path, "permissions", id, undefined, options);
+            return Base.ResponseOrCallback(callback, response);
+        } catch (err) {
+            Base.ThrowOrCallback(callback, err);
+        }
     }
 
     /**
@@ -662,20 +708,28 @@ export class DocumentClient {
      * @instance
      * @param {string} triggerLink       - The self-link of the trigger.
      * @param {RequestOptions} [options] - The request options.
-     * @param {RequestCallback} callback - The callback for the request.
+     * @param {ResponseCallback} callback - The callback for the request.
      */
-    public readTrigger(triggerLink, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+    public async readTrigger(
+        triggerLink: string,
+        options?: RequestOptions,
+        callback?: ResponseCallback<any>): Promise<Response<any>> {
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var resourceInfo = Base.parseLink(triggerLink);
+        const resourceInfo = Base.parseLink(triggerLink);
 
-        var isNameBased = Base.isLinkNameBased(triggerLink);
-        var path = this.getPathFromLink(triggerLink, "", isNameBased);
-        var id = this.getIdFromLink(triggerLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(triggerLink);
+        const path = this.getPathFromLink(triggerLink, "", isNameBased);
+        const id = this.getIdFromLink(triggerLink, isNameBased);
 
-        this.read(path, "triggers", id, undefined, options, callback);
+        try {
+            const response = await this.read(path, "triggers", id, undefined, options);
+            return Base.ResponseOrCallback(callback, response);
+        } catch (err) {
+            Base.ThrowOrCallback(callback, err);
+        }
     }
 
     /**
@@ -684,18 +738,26 @@ export class DocumentClient {
      * @instance
      * @param {string} udfLink           - The self-link of the user defined function.
      * @param {RequestOptions} [options] - The request options.
-     * @param {RequestCallback} callback - The callback for the request.
+     * @param {ResponseCallback} callback - The callback for the request.
      */
-    public readUserDefinedFunction(udfLink, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+    public async readUserDefinedFunction(
+        udfLink: string,
+        options?: RequestOptions,
+        callback?: ResponseCallback<any>): Promise<Response<any>> { // TODO: any
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var isNameBased = Base.isLinkNameBased(udfLink);
-        var path = this.getPathFromLink(udfLink, "", isNameBased);
-        var id = this.getIdFromLink(udfLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(udfLink);
+        const path = this.getPathFromLink(udfLink, "", isNameBased);
+        const id = this.getIdFromLink(udfLink, isNameBased);
 
-        this.read(path, "udfs", id, undefined, options, callback);
+        try {
+            const response = await this.read(path, "udfs", id, undefined, options);
+            return Base.ResponseOrCallback(callback, response);
+        } catch (err) {
+            Base.ThrowOrCallback(callback, err);
+        }
     }
 
     /**
@@ -706,16 +768,23 @@ export class DocumentClient {
      * @param {RequestOptions} [options] - The request options.
      * @param {RequestCallback} callback - The callback for the request.
      */
-    public readStoredProcedure(sprocLink, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+    public async readStoredProcedure(
+        sprocLink: string,
+        options?: RequestOptions,
+        callback?: ResponseCallback<any>): Promise<Response<any>> { // TODO: any
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var isNameBased = Base.isLinkNameBased(sprocLink);
-        var path = this.getPathFromLink(sprocLink, "", isNameBased);
-        var id = this.getIdFromLink(sprocLink, isNameBased);
-
-        this.read(path, "sprocs", id, undefined, options, callback);
+        const isNameBased = Base.isLinkNameBased(sprocLink);
+        const path = this.getPathFromLink(sprocLink, "", isNameBased);
+        const id = this.getIdFromLink(sprocLink, isNameBased);
+        try {
+            const response = await this.read(path, "sprocs", id, undefined, options);
+            return Base.ResponseOrCallback(callback, response);
+        } catch (err) {
+            Base.ThrowOrCallback(callback, err);
+        }
     }
 
     /**
@@ -726,25 +795,34 @@ export class DocumentClient {
      * @param {RequestOptions} [options] - The request options.
      * @param {RequestCallback} callback - The callback for the request.
      */
-    public readConflict(conflictLink, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+    public async readConflict(
+        conflictLink: string,
+        options?: RequestOptions,
+        callback?: ResponseCallback<any>): Promise<Response<any>> { // TODO: any conflict
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var isNameBased = Base.isLinkNameBased(conflictLink);
-        var path = this.getPathFromLink(conflictLink, "", isNameBased);
-        var id = this.getIdFromLink(conflictLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(conflictLink);
+        const path = this.getPathFromLink(conflictLink, "", isNameBased);
+        const id = this.getIdFromLink(conflictLink, isNameBased);
 
-        this.read(path, "conflicts", id, undefined, options, callback);
+        try {
+            const response = await this.read(path, "users", id, undefined, options);
+            return Base.ResponseOrCallback(callback, response);
+        } catch (err) {
+            Base.ThrowOrCallback(callback, err);
+        }
     }
 
-    /** Lists all databases.
+    /**
+     * Lists all databases.
      * @memberof DocumentClient
      * @instance
      * @param {FeedOptions} [options] - The feed options.
      * @returns {QueryIterator}       - An instance of queryIterator to handle reading feed.
-    */
-    public readDatabases(options) {
+     */
+    public async readDatabases(options?: FeedOptions) {
         return this.queryDatabases(undefined, options);
     }
 
@@ -756,7 +834,7 @@ export class DocumentClient {
      * @param {FeedOptions} [options] - The feed options.
      * @returns {QueryIterator}       - An instance of queryIterator to handle reading feed.
      */
-    public readCollections(databaseLink, options) {
+    public readCollections(databaseLink: string, options?: FeedOptions) {
         return this.queryCollections(databaseLink, undefined, options);
     }
 
@@ -768,7 +846,7 @@ export class DocumentClient {
      * @param {FeedOptions} [options] - The feed options.
      * @returns {QueryIterator}       - An instance of queryIterator to handle reading feed.
      */
-    public readDocuments(collectionLink, options) {
+    public readDocuments(collectionLink: string, options?: FeedOptions) {
         return this.queryDocuments(collectionLink, undefined, options);
     }
 
@@ -781,19 +859,19 @@ export class DocumentClient {
      * @returns {QueryIterator}       - An instance of queryIterator to handle reading feed.
      * @ignore
      */
-    public readPartitionKeyRanges(collectionLink, options) {
+    public readPartitionKeyRanges(collectionLink: string, options?: FeedOptions) {
         return this.queryPartitionKeyRanges(collectionLink, undefined, options);
     }
 
     /**
-    * Get all attachments for this document.
-    * @memberof DocumentClient
-    * @instance
-    * @param {string} documentLink   - The self-link of the document.
-    * @param {FeedOptions} [options] - The feed options.
-    * @returns {QueryIterator}       - An instance of queryIterator to handle reading feed.
-   */
-    public readAttachments(documentLink, options) {
+     * Get all attachments for this document.
+     * @memberof DocumentClient
+     * @instance
+     * @param {string} documentLink   - The self-link of the document.
+     * @param {FeedOptions} [options] - The feed options.
+     * @returns {QueryIterator}       - An instance of queryIterator to handle reading feed.
+     */
+    public readAttachments(documentLink: string, options?: FeedOptions) {
         return this.queryAttachments(documentLink, undefined, options);
     }
 
@@ -805,7 +883,7 @@ export class DocumentClient {
      * @param {FeedOptions} [feedOptions] - The feed options.
      * @returns {QueryIterator}           - An instance of queryIterator to handle reading feed.
      */
-    public readUsers(databaseLink, options) {
+    public readUsers(databaseLink: string, options?: FeedOptions) {
         return this.queryUsers(databaseLink, undefined, options);
     }
 
@@ -817,7 +895,7 @@ export class DocumentClient {
      * @param {FeedOptions} [feedOptions] - The feed options.
      * @returns {QueryIterator}           - An instance of queryIterator to handle reading feed.
      */
-    public readPermissions(userLink, options) {
+    public readPermissions(userLink: string, options?: FeedOptions) {
         return this.queryPermissions(userLink, undefined, options);
     }
 
@@ -829,7 +907,7 @@ export class DocumentClient {
      * @param {FeedOptions} [options]   - The feed options.
      * @returns {QueryIterator}         - An instance of queryIterator to handle reading feed.
      */
-    public readTriggers(collectionLink, options) {
+    public readTriggers(collectionLink: string, options?: FeedOptions) {
         return this.queryTriggers(collectionLink, undefined, options);
     }
 
@@ -841,7 +919,7 @@ export class DocumentClient {
      * @param {FeedOptions} [options] - The feed options.
      * @returns {QueryIterator}       - An instance of queryIterator to handle reading feed.
      */
-    public readUserDefinedFunctions(collectionLink, options) {
+    public readUserDefinedFunctions(collectionLink: string, options?: FeedOptions) {
         return this.queryUserDefinedFunctions(collectionLink, undefined, options);
     }
 
@@ -853,7 +931,7 @@ export class DocumentClient {
      * @param {FeedOptions} [options] - The feed options.
      * @returns {QueryIterator}       - An instance of queryIterator to handle reading feed.
      */
-    public readStoredProcedures(collectionLink, options) {
+    public readStoredProcedures(collectionLink: string, options?: FeedOptions) {
         return this.queryStoredProcedures(collectionLink, undefined, options);
     }
 
@@ -865,31 +943,32 @@ export class DocumentClient {
      * @param {FeedOptions} [options] - The feed options.
      * @returns {QueryIterator}       - An instance of QueryIterator to handle reading feed.
      */
-    public readConflicts(collectionLink, options) {
+    public readConflicts(collectionLink: string, options?: FeedOptions) {
         return this.queryConflicts(collectionLink, undefined, options);
     }
 
-    /** Lists all databases that satisfy a query.
+    /**
+     * Lists all databases that satisfy a query.
      * @memberof DocumentClient
      * @instance
      * @param {SqlQuerySpec | string} query - A SQL query.
      * @param {FeedOptions} [options]       - The feed options.
      * @returns {QueryIterator}             - An instance of QueryIterator to handle reading feed.
-    */
-    public queryDatabases(query, options) {
-        var that = this;
-        return new QueryIterator(this, query, options, function (options, callback) {
-            that.queryFeed.call(that,
-                that,
+     */
+    public queryDatabases(query: SqlQuerySpec | string, options?: FeedOptions) {
+        const cb: FetchFunctionCallback = (options) => {
+            return this.queryFeed(
+                this,
                 "/dbs",
                 "dbs",
                 "",
-                function (result) { return result.Databases; },
-                function (parent, body) { return body; },
+                (result) => { return result.Databases; },
+                (parent, body) => { return body; },
                 query,
                 options,
                 callback);
-        });
+        };
+        return new QueryIterator(this, query, options, cb);
     }
 
     /**
@@ -902,15 +981,15 @@ export class DocumentClient {
      * @returns {QueryIterator}               - An instance of queryIterator to handle reading feed.
      */
     public queryCollections(databaseLink, query, options) {
-        var that = this;
 
-        var isNameBased = Base.isLinkNameBased(databaseLink);
-        var path = this.getPathFromLink(databaseLink, "colls", isNameBased);
-        var id = this.getIdFromLink(databaseLink, isNameBased);
+
+        const isNameBased = Base.isLinkNameBased(databaseLink);
+        const path = this.getPathFromLink(databaseLink, "colls", isNameBased);
+        const id = this.getIdFromLink(databaseLink, isNameBased);
 
         return new QueryIterator(this, query, options, function (options, callback) {
-            that.queryFeed.call(that,
-                that,
+            this.queryFeed.call(this,
+                this,
                 path,
                 "colls",
                 id,
@@ -933,8 +1012,8 @@ export class DocumentClient {
      * @returns {QueryIterator}                             - An instance of queryIterator to handle reading feed.
      */
     public queryDocuments(documentsFeedOrDatabaseLink, query, options) {
-        var partitionResolver = this.partitionResolvers[documentsFeedOrDatabaseLink];
-        var collectionLinks;
+        const partitionResolver = this.partitionResolvers[documentsFeedOrDatabaseLink];
+        const collectionLinks;
         if (partitionResolver === undefined || partitionResolver === null) {
             collectionLinks = [documentsFeedOrDatabaseLink];
         } else {
@@ -955,15 +1034,15 @@ export class DocumentClient {
      * @ignore
      */
     public queryPartitionKeyRanges(collectionLink, query, options) {
-        var that = this;
 
-        var isNameBased = Base.isLinkNameBased(collectionLink);
-        var path = this.getPathFromLink(collectionLink, "pkranges", isNameBased);
-        var id = this.getIdFromLink(collectionLink, isNameBased);
+
+        const isNameBased = Base.isLinkNameBased(collectionLink);
+        const path = this.getPathFromLink(collectionLink, "pkranges", isNameBased);
+        const id = this.getIdFromLink(collectionLink, isNameBased);
 
         return new QueryIterator(this, query, options, function (options, callback) {
-            that.queryFeed.call(that,
-                that,
+            this.queryFeed.call(this,
+                this,
                 path,
                 "pkranges",
                 id,
@@ -986,15 +1065,15 @@ export class DocumentClient {
      * @returns {QueryIterator}               - An instance of queryIterator to handle reading feed.
     */
     public queryAttachments(documentLink, query, options) {
-        var that = this;
 
-        var isNameBased = Base.isLinkNameBased(documentLink);
-        var path = this.getPathFromLink(documentLink, "attachments", isNameBased);
-        var id = this.getIdFromLink(documentLink, isNameBased);
+
+        const isNameBased = Base.isLinkNameBased(documentLink);
+        const path = this.getPathFromLink(documentLink, "attachments", isNameBased);
+        const id = this.getIdFromLink(documentLink, isNameBased);
 
         return new QueryIterator(this, query, options, function (options, callback) {
-            that.queryFeed.call(that,
-                that,
+            this.queryFeed.call(this,
+                this,
                 path,
                 "attachments",
                 id,
@@ -1016,15 +1095,15 @@ export class DocumentClient {
      * @returns {QueryIterator}               - An instance of queryIterator to handle reading feed.
      */
     public queryUsers(databaseLink, query, options) {
-        var that = this;
 
-        var isNameBased = Base.isLinkNameBased(databaseLink);
-        var path = this.getPathFromLink(databaseLink, "users", isNameBased);
-        var id = this.getIdFromLink(databaseLink, isNameBased);
+
+        const isNameBased = Base.isLinkNameBased(databaseLink);
+        const path = this.getPathFromLink(databaseLink, "users", isNameBased);
+        const id = this.getIdFromLink(databaseLink, isNameBased);
 
         return new QueryIterator(this, query, options, function (options, callback) {
-            that.queryFeed.call(that,
-                that,
+            this.queryFeed.call(this,
+                this,
                 path,
                 "users",
                 id,
@@ -1046,15 +1125,15 @@ export class DocumentClient {
      * @returns {QueryIterator}               - An instance of queryIterator to handle reading feed.
      */
     public queryPermissions(userLink, query, options) {
-        var that = this;
 
-        var isNameBased = Base.isLinkNameBased(userLink);
-        var path = this.getPathFromLink(userLink, "permissions", isNameBased);
-        var id = this.getIdFromLink(userLink, isNameBased);
+
+        const isNameBased = Base.isLinkNameBased(userLink);
+        const path = this.getPathFromLink(userLink, "permissions", isNameBased);
+        const id = this.getIdFromLink(userLink, isNameBased);
 
         return new QueryIterator(this, query, options, function (options, callback) {
-            that.queryFeed.call(that,
-                that,
+            this.queryFeed.call(this,
+                this,
                 path,
                 "permissions",
                 id,
@@ -1076,15 +1155,15 @@ export class DocumentClient {
      * @returns {QueryIterator}               - An instance of queryIterator to handle reading feed.
      */
     public queryTriggers(collectionLink, query, options) {
-        var that = this;
 
-        var isNameBased = Base.isLinkNameBased(collectionLink);
-        var path = this.getPathFromLink(collectionLink, "triggers", isNameBased);
-        var id = this.getIdFromLink(collectionLink, isNameBased);
+
+        const isNameBased = Base.isLinkNameBased(collectionLink);
+        const path = this.getPathFromLink(collectionLink, "triggers", isNameBased);
+        const id = this.getIdFromLink(collectionLink, isNameBased);
 
         return new QueryIterator(this, query, options, function (options, callback) {
-            that.queryFeed.call(that,
-                that,
+            this.queryFeed.call(this,
+                this,
                 path,
                 "triggers",
                 id,
@@ -1106,15 +1185,15 @@ export class DocumentClient {
      * @returns {QueryIterator}               - An instance of queryIterator to handle reading feed.
      */
     public queryUserDefinedFunctions(collectionLink, query, options) {
-        var that = this;
 
-        var isNameBased = Base.isLinkNameBased(collectionLink);
-        var path = this.getPathFromLink(collectionLink, "udfs", isNameBased);
-        var id = this.getIdFromLink(collectionLink, isNameBased);
+
+        const isNameBased = Base.isLinkNameBased(collectionLink);
+        const path = this.getPathFromLink(collectionLink, "udfs", isNameBased);
+        const id = this.getIdFromLink(collectionLink, isNameBased);
 
         return new QueryIterator(this, query, options, function (options, callback) {
-            that.queryFeed.call(that,
-                that,
+            this.queryFeed.call(this,
+                this,
                 path,
                 "udfs",
                 id,
@@ -1136,15 +1215,15 @@ export class DocumentClient {
      * @returns {QueryIterator}               - An instance of queryIterator to handle reading feed.
      */
     public queryStoredProcedures(collectionLink, query, options) {
-        var that = this;
 
-        var isNameBased = Base.isLinkNameBased(collectionLink);
-        var path = this.getPathFromLink(collectionLink, "sprocs", isNameBased);
-        var id = this.getIdFromLink(collectionLink, isNameBased);
+
+        const isNameBased = Base.isLinkNameBased(collectionLink);
+        const path = this.getPathFromLink(collectionLink, "sprocs", isNameBased);
+        const id = this.getIdFromLink(collectionLink, isNameBased);
 
         return new QueryIterator(this, query, options, function (options, callback) {
-            that.queryFeed.call(that,
-                that,
+            this.queryFeed.call(this,
+                this,
                 path,
                 "sprocs",
                 id,
@@ -1166,15 +1245,15 @@ export class DocumentClient {
      * @returns {QueryIterator}               - An instance of queryIterator to handle reading feed.
      */
     public queryConflicts(collectionLink, query, options) {
-        var that = this;
 
-        var isNameBased = Base.isLinkNameBased(collectionLink);
-        var path = this.getPathFromLink(collectionLink, "conflicts", isNameBased);
-        var id = this.getIdFromLink(collectionLink, isNameBased);
+
+        const isNameBased = Base.isLinkNameBased(collectionLink);
+        const path = this.getPathFromLink(collectionLink, "conflicts", isNameBased);
+        const id = this.getIdFromLink(collectionLink, isNameBased);
 
         return new QueryIterator(this, query, options, function (options, callback) {
-            that.queryFeed.call(that,
-                that,
+            this.queryFeed.call(this,
+                this,
                 path,
                 "conflicts",
                 id,
@@ -1195,13 +1274,13 @@ export class DocumentClient {
      * @param {RequestCallback} callback    - The callback for the request.
     */
     public deleteDatabase(databaseLink, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var isNameBased = Base.isLinkNameBased(databaseLink);
-        var path = this.getPathFromLink(databaseLink, "", isNameBased);
-        var id = this.getIdFromLink(databaseLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(databaseLink);
+        const path = this.getPathFromLink(databaseLink, "", isNameBased);
+        const id = this.getIdFromLink(databaseLink, isNameBased);
         this.deleteResource(path, "dbs", id, undefined, options, callback);
     }
 
@@ -1214,13 +1293,13 @@ export class DocumentClient {
      * @param {RequestCallback} callback - The callback for the request.
     */
     public deleteCollection(collectionLink, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var isNameBased = Base.isLinkNameBased(collectionLink);
-        var path = this.getPathFromLink(collectionLink, "", isNameBased);
-        var id = this.getIdFromLink(collectionLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(collectionLink);
+        const path = this.getPathFromLink(collectionLink, "", isNameBased);
+        const id = this.getIdFromLink(collectionLink, isNameBased);
 
         this.deleteResource(path, "colls", id, undefined, options, callback);
     }
@@ -1234,13 +1313,13 @@ export class DocumentClient {
      * @param {RequestCallback} callback - The callback for the request.
     */
     public deleteDocument(documentLink, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var isNameBased = Base.isLinkNameBased(documentLink);
-        var path = this.getPathFromLink(documentLink, "", isNameBased);
-        var id = this.getIdFromLink(documentLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(documentLink);
+        const path = this.getPathFromLink(documentLink, "", isNameBased);
+        const id = this.getIdFromLink(documentLink, isNameBased);
 
         this.deleteResource(path, "docs", id, undefined, options, callback);
     }
@@ -1254,13 +1333,13 @@ export class DocumentClient {
      * @param {RequestCallback} callback - The callback for the request.
      */
     public deleteAttachment(attachmentLink, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var isNameBased = Base.isLinkNameBased(attachmentLink);
-        var path = this.getPathFromLink(attachmentLink, "", isNameBased);
-        var id = this.getIdFromLink(attachmentLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(attachmentLink);
+        const path = this.getPathFromLink(attachmentLink, "", isNameBased);
+        const id = this.getIdFromLink(attachmentLink, isNameBased);
 
         this.deleteResource(path, "attachments", id, undefined, options, callback);
     }
@@ -1274,13 +1353,13 @@ export class DocumentClient {
      * @param {RequestCallback} callback - The callback for the request.
     */
     public deleteUser(userLink, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var isNameBased = Base.isLinkNameBased(userLink);
-        var path = this.getPathFromLink(userLink, "", isNameBased);
-        var id = this.getIdFromLink(userLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(userLink);
+        const path = this.getPathFromLink(userLink, "", isNameBased);
+        const id = this.getIdFromLink(userLink, isNameBased);
 
         this.deleteResource(path, "users", id, undefined, options, callback);
     }
@@ -1294,13 +1373,13 @@ export class DocumentClient {
      * @param {RequestCallback} callback - The callback for the request.
     */
     public deletePermission(permissionLink, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var isNameBased = Base.isLinkNameBased(permissionLink);
-        var path = this.getPathFromLink(permissionLink, "", isNameBased);
-        var id = this.getIdFromLink(permissionLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(permissionLink);
+        const path = this.getPathFromLink(permissionLink, "", isNameBased);
+        const id = this.getIdFromLink(permissionLink, isNameBased);
 
         this.deleteResource(path, "permissions", id, undefined, options, callback);
     }
@@ -1314,13 +1393,13 @@ export class DocumentClient {
      * @param {RequestCallback} callback - The callback for the request.
     */
     public deleteTrigger(triggerLink, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var isNameBased = Base.isLinkNameBased(triggerLink);
-        var path = this.getPathFromLink(triggerLink, "", isNameBased);
-        var id = this.getIdFromLink(triggerLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(triggerLink);
+        const path = this.getPathFromLink(triggerLink, "", isNameBased);
+        const id = this.getIdFromLink(triggerLink, isNameBased);
 
         this.deleteResource(path, "triggers", id, undefined, options, callback);
     }
@@ -1334,13 +1413,13 @@ export class DocumentClient {
      * @param {RequestCallback} callback - The callback for the request.
     */
     public deleteUserDefinedFunction(udfLink, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var isNameBased = Base.isLinkNameBased(udfLink);
-        var path = this.getPathFromLink(udfLink, "", isNameBased);
-        var id = this.getIdFromLink(udfLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(udfLink);
+        const path = this.getPathFromLink(udfLink, "", isNameBased);
+        const id = this.getIdFromLink(udfLink, isNameBased);
 
         this.deleteResource(path, "udfs", id, undefined, options, callback);
     }
@@ -1354,13 +1433,13 @@ export class DocumentClient {
      * @param {RequestCallback} callback - The callback for the request.
     */
     public deleteStoredProcedure(sprocLink, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var isNameBased = Base.isLinkNameBased(sprocLink);
-        var path = this.getPathFromLink(sprocLink, "", isNameBased);
-        var id = this.getIdFromLink(sprocLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(sprocLink);
+        const path = this.getPathFromLink(sprocLink, "", isNameBased);
+        const id = this.getIdFromLink(sprocLink, isNameBased);
 
         this.deleteResource(path, "sprocs", id, undefined, options, callback);
     }
@@ -1374,13 +1453,13 @@ export class DocumentClient {
      * @param {RequestCallback} callback - The callback for the request.
     */
     public deleteConflict(conflictLink, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var isNameBased = Base.isLinkNameBased(conflictLink);
-        var path = this.getPathFromLink(conflictLink, "", isNameBased);
-        var id = this.getIdFromLink(conflictLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(conflictLink);
+        const path = this.getPathFromLink(conflictLink, "", isNameBased);
+        const id = this.getIdFromLink(conflictLink, isNameBased);
 
         this.deleteResource(path, "conflicts", id, undefined, options, callback);
     }
@@ -1395,19 +1474,19 @@ export class DocumentClient {
      * @param {RequestCallback} callback - The callback for the request.
     */
     public replaceCollection(collectionLink, collection, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var err = {};
+        const err = {};
         if (!this.isResourceValid(collection, err)) {
             callback(err);
             return;
         }
 
-        var isNameBased = Base.isLinkNameBased(collectionLink);
-        var path = this.getPathFromLink(collectionLink, "", isNameBased);
-        var id = this.getIdFromLink(collectionLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(collectionLink);
+        const path = this.getPathFromLink(collectionLink, "", isNameBased);
+        const id = this.getIdFromLink(collectionLink, isNameBased);
 
         this.replace(collection, path, "colls", id, undefined, options, callback);
     }
@@ -1422,30 +1501,30 @@ export class DocumentClient {
      * @param {RequestCallback} callback - The callback for the request.
     */
     public replaceDocument(documentLink, newDocument, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var that = this;
 
-        var task = function () {
-            var err = {};
-            if (!that.isResourceValid(newDocument, err)) {
+
+        const task = function () {
+            const err = {};
+            if (!this.isResourceValid(newDocument, err)) {
                 callback(err);
                 return;
             }
 
-            var isNameBased = Base.isLinkNameBased(documentLink);
-            var path = that.getPathFromLink(documentLink, "", isNameBased);
-            var id = that.getIdFromLink(documentLink, isNameBased);
+            const isNameBased = Base.isLinkNameBased(documentLink);
+            const path = this.getPathFromLink(documentLink, "", isNameBased);
+            const id = this.getIdFromLink(documentLink, isNameBased);
 
-            that.replace(newDocument, path, "docs", id, undefined, options, callback);
+            this.replace(newDocument, path, "docs", id, undefined, options, callback);
         };
 
         if (options.partitionKey === undefined && options.skipGetPartitionKeyDefinition !== true) {
             this.getPartitionKeyDefinition(Base.getCollectionLink(documentLink), function (err, partitionKeyDefinition, response, headers) {
                 if (err) { return callback(err, response, headers); }
-                options.partitionKey = that.extractPartitionKey(newDocument, partitionKeyDefinition);
+                options.partitionKey = this.extractPartitionKey(newDocument, partitionKeyDefinition);
 
                 task();
             });
@@ -1465,19 +1544,19 @@ export class DocumentClient {
      * @param {RequestCallback} callback - The callback for the request.
      */
     public replaceAttachment(attachmentLink, attachment, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var err = {};
+        const err = {};
         if (!this.isResourceValid(attachment, err)) {
             callback(err);
             return;
         }
 
-        var isNameBased = Base.isLinkNameBased(attachmentLink);
-        var path = this.getPathFromLink(attachmentLink, "", isNameBased);
-        var id = this.getIdFromLink(attachmentLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(attachmentLink);
+        const path = this.getPathFromLink(attachmentLink, "", isNameBased);
+        const id = this.getIdFromLink(attachmentLink, isNameBased);
 
         this.replace(attachment, path, "attachments", id, undefined, options, callback);
     }
@@ -1492,19 +1571,19 @@ export class DocumentClient {
      * @param {RequestCallback} callback - The callback for the request.
     */
     public replaceUser(userLink, user, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var err = {};
+        const err = {};
         if (!this.isResourceValid(user, err)) {
             callback(err);
             return;
         }
 
-        var isNameBased = Base.isLinkNameBased(userLink);
-        var path = this.getPathFromLink(userLink, "", isNameBased);
-        var id = this.getIdFromLink(userLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(userLink);
+        const path = this.getPathFromLink(userLink, "", isNameBased);
+        const id = this.getIdFromLink(userLink, isNameBased);
 
         this.replace(user, path, "users", id, undefined, options, callback);
     }
@@ -1519,19 +1598,19 @@ export class DocumentClient {
      * @param {RequestCallback} callback - The callback for the request.
      */
     public replacePermission(permissionLink, permission, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var err = {};
+        const err = {};
         if (!this.isResourceValid(permission, err)) {
             callback(err);
             return;
         }
 
-        var isNameBased = Base.isLinkNameBased(permissionLink);
-        var path = this.getPathFromLink(permissionLink, "", isNameBased);
-        var id = this.getIdFromLink(permissionLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(permissionLink);
+        const path = this.getPathFromLink(permissionLink, "", isNameBased);
+        const id = this.getIdFromLink(permissionLink, isNameBased);
 
         this.replace(permission, path, "permissions", id, undefined, options, callback);
     }
@@ -1546,7 +1625,7 @@ export class DocumentClient {
      * @param {RequestCallback} callback - The callback for the request.
      */
     public replaceTrigger(triggerLink, trigger, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
@@ -1556,15 +1635,15 @@ export class DocumentClient {
             trigger.body = trigger.body.toString();
         }
 
-        var err = {};
+        const err = {};
         if (!this.isResourceValid(trigger, err)) {
             callback(err);
             return;
         }
 
-        var isNameBased = Base.isLinkNameBased(triggerLink);
-        var path = this.getPathFromLink(triggerLink, "", isNameBased);
-        var id = this.getIdFromLink(triggerLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(triggerLink);
+        const path = this.getPathFromLink(triggerLink, "", isNameBased);
+        const id = this.getIdFromLink(triggerLink, isNameBased);
 
         this.replace(trigger, path, "triggers", id, undefined, options, callback);
     }
@@ -1579,7 +1658,7 @@ export class DocumentClient {
      * @param {RequestCallback} callback - The callback for the request.
      */
     public replaceUserDefinedFunction(udfLink, udf, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
@@ -1589,15 +1668,15 @@ export class DocumentClient {
             udf.body = udf.body.toString();
         }
 
-        var err = {};
+        const err = {};
         if (!this.isResourceValid(udf, err)) {
             callback(err);
             return;
         }
 
-        var isNameBased = Base.isLinkNameBased(udfLink);
-        var path = this.getPathFromLink(udfLink, "", isNameBased);
-        var id = this.getIdFromLink(udfLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(udfLink);
+        const path = this.getPathFromLink(udfLink, "", isNameBased);
+        const id = this.getIdFromLink(udfLink, isNameBased);
 
         this.replace(udf, path, "udfs", id, undefined, options, callback);
     }
@@ -1612,7 +1691,7 @@ export class DocumentClient {
      * @param {RequestCallback} callback - The callback for the request.
     */
     public replaceStoredProcedure(sprocLink, sproc, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
@@ -1622,15 +1701,15 @@ export class DocumentClient {
             sproc.body = sproc.body.toString();
         }
 
-        var err = {};
+        const err = {};
         if (!this.isResourceValid(sproc, err)) {
             callback(err);
             return;
         }
 
-        var isNameBased = Base.isLinkNameBased(sprocLink);
-        var path = this.getPathFromLink(sprocLink, "", isNameBased);
-        var id = this.getIdFromLink(sprocLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(sprocLink);
+        const path = this.getPathFromLink(sprocLink, "", isNameBased);
+        const id = this.getIdFromLink(sprocLink, isNameBased);
 
         this.replace(sproc, path, "sprocs", id, undefined, options, callback);
     }
@@ -1652,9 +1731,9 @@ export class DocumentClient {
      * @param {RequestCallback} callback                         - The callback for the request.
      */
     public upsertDocument(documentsFeedOrDatabaseLink, body, options, callback) {
-        var partitionResolver = this.partitionResolvers[documentsFeedOrDatabaseLink];
+        const partitionResolver = this.partitionResolvers[documentsFeedOrDatabaseLink];
 
-        var collectionLink;
+        const collectionLink;
         if (partitionResolver === undefined || partitionResolver === null) {
             collectionLink = documentsFeedOrDatabaseLink;
         } else {
@@ -1680,19 +1759,19 @@ export class DocumentClient {
      * @param {RequestCallback} callback    - The callback for the request.
      */
     public upsertAttachment(documentLink, body, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var err = {};
+        const err = {};
         if (!this.isResourceValid(body, err)) {
             callback(err);
             return;
         }
 
-        var isNameBased = Base.isLinkNameBased(documentLink);
-        var path = this.getPathFromLink(documentLink, "attachments", isNameBased);
-        var id = this.getIdFromLink(documentLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(documentLink);
+        const path = this.getPathFromLink(documentLink, "attachments", isNameBased);
+        const id = this.getIdFromLink(documentLink, isNameBased);
 
         this.upsert(body, path, "attachments", id, undefined, options, callback);
     }
@@ -1708,19 +1787,19 @@ export class DocumentClient {
      * @param {RequestCallback} callback    - The callback for the request.
      */
     public upsertUser(databaseLink, body, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var err = {};
+        const err = {};
         if (!this.isResourceValid(body, err)) {
             callback(err);
             return;
         }
 
-        var isNameBased = Base.isLinkNameBased(databaseLink);
-        var path = this.getPathFromLink(databaseLink, "users", isNameBased);
-        var id = this.getIdFromLink(databaseLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(databaseLink);
+        const path = this.getPathFromLink(databaseLink, "users", isNameBased);
+        const id = this.getIdFromLink(databaseLink, isNameBased);
 
         this.upsert(body, path, "users", id, undefined, options, callback);
     }
@@ -1739,19 +1818,19 @@ export class DocumentClient {
      * @param {RequestCallback} callback    - The callback for the request.
      */
     public upsertPermission(userLink, body, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var err = {};
+        const err = {};
         if (!this.isResourceValid(body, err)) {
             callback(err);
             return;
         }
 
-        var isNameBased = Base.isLinkNameBased(userLink);
-        var path = this.getPathFromLink(userLink, "permissions", isNameBased);
-        var id = this.getIdFromLink(userLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(userLink);
+        const path = this.getPathFromLink(userLink, "permissions", isNameBased);
+        const id = this.getIdFromLink(userLink, isNameBased);
 
         this.upsert(body, path, "permissions", id, undefined, options, callback);
     }
@@ -1774,7 +1853,7 @@ export class DocumentClient {
     * @param {RequestCallback} callback        - The callback for the request.
     */
     public upsertTrigger(collectionLink, trigger, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
@@ -1784,15 +1863,15 @@ export class DocumentClient {
             trigger.body = trigger.body.toString();
         }
 
-        var err = {};
+        const err = {};
         if (!this.isResourceValid(trigger, err)) {
             callback(err);
             return;
         }
 
-        var isNameBased = Base.isLinkNameBased(collectionLink);
-        var path = this.getPathFromLink(collectionLink, "triggers", isNameBased);
-        var id = this.getIdFromLink(collectionLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(collectionLink);
+        const path = this.getPathFromLink(collectionLink, "triggers", isNameBased);
+        const id = this.getIdFromLink(collectionLink, isNameBased);
 
         this.upsert(trigger, path, "triggers", id, undefined, options, callback);
     }
@@ -1814,7 +1893,7 @@ export class DocumentClient {
      * @param {RequestCallback} callback             - The callback for the request.
      */
     public upsertUserDefinedFunction(collectionLink, udf, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
@@ -1824,15 +1903,15 @@ export class DocumentClient {
             udf.body = udf.body.toString();
         }
 
-        var err = {};
+        const err = {};
         if (!this.isResourceValid(udf, err)) {
             callback(err);
             return;
         }
 
-        var isNameBased = Base.isLinkNameBased(collectionLink);
-        var path = this.getPathFromLink(collectionLink, "udfs", isNameBased);
-        var id = this.getIdFromLink(collectionLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(collectionLink);
+        const path = this.getPathFromLink(collectionLink, "udfs", isNameBased);
+        const id = this.getIdFromLink(collectionLink, isNameBased);
 
         this.upsert(udf, path, "udfs", id, undefined, options, callback);
     }
@@ -1854,7 +1933,7 @@ export class DocumentClient {
      * @param {RequestCallback} callback    - The callback for the request.
      */
     public upsertStoredProcedure(collectionLink, sproc, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
@@ -1864,15 +1943,15 @@ export class DocumentClient {
             sproc.body = sproc.body.toString();
         }
 
-        var err = {};
+        const err = {};
         if (!this.isResourceValid(sproc, err)) {
             callback(err);
             return;
         }
 
-        var isNameBased = Base.isLinkNameBased(collectionLink);
-        var path = this.getPathFromLink(collectionLink, "sprocs", isNameBased);
-        var id = this.getIdFromLink(collectionLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(collectionLink);
+        const path = this.getPathFromLink(collectionLink, "sprocs", isNameBased);
+        const id = this.getIdFromLink(collectionLink, isNameBased);
 
         this.upsert(sproc, path, "sprocs", id, undefined, options, callback);
     }
@@ -1887,11 +1966,11 @@ export class DocumentClient {
      * @param {RequestCallback} callback        - The callback for the request.
     */
     public upsertAttachmentAndUploadMedia(documentLink, readableStream, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var initialHeaders = Base.extend({}, this.defaultHeaders);
+        const initialHeaders = Base.extend({}, this.defaultHeaders);
         initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
 
         // Add required headers slug and content-type.
@@ -1905,9 +1984,9 @@ export class DocumentClient {
             initialHeaders[Constants.HttpHeaders.ContentType] = Constants.MediaTypes.OctetStream;
         }
 
-        var isNameBased = Base.isLinkNameBased(documentLink);
-        var path = this.getPathFromLink(documentLink, "attachments", isNameBased);
-        var id = this.getIdFromLink(documentLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(documentLink);
+        const path = this.getPathFromLink(documentLink, "attachments", isNameBased);
+        const id = this.getIdFromLink(documentLink, isNameBased);
 
         this.upsert(readableStream, path, "attachments", id, initialHeaders, options, callback);
     }
@@ -1921,19 +2000,19 @@ export class DocumentClient {
       *                                     depending on the value of {@link MediaReadMode}.
       */
     public readMedia(mediaLink, callback) {
-        var resourceInfo = Base.parseLink(mediaLink);
-        var path = "/" + mediaLink;
-        var initialHeaders = Base.extend({}, this.defaultHeaders);
+        const resourceInfo = Base.parseLink(mediaLink);
+        const path = "/" + mediaLink;
+        const initialHeaders = Base.extend({}, this.defaultHeaders);
         initialHeaders[Constants.HttpHeaders.Accept] = Constants.MediaTypes.Any;
-        var attachmentId = Base.getAttachmentIdFromMediaId(resourceInfo.objectBody.id).toLowerCase();
+        const attachmentId = Base.getAttachmentIdFromMediaId(resourceInfo.objectBody.id).toLowerCase();
 
-        var headersPromise = Base.getHeaders(this, initialHeaders, "get", path, attachmentId, "media", {});
+        const headersPromise = Base.getHeaders(this, initialHeaders, "get", path, attachmentId, "media", {});
 
-        var that = this;
+
         headersPromise.then(function (headers) {
             // readMedia will always use WriteEndpoint since it's not replicated in readable Geo regions
-            that._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                that.get(writeEndpoint, path, headers, callback);
+            this._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
+                this.get(writeEndpoint, path, headers, callback);
             });
         });
     }
@@ -1948,12 +2027,12 @@ export class DocumentClient {
      * @param {RequestCallback} callback        - The callback for the request.
      */
     public updateMedia(mediaLink, readableStream, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var defaultHeaders = this.defaultHeaders;
-        var initialHeaders = Base.extend({}, defaultHeaders);
+        const defaultHeaders = this.defaultHeaders;
+        const initialHeaders = Base.extend({}, defaultHeaders);
         initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
 
         // Add required headers slug and content-type in case the body is a stream
@@ -1969,17 +2048,17 @@ export class DocumentClient {
 
         initialHeaders[Constants.HttpHeaders.Accept] = Constants.MediaTypes.Any;
 
-        var resourceInfo = Base.parseLink(mediaLink);
-        var path = "/" + mediaLink;
-        var attachmentId = Base.getAttachmentIdFromMediaId(resourceInfo.objectBody.id).toLowerCase();
-        var headersPromise = Base.getHeaders(this, initialHeaders, "put", path, attachmentId, "media", options);
+        const resourceInfo = Base.parseLink(mediaLink);
+        const path = "/" + mediaLink;
+        const attachmentId = Base.getAttachmentIdFromMediaId(resourceInfo.objectBody.id).toLowerCase();
+        const headersPromise = Base.getHeaders(this, initialHeaders, "put", path, attachmentId, "media", options);
 
         // updateMedia will use WriteEndpoint since it uses PUT operation
-        var that = this;
+
 
         headersPromise.then(function (headers) {
-            that._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                that.put(writeEndpoint, path, readableStream, headers, callback);
+            this._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
+                this.put(writeEndpoint, path, readableStream, headers, callback);
             });
         });
     }
@@ -2004,8 +2083,8 @@ export class DocumentClient {
             options = {};
         }
 
-        var defaultHeaders = this.defaultHeaders;
-        var initialHeaders = {};
+        const defaultHeaders = this.defaultHeaders;
+        const initialHeaders = {};
         initialHeaders = Base.extend(initialHeaders, defaultHeaders);
         initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
 
@@ -2014,17 +2093,17 @@ export class DocumentClient {
             params = [params];
         }
 
-        var isNameBased = Base.isLinkNameBased(sprocLink);
-        var path = this.getPathFromLink(sprocLink, "", isNameBased);
-        var id = this.getIdFromLink(sprocLink, isNameBased);
+        const isNameBased = Base.isLinkNameBased(sprocLink);
+        const path = this.getPathFromLink(sprocLink, "", isNameBased);
+        const id = this.getIdFromLink(sprocLink, isNameBased);
 
-        var headersPromise = Base.getHeaders(this, initialHeaders, "post", path, id, "sprocs", options);
+        const headersPromise = Base.getHeaders(this, initialHeaders, "post", path, id, "sprocs", options);
 
         // executeStoredProcedure will use WriteEndpoint since it uses POST operation
-        var that = this;
+
         headersPromise.then(function (headers) {
-            that._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                that.post(writeEndpoint, path, params, headers, callback);
+            this._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
+                this.post(writeEndpoint, path, params, headers, callback);
             });
         });
     }
@@ -2038,14 +2117,14 @@ export class DocumentClient {
      * @param {RequestCallback} callback - The callback for the request.
      */
     public replaceOffer(offerLink, offer, callback) {
-        var err = {};
+        const err = {};
         if (!this.isResourceValid(offer, err)) {
             callback(err);
             return;
         }
 
-        var path = "/" + offerLink;
-        var id = Base.parseLink(offerLink).objectBody.id.toLowerCase();
+        const path = "/" + offerLink;
+        const id = Base.parseLink(offerLink).objectBody.id.toLowerCase();
         this.replace(offer, path, "offers", id, undefined, {}, callback);
     }
 
@@ -2056,8 +2135,8 @@ export class DocumentClient {
      * @param {RequestCallback} callback    - The callback for the request.
     */
     public readOffer(offerLink, callback) {
-        var path = "/" + offerLink;
-        var id = Base.parseLink(offerLink).objectBody.id.toLowerCase();
+        const path = "/" + offerLink;
+        const id = Base.parseLink(offerLink).objectBody.id.toLowerCase();
         this.read(path, "offers", id, undefined, {}, callback);
     }
 
@@ -2079,10 +2158,10 @@ export class DocumentClient {
      * @returns {QueryIterator}             - An instance of QueryIterator to handle reading feed.
     */
     public queryOffers(query, options) {
-        var that = this;
+
         return new QueryIterator(this, query, options, function (options, callback) {
-            that.queryFeed.call(that,
-                that,
+            this.queryFeed.call(this,
+                this,
                 "/offers",
                 "offers",
                 "",
@@ -2094,82 +2173,38 @@ export class DocumentClient {
         });
     }
 
-    /** 
-     * Gets the Database account information.
-     * @memberof DocumentClient
-     * @instance
-     * @param {string} [options.urlConnection]   - The endpoint url whose database account needs to be retrieved. \
-     * If not present, current client's url will be used.
-     * @param {RequestCallback} callback         - The callback for the request. The second parameter of the \
-     * callback will be of type {@link DatabaseAccount}.
-     */
-    public async getDatabaseAccount(options, callback): void | Promise<[DatabaseAccount, Headers]> {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
-        options = optionsCallbackTuple.options;
-        callback = optionsCallbackTuple.callback;
-
-        var urlConnection = options.urlConnection || this.urlConnection;
-
-        var headersPromise = Base.getHeaders(this, this.defaultHeaders, "get", "", "", "", {});
-
-        headersPromise.then((headers) => {
-            this.get(urlConnection, "", headers, function (err, result, headers) {
-                if (err) { return callback(err); }
-
-                var databaseAccount = new AzureDocuments.DatabaseAccount();
-                databaseAccount.DatabasesLink = "/dbs/";
-                databaseAccount.MediaLink = "/media/";
-                databaseAccount.MaxMediaStorageUsageInMB =
-                    headers[Constants.HttpHeaders.MaxMediaStorageUsageInMB];
-                databaseAccount.CurrentMediaStorageUsageInMB =
-                    headers[Constants.HttpHeaders.CurrentMediaStorageUsageInMB];
-                databaseAccount.ConsistencyPolicy = result.userConsistencyPolicy;
-
-                // WritableLocations and ReadableLocations properties will be available 
-                // only for geo-replicated database accounts
-                if (Constants.WritableLocations in result && result.id !== "localhost") {
-                    databaseAccount._writableLocations = result[Constants.WritableLocations];
-                }
-                if (Constants.ReadableLocations in result && result.id !== "localhost") {
-                    databaseAccount._readableLocations = result[Constants.ReadableLocations];
-                }
-
-                callback(undefined, databaseAccount, headers);
-            });
-        });
-    }
-
     /** @ignore */
     public createDocumentPrivate(collectionLink, body, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var that = this;
 
-        var task = function () {
-            // Generate random document id if the id is missing in the payload and options.disableAutomaticIdGeneration != true
+
+        const task = function () {
+            // Generate random document id if the id is missing in the payload and
+            // options.disableAutomaticIdGeneration != true
             if ((body.id === undefined || body.id === "") && !options.disableAutomaticIdGeneration) {
                 body.id = Base.generateGuidId();
             }
 
-            var err = {};
-            if (!that.isResourceValid(body, err)) {
+            const err = {};
+            if (!this.isResourceValid(body, err)) {
                 callback(err);
                 return;
             }
 
-            var isNameBased = Base.isLinkNameBased(collectionLink);
-            var path = that.getPathFromLink(collectionLink, "docs", isNameBased);
-            var id = that.getIdFromLink(collectionLink, isNameBased);
+            const isNameBased = Base.isLinkNameBased(collectionLink);
+            const path = this.getPathFromLink(collectionLink, "docs", isNameBased);
+            const id = this.getIdFromLink(collectionLink, isNameBased);
 
-            that.create(body, path, "docs", id, undefined, options, callback);
+            this.create(body, path, "docs", id, undefined, options, callback);
         };
 
         if (options.partitionKey === undefined && options.skipGetPartitionKeyDefinition !== true) {
             this.getPartitionKeyDefinition(collectionLink, function (err, partitionKeyDefinition, response, headers) {
                 if (err) { return callback(err, response, headers); }
-                options.partitionKey = that.extractPartitionKey(body, partitionKeyDefinition);
+                options.partitionKey = this.extractPartitionKey(body, partitionKeyDefinition);
 
                 task();
             });
@@ -2181,35 +2216,35 @@ export class DocumentClient {
 
     /** @ignore */
     public upsertDocumentPrivate(collectionLink, body, options, callback) {
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var that = this;
 
-        var task = function () {
+
+        const task = function () {
             // Generate random document id if the id is missing in the payload and options.disableAutomaticIdGeneration != true
             if ((body.id === undefined || body.id === "") && !options.disableAutomaticIdGeneration) {
                 body.id = Base.generateGuidId();
             }
 
-            var err = {};
-            if (!that.isResourceValid(body, err)) {
+            const err = {};
+            if (!this.isResourceValid(body, err)) {
                 callback(err);
                 return;
             }
 
-            var isNameBased = Base.isLinkNameBased(collectionLink);
-            var path = that.getPathFromLink(collectionLink, "docs", isNameBased);
-            var id = that.getIdFromLink(collectionLink, isNameBased);
+            const isNameBased = Base.isLinkNameBased(collectionLink);
+            const path = this.getPathFromLink(collectionLink, "docs", isNameBased);
+            const id = this.getIdFromLink(collectionLink, isNameBased);
 
-            that.upsert(body, path, "docs", id, undefined, options, callback);
+            this.upsert(body, path, "docs", id, undefined, options, callback);
         };
 
         if (options.partitionKey === undefined && options.skipGetPartitionKeyDefinition !== true) {
             this.getPartitionKeyDefinition(collectionLink, function (err, partitionKeyDefinition, response, headers) {
                 if (err) { return callback(err, response, headers); }
-                options.partitionKey = that.extractPartitionKey(body, partitionKeyDefinition);
+                options.partitionKey = this.extractPartitionKey(body, partitionKeyDefinition);
 
                 task();
             });
@@ -2221,16 +2256,16 @@ export class DocumentClient {
 
     /** @ignore */
     public queryDocumentsPrivate(collectionLinks, query, options) {
-        var that = this;
 
-        var fetchFunctions = Base.map(collectionLinks, function (collectionLink) {
-            var isNameBased = Base.isLinkNameBased(collectionLink);
-            var path = that.getPathFromLink(collectionLink, "docs", isNameBased);
-            var id = that.getIdFromLink(collectionLink, isNameBased);
+
+        const fetchFunctions = Base.map(collectionLinks, function (collectionLink) {
+            const isNameBased = Base.isLinkNameBased(collectionLink);
+            const path = this.getPathFromLink(collectionLink, "docs", isNameBased);
+            const id = this.getIdFromLink(collectionLink, isNameBased);
 
             return function (options, callback) {
-                that.queryFeed.call(that,
-                    that,
+                this.queryFeed.call(this,
+                    this,
                     path,
                     "docs",
                     id,
@@ -2246,63 +2281,73 @@ export class DocumentClient {
     }
 
     /** @ignore */
-    public create(body, path, type, id, initialHeaders, options, callback) {
+    public async create(body, path, type, id, initialHeaders, options) {
         initialHeaders = initialHeaders || Base.extend({}, this.defaultHeaders);
         initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
-        var headersPromise = Base.getHeaders(this, initialHeaders, "post", path, id, type, options);
-
-        var that = this;
+        const requestHeaders = Base.getHeaders(this, initialHeaders, "post", path, id, type, options);
 
         // create will use WriteEndpoint since it uses POST operation
-        headersPromise.then(function (headers) {
-            that.applySessionToken(path, headers);
+        this.applySessionToken(path, requestHeaders);
 
-            that._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                that.post(writeEndpoint, path, body, headers, function (err, result, resHeaders) {
-                    that.captureSessionToken(path, Constants.OperationTypes.Create, headers, resHeaders);
-                    callback(err, result, resHeaders);
-                });
-            });
-        });
+        try {
+            const writeEndpoint = await this._globalEndpointManager.getWriteEndpoint();
+            const { result, headers } = await this.post(writeEndpoint, path, body, requestHeaders);
+            this.captureSessionToken(path, Constants.OperationTypes.Create, headers, resHeaders);
+            return { result, headers };
+        } catch (err) {
+            if (callback) {
+                callback(err);
+                return;
+            } else {
+                return err;
+            }
+        }
     }
 
     /** @ignore */
-    public upsert(body, path, type, id, initialHeaders, options, callback) {
+    public async upsert(body, path, type, id, initialHeaders, options) {
         initialHeaders = initialHeaders || Base.extend({}, this.defaultHeaders);
         initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
-        var headersPromise = Base.getHeaders(this, initialHeaders, "post", path, id, type, options);
+        const requestHeaders = await Base.getHeaders(this, initialHeaders, "post", path, id, type, options);
 
-        var that = this;
+        this.setIsUpsertHeader(headers);
+        this.applySessionToken(path, headers);
 
-        headersPromise.then(function (headers) {
-            that.setIsUpsertHeader(headers);
-            that.applySessionToken(path, headers);
-
+        try {
             // upsert will use WriteEndpoint since it uses POST operation
-            that._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                that.post(writeEndpoint, path, body, headers, function (err, result, resHeaders) {
-                    that.captureSessionToken(path, Constants.OperationTypes.Upsert, headers, resHeaders);
-                    callback(err, result, resHeaders);
-                });
-            });
-        });
+            const writeEndpoint = await this._globalEndpointManager.getWriteEndpoint();
+            const { result, headers } = await this.post(writeEndpoint, path, body, headers);
+            this.captureSessionToken(path, Constants.OperationTypes.Upsert, requestHeaders, headers);
+            if (callback) {
+                callback(null, result, resHeaders);
+                return;
+            } else {
+                return { result, headers };
+            }
+        } catch (err) {
+            if (callback) {
+                callback(err);
+            } else {
+                throw err;
+            }
+        }
     }
 
     /** @ignore */
     public replace(resource, path, type, id, initialHeaders, options, callback) {
         initialHeaders = initialHeaders || Base.extend({}, this.defaultHeaders);
         initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
-        var headersPromise = Base.getHeaders(this, initialHeaders, "put", path, id, type, options);
+        const headersPromise = Base.getHeaders(this, initialHeaders, "put", path, id, type, options);
 
-        var that = this;
+
 
         headersPromise.then(function (headers) {
-            that.applySessionToken(path, headers);
+            this.applySessionToken(path, headers);
 
             // replace will use WriteEndpoint since it uses PUT operation
-            that._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                that.put(writeEndpoint, path, resource, headers, function (err, result, resHeaders) {
-                    that.captureSessionToken(path, Constants.OperationTypes.Replace, headers, resHeaders);
+            this._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
+                this.put(writeEndpoint, path, resource, headers, function (err, result, resHeaders) {
+                    this.captureSessionToken(path, Constants.OperationTypes.Replace, headers, resHeaders);
                     callback(err, result, resHeaders);
                 });
             });
@@ -2310,46 +2355,48 @@ export class DocumentClient {
     }
 
     /** @ignore */
-    public read(path, type, id, initialHeaders, options, callback) {
+    public async read(path, type, id, initialHeaders, options) {
         initialHeaders = initialHeaders || Base.extend({}, this.defaultHeaders);
         initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
-        var headersPromise = Base.getHeaders(this, initialHeaders, "get", path, id, type, options);
 
-        var that = this;
+        try {
+            const requestHeaders = await Base.getHeaders(this, initialHeaders, "get", path, id, type, options);
+            this.applySessionToken(path, requestHeaders);
 
-        headersPromise.then(function (headers) {
-            that.applySessionToken(path, headers);
-
-            var request = { "path": path, "operationType": Constants.OperationTypes.Read, "client": this, "endpointOverride": null };
-
+            const request = {
+                path,
+                operationType: Constants.OperationTypes.Read,
+                client: this,
+                endpointOverride: null
+            };
             // read will use ReadEndpoint since it uses GET operation
-            that._globalEndpointManager.getReadEndpoint(function (readEndpoint) {
-                that.get(readEndpoint, request, headers, function (err, result, resHeaders) {
-                    that.captureSessionToken(path, Constants.OperationTypes.Read, headers, resHeaders);
-                    callback(err, result, resHeaders);
-                });
-            });
-        });
+            const readEndpoint = await this._globalEndpointManager.getReadEndpoint();
+            const response = await this.get(readEndpoint, request, requestHeaders);
+            this.captureSessionToken(path, Constants.OperationTypes.Read, requestHeaders, response.headers);
+            return response;
+        } catch (err) {
+            throw err;
+        }
     }
 
     /** @ignore */
     public deleteResource(path, type, id, initialHeaders, options, callback) {
         initialHeaders = initialHeaders || Base.extend({}, this.defaultHeaders);
         initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
-        var headersPromise = Base.getHeaders(this, initialHeaders, "delete", path, id, type, options);
+        const headersPromise = Base.getHeaders(this, initialHeaders, "delete", path, id, type, options);
 
-        var that = this;
+
         headersPromise.then(function (headers) {
 
-            that.applySessionToken(path, headers);
+            this.applySessionToken(path, headers);
             // deleteResource will use WriteEndpoint since it uses DELETE operation
-            that._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                that.delete(writeEndpoint, path, headers, function (err, result, resHeaders) {
+            this._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
+                this.delete(writeEndpoint, path, headers, function (err, result, resHeaders) {
                     if (Base.parseLink(path).type != "colls") {
-                        that.captureSessionToken(path, Constants.OperationTypes.Delete, headers, resHeaders);
+                        this.captureSessionToken(path, Constants.OperationTypes.Delete, headers, resHeaders);
                     }
                     else {
-                        that.clearSessionToken(path);
+                        this.clearSessionToken(path);
                     }
                     callback(err, result, resHeaders);
                 });
@@ -2357,75 +2404,7 @@ export class DocumentClient {
         });
     }
 
-    /** @ignore */
-    public get(url, request, headers) {
-        return RequestHandler.request(
-            this._globalEndpointManager,
-            this.connectionPolicy,
-            this.requestAgent,
-            "GET",
-            url,
-            request,
-            undefined,
-            this.defaultUrlParams,
-            headers);
-    }
 
-    /** @ignore */
-    public post(url, request, body, headers) {
-        return RequestHandler.request(
-            this._globalEndpointManager,
-            this.connectionPolicy,
-            this.requestAgent,
-            "POST",
-            url,
-            request,
-            body,
-            this.defaultUrlParams,
-            headers);
-    }
-
-    /** @ignore */
-    public put(url, request, body, headers) {
-        return RequestHandler.request(
-            this._globalEndpointManager,
-            this.connectionPolicy,
-            this.requestAgent,
-            "PUT",
-            url,
-            request,
-            body,
-            this.defaultUrlParams,
-            headers);
-    }
-
-    /** @ignore */
-    public head(url, request, headers) {
-        return RequestHandler.request(
-            this._globalEndpointManager,
-            this.connectionPolicy,
-            this.requestAgent,
-            "HEAD",
-            url,
-            request,
-            undefined,
-            this.defaultUrlParams,
-            headers);
-    }
-
-    /** @ignore */
-    public delete(url, request, headers, callback) {
-        return RequestHandler.request(
-            this._globalEndpointManager,
-            this.connectionPolicy,
-            this.requestAgent,
-            "DELETE",
-            url,
-            request,
-            undefined,
-            this.defaultUrlParams,
-            headers);
-    }
 
     /** Gets the partition key definition first by looking into the cache otherwise by reading the collection.
     * @ignore
@@ -2439,22 +2418,22 @@ export class DocumentClient {
             return callback(undefined, this.partitionKeyDefinitionCache[collectionLink]);
         }
 
-        var that = this;
+
 
         this.readCollection(collectionLink, function (err, collection, headers) {
             if (err) { return callback(err, undefined, collection, headers); }
-            callback(err, that.partitionKeyDefinitionCache[collectionLink], collection, headers);
+            callback(err, this.partitionKeyDefinitionCache[collectionLink], collection, headers);
         });
     }
 
     public extractPartitionKey(document, partitionKeyDefinition) {
         if (partitionKeyDefinition && partitionKeyDefinition.paths && partitionKeyDefinition.paths.length > 0) {
-            var partitionKey = [];
+            const partitionKey = [];
             partitionKeyDefinition.paths.forEach(function (path) {
-                var pathParts = Base.parsePath(path);
+                const pathParts = Base.parsePath(path);
 
-                var obj = document;
-                for (var i = 0; i < pathParts.length; ++i) {
+                const obj = document;
+                for (const i = 0; i < pathParts.length; ++i) {
                     if (!((typeof obj === "object") && (pathParts[i] in obj))) {
                         obj = {};
                         break;
@@ -2473,22 +2452,29 @@ export class DocumentClient {
     }
 
     /** @ignore */
-    public queryFeed(documentclient, path, type, id, resultFn, createFn, query, options, callback, partitionKeyRangeId) {
-        var that = this;
-
-        var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+    public queryFeed(
+        documentclient: DocumentClient,
+        path,
+        type,
+        id,
+        resultFn,
+        createFn,
+        query,
+        options,
+        partitionKeyRangeId?: string): Promise<Response<any>> {
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
 
-        var successCallback = function (err, result, responseHeaders) {
+        const successCallback = function (err, result, responseHeaders) {
             if (err) { return callback(err, undefined, responseHeaders); }
-            var bodies;
+            const bodies;
             if (query) {
                 bodies = resultFn(result);
             }
             else {
                 bodies = Base.map(resultFn(result), function (body) {
-                    return createFn(that, body);
+                    return createFn(this, body);
                 });
             }
 
@@ -2497,7 +2483,7 @@ export class DocumentClient {
 
         // Query operations will use ReadEndpoint even though it uses
         // GET(for queryFeed) and POST(for regular query operations)
-        this._globalEndpointManager.getReadEndpoint(async (readEndpoint) => {
+        await this._globalEndpointManager.getReadEndpoint(async (readEndpoint) => {
 
             const request = {
                 path,
@@ -2509,13 +2495,13 @@ export class DocumentClient {
             const initialHeaders = Base.extend({}, documentclient.defaultHeaders);
             initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
             if (query === undefined) {
-                try{
+                try {
                     const headers = await Base.getHeaders(
                         documentclient, initialHeaders, "get", path, id, type, options, partitionKeyRangeId);
                     this.applySessionToken(path, headers);
 
                     documentclient.get(readEndpoint, request, headers, function (err, result, resHeaders) {
-                        that.captureSessionToken(path, Constants.OperationTypes.Query, headers, resHeaders);
+                        this.captureSessionToken(path, Constants.OperationTypes.Query, headers, resHeaders);
                         successCallback(err, result, resHeaders);
                     });
                 } catch (err) {
@@ -2523,7 +2509,7 @@ export class DocumentClient {
                 }
             } else {
                 initialHeaders[Constants.HttpHeaders.IsQuery] = "true";
-                switch (that.queryCompatibilityMode) {
+                switch (this.queryCompatibilityMode) {
                     case AzureDocuments.QueryCompatibilityMode.SqlQuery:
                         initialHeaders[Constants.HttpHeaders.ContentType] = Constants.MediaTypes.SQL;
                         break;
@@ -2540,10 +2526,10 @@ export class DocumentClient {
                 const headersPromise = Base.getHeaders(
                     documentclient, initialHeaders, "post", path, id, type, options, partitionKeyRangeId);
                 headersPromise.then(function (headers) {
-                    that.applySessionToken(path, headers);
+                    this.applySessionToken(path, headers);
 
                     documentclient.post(readEndpoint, request, query, headers, function (err, result, resHeaders) {
-                        that.captureSessionToken(path, Constants.OperationTypes.Query, headers, resHeaders);
+                        this.captureSessionToken(path, Constants.OperationTypes.Query, headers, resHeaders);
                         successCallback(err, result, resHeaders);
                     });
                 });
@@ -2576,12 +2562,12 @@ export class DocumentClient {
 
     /** @ignore */
     public resolveCollectionLinkForCreate(partitionResolver, document) {
-        var validation = this.isPartitionResolverValid(partitionResolver);
+        const validation = this.isPartitionResolverValid(partitionResolver);
         if (!validation.valid) {
             throw validation.error;
         }
 
-        var partitionKey = partitionResolver.getPartitionKey(document);
+        const partitionKey = partitionResolver.getPartitionKey(document);
         return partitionResolver.resolveForCreate(partitionKey);
     }
 
@@ -2594,7 +2580,7 @@ export class DocumentClient {
             };
         }
 
-        var validation = this.isPartitionResolveFunctionDefined(partionResolver, "getPartitionKey");
+        const validation = this.isPartitionResolveFunctionDefined(partionResolver, "getPartitionKey");
         if (!validation.valid) {
             return validation;
         }
@@ -2671,34 +2657,6 @@ export class DocumentClient {
         headers[Constants.HttpHeaders.IsUpsert] = true;
     }
 
-    /** @ignore */
-    public validateOptionsAndCallback(optionsIn, callbackIn) {
-        var options, callback;
-
-        // options
-        if (optionsIn === undefined) {
-            options = new Object();
-        } else if (callbackIn === undefined && typeof optionsIn === 'function') {
-            callback = optionsIn;
-            options = new Object();
-        } else if (typeof optionsIn !== 'object') {
-            throw new Error(
-                `The "options" parameter must be of type "object". Actual type is: "${typeof optionsIn}".`);
-        } else {
-            options = optionsIn;
-        }
-
-        // callback
-        if (callbackIn !== undefined && typeof callbackIn !== 'function') {
-            throw new Error(
-                `The "callback" parameter must be of type "function". Actual type is: "${typeof callbackIn}".`);
-        } else if (typeof callbackIn === 'function') {
-            callback = callbackIn
-        }
-
-        return { options: options, callback: callback };
-    }
-
     /**
      * Gets the SessionToken for a given collectionLink
      * @memberof DocumentClient
@@ -2710,30 +2668,30 @@ export class DocumentClient {
             throw new Error("collectionLink cannot be null");
         }
 
-        var paths = Base.parseLink(collectionLink);
+        const paths = Base.parseLink(collectionLink);
 
         if (paths == undefined) {
             return "";
         }
 
-        var request = this.getSessionParams(collectionLink);
+        const request = this.getSessionParams(collectionLink);
         return this.sessionContainer.resolveGlobalSessionToken(request);
     }
 
     public applySessionToken(path, reqHeaders) {
-        var request = this.getSessionParams(path);
+        const request = this.getSessionParams(path);
 
         if (reqHeaders && reqHeaders[Constants.HttpHeaders.SessionToken]) {
             return;
         }
 
-        var sessionConsistency = reqHeaders[Constants.HttpHeaders.ConsistencyLevel];
+        const sessionConsistency = reqHeaders[Constants.HttpHeaders.ConsistencyLevel];
         if (!sessionConsistency) {
             return;
         }
 
         if (request['resourceAddress']) {
-            var sessionToken = this.sessionContainer.resolveGlobalSessionToken(request);
+            const sessionToken = this.sessionContainer.resolveGlobalSessionToken(request);
             if (sessionToken != "") {
                 reqHeaders[Constants.HttpHeaders.SessionToken] = sessionToken;
             }
@@ -2741,29 +2699,28 @@ export class DocumentClient {
     }
 
     public captureSessionToken(path, opType, reqHeaders, resHeaders) {
-        var request = this.getSessionParams(path);
+        const request = this.getSessionParams(path);
         request['operationType'] = opType;
         this.sessionContainer.setSessionToken(request, reqHeaders, resHeaders);
     }
 
     public clearSessionToken(path) {
-        var request = this.getSessionParams(path);
+        const request = this.getSessionParams(path);
         this.sessionContainer.clearToken(request);
     }
 
     public getSessionParams(resourceLink) {
-        var isNameBased = Base.isLinkNameBased(resourceLink);
-        var resourceId = null;
-        var resourceAddress = null;
-        var parserOutput = Base.parseLink(resourceLink);
+        const isNameBased = Base.isLinkNameBased(resourceLink);
+        const resourceId = null;
+        const resourceAddress = null;
+        const parserOutput = Base.parseLink(resourceLink);
         if (isNameBased) {
             resourceAddress = parserOutput.objectBody.self;
-        }
-        else {
+        } else {
             resourceAddress = parserOutput.objectBody.id;
             resourceId = parserOutput.objectBody.id;
         }
-        var resourceType = parserOutput.type;
+        const resourceType = parserOutput.type;
         return {
             isNameBased: isNameBased,
             resourceId: resourceId,
@@ -2831,6 +2788,8 @@ export interface RequestOptions {
     preTriggerInclude?: string | string[];
     resourceTokenExpirySeconds?: number;
     sessionToken?: string;
+    initialHeaders?: IHeaders;
+    urlConnection?: string;
 }
 
 /**
@@ -2876,8 +2835,9 @@ export interface FeedOptions {
  *
  */
 export interface MediaOptions {
-    slug: string;
-    contentType: string;
+    initialHeaders?: IHeaders;
+    slug?: string;
+    contentType?: string;
 }
 
 /**

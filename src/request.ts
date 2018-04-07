@@ -1,5 +1,5 @@
-import { ClientResponse, OutgoingHttpHeaders, ServerResponse } from "http"; // TYPES ONLY
-import { Agent, RequestOptions } from "https"; // TYPES ONLY
+import { Agent, ClientResponse, OutgoingHttpHeaders, ServerResponse } from "http"; // TYPES ONLY
+import { RequestOptions } from "https"; // TYPES ONLY
 import { Socket } from "net";
 import * as querystring from "querystring";
 import { Stream } from "stream";
@@ -39,11 +39,16 @@ function bodyFromData(data: Stream | Buffer | string | object) {
 
 function parse(urlString: string) { return url.parse(urlString); }
 
+export interface Response<T> {
+    headers: IHeaders;
+    result: T;
+}
+
 async function createRequestObject(
     connectionPolicy: ConnectionPolicy,
-    requestOptions: RequestOptions): Promise<[any, IHeaders]> { // TODO: any return type
+    requestOptions: RequestOptions): Promise<Response<any>> { // TODO: any return type
 
-    return new Promise<[any, IHeaders]>((resolve, reject) => {
+    return new Promise<Response<any>>((resolve, reject) => {
         function onTimeout() {
             httpsRequest.abort();
         }
@@ -54,7 +59,7 @@ async function createRequestObject(
             // In case of media response, return the stream to the user and the user will need
             // to handle reading the stream.
             if (isMedia && connectionPolicy.MediaReadMode === MediaReadMode.Streamed) {
-                return resolve([response, response.headers as IHeaders]);
+                return resolve({ result: response, headers: response.headers as IHeaders });
             }
 
             let data = "";
@@ -79,7 +84,7 @@ async function createRequestObject(
                     return reject(exception);
                 }
 
-                resolve([result, response.headers as IHeaders]);
+                resolve({ result, headers: response.headers as IHeaders });
             });
         });
 
@@ -152,17 +157,24 @@ export class RequestHandler {
         request: string | { path: string },
         data: string | Buffer | Stream,
         queryParams: any, // TODO: any query params types
-        headers: IHeaders) {
+        headers: IHeaders): Promise<Response<any>> { // TODO: any
         const path = (request as { path: string }).path === undefined ? request : (request as { path: string }).path;
         let body: any; // TODO: any
 
         if (data) {
             body = bodyFromData(data);
-            if (!body) { return { message: "parameter data must be a javascript object, string, Buffer, or stream" }; }
+            if (!body) {
+                return {
+                    result: {
+                        message: "parameter data must be a javascript object, string, Buffer, or stream",
+                    },
+                    headers: undefined,
+                };
+            }
         }
 
         let buffer;
-        let stream: Stream ;
+        let stream: Stream;
         if (body) {
             if (Buffer.isBuffer(body)) {
                 buffer = body;
@@ -172,7 +184,12 @@ export class RequestHandler {
             } else if (typeof body === "string") {
                 buffer = new Buffer(body, "utf8");
             } else {
-                return { message: "body must be string, Buffer, or stream" };
+                return {
+                    result: {
+                        message: "body must be string, Buffer, or stream",
+                    },
+                    headers: undefined,
+                };
             }
         }
 

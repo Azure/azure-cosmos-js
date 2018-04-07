@@ -1,8 +1,9 @@
 import { IHeaders } from "..";
+import { Response } from "../../request";
 
 export interface IEndpointComponent {
-    nextItem: () => Promise<[any, IHeaders]>;
-    current: () => Promise<[any, IHeaders]>;
+    nextItem: () => Promise<Response<any>>;
+    current: () => Promise<Response<any>>;
     hasMoreResults: () => boolean;
-    fetchMore?: () => Promise<[any, IHeaders]>;
+    fetchMore?: () => Promise<Response<any>>;
 }

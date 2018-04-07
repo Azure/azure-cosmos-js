@@ -38,26 +38,22 @@ export class SessionReadRetryPolicy {
             if (this.currentRetryAttemptCount <= this.maxRetryAttemptCount
                 && (this.request.operationType === Constants.OperationTypes.Read ||
                     this.request.operationType === Constants.OperationTypes.Query)) {
-                return new Promise<boolean | [boolean, url.UrlWithStringQuery]>((resolve, reject) => {
-                    this.globalEndpointManager.getReadEndpoint((readEndpoint: string) => {
-                        this.globalEndpointManager.getWriteEndpoint((writeEndpoint: string) => {
-                            if (readEndpoint !== writeEndpoint && this.request.endpointOverride == null) {
-                                this.currentRetryAttemptCount++;
-                                // TODO: tracing
-                                // console.log("Read with session token not available in read region.\
-                                // Trying read from write region.");
-                                this.request.endpointOverride = writeEndpoint;
-                                const newUrl = url.parse(writeEndpoint);
-                                return resolve([true, newUrl]);
-                            } else {
-                                // TODO: tracing
-                                // console.log("Clear the the token for named base request");
-                                this.request.client.clearSessionToken(this.request.path);
-                                return resolve(false);
-                            }
-                        });
-                    });
-                });
+                const readEndpoint = await this.globalEndpointManager.getReadEndpoint();
+                const writeEndpoint = await this.globalEndpointManager.getWriteEndpoint();
+                if (readEndpoint !== writeEndpoint && this.request.endpointOverride == null) {
+                    this.currentRetryAttemptCount++;
+                    // TODO: tracing
+                    // console.log("Read with session token not available in read region.\
+                    // Trying read from write region.");
+                    this.request.endpointOverride = writeEndpoint;
+                    const newUrl = url.parse(writeEndpoint);
+                    return [true, newUrl];
+                } else {
+                    // TODO: tracing
+                    // console.log("Clear the the token for named base request");
+                    this.request.client.clearSessionToken(this.request.path);
+                    return false;
+                }
             }
         }
         return false;

@@ -40,13 +40,8 @@ export class EndpointDiscoveryRetryPolicy {
                 // TODO: Tracing
                 // console.log("Write region was changed, refreshing the regions list from database account
                 // and will retry the request.");
-                return new Promise<boolean>((resolve, reject) => { // TODO: promisify
-                    this.globalEndpointManager.refreshEndpointList((writeEndpoint: string, readEndpoint: string) => {
-                        this.globalEndpointManager.setWriteEndpoint(writeEndpoint);
-                        this.globalEndpointManager.setReadEndpoint(readEndpoint);
-                        resolve(true);
-                    });
-                });
+                await this.globalEndpointManager.refreshEndpointList();
+                return true;
             }
         }
         return false;

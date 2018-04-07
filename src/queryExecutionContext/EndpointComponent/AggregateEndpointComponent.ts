@@ -1,4 +1,5 @@
 import { IHeaders } from "..";
+import { Response } from "../../request";
 import { AverageAggregator, CountAggregator, MaxAggregator, MinAggregator, SumAggregator } from "../Aggregators";
 import { IExecutionContext } from "../IExecutionContext";
 import { IEndpointComponent } from "./IEndpointComponent";
@@ -42,13 +43,13 @@ export class AggregateEndpointComponent implements IEndpointComponent {
      * Populate the aggregated values
      * @ignore
      */
-    private async _getAggregateResult(): Promise<[any, IHeaders]> {
+    private async _getAggregateResult(): Promise<Response<any>> {
         this.toArrayTempResources = [];
         this.aggregateValues = [];
         this.aggregateValuesIndex = -1;
 
         try {
-            const [resources, headers] = await this._getQueryResults();
+            const {result: resources, headers} = await this._getQueryResults();
 
             resources.forEach((resource: any) => { // TODO: any
                 this.localAggregators.forEach((aggregator) => {
@@ -67,7 +68,7 @@ export class AggregateEndpointComponent implements IEndpointComponent {
                 this.aggregateValues.push(aggregator.getResult());
             });
 
-            return [this.aggregateValues, headers];
+            return {result: this.aggregateValues, headers};
         } catch (err) {
             throw err;
         }
@@ -77,12 +78,12 @@ export class AggregateEndpointComponent implements IEndpointComponent {
      * Get the results of queries from all partitions
      * @ignore
      */
-    public async _getQueryResults(): Promise<[any, IHeaders]> {
+    public async _getQueryResults(): Promise<Response<any>> {
         try {
-            const [item, headers] = await this.executionContext.nextItem();
+            const {result: item, headers} = await this.executionContext.nextItem();
             if (item === undefined) {
                 // no more results
-                return [this.toArrayTempResources, headers];
+                return {result: this.toArrayTempResources, headers};
             }
 
             this.toArrayTempResources = this.toArrayTempResources.concat(item);
@@ -99,18 +100,18 @@ export class AggregateEndpointComponent implements IEndpointComponent {
      * @param {callback} callback - Function to execute for each element. \
      * the function takes two parameters error, element.
      */
-    public async nextItem(): Promise<[any, IHeaders]> {
+    public async nextItem(): Promise<Response<any>> {
         try {
             let headers: IHeaders;
             let resources: any;
             if (this.aggregateValues === undefined) {
-                [resources, headers] = await this._getAggregateResult();
+                ({result: resources, headers} = await this._getAggregateResult());
             }
             const resource = this.aggregateValuesIndex < this.aggregateValues.length
                 ? this.aggregateValues[++this.aggregateValuesIndex]
                 : undefined;
 
-            return [resource, headers];
+            return {result: resource, headers};
         } catch (err) {
             throw err;
         }
@@ -123,12 +124,12 @@ export class AggregateEndpointComponent implements IEndpointComponent {
      * @param {callback} callback - Function to execute for the current element. \
      * the function takes two parameters error, element.
      */
-    public async current(): Promise<[any, IHeaders]> {
+    public async current(): Promise<Response<any>> {
         if (this.aggregateValues === undefined) {
-            const [resouces, headers] = await this._getAggregateResult();
-            return [this.aggregateValues[this.aggregateValuesIndex], headers];
+            const {result: resouces, headers} = await this._getAggregateResult();
+            return {result: this.aggregateValues[this.aggregateValuesIndex], headers};
         } else {
-            return [this.aggregateValues[this.aggregateValuesIndex], undefined];
+            return {result: this.aggregateValues[this.aggregateValuesIndex], headers: undefined};
         }
     }
 

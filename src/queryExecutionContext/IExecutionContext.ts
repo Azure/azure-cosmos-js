@@ -1,8 +1,9 @@
 import { IHeaders } from ".";
+import { Response } from "../request";
 
 export interface IExecutionContext {
-    nextItem: () => Promise<[any, IHeaders]>;
-    current: () => Promise<[any, IHeaders]>;
+    nextItem: () => Promise<Response<any>>;
+    current: () => Promise<Response<any>>;
     hasMoreResults: () => boolean;
-    fetchMore?: () => Promise<[any, IHeaders]>; // TODO: code smell
+    fetchMore?: () => Promise<Response<any>>; // TODO: code smell
 }

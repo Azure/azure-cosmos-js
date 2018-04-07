@@ -1,5 +1,6 @@
 import * as crypto from "crypto";
 import { DocumentClient } from "./documentclient";
+import { DocumentClientBase } from "./DocumentClientBase";
 import { IHeaders } from "./queryExecutionContext";
 
 export interface IRequestInfo {
@@ -18,7 +19,7 @@ export interface ITokenProvider {
 export class AuthHandler {
     // TODO: documentClient
     public static async getAuthorizationHeader(
-        documentClient: DocumentClient,
+        documentClient: DocumentClientBase,
         verb: string,
         path: string,
         resourceId: string,

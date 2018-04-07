@@ -14,6 +14,7 @@ import {
 } from ".";
 import { Constants, StatusCodes, SubStatusCodes } from "../common";
 import { DocumentClient } from "../documentclient";
+import { Response } from "../request";
 import { InMemoryCollectionRoutingMap, PARITIONKEYRANGE, QueryRange, SmartRoutingMapProvider } from "../routing";
 
 export enum ParallelQueryExecutionContextBaseStates {
@@ -270,7 +271,7 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
             const checkAndEnqueueDocumentProducer =
                 async (documentProducerToCheck: DocumentProducer, checkNextDocumentProducerCallback: any) => {
                     try {
-                        const [afterItem, headers] = await documentProducerToCheck.current();
+                        const {result: afterItem, headers} = await documentProducerToCheck.current();
                         if (afterItem === undefined) {
                             // no more results left in this document producer, so we don't enqueue it
                         } else {
@@ -321,7 +322,7 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
         const documentProducer = this.orderByPQ.peek();
         // Check if split happened
         try {
-            const [element, headers] = await documentProducer.current();
+            const {result: element, headers} = await documentProducer.current();
             elseCallback();
         } catch (err) {
             if (ParallelQueryExecutionContextBase._needPartitionKeyRangeCacheRefresh(err)) {
@@ -342,12 +343,12 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
      * @param {callback} callback - Function to execute for each element. the function takes two \
      * parameters error, element.
      */
-    public async nextItem(): Promise<[any, IHeaders]> {
+    public async nextItem(): Promise<Response<any>> {
         if (this.err) {
             // if there is a prior error return error
             throw this.err;
         }
-        return new Promise<[any, IHeaders]>((resolve, reject) => {
+        return new Promise<Response<any>>((resolve, reject) => {
             this.sem.take(() => {
                 // NOTE: lock must be released before invoking quitting
                 if (this.err) {
@@ -363,7 +364,7 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
                     this.state = ParallelQueryExecutionContextBase.STATES.ended;
                     // release the lock before invoking callback
                     this.sem.leave();
-                    return resolve([undefined, this._getAndResetActiveResponseHeaders()]);
+                    return resolve({result: undefined, headers: this._getAndResetActiveResponseHeaders()});
                 }
 
                 const ifCallback = () => {
@@ -389,7 +390,9 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
                     let item: any;
                     let headers: IHeaders;
                     try {
-                        [item, headers] = await documentProducer.nextItem();
+                        const response = await documentProducer.nextItem();
+                        item = response.result;
+                        headers = response.headers;
                         this._mergeWithActiveResponseHeaders(headers);
                         if (item === undefined) {
                             // this should never happen
@@ -402,7 +405,7 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
                                             doesn't have any buffered item!`));
                             // release the lock before invoking callback
                             this.sem.leave();
-                            return resolve([undefined, this._getAndResetActiveResponseHeaders()]);
+                            return resolve({result: undefined, headers: this._getAndResetActiveResponseHeaders()});
                         }
                     } catch (err) {
                         this.err =
@@ -417,7 +420,7 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
                     // we need to put back the document producer to the queue if it has more elements.
                     // the lock will be released after we know document producer must be put back in the queue or not
                     try {
-                        const [afterItem, currentHeaders] = await documentProducer.current();
+                        const {result: afterItem, headers: currentHeaders} = await documentProducer.current();
                         if (afterItem === undefined) {
                             // no more results is left in this document producer
                         } else {
@@ -446,7 +449,7 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
                         this.sem.leave();
                     }
                     // invoke the callback on the item
-                    return resolve([item, this._getAndResetActiveResponseHeaders()]);
+                    return resolve({result: item, headers: this._getAndResetActiveResponseHeaders()});
                 };
                 this._repairExecutionContextIfNeeded(ifCallback, elseCallback);
             });
@@ -460,12 +463,12 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
      * @param {callback} callback - Function to execute for the current element. \
      * the function takes two parameters error, element.
      */
-    public async current(): Promise<[any, IHeaders]> {
+    public async current(): Promise<Response<any>> {
         if (this.err) {
             this.err.headerse = this._getAndResetActiveResponseHeaders();
             throw this.err;
         }
-        return new Promise<[any, IHeaders]>((resolve, reject) => {
+        return new Promise<Response<any>>((resolve, reject) => {
             this.sem.take(() => {
                 try {
                     if (this.err) {
@@ -474,7 +477,7 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
                     }
 
                     if (this.orderByPQ.size() === 0) {
-                        return resolve([undefined, this._getAndResetActiveResponseHeaders()]);
+                        return resolve({result: undefined, headers: this._getAndResetActiveResponseHeaders()});
                     }
 
                     const ifCallback = () => {

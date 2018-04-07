@@ -3,6 +3,7 @@ import { FetchFunctionCallback, SqlQuerySpec } from ".";
 import { Base } from "../base";
 import { Constants, StatusCodes, SubStatusCodes } from "../common";
 import { DocumentClient } from "../documentclient";
+import { Response } from "../request";
 import { DefaultQueryExecutionContext } from "./defaultQueryExecutionContext";
 import { FetchResult, FetchResultType } from "./FetchResult";
 import { HeaderUtils, IHeaders } from "./headerUtils";
@@ -68,7 +69,7 @@ export class DocumentProducer {
         // tslint:disable-next-line:no-shadowed-variable
         const fetchFunction: FetchFunctionCallback = (options: any) => { // TODO: any
             return new Promise((resolve, reject) => {
-                const callback = (err: Error, results: [any, IHeaders]) => {
+                const callback = (err: Error, results: Response<any>) => {
                     if (err) { return reject(err); }
                     resolve(results);
                 };
@@ -179,16 +180,14 @@ export class DocumentProducer {
      * Fetches and bufferes the next page of results and executes the given callback
      * @memberof DocumentProducer
      * @instance
-     * @param {callback} callback - Function to execute for next page of result.
-     *                              the function takes three parameters error, resources, headerResponse.
      */
-    public async bufferMore() {
+    public async bufferMore(): Promise<Response<any>> {
         if (this.err) {
             throw this.err;
         }
 
         try {
-            const [resources, headerResponse] = await this.internalExecutionContext.fetchMore();
+            const {result: resources, headers: headerResponse} = await this.internalExecutionContext.fetchMore();
             this._updateStates(undefined, resources === undefined);
             if (resources !== undefined) {
                 // some more results
@@ -197,7 +196,7 @@ export class DocumentProducer {
                 });
             }
 
-            return [resources, headerResponse];
+            return {result: resources, headers: headerResponse};
         } catch (err) { // TODO: any error
             if (DocumentProducer._needPartitionKeyRangeCacheRefresh(err)) {
                 // Split just happend
@@ -205,7 +204,7 @@ export class DocumentProducer {
                 const bufferedError = new FetchResult(undefined, err);
                 this.fetchResults.push(bufferedError);
                 // Putting a dummy result so that the rest of code flows
-                return [[bufferedError], err.headers];
+                return {result: [bufferedError], headers: err.headers};
             } else {
                 this._updateStates(err, err.resources === undefined);
                 throw err;
@@ -229,26 +228,26 @@ export class DocumentProducer {
      * @param {callback} callback - Function to execute for each element. the function \
      * takes two parameters error, element.
      */
-    public async nextItem() {
+    public async nextItem(): Promise<Response<any>> {
         if (this.err) {
             this._updateStates(this.err, undefined);
             throw this.err;
         }
 
         try {
-            const [item, headers] = await this.current();
+            const {result, headers} = await this.current();
 
             const fetchResult = this.fetchResults.shift();
-            this._updateStates(undefined, item === undefined);
-            assert.equal(fetchResult.feedResponse, item);
+            this._updateStates(undefined, result === undefined);
+            assert.equal(fetchResult.feedResponse, result);
             switch (fetchResult.fetchResultType) {
                 case FetchResultType.Done:
-                    return [undefined, headers];
+                    return {result: undefined, headers};
                 case FetchResultType.Exception:
                     fetchResult.error.headers = headers;
                     throw fetchResult.error;
                 case FetchResultType.Result:
-                    return [fetchResult.feedResponse, headers];
+                    return {result: fetchResult.feedResponse, headers};
             }
         } catch (err) {
             this._updateStates(err, err.item === undefined);
@@ -263,32 +262,32 @@ export class DocumentProducer {
      * @param {callback} callback - Function to execute for the current element. \
      * the function takes two parameters error, element.
      */
-    public async current(): Promise<[any, IHeaders]> {
+    public async current(): Promise<Response<any>> {
         // If something is buffered just give that
         if (this.fetchResults.length > 0) {
             const fetchResult = this.fetchResults[0];
             // Need to unwrap fetch results
             switch (fetchResult.fetchResultType) {
                 case FetchResultType.Done:
-                    return [undefined, this._getAndResetActiveResponseHeaders()];
+                    return {result: undefined, headers: this._getAndResetActiveResponseHeaders()};
                 case FetchResultType.Exception:
                     fetchResult.error.headers = this._getAndResetActiveResponseHeaders();
                     throw fetchResult.error;
                 case FetchResultType.Result:
-                    return [fetchResult.feedResponse, this._getAndResetActiveResponseHeaders()];
+                    return {result: fetchResult.feedResponse, headers: this._getAndResetActiveResponseHeaders()};
             }
         }
 
         // If there isn't anymore items left to fetch then let the user know.
         if (this.allFetched) {
-            return [undefined, this._getAndResetActiveResponseHeaders()];
+            return {result: undefined, headers: this._getAndResetActiveResponseHeaders()};
         }
 
         // If there are no more bufferd items and there are still items to be fetched then buffer more
         try {
-            const [items, headers] = await this.bufferMore();
-            if (items === undefined) {
-                return [undefined, headers];
+            const {result, headers} = await this.bufferMore();
+            if (result === undefined) {
+                return {result: undefined, headers};
             }
             HeaderUtils.mergeHeaders(this.respHeaders, headers);
 

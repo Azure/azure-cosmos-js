@@ -10,6 +10,7 @@ import {
 } from ".";
 import { StatusCodes, SubStatusCodes } from "../common";
 import { DocumentClient } from "../documentclient";
+import { Response } from "../request";
 
 export class ProxyQueryExecutionContext implements IExecutionContext {
     private queryExecutionContext: IExecutionContext;
@@ -47,7 +48,7 @@ export class ProxyQueryExecutionContext implements IExecutionContext {
      * @param {callback} callback - Function to execute for each element. \
      * the function takes two parameters error, element.
      */
-    public async nextItem(): Promise<[any, IHeaders]> {
+    public async nextItem(): Promise<Response<any>> {
         try {
             return this.queryExecutionContext.nextItem();
         } catch (err) {
@@ -89,7 +90,7 @@ export class ProxyQueryExecutionContext implements IExecutionContext {
      * @param {callback} callback - Function to execute for the current element. \
      * the function takes two parameters error, element.
      */
-    public current(): Promise<[any, IHeaders]> {
+    public current(): Promise<Response<any>> {
         try {
             return this.queryExecutionContext.current();
         } catch (err) {
@@ -120,7 +121,7 @@ export class ProxyQueryExecutionContext implements IExecutionContext {
         return this.queryExecutionContext.hasMoreResults();
     }
 
-    public fetchMore(): Promise<[any, IHeaders]> {
+    public fetchMore(): Promise<Response<any>> {
         try {
             return this.queryExecutionContext.fetchMore();
         } catch (err) {

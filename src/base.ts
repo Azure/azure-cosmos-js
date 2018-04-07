@@ -1,7 +1,9 @@
 import { AuthHandler } from "./auth";
 import { Constants, Platform } from "./common";
 import { DocumentClient, FeedOptions, MediaOptions, Options, RequestOptions } from "./documentclient";
+import { DocumentClientBase } from "./DocumentClientBase";
 import { IHeaders } from "./queryExecutionContext";
+import { Response } from "./request";
 
 /*
 //SCRIPT START
@@ -174,13 +176,13 @@ export class Base {
     }
 
     public static async getHeaders(
-        documentClient: DocumentClient,
+        documentClient: DocumentClientBase,
         defaultHeaders: IHeaders,
         verb: string, path: string,
         resourceId: string,
         resourceType: string,
         options: Options,
-        partitionKeyRangeId: string): Promise<IHeaders> {
+        partitionKeyRangeId?: string): Promise<IHeaders> {
 
         const headers: IHeaders = { ...defaultHeaders };
         options = options || {};
@@ -531,4 +533,22 @@ export class Base {
 
         return true;
     }
+
+    public static ThrowOrCallback(callback: ResponseCallback<any>, err: any) {
+        if (callback) {
+            callback(err);
+        } else {
+            throw err;
+        }
+    }
+
+    public static ResponseOrCallback(callback: ResponseCallback<any>, value: Response<any>) {
+        if (callback) {
+            callback(null, value.result, value.headers);
+        } else {
+            return value;
+        }
+    }
 }
+
+export type ResponseCallback<T> = (err: any, result?: T, headers?: IHeaders) => void;

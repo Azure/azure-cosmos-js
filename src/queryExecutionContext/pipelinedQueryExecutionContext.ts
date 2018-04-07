@@ -9,6 +9,7 @@ import {
     PartitionedQueryExecutionContextInfoParser,
 } from ".";
 import { DocumentClient } from "../documentclient";
+import { Response } from "../request";
 import {
     AggregateEndpointComponent,
     IEndpointComponent,
@@ -79,20 +80,20 @@ export class PipelinedQueryExecutionContext implements IExecutionContext {
         }
     }
 
-    public async nextItem() {
+    public async nextItem(): Promise<Response<any>> {
         return this.endpoint.nextItem();
     }
 
-    public async current() {
+    public async current(): Promise<Response<any>> {
         return this.endpoint.current();
     }
 
     // Removed callback here beacuse it wouldn't have ever worked...
-    public hasMoreResults() {
+    public hasMoreResults(): boolean {
         return this.endpoint.hasMoreResults();
     }
 
-    public async fetchMore() {
+    public async fetchMore(): Promise<Response<any>> {
         // if the wrapped endpoint has different implementation for fetchMore use that
         // otherwise use the default implementation
         if (typeof this.endpoint.fetchMore === "function") {
@@ -104,18 +105,18 @@ export class PipelinedQueryExecutionContext implements IExecutionContext {
         }
     }
 
-    private async _fetchMoreImplementation(): Promise<[any, IHeaders]> {
+    private async _fetchMoreImplementation(): Promise<Response<any>> {
         try {
-            const [item, headers] = await this.endpoint.nextItem();
+            const {result: item, headers} = await this.endpoint.nextItem();
             if (item === undefined) {
                 // no more results
                 if (this.fetchBuffer.length === 0) {
-                    return [undefined, this.fetchMoreRespHeaders];
+                    return {result: undefined, headers: this.fetchMoreRespHeaders};
                 } else {
                     // Just give what we have
                     const temp = this.fetchBuffer;
                     this.fetchBuffer = [];
-                    return [temp, this.fetchMoreRespHeaders];
+                    return {result: temp, headers: this.fetchMoreRespHeaders};
                 }
             } else {
                 // append the result
@@ -124,7 +125,7 @@ export class PipelinedQueryExecutionContext implements IExecutionContext {
                     // fetched enough results
                     const temp = this.fetchBuffer.slice(0, this.pageSize);
                     this.fetchBuffer = this.fetchBuffer.splice(this.pageSize);
-                    return [temp, this.fetchMoreRespHeaders];
+                    return {result: temp, headers: this.fetchMoreRespHeaders};
                 } else {
                     // recursively fetch more
                     // TODO: is recursion a good idea?

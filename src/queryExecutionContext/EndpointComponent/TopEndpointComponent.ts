@@ -1,6 +1,7 @@
 import { IHeaders } from "..";
 import { IExecutionContext } from "../IExecutionContext";
 import { IEndpointComponent } from "./IEndpointComponent";
+import { Response } from "../../request";
 
 export class TopEndpointComponent implements IEndpointComponent {
     /**
@@ -18,9 +19,9 @@ export class TopEndpointComponent implements IEndpointComponent {
      * @param {callback} callback - Function to execute for each element. \
      * the function takes two parameters error, element.
      */
-    public async nextItem(): Promise<[any, IHeaders]> {
+    public async nextItem(): Promise<Response<any>> {
         if (this.topCount <= 0) {
-            return [undefined, undefined];
+            return {result: undefined, headers: undefined};
         }
         this.topCount--;
         try {
@@ -37,9 +38,9 @@ export class TopEndpointComponent implements IEndpointComponent {
      * @param {callback} callback - Function to execute for the current element. \
      * the function takes two parameters error, element.
      */
-    public async current(): Promise<[any, IHeaders]> {
+    public async current(): Promise<Response<any>> {
         if (this.topCount <= 0) {
-            return [undefined, undefined];
+            return {result: undefined, headers: undefined};
         }
         try {
             return this.executionContext.current();

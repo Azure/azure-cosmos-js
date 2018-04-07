@@ -2,9 +2,10 @@ import { IExecutionContext, IHeaders } from ".";
 import { Base } from "../base";
 import { Constants } from "../common";
 import { DocumentClient } from "../documentclient";
+import { Response } from "../request";
 import { SqlParameter, SqlQuerySpec } from "./SqlQuerySpec";
 
-export type FetchFunctionCallback = (options: any) => Promise<[any, IHeaders]>;
+export type FetchFunctionCallback = (options: any) => Promise<Response<any>>;
 
 enum STATES {
     start = "start",
@@ -55,10 +56,10 @@ export class DefaultQueryExecutionContext implements IExecutionContext {
      * @memberof DefaultQueryExecutionContext
      * @instance
      */
-    public async nextItem(): Promise<[any, IHeaders]> {
-        const [resources, headers] = await this.current();
+    public async nextItem(): Promise<Response<any>> {
+        const response = await this.current();
         ++this.currentIndex;
-        return [resources, headers];
+        return response;
     }
 
     /**
@@ -66,13 +67,13 @@ export class DefaultQueryExecutionContext implements IExecutionContext {
      * @memberof DefaultQueryExecutionContext
      * @instance
      */
-    public async current(): Promise<[any, IHeaders]> {
+    public async current(): Promise<Response<any>> {
         if (this.currentIndex < this.resources.length) {
-            return [this.resources[this.currentIndex], undefined];
+            return { result: this.resources[this.currentIndex], headers: undefined };
         }
 
         if (this._canFetchMore()) {
-            const [resources, headers] = await this.fetchMore();
+            const { result: resources, headers } = await this.fetchMore();
             // if (err) {
             //     return callback(err, undefined, headers);
             // }
@@ -82,15 +83,15 @@ export class DefaultQueryExecutionContext implements IExecutionContext {
             if (this.resources.length === 0) {
                 if (!this.continuation && this.currentPartitionIndex >= this.fetchFunctions.length) {
                     this.state = DefaultQueryExecutionContext.STATES.ended;
-                    return [undefined, headers];
+                    return {result: undefined, headers};
                 } else {
                     return this.current();
                 }
             }
-            return [this.resources[this.currentIndex], headers];
+            return {result: this.resources[this.currentIndex], headers};
         } else {
             this.state = DefaultQueryExecutionContext.STATES.ended;
-            return [undefined, undefined];
+            return {result: undefined, headers: undefined};
         }
     }
 
@@ -113,9 +114,9 @@ export class DefaultQueryExecutionContext implements IExecutionContext {
      * @memberof DefaultQueryExecutionContext
      * @instance
      */
-    public async fetchMore(): Promise<[any, IHeaders]> {
+    public async fetchMore(): Promise<Response<any>> {
         if (this.currentPartitionIndex >= this.fetchFunctions.length) {
-            return [undefined, undefined];
+            return { headers: undefined, result: undefined };
         }
 
         // Keep to the original continuation and to restore the value after fetchFunction call
@@ -124,14 +125,16 @@ export class DefaultQueryExecutionContext implements IExecutionContext {
 
         // Return undefined if there is no more results
         if (this.currentPartitionIndex >= this.fetchFunctions.length) {
-            return [undefined, undefined];
+            return { headers: undefined, result: undefined };
         }
 
         const fetchFunction = this.fetchFunctions[this.currentPartitionIndex];
         let resources;
         let responseHeaders;
         try {
-            [resources, responseHeaders] = await fetchFunction(this.options);
+            const response = await fetchFunction(this.options);
+            resources = response.result;
+            responseHeaders = response.headers;
         } catch (err) {
             this.state = DefaultQueryExecutionContext.STATES.ended;
             // return callback(err, undefined, responseHeaders);
@@ -147,7 +150,7 @@ export class DefaultQueryExecutionContext implements IExecutionContext {
         this.state = DefaultQueryExecutionContext.STATES.inProgress;
         this.currentIndex = 0;
         this.options.continuation = originalContinuation;
-        return [resources, responseHeaders];
+        return {result: resources, headers: responseHeaders};
     }
 
     private _canFetchMore() {

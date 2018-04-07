@@ -1,4 +1,5 @@
 import { IHeaders } from "..";
+import { Response } from "../../request";
 import { IExecutionContext } from "../IExecutionContext";
 import { IEndpointComponent } from "./IEndpointComponent";
 
@@ -18,10 +19,10 @@ export class OrderByEndpointComponent implements IEndpointComponent {
      * @param {callback} callback - Function to execute for each element. the function \
      * takes two parameters error, element.
      */
-    public async nextItem(): Promise<[any, IHeaders]> {
+    public async nextItem(): Promise<Response<any>> {
         try {
-            const [item, headers] = await this.executionContext.nextItem();
-            return [item !== undefined ? item.payload : undefined, headers ];
+            const {result: item, headers} = await this.executionContext.nextItem();
+            return {result: item !== undefined ? item.payload : undefined, headers };
         } catch (err) {
             throw err;
         }
@@ -34,10 +35,10 @@ export class OrderByEndpointComponent implements IEndpointComponent {
      * @param {callback} callback - Function to execute for the current element. \
      * the function takes two parameters error, element.
      */
-    public async current(): Promise<[any, IHeaders]> {
+    public async current(): Promise<Response<any>> {
         try {
-            const [item, headers] = await this.executionContext.current();
-            return [item !== undefined ? item.payload : undefined, headers ];
+            const {result: item, headers} = await this.executionContext.current();
+            return {result: item !== undefined ? item.payload : undefined, headers };
         } catch (err) {
             throw err;
         }
