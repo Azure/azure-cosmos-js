@@ -29,7 +29,7 @@ export class MinAggregator implements IAggregator<number> {
                 this.value = other;
             }
         }
-    },
+    }
 
     /**
      * Get the aggregation result.

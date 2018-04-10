@@ -40,8 +40,8 @@ function bodyFromData(data: Stream | Buffer | string | object) {
 function parse(urlString: string) { return url.parse(urlString); }
 
 export interface Response<T> {
-    headers: IHeaders;
-    result: T;
+    headers?: IHeaders;
+    result?: T;
 }
 
 async function createRequestObject(

@@ -1,3 +1,4 @@
+import { Base } from "../base";
 import { Document, PartitionKey } from "../documents";
 import { PartitionKeyExtractor, PartitionKeyExtractorFunction } from "../range";
 import { ConsistentHashRing } from "./consistentHashRing";
@@ -59,13 +60,13 @@ export class HashPartitionResolver {
      * @param {any} partitionKey - The partition key used to determine the target collection for create
      * @returns {string}         - The target collection link that will be used for document creation.
      */
-    public resolveForCreate(partitionKey: string) {
+    public resolveForCreate(partitionKey: PartitionKey) {
         return this._resolve(partitionKey);
     }
 
-    private _resolve(partitionKey: string) {
+    private _resolve(partitionKey: PartitionKey) {
         HashPartitionResolver._throwIfInvalidPartitionKey(partitionKey);
-        return this.consistentHashRing.getNode(partitionKey);
+        return this.consistentHashRing.getNode(partitionKey as string); // TODO: code smell, type assertion
     }
 
     private static _throwIfInvalidPartitionKeyExtractor(partitionKeyExtractor: PartitionKeyExtractor) {

@@ -1,0 +1,1 @@
+{"version":3,"file":"DatabaseAccount.js","sourceRoot":"","sources":["../../src/documents/DatabaseAccount.ts"],"names":[],"mappings":";;AA8BA;IAAA;QAEW,uBAAkB,GAAkB,EAAE,CAAC;QAEvC,uBAAkB,GAAkB,EAAE,CAAC;IAelD,CAAC;IANG,IAAI,iBAAiB;QACjB,MAAM,CAAC,IAAI,CAAC,kBAAkB,CAAC;IACnC,CAAC;IACD,IAAI,iBAAiB;QACjB,MAAM,CAAC,IAAI,CAAC,kBAAkB,CAAC;IACnC,CAAC;CACJ;AAnBD,0CAmBC"}

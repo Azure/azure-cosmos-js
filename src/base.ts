@@ -267,8 +267,8 @@ export class Base {
         if ((documentClient as any).partitionResolver === undefined // TODO: paritionResolver does not exist
             || (documentClient as any).partitionResolver === null) {
             if (options.partitionKey !== undefined) {
-                let partitionKey = options.partitionKey;
-                if (partitionKey === null || partitionKey.constructor !== Array) {
+                let partitionKey: string[] | string = options.partitionKey;
+                if (partitionKey === null || !Array.isArray(partitionKey)) {
                     partitionKey = [partitionKey as string];
                 }
                 headers[Constants.HttpHeaders.PartitionKey] = Base.jsonStringifyAndEscapeNonASCII(partitionKey);

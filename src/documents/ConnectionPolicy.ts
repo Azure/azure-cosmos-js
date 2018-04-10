@@ -1,5 +1,5 @@
 import { ConnectionMode, MediaReadMode } from ".";
-
+import { RetryOptions } from "../retry";
 /**
  * @global
  * Represents the Connection policy associated with a DocumentClient in the Azure Cosmos DB database service.

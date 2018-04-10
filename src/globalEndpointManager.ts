@@ -1,9 +1,8 @@
-﻿
-import * as url from "url";
+﻿import * as url from "url";
 import { Constants } from "./common";
 import { DocumentClient } from "./documentclient";
-import { DatabaseAccount, LocationsType } from "./documents";
 import { DocumentClientBase } from "./DocumentClientBase";
+import { DatabaseAccount, LocationsType } from "./documents";
 
 /**
  * This internal class implements the logic for endpoint management for geo-replicated database accounts.
@@ -127,7 +126,7 @@ export class GlobalEndpointManager {
     private async _getDatabaseAccount(): Promise<DatabaseAccount> {
         const options = { urlConnection: this.defaultEndpoint };
         try {
-            const [databaseAccount] =
+            const {result: databaseAccount} =
                 await this.client.getDatabaseAccount(options);
             return databaseAccount;
             // If for any reason(non - globaldb related), we are not able to get the database
@@ -145,7 +144,7 @@ export class GlobalEndpointManager {
                 const locationalEndpoint =
                     GlobalEndpointManager._getLocationalEndpoint(this.defaultEndpoint, location);
                 const innerOptions = { urlConnection: locationalEndpoint }; // TODO: code smell inner options is hacky
-                const [databaseAccount] = await this.client.getDatabaseAccount(innerOptions);
+                const {result: databaseAccount} = await this.client.getDatabaseAccount(innerOptions);
                 if (databaseAccount) {
                     return databaseAccount;
                 }

@@ -17,6 +17,15 @@
   "engine": {
     "node": ">=0.8"
   },
+  "scripts": {
+    "clean": "rimraf lib",
+    "lint": "tslint -c tslint.json 'src/**/*.ts'",
+    "build": "npm run clean && npm run lint && echo Using TypeScript && tsc --version && tsc --pretty",
+    "test": "npm run build && mocha --compilers ts:ts-node/register --recursive test/**/*.test.ts",
+    "watch": "npm run build -- --watch",
+    "watch:test": "npm run test -- --watch",
+    "e2etst": "npm run "
+  },
   "devDependencies": {
     "@types/node": "^8.10.0",
     "@types/priorityqueuejs": "^1.0.1",

@@ -1,7 +1,7 @@
 import { IHeaders } from "..";
+import { Response } from "../../request";
 import { IExecutionContext } from "../IExecutionContext";
 import { IEndpointComponent } from "./IEndpointComponent";
-import { Response } from "../../request";
 
 export class TopEndpointComponent implements IEndpointComponent {
     /**

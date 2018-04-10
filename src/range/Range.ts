@@ -100,6 +100,6 @@ export class Range {
         if (typeof pointOrRange !== "object") {
             return false;
         }
-        return ("low" in pointOrRange && "high" in pointOrRange);
+        return pointOrRange instanceof Range;
     }
 }

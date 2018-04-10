@@ -1,6 +1,6 @@
 export interface SqlQuerySpec {
     query: string;
-    parameters: SqlParameter[];
+    parameters?: SqlParameter[];
 }
 
 export interface SqlParameter {

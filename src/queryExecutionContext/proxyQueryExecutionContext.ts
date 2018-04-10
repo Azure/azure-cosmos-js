@@ -31,7 +31,7 @@ export class ProxyQueryExecutionContext implements IExecutionContext {
         private query: SqlQuerySpec | string,
         private options: any, // TODO: any options
         private fetchFunctions: FetchFunctionCallback | FetchFunctionCallback[],
-        private resourceLink: string) {
+        private resourceLink: string | string[]) {
         this.documentclient = documentclient;
         this.query = query;
         this.fetchFunctions = fetchFunctions;

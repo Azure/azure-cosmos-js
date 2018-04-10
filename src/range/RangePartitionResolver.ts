@@ -78,7 +78,7 @@ export class RangePartitionResolver {
      * @param {object} document - The document from which to extract the partition key.
      * @returns {}
      */
-    public getPartitionKey(document: Document): string {
+    public getPartitionKey(document: Document): PartitionKey {
         if (typeof this.partitionKeyExtractor === "string") {
             return document[this.partitionKeyExtractor] as string;
         }
@@ -131,8 +131,11 @@ export class RangePartitionResolver {
     }
 
     private _getIntersectingMapEntries(partitionKey: PartitionKey) {
-        const partitionKeys: PartitionKey[] = (partitionKey instanceof Array) ? partitionKey : [partitionKey];
-        const ranges: Range[] = partitionKeys.map((p) => Range.isRange(p) ? p : new Range({ low: p }));
+        const partitionKeys: PartitionKey[] = (Array.isArray(partitionKey)) ? partitionKey : [partitionKey];
+        const ranges: Range[] = partitionKeys.map<Range>((p) =>
+            Range.isRange(p)
+                ? p as Range
+                : new Range({ low: p }));
 
         return ranges.reduce((result, range) => {
             return result.concat(this.partitionKeyMap

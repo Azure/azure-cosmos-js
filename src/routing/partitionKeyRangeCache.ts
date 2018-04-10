@@ -1,4 +1,5 @@
 import * as semaphore from "semaphore";
+import { Base } from "../base";
 import { CollectionRoutingMapFactory, InMemoryCollectionRoutingMap, QueryRange } from "./";
 
 export class PartitionKeyRangeCache {
