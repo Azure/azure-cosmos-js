@@ -1,1 +1,0 @@
-{"version":3,"file":"CountAggregator.js","sourceRoot":"","sources":["../../../src/queryExecutionContext/Aggregators/CountAggregator.ts"],"names":[],"mappings":";;AAEA;IAQI;QACI,IAAI,CAAC,KAAK,GAAG,CAAC,CAAC;IACnB,CAAC;IAOM,SAAS,CAAC,KAAa;QAC1B,IAAI,CAAC,KAAK,IAAI,KAAK,CAAC;IACxB,CAAC;IAOM,SAAS;QACZ,MAAM,CAAC,IAAI,CAAC,KAAK,CAAC;IACtB,CAAC;CAEJ;AA9BD,0CA8BC"}
