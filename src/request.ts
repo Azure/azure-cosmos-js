@@ -1,4 +1,4 @@
-import { Agent, ClientResponse, OutgoingHttpHeaders, ServerResponse } from "http"; // TYPES ONLY
+import { Agent, ClientRequest, ClientResponse, OutgoingHttpHeaders, ServerResponse } from "http"; // TYPES ONLY
 import { RequestOptions } from "https"; // TYPES ONLY
 import { Socket } from "net";
 import * as querystring from "querystring";
@@ -8,14 +8,24 @@ import { Constants } from "./common";
 import { ConnectionPolicy, MediaReadMode } from "./documents";
 import { GlobalEndpointManager } from "./globalEndpointManager";
 import { IHeaders } from "./queryExecutionContext";
-import { RetryUtility } from "./retry";
+import { Body, RetryUtility } from "./retry";
+
+export interface ErrorResponse {
+    code?: number;
+    substatus?: number;
+    body?: any;
+    headers?: IHeaders;
+    activityId?: string;
+    retryAfterInMilliseconds?: number;
+    [key: string]: any;
+}
 
 const isBrowser = new Function("try {return this===window;}catch(e){ return false;}");
 
 // TODO: :This feels hacky... Maybe just do this in the webpack.config.json?
 // Alternatively, we can move to superagent which will handle this for us...
 // tslint:disable-next-line:no-var-requires
-const https = isBrowser ? require("stream-http") : require("https");
+const https = isBrowser && false ? require("stream-http") : require("https");
 
 // ----------------------------------------------------------------------------
 // Utility methods
@@ -44,10 +54,10 @@ export interface Response<T> {
     result?: T;
 }
 
-async function createRequestObject(
+function createRequestObject(
     connectionPolicy: ConnectionPolicy,
-    requestOptions: RequestOptions): Promise<Response<any>> { // TODO: any return type
-
+    requestOptions: RequestOptions,
+    body: Body): Promise<Response<any>> {
     return new Promise<Response<any>>((resolve, reject) => {
         function onTimeout() {
             httpsRequest.abort();
@@ -55,7 +65,7 @@ async function createRequestObject(
 
         const isMedia = (requestOptions.path.indexOf("//media") === 0);
 
-        const httpsRequest = https.request(requestOptions, (response: ClientResponse) => {
+        const httpsRequest: ClientRequest = https.request(requestOptions, (response: ClientResponse) => {
             // In case of media response, return the stream to the user and the user will need
             // to handle reading the stream.
             if (isMedia && connectionPolicy.MediaReadMode === MediaReadMode.Streamed) {
@@ -103,6 +113,15 @@ async function createRequestObject(
         });
 
         httpsRequest.once("error", reject);
+
+        if (body["stream"] !== null) {
+            body["stream"].pipe(httpsRequest);
+        } else if (body["buffer"] !== null) {
+            (httpsRequest).write(body["buffer"]);
+            (httpsRequest).end();
+        } else {
+            (httpsRequest).end();
+        }
     });
 }
 
@@ -111,11 +130,11 @@ async function createRequestObject(
  * @param {object} response - response object returned from the executon of a request.
  * @param {object} data - the data body returned from the executon of a request.
  */
-function getErrorBody(response: ClientResponse, data: string, headers: IHeaders) {
-    const errorBody: any = { code: response.statusCode, body: data, headers }; // TODO: any Error
+function getErrorBody(response: ClientResponse, data: string, headers: IHeaders): ErrorResponse {
+    const errorBody: ErrorResponse = { code: response.statusCode, body: data, headers }; // TODO: any Error
 
     if (Constants.HttpHeaders.ActivityId in response.headers) {
-        errorBody.activityId = response.headers[Constants.HttpHeaders.ActivityId];
+        errorBody.activityId = response.headers[Constants.HttpHeaders.ActivityId] as string;
     }
 
     if (Constants.HttpHeaders.SubStatus in response.headers) {
@@ -131,8 +150,9 @@ function getErrorBody(response: ClientResponse, data: string, headers: IHeaders)
 }
 
 export class RequestHandler {
-    public static async createRequestObjectStub(connectionPolicy: ConnectionPolicy, requestOptions: RequestOptions) {
-        return createRequestObject(connectionPolicy, requestOptions);
+    public static async createRequestObjectStub(
+        connectionPolicy: ConnectionPolicy, requestOptions: RequestOptions, body: Body) {
+        return createRequestObject(connectionPolicy, requestOptions, body);
     }
 
     /**

@@ -1,5 +1,4 @@
 import { resolvePtr } from "dns";
-import { Agent } from "http";
 import { basename } from "path";
 import * as tunnel from "tunnel";
 import * as url from "url";
@@ -128,7 +127,7 @@ export class DocumentClient extends DocumentClientBase {
         }
 
         const path = "/dbs"; // TODO: constant
-        this.create(body, path, "dbs", undefined, undefined, options);
+        return this.create(body, path, "dbs", undefined, undefined, options, callback);
     }
 
     /**
@@ -209,6 +208,10 @@ export class DocumentClient extends DocumentClientBase {
         body: any,
         options?: RequestOptions,
         callback?: ResponseCallback<Document>): Promise<Response<Document>> { // TODO: any error
+        const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+        options = optionsCallbackTuple.options;
+        callback = optionsCallbackTuple.callback;
+
         const partitionResolver = this.partitionResolvers[documentsFeedOrDatabaseLink];
 
         const collectionLink = (partitionResolver === undefined || partitionResolver === null)
@@ -827,7 +830,7 @@ export class DocumentClient extends DocumentClientBase {
      * @param {FeedOptions} [options] - The feed options.
      * @returns {QueryIterator}       - An instance of queryIterator to handle reading feed.
      */
-    public async readDatabases(options?: FeedOptions) {
+    public readDatabases(options?: FeedOptions) {
         return this.queryDatabases(undefined, options);
     }
 
@@ -1020,8 +1023,9 @@ export class DocumentClient extends DocumentClientBase {
                     documentclient, initialHeaders, "post", path, id, type, options, partitionKeyRangeId);
                 this.applySessionToken(path, reqHeaders);
 
-                const { result, headers: resHeaders } =
+                const response =
                     await documentclient.post(readEndpoint, request, query, reqHeaders);
+                const { result, headers: resHeaders } = response;
                 this.captureSessionToken(path, Constants.OperationTypes.Query, reqHeaders, resHeaders);
                 return this.processQueryFeedResponse({ result, headers: resHeaders }, !!query, resultFn, createFn);
             }
@@ -2086,7 +2090,7 @@ export class DocumentClient extends DocumentClientBase {
      */
     public async readMedia(mediaLink: string, callback?: ResponseCallback<any>) {
         const resourceInfo = Base.parseLink(mediaLink);
-        const path = "/" + mediaLink;
+        const path = mediaLink;
         const initialHeaders = Base.extend({}, this.defaultHeaders);
         initialHeaders[Constants.HttpHeaders.Accept] = Constants.MediaTypes.Any;
         const attachmentId = Base.getAttachmentIdFromMediaId(resourceInfo.objectBody.id).toLowerCase();
@@ -2190,6 +2194,7 @@ export class DocumentClient extends DocumentClientBase {
             // executeStoredProcedure will use WriteEndpoint since it uses POST operation
             const writeEndpoint = await this._globalEndpointManager.getWriteEndpoint();
             const results = await this.post(writeEndpoint, path, params, headers);
+            return Base.ResponseOrCallback(callback, results);
         } catch (err) {
             Base.ThrowOrCallback(callback, err);
         }
@@ -2416,9 +2421,9 @@ export class DocumentClient extends DocumentClientBase {
             const writeEndpoint = await this._globalEndpointManager.getWriteEndpoint();
             const result = await this.put(writeEndpoint, path, resource, reqHeaders);
             this.captureSessionToken(path, Constants.OperationTypes.Replace, reqHeaders, result.headers);
-            return result;
+            return Base.ResponseOrCallback(callback, result);
         } catch (err) {
-            throw err;
+            Base.ThrowOrCallback(callback, err);
         }
     }
 
@@ -2518,7 +2523,7 @@ export class DocumentClient extends DocumentClientBase {
                         break;
                     }
 
-                    obj = obj[path];
+                    obj = obj[part];
                 }
 
                 partitionKey.push(obj);

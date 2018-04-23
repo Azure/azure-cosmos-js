@@ -134,10 +134,11 @@ function derive(baseClass, constructor, instanceMembers, staticMembers) {
 */
 export class Base {
     public static extend(arg0: any, arg1: any): any {
-        throw new Error("Method not implemented.");
+        // tslint:disable-next-line:prefer-object-spread
+        return Object.assign(arg0, arg1);
     }
-    public static map(arg0: any, arg1: any): any {
-        throw new Error("Method not implemented.");
+    public static map(arg0: any[], arg1: any): any[] {
+        return arg0.map(arg1);
     }
     public static NotImplementedException: string = "NotImplementedException";
 
@@ -536,7 +537,9 @@ export class Base {
 
     public static ThrowOrCallback(callback: ResponseCallback<any>, err: any) {
         if (callback) {
-            callback(err);
+            process.nextTick(() => {
+                callback(err);
+            });
         } else {
             throw err;
         }
@@ -544,7 +547,9 @@ export class Base {
 
     public static ResponseOrCallback(callback: ResponseCallback<any>, value: Response<any>) {
         if (callback) {
-            callback(null, value.result, value.headers);
+            process.nextTick(() => {
+                callback(undefined, value.result, value.headers);
+            });
         } else {
             return value;
         }

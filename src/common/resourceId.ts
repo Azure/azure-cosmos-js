@@ -113,7 +113,7 @@ export class ResourceId {
             return [false, undefined];
         }
 
-        const pair = ResourceId.verify(id);
+        const pair = this.verify(id);
 
         if (!pair[0]) {
             return [false, undefined];
@@ -201,7 +201,7 @@ export class ResourceId {
         return [true, rid];
     }
 
-    public static verify(id: string): [boolean, Buffer] {
+    public verify(id: string): [boolean, Buffer] {
         if (!id) {
             throw (new Error("invalid resource id " + id));
         }
@@ -215,8 +215,8 @@ export class ResourceId {
         return [true, buffer];
     }
 
-    public static verifyBool(id: string) {
-        return ResourceId.verify(id)[0];
+    public verifyBool(id: string) {
+        return this.verify(id)[0];
     }
 
     public static fromBase64String(s: string) {

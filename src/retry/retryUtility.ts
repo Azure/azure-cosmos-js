@@ -15,8 +15,8 @@ export interface Body {
 }
 
 export type CreateRequestObjectStubFunction =
-    (connectionPolicy: ConnectionPolicy, requestOptions: RequestOptions)
-        => WriteStream | Promise<Response<any>>; // TODO: any response
+    (connectionPolicy: ConnectionPolicy, requestOptions: RequestOptions, body: Body)
+        => Promise<Response<any>>; // TODO: any response
 
 export class RetryUtility {
     /**
@@ -76,65 +76,55 @@ export class RetryUtility {
         endpointDiscoveryRetryPolicy: EndpointDiscoveryRetryPolicy,
         resourceThrottleRetryPolicy: ResourceThrottleRetryPolicy,
         sessionReadRetryPolicy: SessionReadRetryPolicy): Promise<Response<any>> { // TODO: any response
-        const httpsRequest = createRequestObjectFunc(connectionPolicy, requestOptions);
+        const httpsRequest = createRequestObjectFunc(connectionPolicy, requestOptions, body);
 
-        if (httpsRequest) {
-            if ((httpsRequest as Promise<Response<any>>).then) {
-                try {
-                    const {result, headers} = await (httpsRequest as Promise<Response<any>>);
-                    headers[Constants.ThrottleRetryCount] = resourceThrottleRetryPolicy.currentRetryAttemptCount;
-                    headers[Constants.ThrottleRetryWaitTimeInMs] =
-                        resourceThrottleRetryPolicy.cummulativeWaitTimeinMilliseconds;
-                    return {result, headers};
-                } catch (err) { // TODO: any error
-                    let retryPolicy: any = null; // TODO: any Need an interface
-                    const headers = err.headers || {};
-                    if (err.code === EndpointDiscoveryRetryPolicy.FORBIDDEN_STATUS_CODE
-                        && err.substatus === EndpointDiscoveryRetryPolicy.WRITE_FORBIDDEN_SUB_STATUS_CODE) {
-                        retryPolicy = endpointDiscoveryRetryPolicy;
-                    } else if (err.code === ResourceThrottleRetryPolicy.THROTTLE_STATUS_CODE) {
-                        retryPolicy = resourceThrottleRetryPolicy;
-                    } else if (err.code === SessionReadRetryPolicy.NOT_FOUND_STATUS_CODE
-                        && err.substatus === SessionReadRetryPolicy.READ_SESSION_NOT_AVAILABLE_SUB_STATUS_CODE) {
-                        retryPolicy = sessionReadRetryPolicy;
-                    }
-                    if (retryPolicy) {
-                        retryPolicy.shouldRetry(err, (shouldRetry: boolean, newUrl: url.UrlWithStringQuery) => {
-                            if (!shouldRetry) {
-                                headers[Constants.ThrottleRetryCount] =
-                                    resourceThrottleRetryPolicy.currentRetryAttemptCount;
-                                headers[Constants.ThrottleRetryWaitTimeInMs] =
-                                    resourceThrottleRetryPolicy.cummulativeWaitTimeinMilliseconds;
-                                return {result: err.response, headers};
-                            } else {
-                                return new Promise<Response<any>>((resolve, reject) => {
-                                    setTimeout(async () => {
-                                        if (typeof newUrl !== "undefined") {
-                                            requestOptions = this.modifyRequestOptions(requestOptions, newUrl);
-                                        }
-                                        resolve(await this.apply(
-                                            body,
-                                            createRequestObjectFunc,
-                                            connectionPolicy,
-                                            requestOptions,
-                                            endpointDiscoveryRetryPolicy,
-                                            resourceThrottleRetryPolicy,
-                                            sessionReadRetryPolicy));
-                                    }, retryPolicy.retryAfterInMilliseconds);
-                                });
-                            }
-                        });
-                        return;
-                    }
-                }
+        try {
+            const { result, headers } = await (httpsRequest as Promise<Response<any>>);
+            headers[Constants.ThrottleRetryCount] = resourceThrottleRetryPolicy.currentRetryAttemptCount;
+            headers[Constants.ThrottleRetryWaitTimeInMs] =
+                resourceThrottleRetryPolicy.cummulativeWaitTimeinMilliseconds;
+            return { result, headers };
+        } catch (err) { // TODO: any error
+            let retryPolicy: any = null; // TODO: any Need an interface
+            const headers = err.headers || {};
+            if (err.code === EndpointDiscoveryRetryPolicy.FORBIDDEN_STATUS_CODE
+                && err.substatus === EndpointDiscoveryRetryPolicy.WRITE_FORBIDDEN_SUB_STATUS_CODE) {
+                retryPolicy = endpointDiscoveryRetryPolicy;
+            } else if (err.code === ResourceThrottleRetryPolicy.THROTTLE_STATUS_CODE) {
+                retryPolicy = resourceThrottleRetryPolicy;
+            } else if (err.code === SessionReadRetryPolicy.NOT_FOUND_STATUS_CODE
+                && err.substatus === SessionReadRetryPolicy.READ_SESSION_NOT_AVAILABLE_SUB_STATUS_CODE) {
+                retryPolicy = sessionReadRetryPolicy;
             }
-        } else if (body["stream"] !== null) {
-            body["stream"].pipe(httpsRequest as WriteStream);
-        } else if (body["buffer"] !== null) {
-            (httpsRequest as WriteStream).write(body["buffer"]);
-            (httpsRequest as WriteStream).end();
-        } else {
-            (httpsRequest as WriteStream).end();
+            if (retryPolicy) {
+                retryPolicy.shouldRetry(err, (shouldRetry: boolean, newUrl: url.UrlWithStringQuery) => {
+                    if (!shouldRetry) {
+                        headers[Constants.ThrottleRetryCount] =
+                            resourceThrottleRetryPolicy.currentRetryAttemptCount;
+                        headers[Constants.ThrottleRetryWaitTimeInMs] =
+                            resourceThrottleRetryPolicy.cummulativeWaitTimeinMilliseconds;
+                        return { result: err.response, headers };
+                    } else {
+                        return new Promise<Response<any>>((resolve, reject) => {
+                            setTimeout(async () => {
+                                if (typeof newUrl !== "undefined") {
+                                    requestOptions = this.modifyRequestOptions(requestOptions, newUrl);
+                                }
+                                resolve(await this.apply(
+                                    body,
+                                    createRequestObjectFunc,
+                                    connectionPolicy,
+                                    requestOptions,
+                                    endpointDiscoveryRetryPolicy,
+                                    resourceThrottleRetryPolicy,
+                                    sessionReadRetryPolicy));
+                            }, retryPolicy.retryAfterInMilliseconds);
+                        });
+                    }
+                });
+            } else {
+                throw err;
+            }
         }
     }
 

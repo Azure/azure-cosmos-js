@@ -1,4 +1,4 @@
-import { Agent } from "http";
+import { Agent } from "https";
 import * as tunnel from "tunnel";
 import * as url from "url";
 import { Base, ResponseCallback } from "./base";
@@ -93,9 +93,9 @@ export abstract class DocumentClientBase {
                 requestAgentOptions.proxy.proxyAuth = proxyUrl.auth;
             }
 
-            this.requestAgent = proxyUrl.protocol.toLowerCase() === "https:" ?
+            this.requestAgent = (proxyUrl.protocol.toLowerCase() === "https:" ?
                 tunnel.httpsOverHttps(requestAgentOptions) :
-                tunnel.httpsOverHttp(requestAgentOptions);
+                tunnel.httpsOverHttp(requestAgentOptions)) as any; // TODO: type coersion
         } else {
             this.requestAgent = new Agent(requestAgentOptions); // TODO: Move to request?
         }

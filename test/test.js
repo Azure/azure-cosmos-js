@@ -42,22 +42,23 @@ var host = testConfig.host;
 var masterKey = testConfig.masterKey;
 
 describe("NodeJS CRUD Tests", function () {
-    
+
     // remove all databases from the endpoint before each test
     beforeEach(function (done) {
         var client = new DocumentDBClient(host, { masterKey: masterKey });
-        client.readDatabases().toArray(function (err, databases) {
+        var qf = client.readDatabases();
+        qf.toArray(function (err, databases) {
             if (err !== undefined) {
                 console.log("An error occured", err);
                 return done();
             }
-            
+
             var length = databases.length;
-            
+
             if (length === 0) {
                 return done();
             }
-            
+
             var count = 0;
             databases.forEach(function (database) {
                 client.deleteDatabase(database._self, function (err, db) {
@@ -65,7 +66,7 @@ describe("NodeJS CRUD Tests", function () {
                         console.log("An error occured", err);
                         return done();
                     }
-                    
+
                     count++;
                     if (count === length) {
                         done();
@@ -74,7 +75,7 @@ describe("NodeJS CRUD Tests", function () {
             });
         });
     });
-    
+
     var addUpsertWrapperMethods = function (client, isUpsertTest) {
         // Document
         client["createOrUpsertDocument"] = function (collectionLink, body, options, callback) {
@@ -93,7 +94,7 @@ describe("NodeJS CRUD Tests", function () {
                 this.replaceDocument(documentLink, body, options, callback);
             }
         };
-        
+
         // Attachment
         client["createOrUpsertAttachment"] = function (documentLink, body, options, callback) {
             if (isUpsertTest) {
@@ -111,7 +112,7 @@ describe("NodeJS CRUD Tests", function () {
                 this.replaceAttachment(attachmentLink, body, options, callback);
             }
         };
-        
+
         // User
         client["createOrUpsertUser"] = function (databaseLink, body, options, callback) {
             if (isUpsertTest) {
@@ -129,7 +130,7 @@ describe("NodeJS CRUD Tests", function () {
                 this.replaceUser(userLink, body, options, callback);
             }
         };
-        
+
         // Permission
         client["createOrUpsertPermission"] = function (userLink, body, options, callback) {
             if (isUpsertTest) {
@@ -147,7 +148,7 @@ describe("NodeJS CRUD Tests", function () {
                 this.replacePermission(permissionLink, body, options, callback);
             }
         };
-        
+
         // Trigger
         client["createOrUpsertTrigger"] = function (collectionLink, body, options, callback) {
             if (isUpsertTest) {
@@ -165,7 +166,7 @@ describe("NodeJS CRUD Tests", function () {
                 this.replaceTrigger(triggerLink, body, options, callback);
             }
         };
-        
+
         // User Defined Function
         client["createOrUpsertUserDefinedFunction"] = function (collectionLink, body, options, callback) {
             if (isUpsertTest) {
@@ -183,7 +184,7 @@ describe("NodeJS CRUD Tests", function () {
                 this.replaceUserDefinedFunction(udfLink, body, options, callback);
             }
         };
-        
+
         // Stored Procedure
         client["createOrUpsertStoredProcedure"] = function (collectionLink, body, options, callback) {
             if (isUpsertTest) {
@@ -201,7 +202,7 @@ describe("NodeJS CRUD Tests", function () {
                 this.replaceStoredProcedure(sprocLink, body, options, callback);
             }
         };
-        
+
         // Attachment and Upload Media
         client["createOrUpsertAttachmentAndUploadMedia"] = function (documentLink, readableStream, options, callback) {
             if (isUpsertTest) {
@@ -211,7 +212,7 @@ describe("NodeJS CRUD Tests", function () {
                 this.createAttachmentAndUploadMedia(documentLink, readableStream, options, callback);
             }
         };
-        
+
         client["updateOrUpsertMedia"] = function (documentLink, mediaLink, readableStream, options, callback) {
             if (isUpsertTest) {
                 this.upsertAttachmentAndUploadMedia(documentLink, readableStream, options, callback);
@@ -221,7 +222,7 @@ describe("NodeJS CRUD Tests", function () {
             }
         };
     };
-    
+
     var getDatabaseLink = function (isNameBasedLink, db) {
         if (isNameBasedLink) {
             return "dbs/" + db.id;
@@ -229,7 +230,7 @@ describe("NodeJS CRUD Tests", function () {
             return db._self;
         }
     };
-    
+
     var getCollectionLink = function (isNameBasedLink, db, coll) {
         if (isNameBasedLink) {
             return "dbs/" + db.id + "/colls/" + coll.id;
@@ -237,7 +238,7 @@ describe("NodeJS CRUD Tests", function () {
             return coll._self;
         }
     };
-    
+
     var getDocumentLink = function (isNameBasedLink, db, coll, doc) {
         if (isNameBasedLink) {
             return "dbs/" + db.id + "/colls/" + coll.id + "/docs/" + doc.id;
@@ -245,7 +246,7 @@ describe("NodeJS CRUD Tests", function () {
             return doc._self;
         }
     };
-    
+
     var getAttachmentLink = function (isNameBasedLink, db, coll, doc, attachment) {
         if (isNameBasedLink) {
             return "dbs/" + db.id + "/colls/" + coll.id + "/docs/" + doc.id + "/attachments/" + attachment.id;
@@ -253,7 +254,7 @@ describe("NodeJS CRUD Tests", function () {
             return attachment._self;
         }
     };
-    
+
     var getUserLink = function (isNameBasedLink, db, user) {
         if (isNameBasedLink) {
             return "dbs/" + db.id + "/users/" + user.id;
@@ -261,7 +262,7 @@ describe("NodeJS CRUD Tests", function () {
             return user._self;
         }
     };
-    
+
     var getPermissionLink = function (isNameBasedLink, db, user, permission) {
         if (isNameBasedLink) {
             return "dbs/" + db.id + "/users/" + user.id + "/permissions/" + permission.id;
@@ -269,7 +270,7 @@ describe("NodeJS CRUD Tests", function () {
             return permission._self;
         }
     };
-    
+
     var getTriggerLink = function (isNameBasedLink, db, coll, trigger) {
         if (isNameBasedLink) {
             return "dbs/" + db.id + "/colls/" + coll.id + "/triggers/" + trigger.id;
@@ -277,7 +278,7 @@ describe("NodeJS CRUD Tests", function () {
             return trigger._self;
         }
     };
-    
+
     var getUserDefinedFunctionLink = function (isNameBasedLink, db, coll, udf) {
         if (isNameBasedLink) {
             return "dbs/" + db.id + "/colls/" + coll.id + "/udfs/" + udf.id;
@@ -285,7 +286,7 @@ describe("NodeJS CRUD Tests", function () {
             return udf._self;
         }
     };
-    
+
     var getStoredProcedureLink = function (isNameBasedLink, db, coll, sproc) {
         if (isNameBasedLink) {
             return "dbs/" + db.id + "/colls/" + coll.id + "/sprocs/" + sproc.id;
@@ -293,7 +294,7 @@ describe("NodeJS CRUD Tests", function () {
             return sproc._self;
         }
     };
-    
+
     var getConflictLink = function (isNameBasedLink, db, coll, conflict) {
         if (isNameBasedLink) {
             return "dbs/" + db.id + "/colls/" + coll.id + "/conflicts/" + conflict.id;
@@ -301,25 +302,29 @@ describe("NodeJS CRUD Tests", function () {
             return conflict._self;
         }
     };
-    
+
     var bulkInsertDocuments = function (client, isNameBased, db, collection, documents, callback) {
         var returnedDocuments = [];
         var insertDocument = function (currentIndex) {
             if (currentIndex >= documents.length) {
-                callback(returnedDocuments);
+                callback(undefined, returnedDocuments);
             }
             else {
                 client.createDocument(getCollectionLink(isNameBased, db, collection), documents[currentIndex], function (err, document) {
-                    assert.equal(err, undefined, "error creating document " + JSON.stringify(documents[currentIndex]));
-                    returnedDocuments.push(document);
-                    insertDocument(++currentIndex);
+                    try {
+                        assert.equal(err, undefined, "error creating document " + JSON.stringify(documents[currentIndex]));
+                        returnedDocuments.push(document);
+                        insertDocument(++currentIndex);
+                    } catch (err) {
+                        callback(err);
+                    }
                 });
             }
         };
-        
+
         insertDocument(0);
     };
-    
+
     var bulkReadDocuments = function (client, isNameBased, db, collection, documents, partitionKey, callback) {
         var readDocument = function (currentIndex) {
             if (currentIndex >= documents.length) {
@@ -335,7 +340,7 @@ describe("NodeJS CRUD Tests", function () {
                         options = { partitionKey: {} };
                     }
                 }
-                
+
                 client.readDocument(getDocumentLink(isNameBased, db, collection, documents[currentIndex]), options, function (err, document) {
                     assert.equal(err, undefined, "error reading document " + JSON.stringify(documents[currentIndex]));
                     assert.equal(JSON.stringify(document), JSON.stringify(documents[currentIndex]));
@@ -343,10 +348,10 @@ describe("NodeJS CRUD Tests", function () {
                 });
             }
         };
-        
+
         readDocument(0);
     };
-    
+
     var bulkReplaceDocuments = function (client, isNameBased, db, collection, documents, partitionKey, callback) {
         var returnedDocuments = [];
         var replaceDocument = function (currentIndex) {
@@ -368,10 +373,10 @@ describe("NodeJS CRUD Tests", function () {
                 });
             }
         };
-        
+
         replaceDocument(0);
     };
-    
+
     var bulkDeleteDocuments = function (client, isNameBased, db, collection, documents, partitionKey, callback) {
         var deleteDocument = function (currentIndex) {
             if (currentIndex >= documents.length) {
@@ -387,17 +392,17 @@ describe("NodeJS CRUD Tests", function () {
                         options = { partitionKey: {} };
                     }
                 }
-                
+
                 client.deleteDocument(getDocumentLink(isNameBased, db, collection, documents[currentIndex]), options, function (err, result) {
                     assert.equal(err, undefined, "error deleting document " + JSON.stringify(documents[currentIndex]));
                     deleteDocument(++currentIndex);
                 });
             }
         };
-        
+
         deleteDocument(0);
     };
-    
+
     var bulkQueryDocumentsWithPartitionKey = function (client, isNameBased, db, collection, documents, partitionKey, callback) {
         var queryDocument = function (currentIndex) {
             if (currentIndex >= documents.length) {
@@ -407,7 +412,7 @@ describe("NodeJS CRUD Tests", function () {
                 if (!documents[currentIndex].hasOwnProperty(partitionKey)) {
                     return queryDocument(++currentIndex);
                 }
-                
+
                 var querySpec = {
                     query: "SELECT * FROM root r WHERE r." + partitionKey + "=@key",
                     parameters: [
@@ -417,7 +422,7 @@ describe("NodeJS CRUD Tests", function () {
                         }
                     ]
                 };
-                
+
                 client.queryDocuments(getCollectionLink(isNameBased, db, collection), querySpec).toArray(function (err, results) {
                     assert.equal(err, undefined, "error querying document " + JSON.stringify(documents[currentIndex]));
                     assert.equal(results.length, 1, "Expected exactly 1 document");
@@ -426,10 +431,10 @@ describe("NodeJS CRUD Tests", function () {
                 });
             }
         };
-        
+
         queryDocument(0);
     };
-    
+
     describe("Validate Database CRUD", function () {
         var databaseCRUDTest = function (isNameBased, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
@@ -460,7 +465,7 @@ describe("NodeJS CRUD Tests", function () {
                         client.queryDatabases(querySpec).toArray(function (err, results) {
                             assert.equal(err, undefined, "error querying databases");
                             assert(results.length > 0, "number of results for the query should be > 0");
-                            
+
                             // delete database
                             client.deleteDatabase(getDatabaseLink(isNameBased, db), function (err, res) {
                                 assert.equal(err, undefined, "error deleting database");
@@ -476,16 +481,16 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         it("nativeApi Should do database CRUD operations successfully name based", function (done) {
             databaseCRUDTest(true, done);
         });
-        
+
         it("nativeApi Should do database CRUD operations successfully rid based", function (done) {
             databaseCRUDTest(false, done);
         });
     });
-    
+
     describe("Validate Queries CRUD", function () {
         var queriesCRUDTest = function (isNameBased, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
@@ -523,16 +528,16 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         it("nativeApi Should do queries CRUD operations successfully name based", function (done) {
             queriesCRUDTest(true, done);
         });
-        
+
         it("nativeApi Should do queries CRUD operations successfully rid based", function (done) {
             queriesCRUDTest(false, done);
         });
     });
-    
+
     describe("Validate Collection CRUD", function () {
         var collectionCRUDTest = function (isNameBased, hasPartitionKey, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
@@ -548,11 +553,11 @@ describe("NodeJS CRUD Tests", function () {
                         id: "sample collection",
                         indexingPolicy: { indexingMode: "Consistent" }
                     };
-                    
+
                     if (hasPartitionKey) {
                         collectionDefinition.partitionKey = { paths: ["/id"], kind: DocumentBase.PartitionKind.Hash };
                     }
-                    
+
                     client.createCollection(getDatabaseLink(isNameBased, db), collectionDefinition, function (err, collection) {
                         assert.equal(err, undefined, "error creating collection");
                         assert.equal(collectionDefinition.id, collection.id);
@@ -575,21 +580,21 @@ describe("NodeJS CRUD Tests", function () {
                             client.queryCollections(getDatabaseLink(isNameBased, db), querySpec).toArray(function (err, results) {
                                 assert.equal(err, undefined, "error querying collections");
                                 assert(results.length > 0, "number of results for the query should be > 0");
-                                
+
                                 // Replacing indexing policy is allowed.
                                 collection.indexingPolicy.indexingMode = "Lazy";
                                 client.replaceCollection(getCollectionLink(isNameBased, db, collection), collection, function (err, replacedCollection) {
                                     assert.equal(err, undefined, "replaceCollection should work successfully");
                                     assert.equal("lazy", replacedCollection.indexingPolicy.indexingMode);
-                                    
+
                                     // Replacing partition key is not allowed.
                                     collection.partitionKey = { paths: ["/key"], kind: DocumentBase.PartitionKind.Hash };
                                     client.replaceCollection(getCollectionLink(isNameBased, db, collection), collection, function (err, replacedCollection) {
                                         var badRequestErrorCode = 400;
                                         assert.equal(err.code, badRequestErrorCode, "response should return error code " + badRequestErrorCode);
-                                        
+
                                         collection.partitionKey = collectionDefinition.partitionKey; // Resume partition key
-                                        
+
                                         // Replacing id is not allowed.
                                         collection.id = "try_to_replace_id";
                                         client.replaceCollection(getCollectionLink(isNameBased, db, collection), collection, function (err, replacedCollection) {
@@ -600,7 +605,7 @@ describe("NodeJS CRUD Tests", function () {
                                                 var badRequestErrorCode = 400;
                                                 assert.equal(err.code, badRequestErrorCode, "response should return error code 400");
                                             }
-                                            
+
                                             // read collection
                                             collection.id = collectionDefinition.id;  // Resume Id.
                                             client.readCollection(getCollectionLink(isNameBased, db, collection), function (err, collection) {
@@ -626,7 +631,7 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         var badPartitionKeyDefinitionTest = function (isNameBased, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
             // create database
@@ -638,39 +643,39 @@ describe("NodeJS CRUD Tests", function () {
                     indexingPolicy: { indexingMode: "Consistent" },
                     partitionKey: { paths: "/id", kind: DocumentBase.PartitionKind.Hash }
                 };
-                
+
                 client.createCollection(getDatabaseLink(isNameBased, db), collectionDefinition, function (err, collection) {
                     assert.equal(err.code, 400);
                     done();
                 });
             });
         };
-        
+
         it("nativeApi Should do collection CRUD operations successfully name based", function (done) {
             collectionCRUDTest(true, false, done);
         });
-        
+
         it("nativeApi Should do collection CRUD operations successfully rid based", function (done) {
             collectionCRUDTest(false, false, done);
         });
-        
+
         it("nativeApi Should do elastic collection CRUD operations successfully name based", function (done) {
             collectionCRUDTest(true, true, done);
         });
-        
+
         it("nativeApi Should do elastic collection CRUD operations successfully rid based", function (done) {
             collectionCRUDTest(false, true, done);
         });
-        
+
         it("nativeApi Collection with bad partition key definition name based", function (done) {
             badPartitionKeyDefinitionTest(true, done);
         });
-        
+
         it("nativeApi Collection with bad partition key definition name based", function (done) {
             badPartitionKeyDefinitionTest(false, done);
         });
     });
-    
+
     describe("Validate Document CRUD", function () {
         var documentCRUDTest = function (isNameBased, isUpsertTest, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
@@ -746,24 +751,24 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         var documentCRUDMultiplePartitionsTest = function (isNameBased, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
             // create database
             client.createDatabase({ id: "db1" }, function (err, db) {
                 assert.equal(err, undefined, "error creating database");
-                
+
                 var partitionKey = "key";
-                
+
                 // create collection
                 var collectionDefinition = {
                     id: "coll1",
                     partitionKey: { paths: ["/" + partitionKey], kind: DocumentBase.PartitionKind.Hash }
                 };
-                
+
                 client.createCollection(getDatabaseLink(isNameBased, db), collectionDefinition, { offerThroughput: 12000 }, function (err, collection) {
                     assert.equal(err, undefined, "error creating collection");
-                    
+
                     var documents = [
                         { id: "document1" },
                         { id: "document2", key: null, prop: 1 },
@@ -772,8 +777,11 @@ describe("NodeJS CRUD Tests", function () {
                         { id: "document5", key: 1, prop: 1 },
                         { id: "document6", key: "A", prop: 1 }
                     ];
-                    
-                    bulkInsertDocuments(client, isNameBased, db, collection, documents, function (returnedDocuments) {
+
+                    bulkInsertDocuments(client, isNameBased, db, collection, documents, function (err, returnedDocuments) {
+                        if(err) {
+                            return done(err);
+                        }
                         assert.equal(returnedDocuments.length, documents.length);
                         returnedDocuments.sort(function (doc1, doc2) {
                             return doc1.id.localeCompare(doc2.id);
@@ -787,7 +795,7 @@ describe("NodeJS CRUD Tests", function () {
                                     return doc1.id.localeCompare(doc2.id);
                                 });
                                 assert.equal(JSON.stringify(successDocuments), JSON.stringify(returnedDocuments), "Unexpected documents are returned");
-                                
+
                                 returnedDocuments.forEach(function (document) { ++document.prop; });
                                 bulkReplaceDocuments(client, isNameBased, db, collection, returnedDocuments, partitionKey, function (newReturnedDocuments) {
                                     returnedDocuments = newReturnedDocuments;
@@ -795,7 +803,7 @@ describe("NodeJS CRUD Tests", function () {
                                         var querySpec = {
                                             query: "SELECT * FROM Root"
                                         };
-                                        
+
                                         client.queryDocuments(getCollectionLink(isNameBased, db, collection), querySpec, { enableScanInQuery: true }).toArray(function (err, results) {
                                             var badRequestErrorCode = 400;
                                             assert.equal(err.code, badRequestErrorCode, "response should return error code " + badRequestErrorCode);
@@ -807,7 +815,7 @@ describe("NodeJS CRUD Tests", function () {
                                                 });
                                                 assert.equal(results.length, returnedDocuments.length, "Expected " + returnedDocuments.length + " documents to be succesfully queried");
                                                 assert.equal(JSON.stringify(results), JSON.stringify(returnedDocuments), "Unexpected query results");
-                                                
+
                                                 bulkDeleteDocuments(client, isNameBased, db, collection, returnedDocuments, partitionKey, function () {
                                                     done();
                                                 });
@@ -821,32 +829,32 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         it("nativeApi Should do document CRUD operations successfully name based", function (done) {
             documentCRUDTest(true, false, done);
         });
-        
+
         it("nativeApi Should do document CRUD operations successfully rid based", function (done) {
             documentCRUDTest(false, false, done);
         });
-        
+
         it("nativeApi Should do document CRUD operations successfully name based with upsert", function (done) {
             documentCRUDTest(true, true, done);
         });
-        
+
         it("nativeApi Should do document CRUD operations successfully rid based with upsert", function (done) {
             documentCRUDTest(false, true, done);
         });
-        
+
         it("nativeApi Should do document CRUD operations over multiple partitions successfully name based", function (done) {
             documentCRUDMultiplePartitionsTest(true, done);
         });
-        
+
         it("nativeApi Should do document CRUD operations over multiple partitions successfully rid based", function (done) {
             documentCRUDMultiplePartitionsTest(false, done);
         });
     });
-    
+
     describe("Validate Attachment CRUD", function () {
         var createReadableStream = function (firstChunk, secondChunk) {
             var readableStream = new Stream.Readable();
@@ -861,10 +869,10 @@ describe("NodeJS CRUD Tests", function () {
                 }
                 chunkCount++;
             };
-            
+
             return readableStream;
         };
-        
+
         var readMediaResponse = function (response, callback) {
             var data = "";
             response.on("data", function (chunk) {
@@ -874,11 +882,11 @@ describe("NodeJS CRUD Tests", function () {
                 if (response.statusCode >= 300) {
                     return callback({ code: response.statusCode, body: data });
                 }
-                
+
                 return callback(undefined, data);
             });
         };
-        
+
         var attachmentCRUDTest = function (isNameBased, isUpsertTest, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
             addUpsertWrapperMethods(client, isUpsertTest);
@@ -997,7 +1005,7 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         var attachmentCRUDOverMultiplePartitionsTest = function (isNameBased, isUpsertTest, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
             addUpsertWrapperMethods(client, isUpsertTest);
@@ -1006,13 +1014,13 @@ describe("NodeJS CRUD Tests", function () {
                 assert.equal(err, undefined, "error creating database");
                 // create collection
                 var partitionKey = "id";
-                
+
                 // create collection
                 var collectionDefinition = {
                     id: "coll1",
                     partitionKey: { paths: ["/" + partitionKey], kind: DocumentBase.PartitionKind.Hash }
                 };
-                
+
                 client.createCollection(getDatabaseLink(isNameBased, db), collectionDefinition, { offerThroughput: 12000 }, function (err, collection) {
                     assert.equal(err, undefined, "error creating collection");
                     // create document
@@ -1127,40 +1135,40 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         it("nativeApi Should do attachment CRUD operations successfully name based", function (done) {
             attachmentCRUDTest(true, false, done);
         });
-        
+
         it("nativeApi Should do attachment CRUD operations successfully rid based", function (done) {
             attachmentCRUDTest(false, false, done);
         });
-        
+
         it("nativeApi Should do attachment CRUD operations successfully name based with upsert", function (done) {
             attachmentCRUDTest(true, true, done);
         });
-        
+
         it("nativeApi Should do attachment CRUD operations successfully rid based with upsert", function (done) {
             attachmentCRUDTest(false, true, done);
         });
-        
+
         it("nativeApi Should do attachment CRUD operations over multiple partitions successfully name based", function (done) {
             attachmentCRUDOverMultiplePartitionsTest(true, false, done);
         });
-        
+
         it("nativeApi Should do attachment CRUD operations over multiple partitions successfully rid based", function (done) {
             attachmentCRUDOverMultiplePartitionsTest(false, false, done);
         });
-        
+
         it("nativeApi Should do attachment CRUD operations over multiple partitions successfully name based with upsert", function (done) {
             attachmentCRUDOverMultiplePartitionsTest(true, true, done);
         });
-        
+
         it("nativeApi Should do attachment CRUD operations over multiple partitions successfully rid based with upsert", function (done) {
             attachmentCRUDOverMultiplePartitionsTest(false, true, done);
         });
     });
-    
+
     describe("Validate User CRUD", function () {
         var userCRUDTest = function (isNameBased, isUpsertTest, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
@@ -1221,24 +1229,24 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         it("nativeApi Should do User CRUD operations successfully name based", function (done) {
             userCRUDTest(true, false, done);
         });
-        
+
         it("nativeApi Should do User CRUD operations successfully rid based", function (done) {
             userCRUDTest(false, false, done);
         });
-        
+
         it("nativeApi Should do User CRUD operations successfully name based with upsert", function (done) {
             userCRUDTest(true, true, done);
         });
-        
+
         it("nativeApi Should do User CRUD operations successfully rid based with upsert", function (done) {
             userCRUDTest(false, true, done);
         });
     });
-    
+
     describe("Validate Permission CRUD", function () {
         var permissionCRUDTest = function (isNameBased, isUpsertTest, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
@@ -1315,7 +1323,7 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         var permissionCRUDOverMultiplePartitionsTest = function (isNameBased, isUpsertTest, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
             addUpsertWrapperMethods(client, isUpsertTest);
@@ -1324,12 +1332,12 @@ describe("NodeJS CRUD Tests", function () {
                 assert.equal(err, undefined, "error creating database");
                 // create collection
                 var partitionKey = "id";
-                
+
                 var collectionDefinition = {
                     id: "coll1",
                     partitionKey: { paths: ["/" + partitionKey], kind: DocumentBase.PartitionKind.Hash }
                 };
-                
+
                 client.createCollection(getDatabaseLink(isNameBased, db), collectionDefinition, { offerThroughput: 12000 }, function (err, coll) {
                     assert.equal(err, undefined, "error creating collection");
                     // create user
@@ -1400,40 +1408,40 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         it("nativeApi Should do Permission CRUD operations successfully name based", function (done) {
             permissionCRUDTest(true, false, done);
         });
-        
+
         it("nativeApi Should do Permission CRUD operations successfully rid based", function (done) {
             permissionCRUDTest(false, false, done);
         });
-        
+
         it("nativeApi Should do Permission CRUD operations successfully name based with upsert", function (done) {
             permissionCRUDTest(true, true, done);
         });
-        
+
         it("nativeApi Should do Permission CRUD operations successfully rid based with upsert", function (done) {
             permissionCRUDTest(false, true, done);
         });
-        
+
         it("nativeApi Should do Permission CRUD operations over multiple partitions successfully name based", function (done) {
             permissionCRUDOverMultiplePartitionsTest(true, false, done);
         });
-        
+
         it("nativeApi Should do Permission CRUD operations over multiple partitions successfully rid based", function (done) {
             permissionCRUDOverMultiplePartitionsTest(false, false, done);
         });
-        
+
         it("nativeApi Should do Permission CRUD operations over multiple partitions successfully name based with upsert", function (done) {
             permissionCRUDOverMultiplePartitionsTest(true, true, done);
         });
-        
+
         it("nativeApi Should do Permission CRUD operations over multiple partitions successfully rid based with upsert", function (done) {
             permissionCRUDOverMultiplePartitionsTest(false, true, done);
         });
     });
-    
+
     describe("Validate Authorization", function () {
         var setupEntities = function (isNameBased, client, callback) {
             // create database
@@ -1495,7 +1503,7 @@ describe("NodeJS CRUD Tests", function () {
                                                             permissionOnDoc2: permissionOnDoc2,
                                                             permissionOnColl2: permissionOnColl2
                                                         };
-                                                        
+
                                                         callback(entities);
                                                     });
                                                 });
@@ -1509,7 +1517,7 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         var authorizationCRUDTest = function (isNameBased, isUpsertTest, done) {
             var client = new DocumentDBClient(host);
             client.readDatabases().toArray(function (err, databases) {
@@ -1526,8 +1534,8 @@ describe("NodeJS CRUD Tests", function () {
                         resourceTokens[entities.doc1.id] = entities.permissionOnColl1._token;
                     }
                     else {
-                    resourceTokens[entities.coll1._rid] = entities.permissionOnColl1._token;
-                    resourceTokens[entities.doc1._rid] = entities.permissionOnColl1._token;
+                        resourceTokens[entities.coll1._rid] = entities.permissionOnColl1._token;
+                        resourceTokens[entities.doc1._rid] = entities.permissionOnColl1._token;
                     }
 
                     var col1Client = new DocumentDBClient(host, { resourceTokens: resourceTokens });
@@ -1566,7 +1574,7 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         var authorizationCRUDOverMultiplePartitionsTest = function (isNameBased, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
             // create database
@@ -1574,19 +1582,19 @@ describe("NodeJS CRUD Tests", function () {
                 assert.equal(err, undefined, "error creating database");
                 // create collection
                 var partitionKey = "key";
-                
+
                 var collectionDefinition = {
                     id: "coll1",
                     partitionKey: { paths: ["/" + partitionKey], kind: DocumentBase.PartitionKind.Hash }
                 };
-                
+
                 client.createCollection(getDatabaseLink(isNameBased, db), collectionDefinition, { offerThroughput: 12000 }, function (err, coll) {
                     assert.equal(err, undefined, "error creating collection");
-                    
+
                     // create user
                     client.createUser(getDatabaseLink(isNameBased, db), { id: "user1" }, function (err, user) {
                         assert.equal(err, undefined, "error creating user");
-                        
+
                         var key = 1;
                         var permissionDefinition = { id: "permission1", permissionMode: DocumentBase.PermissionMode.All, resource: getCollectionLink(isNameBased, db, coll), resourcePartitionKey: [key] };
                         // create permission
@@ -1600,9 +1608,9 @@ describe("NodeJS CRUD Tests", function () {
                             else {
                                 resourceTokens[coll._rid] = permission._token;
                             }
-                            
+
                             var restrictedClient = new DocumentDBClient(host, { resourceTokens: resourceTokens });
-                            
+
                             restrictedClient.createDocument(getCollectionLink(isNameBased, db, coll), { id: "document1", key: 1 }, function (err, document) {
                                 assert.equal(err, undefined, "error creating document");
                                 restrictedClient.createDocument(getCollectionLink(isNameBased, db, coll), { id: "document2", key: 2 }, function (err, document) {
@@ -1616,32 +1624,32 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         it("nativeApi Should do authorization successfully name based", function (done) {
             authorizationCRUDTest(true, false, done);
         });
-        
+
         it("nativeApi Should do authorization successfully rid based", function (done) {
             authorizationCRUDTest(false, false, done);
         });
-        
+
         it("nativeApi Should do authorization successfully name based with upsert", function (done) {
             authorizationCRUDTest(true, true, done);
         });
-        
+
         it("nativeApi Should do authorization successfully rid based with upsert", function (done) {
             authorizationCRUDTest(false, true, done);
         });
-        
+
         it("nativeApi Should do authorization over multiple partitions successfully name based", function (done) {
             authorizationCRUDOverMultiplePartitionsTest(true, done);
         });
-        
+
         it("nativeApi Should do authorization over multiple partitions successfully rid based", function (done) {
             authorizationCRUDOverMultiplePartitionsTest(false, done);
         });
     });
-    
+
     describe("Validate Trigger CRUD", function () {
         var triggerCRUDTest = function (isNameBased, isUpsertTest, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
@@ -1724,24 +1732,24 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         it("nativeApi Should do trigger CRUD operations successfully name based", function (done) {
             triggerCRUDTest(true, false, done);
         });
-        
+
         it("nativeApi Should do trigger CRUD operations successfully rid based", function (done) {
             triggerCRUDTest(false, false, done);
         });
-        
+
         it("nativeApi Should do trigger CRUD operations successfully name based with upsert", function (done) {
             triggerCRUDTest(true, true, done);
         });
-        
+
         it("nativeApi Should do trigger CRUD operations successfully rid based with upsert", function (done) {
             triggerCRUDTest(false, true, done);
         });
     });
-    
+
     describe("Validate UDF CRUD", function () {
         var udfCRUDTest = function (isNameBased, isUpsertTest, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
@@ -1771,7 +1779,7 @@ describe("NodeJS CRUD Tests", function () {
                                     assert.equal(udf.body, "function () { var x = 10; }");
                                 }
                             }
-                            
+
                             // read udfs after creation
                             client.readUserDefinedFunctions(getCollectionLink(isNameBased, db, collection)).toArray(function (err, udfs) {
                                 assert.equal(err, undefined, "error reading user defined functions");
@@ -1823,24 +1831,24 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         it("nativeApi Should do UDF CRUD operations successfully name based", function (done) {
             udfCRUDTest(true, false, done);
         });
-        
+
         it("nativeApi Should do UDF CRUD operations successfully rid based", function (done) {
             udfCRUDTest(false, false, done);
         });
-        
+
         it("nativeApi Should do UDF CRUD operations successfully name based with upsert", function (done) {
             udfCRUDTest(true, true, done);
         });
-        
+
         it("nativeApi Should do UDF CRUD operations successfully rid based with upsert", function (done) {
             udfCRUDTest(false, true, done);
         });
     });
-    
+
     describe("Validate sproc CRUD", function () {
         var sprocCRUDTest = function (isNameBased, isUpsertTest, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
@@ -1870,7 +1878,7 @@ describe("NodeJS CRUD Tests", function () {
                                     assert.equal(sproc.body, "function () { var x = 10; }");
                                 }
                             }
-                            
+
                             // read sprocs after creation
                             client.readStoredProcedures(getCollectionLink(isNameBased, db, collection)).toArray(function (err, sprocs) {
                                 assert.equal(err, undefined, "error reading stored procedures");
@@ -1916,24 +1924,24 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         it("nativeApi Should do sproc CRUD operations successfully name based", function (done) {
             sprocCRUDTest(true, false, done);
         });
-        
+
         it("nativeApi Should do sproc CRUD operations successfully rid based", function (done) {
             sprocCRUDTest(false, false, done);
         });
-        
+
         it("nativeApi Should do sproc CRUD operations successfully name based with upsert", function (done) {
             sprocCRUDTest(true, true, done);
         });
-        
+
         it("nativeApi Should do sproc CRUD operations successfully rid based with upsert", function (done) {
             sprocCRUDTest(false, true, done);
         });
     });
-    
+
     describe("Validate spatial index", function () {
         var spatialIndexTest = function (isNameBased, isUpsertTest, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
@@ -1990,24 +1998,24 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         it("nativeApi Should support spatial index name based", function (done) {
             spatialIndexTest(true, false, done);
         });
-        
+
         it("nativeApi Should support spatial index rid based", function (done) {
             spatialIndexTest(false, false, done);
         });
-        
+
         it("nativeApi Should support spatial index name based with upsert", function (done) {
             spatialIndexTest(true, true, done);
         });
-        
+
         it("nativeApi Should support spatial index rid based with upsert", function (done) {
             spatialIndexTest(false, true, done);
         });
     });
-    
+
     describe("Validate collection indexing policy", function () {
         var indexPolicyTest = function (isNameBased, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
@@ -2055,12 +2063,12 @@ describe("NodeJS CRUD Tests", function () {
                                         }
 
                                     };
-                                    
+
                                     client.deleteCollection(getCollectionLink(isNameBased, db, consistentCollection), function (err, coll) {
                                         assert.equal(err, undefined, "error deleting collection");
                                         client.createCollection(getDatabaseLink(isNameBased, db), collectionDefinition, function (err, collectionWithIndexingPolicy) {
                                             assert.equal(err, undefined, "error creating collection");
-                                            
+
                                             // Two included paths.
                                             assert.equal(1, collectionWithIndexingPolicy.indexingPolicy.includedPaths.length, "Unexpected includedPaths length");
                                             // The first included path is what we created.
@@ -2068,11 +2076,11 @@ describe("NodeJS CRUD Tests", function () {
                                             assert(collectionWithIndexingPolicy.indexingPolicy.includedPaths[0].indexes.length > 1);  // Backend adds a default index
                                             assert.equal(DocumentBase.IndexKind.Hash, collectionWithIndexingPolicy.indexingPolicy.includedPaths[0].indexes[0].kind);
                                             // The second included path is a timestamp index created by the server.
-                                            
+
                                             // And one excluded path.
                                             assert.equal(1, collectionWithIndexingPolicy.indexingPolicy.excludedPaths.length, "Unexpected excludedPaths length");
                                             assert.equal("/\"systemMetadata\"/*", collectionWithIndexingPolicy.indexingPolicy.excludedPaths[0].path);
-                                            
+
                                             done();
                                         });
                                     });
@@ -2083,34 +2091,34 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         it("nativeApi Should create collection with correct indexing policy name based", function (done) {
             indexPolicyTest(true, done);
         });
-        
+
         it("nativeApi Should create collection with correct indexing policy rid based", function (done) {
             indexPolicyTest(false, done);
         });
-        
+
         var checkDefaultIndexingPolicyPaths = function (indexingPolicy) {
             // no excluded paths.
             assert.equal(0, indexingPolicy["excludedPaths"].length);
             // included paths should be 1 "/".
             assert.equal(1, indexingPolicy["includedPaths"].length);
-            
+
             var rootIncludedPath = null;
             if (indexingPolicy["includedPaths"][0]["path"] == "/*") {
                 rootIncludedPath = indexingPolicy["includedPaths"][0];
             }
-            
+
             assert(rootIncludedPath);  // root path should exist.
-            
+
             // In the root path, there should be one HashIndex for Strings, and one RangeIndex for Numbers.
             assert.equal(2, rootIncludedPath["indexes"].length);
-            
+
             var hashIndex = null;
             var rangeIndex = null;
-            
+
             for (var i = 0; i < 2; ++i) {
                 if (rootIncludedPath["indexes"][i]["kind"] == "Hash") {
                     hashIndex = rootIncludedPath["indexes"][i];
@@ -2118,13 +2126,13 @@ describe("NodeJS CRUD Tests", function () {
                     rangeIndex = rootIncludedPath["indexes"][i];
                 }
             }
-            
+
             assert(hashIndex);
             assert.equal("String", hashIndex["dataType"]);
             assert(rangeIndex);
             assert.equal("Number", rangeIndex["dataType"]);
         };
-        
+
         var defaultIndexingPolicyTest = function (isNameBased, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
             // create database
@@ -2200,16 +2208,16 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         it("nativeApi Should create collection with default indexing policy name based", function (done) {
             defaultIndexingPolicyTest(true, done);
         });
-        
+
         it("nativeApi Should create collection with default indexing policy rid based", function (done) {
             defaultIndexingPolicyTest(false, done);
         });
     });
-    
+
     describe.skip("Validate client request timeout", function () {
         it("nativeApi Client Should throw exception", function (done) {
             var connectionPolicy = new DocumentBase.ConnectionPolicy();
@@ -2271,7 +2279,7 @@ describe("NodeJS CRUD Tests", function () {
                     kind: DocumentBase.PartitionKind.Hash
                 }
             };
-            
+
             var collectionOptions = { offerThroughput: 12000 }
             client.createCollection("dbs/sample 中文 database", collectionDefinition, collectionOptions, function (err, createdCollection) {
                 assert.equal(err, undefined, "error creating collection");
@@ -2309,7 +2317,7 @@ describe("NodeJS CRUD Tests", function () {
             // invoke the function
             visitResultsFunc(queryIterator);
         }
-        
+
         it("nativeApi validate QueryIterator nextItem on Multiple Partition Colleciton", function (done) {
             queryIteratorNextItemVerifier(done);
         });
@@ -2334,7 +2342,7 @@ describe("NodeJS CRUD Tests", function () {
                                     doc2: doc2,
                                     doc3: doc3
                                 };
-                                
+
                                 callback(resources);
                             });
                         });
@@ -2342,7 +2350,7 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         var queryIteratorToArrayTest = function (isNameBased, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
             createResources(isNameBased, client, function (resources) {
@@ -2357,15 +2365,15 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         it("nativeApi validate QueryIterator iterator toArray name based", function (done) {
             queryIteratorToArrayTest(true, done);
         });
-        
+
         it("nativeApi validate QueryIterator iterator toArray rid based", function (done) {
             queryIteratorToArrayTest(false, done);
         });
-        
+
         var queryIteratorForEachTest = function (isNameBased, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
             createResources(isNameBased, client, function (resources) {
@@ -2382,7 +2390,7 @@ describe("NodeJS CRUD Tests", function () {
                     } else if (counter === 3) {
                         assert.equal(doc.id, resources.doc3.id, "third document should be doc3");
                     }
-                    
+
                     if (doc === undefined) {
                         assert(counter < 5, "iterator should have stopped");
                         done();
@@ -2390,15 +2398,15 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         it("nativeApi validate queryIterator iterator forEach name based", function (done) {
             queryIteratorForEachTest(true, done);
         });
-        
+
         it("nativeApi validate queryIterator iterator forEach rid based", function (done) {
             queryIteratorForEachTest(false, done);
         });
-        
+
         var queryIteratorNextAndMoreTest = function (isNameBased, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
             createResources(isNameBased, client, function (resources) {
@@ -2437,15 +2445,15 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         it("nativeApi validate queryIterator nextItem and hasMoreResults name based", function (done) {
             queryIteratorNextAndMoreTest(true, done);
         });
-        
+
         it("nativeApi validate queryIterator nextItem and hasMoreResults rid based", function (done) {
             queryIteratorNextAndMoreTest(false, done);
         });
-        
+
         var queryIteratorExecuteNextTest = function (isNameBased, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
             createResources(isNameBased, client, function (resources) {
@@ -2478,16 +2486,16 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         it("nativeApi validate queryIterator iterator executeNext name based", function (done) {
             queryIteratorExecuteNextTest(true, done);
         });
-        
+
         it("nativeApi validate queryIterator iterator executeNext rid based", function (done) {
             queryIteratorExecuteNextTest(false, done);
         });
     });
-    
+
     describe("validate trigger functionality", function () {
         var triggers = [
             {
@@ -2534,22 +2542,22 @@ describe("NodeJS CRUD Tests", function () {
                 triggerOperation: DocumentBase.TriggerOperation.Delete
             }
         ];
-        
+
         var createTriggers = function (client, collection, index, callback) {
             if (index === triggers.length) {
                 return callback();
             }
-            
+
             client.createOrUpsertTrigger(collection._self, triggers[index], function (err, trigger) {
                 assert.equal(err, undefined, "error creating trigger");
                 for (var property in triggers[index]) {
                     assert.equal(trigger[property], triggers[index][property], "property " + property + " should match");
                 }
-                
+
                 createTriggers(client, collection, index + 1, callback);
             });
         };
-        
+
         var triggerCRUDTest = function (isNameBased, isUpsertTest, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
             addUpsertWrapperMethods(client, isUpsertTest);
@@ -2594,24 +2602,24 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         it("nativeApi Should do trigger operations successfully name based", function (done) {
             triggerCRUDTest(true, false, done);
         });
-        
+
         it("nativeApi Should do trigger operations successfully rid based", function (done) {
             triggerCRUDTest(false, false, done);
         });
-        
+
         it("nativeApi Should do trigger operations successfully name based", function (done) {
             triggerCRUDTest(true, true, done);
         });
-        
+
         it("nativeApi Should do trigger operations successfully rid based", function (done) {
             triggerCRUDTest(false, true, done);
         });
     });
-    
+
     describe("validate stored procedure functionality", function () {
         var storedProcedureCRUDTest = function (isNameBased, isUpsertTest, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
@@ -2632,7 +2640,7 @@ describe("NodeJS CRUD Tests", function () {
                             }
                         }
                     };
-                    
+
                     client.createOrUpsertStoredProcedure(getCollectionLink(isNameBased, db, collection), sproc1, function (err, retrievedSproc) {
                         assert.equal(err, undefined, "error creating stored procedure");
                         client.executeStoredProcedure(getStoredProcedureLink(isNameBased, db, collection, retrievedSproc), function (err, result) {
@@ -2644,7 +2652,7 @@ describe("NodeJS CRUD Tests", function () {
                                     for (var i = 0; i < 10; i++) getContext().getResponse().appendValue("Body", i);
                                 }
                             };
-                            
+
                             client.createOrUpsertStoredProcedure(getCollectionLink(isNameBased, db, collection), sproc2, function (err, retrievedSproc2) {
                                 assert.equal(err, undefined, "error creating stored procedure");
                                 client.executeStoredProcedure(getStoredProcedureLink(isNameBased, db, collection, retrievedSproc2), function (err, result) {
@@ -2656,7 +2664,7 @@ describe("NodeJS CRUD Tests", function () {
                                             getContext().getResponse().setBody("a" + input.temp);
                                         }
                                     };
-                                    
+
                                     client.createOrUpsertStoredProcedure(getCollectionLink(isNameBased, db, collection), sproc3, function (err, retrievedSproc3) {
                                         assert.equal(err, undefined, "error creating stored procedure");
                                         client.executeStoredProcedure(getStoredProcedureLink(isNameBased, db, collection, retrievedSproc3), { temp: "so" }, function (err, result) {
@@ -2672,19 +2680,19 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         var executeStoredProcedureWithPartitionKey = function (isNameBased, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
             client.createDatabase({ id: "sample database" }, function (err, db) {
                 assert.equal(err, undefined, "error creating database");
                 // create collection
                 var partitionKey = "key";
-                
+
                 var collectionDefinition = {
                     id: "coll1",
                     partitionKey: { paths: ["/" + partitionKey], kind: DocumentBase.PartitionKind.Hash }
                 };
-                
+
                 client.createCollection(getDatabaseLink(isNameBased, db), collectionDefinition, { offerThroughput: 12000 }, function (err, collection) {
                     assert.equal(err, undefined, "error creating collection");
                     var querySproc = {
@@ -2693,18 +2701,18 @@ describe("NodeJS CRUD Tests", function () {
                             var context = getContext();
                             var collection = context.getCollection();
                             var response = context.getResponse();
-                            
+
                             // query for players
                             var query = 'SELECT r.id, r.key, r.prop FROM r';
                             var accept = collection.queryDocuments(collection.getSelfLink(), query, {}, function (err, documents, responseOptions) {
                                 if (err) throw new Error("Error" + err.message);
                                 response.setBody(documents);
                             });
-                            
+
                             if (!accept) throw "Unable to read player details, abort ";
                         }
                     };
-                    
+
                     var documents = [
                         { id: "document1" },
                         { id: "document2", key: null, prop: 1 },
@@ -2713,7 +2721,7 @@ describe("NodeJS CRUD Tests", function () {
                         { id: "document5", key: 1, prop: 1 },
                         { id: "document6", key: "A", prop: 1 }
                     ];
-                    
+
                     bulkInsertDocuments(client, isNameBased, db, collection, documents, function (returnedDocuments) {
                         client.createStoredProcedure(getCollectionLink(isNameBased, db, collection), querySproc, function (err, sproc) {
                             assert.equal(err, undefined, "error creating sproc");
@@ -2739,23 +2747,23 @@ describe("NodeJS CRUD Tests", function () {
         it("nativeApi Should do stored procedure operations successfully name based", function (done) {
             storedProcedureCRUDTest(true, false, done);
         });
-        
+
         it("nativeApi Should do stored procedure operations successfully rid based", function (done) {
             storedProcedureCRUDTest(false, false, done);
         });
-        
+
         it("nativeApi Should do stored procedure operations successfully name based with upsert", function (done) {
             storedProcedureCRUDTest(true, true, done);
         });
-        
+
         it("nativeApi Should do stored procedure operations successfully rid based with upsert", function (done) {
             storedProcedureCRUDTest(false, true, done);
         });
-        
+
         it("nativeApi Should execute stored procedure with partition key successfully name based", function (done) {
             executeStoredProcedureWithPartitionKey(true, done);
         });
-        
+
         it("nativeApi Should execute stored procedure with partition key successfully rid based", function (done) {
             executeStoredProcedureWithPartitionKey(false, done);
         });
@@ -2811,7 +2819,7 @@ describe("NodeJS CRUD Tests", function () {
             });
         });
     });
-    
+
     describe("Validate Offer CRUD", function () {
         var validateOfferResponseBody = function (offer, expectedCollLink, expectedOfferType) {
             assert(offer.id, "Id cannot be null");
@@ -2824,7 +2832,7 @@ describe("NodeJS CRUD Tests", function () {
                 assert.equal(expectedOfferType, offer.offerType);
             }
         };
-        
+
         var offerReadAndQueryTest = function (isNameBased, isPartitionedCollection, offerThroughput, expectedCollectionSize, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
             // create database
@@ -2865,7 +2873,7 @@ describe("NodeJS CRUD Tests", function () {
                 client.createCollection(getDatabaseLink(isNameBased, db), collectionDefinition, collectionRequestOptions, function (err, collection) {
                     assert.equal(err, undefined, "error creating collection: " + JSON.stringify(err));
 
-                    client.readCollection(getCollectionLink(isNameBased, db, collection), { populateQuotaInfo : true}, function (err, collection, headers) {
+                    client.readCollection(getCollectionLink(isNameBased, db, collection), { populateQuotaInfo: true }, function (err, collection, headers) {
                         assert.equal(err, undefined, "error reading collection: " + JSON.stringify(err));
 
                         // Validate the collection size quota
@@ -2879,50 +2887,51 @@ describe("NodeJS CRUD Tests", function () {
                             }, {})[Constants.Quota.CollectionSize]);
                         assert.equal(collectionSize, expectedCollectionSize, "Collection size is unexpected");
 
-                    client.readOffers({}).toArray(function (err, offers) {
-                        assert.equal(err, undefined, "error reading offers");
-                        assert.equal(offers.length, 1);
-                        var expectedOffer = offers[0];
-                        assert.equal(expectedOffer.content.offerThroughput, collectionRequestOptions.offerThroughput, "Expected offerThroughput to be " + collectionRequestOptions.offerThroughput);
-                        validateOfferResponseBody(expectedOffer, collection._self, undefined);
-                        // Read the offer
-                        client.readOffer(expectedOffer._self, function (err, readOffer) {
-                            assert.equal(err, undefined, "error reading offer");
-                            validateOfferResponseBody(readOffer, collection._self, undefined);
-                            // Check if the read offer is what we expected.
-                            assert.equal(expectedOffer.id, readOffer.id);
-                            assert.equal(expectedOffer._rid, readOffer._rid);
-                            assert.equal(expectedOffer._self, readOffer._self);
-                            assert.equal(expectedOffer.resource, readOffer.resource);
-                            // Read offer with a bad offer link.
-                            var badLink = expectedOffer._self.substring(0, expectedOffer._self.length - 1) + "x/";
-                            client.readOffer(badLink, function (err, _) {
-                                var notFoundErrorCode = 400;
-                                assert.equal(err.code, notFoundErrorCode, "response should return error code 404");
-                                
-                                // Query for offer.
-                                var querySpec = {
-                                    query: "select * FROM root r WHERE r.id=@id",
-                                    parameters: [
-                                        {
-                                            name: "@id",
-                                            value: expectedOffer.id
-                                        }
-                                    ]
-                                };
-                                client.queryOffers(querySpec).toArray(function (err, offers) {
-                                    assert.equal(err, undefined, "error querying offers");
-                                    assert.equal(offers.length, 1);
-                                    var oneOffer = offers[0];
-                                    validateOfferResponseBody(oneOffer, collection._self, undefined);
-                                    // Now delete the collection.
-                                    client.deleteCollection(getCollectionLink(isNameBased, db, collection), function (err, _) {
-                                        assert.equal(err, undefined, "error deleting collection");
-                                        // read offer after deleting collection.
-                                        client.readOffer(expectedOffer._self, function (err, _) {
-                                            var notFoundErrorCode = 404;
-                                            assert.equal(err.code, notFoundErrorCode, "response should return error code 404");
-                                            done();
+                        client.readOffers({}).toArray(function (err, offers) {
+                            assert.equal(err, undefined, "error reading offers");
+                            assert.equal(offers.length, 1);
+                            var expectedOffer = offers[0];
+                            assert.equal(expectedOffer.content.offerThroughput, collectionRequestOptions.offerThroughput, "Expected offerThroughput to be " + collectionRequestOptions.offerThroughput);
+                            validateOfferResponseBody(expectedOffer, collection._self, undefined);
+                            // Read the offer
+                            client.readOffer(expectedOffer._self, function (err, readOffer) {
+                                assert.equal(err, undefined, "error reading offer");
+                                validateOfferResponseBody(readOffer, collection._self, undefined);
+                                // Check if the read offer is what we expected.
+                                assert.equal(expectedOffer.id, readOffer.id);
+                                assert.equal(expectedOffer._rid, readOffer._rid);
+                                assert.equal(expectedOffer._self, readOffer._self);
+                                assert.equal(expectedOffer.resource, readOffer.resource);
+                                // Read offer with a bad offer link.
+                                var badLink = expectedOffer._self.substring(0, expectedOffer._self.length - 1) + "x/";
+                                client.readOffer(badLink, function (err, _) {
+                                    var notFoundErrorCode = 400;
+                                    assert.equal(err.code, notFoundErrorCode, "response should return error code 404");
+
+                                    // Query for offer.
+                                    var querySpec = {
+                                        query: "select * FROM root r WHERE r.id=@id",
+                                        parameters: [
+                                            {
+                                                name: "@id",
+                                                value: expectedOffer.id
+                                            }
+                                        ]
+                                    };
+                                    client.queryOffers(querySpec).toArray(function (err, offers) {
+                                        assert.equal(err, undefined, "error querying offers");
+                                        assert.equal(offers.length, 1);
+                                        var oneOffer = offers[0];
+                                        validateOfferResponseBody(oneOffer, collection._self, undefined);
+                                        // Now delete the collection.
+                                        client.deleteCollection(getCollectionLink(isNameBased, db, collection), function (err, _) {
+                                            assert.equal(err, undefined, "error deleting collection");
+                                            // read offer after deleting collection.
+                                            client.readOffer(expectedOffer._self, function (err, _) {
+                                                var notFoundErrorCode = 404;
+                                                assert.equal(err.code, notFoundErrorCode, "response should return error code 404");
+                                                done();
+                                            });
                                         });
                                     });
                                 });
@@ -2931,9 +2940,8 @@ describe("NodeJS CRUD Tests", function () {
                     });
                 });
             });
-            });
         };
-        
+
         var mbInBytes = 1024 * 1024;
         var offerThroughputSinglePartitionCollection = 5000;
         var minOfferThroughputPCollectionWithMultiPartitions = 2000;
@@ -2958,11 +2966,11 @@ describe("NodeJS CRUD Tests", function () {
         it.skip("nativeApi Should do offer read and query operations successfully w/ name based p-Collection w/ multi partitions", function (done) {
             offerReadAndQueryTest(true, true, minOfferThroughputPCollectionWithMultiPartitions, 5 * mbInBytes, done);
         });
-        
+
         it.skip("nativeApi Should do offer read and query operations successfully w/ rid based p-Collection w/ multi partitions", function (done) {
             offerReadAndQueryTest(false, true, minOfferThroughputPCollectionWithMultiPartitions, 5 * mbInBytes, done);
         });
-        
+
         var offerReplaceTest = function (isNameBased, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
             // create database
@@ -3017,15 +3025,15 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         it("nativeApi Should do offer replace operations successfully name based", function (done) {
             offerReplaceTest(true, done);
         });
-        
+
         it("nativeApi Should do offer replace operations successfully rid based", function (done) {
             offerReplaceTest(false, done);
         });
-        
+
         var createCollectionWithOfferTypeTest = function (isNameBased, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
             // create database
@@ -3044,16 +3052,16 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         it("nativeApi Should create collection with specified offer type successfully name based", function (done) {
             createCollectionWithOfferTypeTest(true, done);
         });
-        
+
         it("nativeApi Should create collection with specified offer type successfully rid based", function (done) {
             createCollectionWithOfferTypeTest(false, done);
         });
     });
-    
+
     describe("validate database account functionality", function () {
         var databaseAccountTest = function (isNameBased, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
@@ -3067,16 +3075,16 @@ describe("NodeJS CRUD Tests", function () {
                 done();
             });
         };
-        
+
         it("nativeApi Should get database account successfully name based", function (done) {
             databaseAccountTest(true, done);
         });
-        
+
         it("nativeApi Should get database account successfully rid based", function (done) {
             databaseAccountTest(false, done);
         });
     });
-    
+
     describe("Validate response headers", function () {
         var createThenReadCollection = function (isNameBased, client, db, body, callback) {
             client.createCollection(getDatabaseLink(isNameBased, db), body, function (err, collection, headers) {
@@ -3087,7 +3095,7 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         var indexProgressHeadersTest = function (isNameBased, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
             client.createDatabase({ id: "sample database" }, function (err, db) {
@@ -3115,35 +3123,35 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         it("nativeApi Validate index progress headers name based", function (done) {
             indexProgressHeadersTest(true, done);
         });
-        
+
         it("nativeApi Validate index progress headers rid based", function (done) {
             indexProgressHeadersTest(false, done);
         });
     });
-    
+
     describe("Validate Id validation", function () {
         it("nativeApi Should fail on illegal Ids.", function (done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
             // Id shoudn't end with a space.
             client.createDatabase({ id: "id_ends_with_space " }, function (err, db) {
                 assert.equal("Id ends with a space.", err.message);
-                
+
                 // Id shoudn't contain "/".
                 client.createDatabase({ id: "id_with_illegal/_char" }, function (err, db) {
                     assert.equal("Id contains illegal chars.", err.message);
-                    
+
                     // Id shoudn't contain "\\".
                     client.createDatabase({ id: "id_with_illegal\\_char" }, function (err, db) {
                         assert.equal("Id contains illegal chars.", err.message);
-                        
+
                         // Id shoudn't contain "?".
                         client.createDatabase({ id: "id_with_illegal?_?char" }, function (err, db) {
                             assert.equal("Id contains illegal chars.", err.message);
-                            
+
                             // Id shoudn't contain "#".
                             client.createDatabase({ id: "id_with_illegal#_char" }, function (err, db) {
                                 assert.equal("Id contains illegal chars.", err.message);
@@ -3155,59 +3163,59 @@ describe("NodeJS CRUD Tests", function () {
             });
         });
     });
-    
+
     describe("TTL tests", function () {
         this.timeout(60000);
-        
+
         function createCollectionWithInvalidDefaultTtl(client, db, collectionDefinition, collId, defaultTtl, callback) {
             collectionDefinition.id = collId;
             collectionDefinition.defaultTtl = defaultTtl;
-            
+
             client.createCollection(db._self, collectionDefinition, function (err) {
                 var badRequestErrorCode = 400;
                 assert.equal(err.code, badRequestErrorCode, "response should return error code " + badRequestErrorCode);
                 callback();
             });
         }
-        
+
         function createDocumentWithInvalidTtl(client, collection, documentDefinition, docId, ttl, callback) {
             documentDefinition.id = docId;
             documentDefinition.ttl = ttl;
-            
+
             client.createDocument(collection._self, documentDefinition, function (err) {
                 var badRequestErrorCode = 400;
                 assert.equal(err.code, badRequestErrorCode, "response should return error code " + badRequestErrorCode);
                 callback();
             });
         }
-        
+
         it("nativeApi Validate Collection and Document TTL values.", function (done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
-            
+
             client.createDatabase({ "id": "sample database" }, function (err, db) {
                 assert.equal(err, undefined, "error creating database");
-                
+
                 var collectionDefinition = {
                     id: "sample collection1",
                     defaultTtl: 5
                 };
-                
+
                 client.createCollection(db._self, collectionDefinition, function (err, collection) {
                     assert.equal(err, undefined, "error creating collection");
                     assert.equal(collectionDefinition.defaultTtl, collection.defaultTtl);
-                    
+
                     // null, 0, -10 are unsupported value for defaultTtl.Valid values are -1 or a non-zero positive 32-bit integer value
                     createCollectionWithInvalidDefaultTtl(client, db, collectionDefinition, "sample collection2", null, function () {
                         createCollectionWithInvalidDefaultTtl(client, db, collectionDefinition, "sample collection3", 0, function () {
                             createCollectionWithInvalidDefaultTtl(client, db, collectionDefinition, "sample collection4", -10, function () {
-                                
+
                                 var documentDefinition = {
                                     id: "doc",
                                     name: "sample document",
                                     key: "value",
                                     ttl: 2
                                 };
-                                
+
                                 // 0, null, -10 are unsupported value for ttl.Valid values are -1 or a non-zero positive 32-bit integer value
                                 createDocumentWithInvalidTtl(client, collection, documentDefinition, "doc1", 0, function () {
                                     createDocumentWithInvalidTtl(client, collection, documentDefinition, "doc2", null, function () {
@@ -3222,23 +3230,23 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         });
-        
+
         function checkDocumentGone(client, collection, createdDocument, callback) {
-                client.readDocument(createdDocument._self, function (err) {
-                    var badRequestErrorCode = 404;
-                    assert.equal(err.code, badRequestErrorCode, "response should return error code " + badRequestErrorCode);
-                    callback();
-                });
+            client.readDocument(createdDocument._self, function (err) {
+                var badRequestErrorCode = 404;
+                assert.equal(err.code, badRequestErrorCode, "response should return error code " + badRequestErrorCode);
+                callback();
+            });
         }
-        
+
         function checkDocumentExists(client, collection, createdDocument, callback) {
-                client.readDocument(createdDocument._self, function (err, readDocument) {
-                    assert.equal(err, undefined, "error reading document");
-                    assert.equal(readDocument.ttl, createdDocument.ttl);
-                    callback();
-                });
+            client.readDocument(createdDocument._self, function (err, readDocument) {
+                assert.equal(err, undefined, "error reading document");
+                assert.equal(readDocument.ttl, createdDocument.ttl);
+                callback();
+            });
         }
-        
+
         function positiveDefaultTtlStep4(client, collection, createdDocument, callback) {
             // the created document should NOT be gone as it 's ttl value is set to 8 which overrides the collections' s defaultTtl value(5)
             checkDocumentExists(client, collection, createdDocument, function () {
@@ -3250,72 +3258,72 @@ describe("NodeJS CRUD Tests", function () {
                 }, 4000);
             });
         }
-        
+
         function positiveDefaultTtlStep3(client, collection, createdDocument, documentDefinition, callback) {
             // the created document should be gone now as it 's ttl value is set to 2 which overrides the collections' s defaultTtl value(5)
             checkDocumentGone(client, collection, createdDocument, function () {
                 documentDefinition.id = "doc4";
                 documentDefinition.ttl = 8;
-                
+
                 client.createDocument(collection._self, documentDefinition, function (err, createdDocument) {
                     assert.equal(err, undefined, "error creating document");
-                    
+
                     setTimeout(positiveDefaultTtlStep4, 6000, client, collection, createdDocument, callback);
                 });
             });
         }
-        
+
         function positiveDefaultTtlStep2(client, collection, createdDocument, documentDefinition, callback) {
             // the created document should NOT be gone as it 's ttl value is set to -1(never expire) which overrides the collections' s defaultTtl value
             checkDocumentExists(client, collection, createdDocument, function () {
                 documentDefinition.id = "doc3";
                 documentDefinition.ttl = 2;
-                
+
                 client.createDocument(collection._self, documentDefinition, function (err, createdDocument) {
                     assert.equal(err, undefined, "error creating document");
-                    
+
                     setTimeout(positiveDefaultTtlStep3, 4000, client, collection, createdDocument, documentDefinition, callback);
                 });
             });
         }
-        
+
         function positiveDefaultTtlStep1(client, collection, createdDocument, documentDefinition, callback) {
             // the created document should be gone now as it 's ttl value would be same as defaultTtl value of the collection
             checkDocumentGone(client, collection, createdDocument, function () {
                 documentDefinition.id = "doc2";
                 documentDefinition.ttl = -1;
-                
+
                 client.createDocument(collection._self, documentDefinition, function (err, createdDocument) {
                     assert.equal(err, undefined, "error creating document");
-                    
+
                     setTimeout(positiveDefaultTtlStep2, 5000, client, collection, createdDocument, documentDefinition, callback);
                 });
             });
         }
-        
+
         it("nativeApi Validate Document TTL with positive defaultTtl.", function (done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
-            
+
             client.createDatabase({ "id": "sample database" }, function (err, db) {
                 assert.equal(err, undefined, "error creating database");
-                
+
                 var collectionDefinition = {
                     id: "sample collection",
                     defaultTtl: 5
                 };
-                
+
                 client.createCollection(db._self, collectionDefinition, function (err, collection) {
                     assert.equal(err, undefined, "error creating collection");
-                    
+
                     var documentDefinition = {
                         id: "doc1",
                         name: "sample document",
                         key: "value"
                     };
-                    
+
                     client.createDocument(collection._self, documentDefinition, function (err, createdDocument) {
                         assert.equal(err, undefined, "error creating document");
-                        
+
                         setTimeout(positiveDefaultTtlStep1, 7000, client, collection, createdDocument, documentDefinition, function () {
                             done();
                         });
@@ -3323,16 +3331,16 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         });
-        
+
         function minusOneDefaultTtlStep1(client, collection, createdDocument1, createdDocument2, createdDocument3, callback) {
             // the created document should be gone now as it 's ttl value is set to 2 which overrides the collections' s defaultTtl value(-1)
             checkDocumentGone(client, collection, createdDocument3, function () {
-                
+
                 // The documents with id doc1 and doc2 will never expire
                 client.readDocument(createdDocument1._self, function (err, readDocument) {
                     assert.equal(err, undefined, "error reading document");
                     assert.equal(readDocument.id, createdDocument1.id);
-                    
+
                     client.readDocument(createdDocument2._self, function (err, readDocument) {
                         assert.equal(err, undefined, "error reading document");
                         assert.equal(readDocument.id, createdDocument2.id);
@@ -3341,44 +3349,44 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         }
-        
+
         it("nativeApi Validate Document TTL with -1 defaultTtl.", function (done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
-            
+
             client.createDatabase({ "id": "sample database" }, function (err, db) {
                 assert.equal(err, undefined, "error creating database");
-                
+
                 var collectionDefinition = {
                     id: "sample collection",
                     defaultTtl: -1
                 };
-                
+
                 client.createCollection(db._self, collectionDefinition, function (err, collection) {
                     assert.equal(err, undefined, "error creating collection");
-                    
+
                     var documentDefinition = {
                         id: "doc1",
                         name: "sample document",
                         key: "value"
                     };
-                    
+
                     // the created document 's ttl value would be -1 inherited from the collection' s defaultTtl and this document will never expire
                     client.createDocument(collection._self, documentDefinition, function (err, createdDocument1) {
                         assert.equal(err, undefined, "error creating document");
-                        
+
                         // This document is also set to never expire explicitly
                         documentDefinition.id = "doc2";
                         documentDefinition.ttl = -1;
-                        
+
                         client.createDocument(collection._self, documentDefinition, function (err, createdDocument2) {
                             assert.equal(err, undefined, "error creating document");
-                            
+
                             documentDefinition.id = "doc3";
                             documentDefinition.ttl = 2;
-                            
+
                             client.createDocument(collection._self, documentDefinition, function (err, createdDocument3) {
                                 assert.equal(err, undefined, "error creating document");
-                                
+
                                 setTimeout(minusOneDefaultTtlStep1, 4000, client, collection, createdDocument1, createdDocument2, createdDocument3, function () {
                                     done();
                                 });
@@ -3388,28 +3396,28 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         });
-        
+
         it("nativeApi Validate Document TTL with no defaultTtl.", function (done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
-            
+
             client.createDatabase({ "id": "sample database" }, function (err, db) {
                 assert.equal(err, undefined, "error creating database");
-                
+
                 var collectionDefinition = { id: "sample collection" }
-                
+
                 client.createCollection(db._self, collectionDefinition, function (err, collection) {
                     assert.equal(err, undefined, "error creating collection");
-                    
+
                     var documentDefinition = {
                         id: "doc1",
                         name: "sample document",
                         key: "value",
                         ttl: 5
                     };
-                    
+
                     client.createDocument(collection._self, documentDefinition, function (err, createdDocument) {
                         assert.equal(err, undefined, "error creating document");
-                        
+
                         // Created document still exists even after ttl time has passed since the TTL is disabled at collection level(no defaultTtl property defined)
                         setTimeout(checkDocumentExists, 7000, client, collection, createdDocument, function () {
                             done();
@@ -3418,53 +3426,53 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         });
-        
+
         function miscCasesStep4(client, collection, createdDocument, documentDefinition, callback) {
             // Created document still exists even after ttl time has passed since the TTL is disabled at collection level
             checkDocumentExists(client, collection, createdDocument, function () {
                 callback();
             });
         }
-        
+
         function miscCasesStep3(client, collection, upsertedDocument, documentDefinition, callback) {
             // the upserted document should be gone now after 10 secs from the last write(upsert) of the document
             checkDocumentGone(client, collection, upsertedDocument, function () {
-                    var query = "SELECT * FROM root r";
-                    client.queryDocuments(collection._self, query).toArray(function (err, results) {
-                        assert.equal(err, undefined, "error querying databases");
-                        assert.equal(results.length, 0);
-                        
-                        // Use a collection definition without defaultTtl to disable ttl at collection level
-                        var collectionDefinition = { id: collection.id };
-                        
-                        client.replaceCollection(collection._self, collectionDefinition, function (err, replacedCollection) {
-                            assert.equal(err, undefined, "error replacing collection");
-                            
-                            documentDefinition.id = "doc2";
-                            
-                            client.createDocument(replacedCollection._self, documentDefinition, function (err, createdDocument) {
-                                assert.equal(err, undefined, "error creating document");
-                                
+                var query = "SELECT * FROM root r";
+                client.queryDocuments(collection._self, query).toArray(function (err, results) {
+                    assert.equal(err, undefined, "error querying databases");
+                    assert.equal(results.length, 0);
+
+                    // Use a collection definition without defaultTtl to disable ttl at collection level
+                    var collectionDefinition = { id: collection.id };
+
+                    client.replaceCollection(collection._self, collectionDefinition, function (err, replacedCollection) {
+                        assert.equal(err, undefined, "error replacing collection");
+
+                        documentDefinition.id = "doc2";
+
+                        client.createDocument(replacedCollection._self, documentDefinition, function (err, createdDocument) {
+                            assert.equal(err, undefined, "error creating document");
+
                             setTimeout(miscCasesStep4, 5000, client, replacedCollection, createdDocument, documentDefinition, callback);
                         });
                     });
                 });
             });
         }
-        
+
         function miscCasesStep2(client, collection, documentDefinition, callback) {
-                // Upsert the document after 3 secs to reset the document 's ttl
-                documentDefinition.key = "value2";
-                client.upsertDocument(collection._self, documentDefinition, function (err, upsertedDocument) {
-                    setTimeout(function () {
+            // Upsert the document after 3 secs to reset the document 's ttl
+            documentDefinition.key = "value2";
+            client.upsertDocument(collection._self, documentDefinition, function (err, upsertedDocument) {
+                setTimeout(function () {
                     // Upserted document still exists after (3+7)10 secs from document creation time( with collection 's defaultTtl set to 8) since it' s ttl was reset after 3 secs by upserting it
-                        checkDocumentExists(client, collection, upsertedDocument, function () {
+                    checkDocumentExists(client, collection, upsertedDocument, function () {
                         setTimeout(miscCasesStep3, 3000, client, collection, upsertedDocument, documentDefinition, callback);
-                });
+                    });
                 }, 7000);
             });
         }
-        
+
         function miscCasesStep1(client, collection, createdDocument, documentDefinition, callback) {
             // the created document should be gone now as the ttl time expired
             checkDocumentGone(client, collection, createdDocument, function () {
@@ -3476,30 +3484,30 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         }
-        
+
         it("nativeApi Validate Document TTL Misc cases.", function (done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
-            
+
             client.createDatabase({ "id": "sample database" }, function (err, db) {
                 assert.equal(err, undefined, "error creating database");
-                
+
                 var collectionDefinition = {
                     id: "sample collection",
                     defaultTtl: 8
                 };
-                
+
                 client.createCollection(db._self, collectionDefinition, function (err, collection) {
                     assert.equal(err, undefined, "error creating collection");
-                    
+
                     var documentDefinition = {
                         id: "doc1",
                         name: "sample document",
                         key: "value"
                     };
-                    
+
                     client.createDocument(collection._self, documentDefinition, function (err, createdDocument) {
                         assert.equal(err, undefined, "error creating document");
-                        
+
                         setTimeout(miscCasesStep1, 10000, client, collection, createdDocument, documentDefinition, function () {
                             done();
                         });
@@ -3508,9 +3516,9 @@ describe("NodeJS CRUD Tests", function () {
             });
         });
     });
-    
+
     describe("HashPartitionResolver", function () {
-        
+
         var test = function (useUpsert, done) {
             var client = new DocumentDBClient(host, { masterKey: masterKey });
             var getPartitionResolver = function (collectionLink1, collectionLink2) {
@@ -3519,13 +3527,13 @@ describe("NodeJS CRUD Tests", function () {
             var querySpec = {
                 query: "SELECT * FROM root"
             };
-            
+
             client.createDatabase({ id: "database" }, function (err, db) {
                 client.createCollection(db._self, { id: "sample coll 1" }, function (err, collection1) {
                     client.createCollection(db._self, { id: "sample coll 2" }, function (err, collection2) {
                         var resolver = getPartitionResolver(collection1._self, collection2._self);
                         client.partitionResolvers["foo"] = resolver;
-                        
+
                         client.createDocument("foo", { id: "sample doc 1" }, function (err, doc1) {
                             client.createDocument("foo", { id: "sample doc 2" }, function (err, doc2) {
                                 client.createDocument("foo", { id: "sample doc 11" }, function (err, doc3) {
@@ -3552,551 +3560,552 @@ describe("NodeJS CRUD Tests", function () {
                 });
             });
         };
-        
+
         it("CRUD operations", function (done) { test(false, done) });
         it("CRUD operations with upsert", function (done) { test(true, done) });
     });
-
-    describe("retry policy tests", function () {
-        var request = require("../lib/request");
-        var AzureDocuments = require("../lib/documents");
-        var ResourceThrottleRetryPolicy = require("../lib/resourceThrottleRetryPolicy");
-        
-        this.timeout(300000);
-
-        var collectionDefinition = {
-            id: "sample collection"
-        };
-        
-        var documentDefinition = {
-            id: "doc",
-            name: "sample document",
-            key: "value"
-        };
-        
-        var connectionPolicy = new AzureDocuments.ConnectionPolicy();
-        
-        // mocked database account to return the WritableLocations and ReadableLocations
-        // set with the default endpoint
-        var mockGetDatabaseAccount = function (options, callback) {
-            var databaseAccount = new AzureDocuments.DatabaseAccount();
-            callback(undefined, databaseAccount);
-        }
-        
-        var retryAfterInMilliseconds = 1000;
-        // mocked request object stub that calls the callback with 429 throttling error
-        var mockCreateRequestObjectStub = function (connectionPolicy, requestOptions, callback) {
-            callback({ code: 429, body: "Request rate is too large", retryAfterInMilliseconds: retryAfterInMilliseconds });
-        }
-        
-        it("throttle retry policy test default retryAfter", function (done) {
-            connectionPolicy.RetryOptions = new RetryOptions(5);
-
-            var client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
-        
-            client.createDatabase({ "id": "sample database" }, function (err, db) {
-                assert.equal(err, undefined, "error creating database");
-                
-                client.createCollection(db._self, collectionDefinition, function (err, collection) {
-                    assert.equal(err, undefined, "error creating collection");
-                    
-                    var originalGetDatabaseAccount = client.getDatabaseAccount;
-                    client.getDatabaseAccount = mockGetDatabaseAccount;
-                    
-                    var originalCreateRequestObjectStub = request._createRequestObjectStub;
-                    request._createRequestObjectStub = mockCreateRequestObjectStub;
-                    
-                    client.createDocument(collection._self, documentDefinition, function (err, createdDocument, responseHeaders) {
-                        assert.equal(err.code, 429, "invalid error code");
-                        assert.equal(responseHeaders[Constants.ThrottleRetryCount], connectionPolicy.RetryOptions.MaxRetryAttemptCount, "Current retry attempts not maxed out");
-                        assert.ok(responseHeaders[Constants.ThrottleRetryWaitTimeInMs] >= connectionPolicy.RetryOptions.MaxRetryAttemptCount * retryAfterInMilliseconds);
-                        
-                        request._createRequestObjectStub = originalCreateRequestObjectStub;
-                        client.getDatabaseAccount = originalGetDatabaseAccount;
-
-                        done();
-                    });
-                });
-            });
-        });
-
-        it("throttle retry policy test fixed retryAfter", function (done) {
-            connectionPolicy.RetryOptions = new RetryOptions(5, 2000);
-            
-            var client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
-
-            client.createDatabase({ "id": "sample database" }, function (err, db) {
-                assert.equal(err, undefined, "error creating database");
-                
-                client.createCollection(db._self, collectionDefinition, function (err, collection) {
-                    assert.equal(err, undefined, "error creating collection");
-                    
-                    var originalGetDatabaseAccount = client.getDatabaseAccount;
-                    client.getDatabaseAccount = mockGetDatabaseAccount;
-                    
-                    var originalCreateRequestObjectStub = request._createRequestObjectStub;
-                    request._createRequestObjectStub = mockCreateRequestObjectStub;
-                    
-                    client.createDocument(collection._self, documentDefinition, function (err, createdDocument, responseHeaders) {
-                        assert.equal(err.code, 429, "invalid error code");
-                        assert.equal(responseHeaders[Constants.ThrottleRetryCount], connectionPolicy.RetryOptions.MaxRetryAttemptCount, "Current retry attempts not maxed out");
-                        assert.ok(responseHeaders[Constants.ThrottleRetryWaitTimeInMs] >= connectionPolicy.RetryOptions.MaxRetryAttemptCount * connectionPolicy.RetryOptions.FixedRetryIntervalInMilliseconds);
-                        
-                        request._createRequestObjectStub = originalCreateRequestObjectStub;
-                        client.getDatabaseAccount = originalGetDatabaseAccount;
-                        
-                        done();
-                    });
-                });
-            });
-        });
-
-        it("throttle retry policy test max wait time", function (done) {
-            connectionPolicy.RetryOptions = new RetryOptions(5, 2000, 3);
-
-            var client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
-            
-            client.createDatabase({ "id": "sample database" }, function (err, db) {
-                assert.equal(err, undefined, "error creating database");
-                
-                client.createCollection(db._self, collectionDefinition, function (err, collection) {
-                    assert.equal(err, undefined, "error creating collection");
-                    
-                    var originalGetDatabaseAccount = client.getDatabaseAccount;
-                    client.getDatabaseAccount = mockGetDatabaseAccount;
-                    
-                    var originalCreateRequestObjectStub = request._createRequestObjectStub;
-                    request._createRequestObjectStub = mockCreateRequestObjectStub;
-                    
-                    client.createDocument(collection._self, documentDefinition, function (err, createdDocument, responseHeaders) {
-                        assert.equal(err.code, 429, "invalid error code");
-                        assert.ok(responseHeaders[Constants.ThrottleRetryWaitTimeInMs] >= connectionPolicy.RetryOptions.MaxWaitTimeInSeconds * 1000);
-                        
-                        request._createRequestObjectStub = originalCreateRequestObjectStub;
-                        client.getDatabaseAccount = originalGetDatabaseAccount;
-                        
-                        done();
-                    });
-                });
-            });
-        });
-    });
 });
 
-describe.skip("GlobalDBTests", function () {
-    var RetryUtility = require("../lib/retryUtility");
-    var request = require("../lib/request");
-    var AzureDocuments = require("../lib/documents");
-    var EndpointDiscoveryRetryPolicy = require("../lib/endpointDiscoveryRetryPolicy");
+//     describe.skip("retry policy tests", function () {
+//         var request = require("../lib/request");
+//         var AzureDocuments = require("../lib/documents");
+//         var ResourceThrottleRetryPolicy = require("../lib/resourceThrottleRetryPolicy");
 
-    var host = "https://localhost:443/";
-    var writeLocationHost = "https://localhost:443/";
-    var readLocationHost = "https://localhost:1045/";
-    var readLocation2Host = "https://localhost:1050/";
-    var masterKey = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="
-        
-    var writeLocation = "South Central US";
-    var readLocation = "West US";
-    var readLocation2 = "East US";
-        
-    var testDatabase = "testdb";
-    var testCollection = "testcoll";
-    var testdb, testcoll;
-        
-    beforeEach(function (done) {
-        var client = new DocumentDBClient(host, { masterKey: masterKey });
-        client.readDatabase("dbs/" + testDatabase, function (err, db) {
-            assert.equal(err, undefined, "error reading database");
-            testdb = db;
-            client.readCollection("dbs/" + testDatabase + "/colls/" + testCollection, function (err, coll) {
-                assert.equal(err, undefined, "error reading collection");
-                testcoll = coll;
-                done();
-            });
-        });
-    });
-        
-    afterEach(function (done) {
-        var client = new DocumentDBClient(host, { masterKey: masterKey });
-        client.readDatabase("dbs/" + testDatabase, function (err, db) {
-            assert.equal(err, undefined, "error reading database");
-            client.readCollection("dbs/" + testDatabase + "/colls/" + testCollection, function (err, coll) {
-                assert.equal(err, undefined, "error reading collection");
-                client.readDocuments(coll._self).toArray(function (err, documents) {
-                    assert.equal(err, undefined, "error reading documents");
-                    var length = documents.length;
-                    if (length === 0)
-                        done();
-                    var count = 0;
-                    documents.forEach(function (document) {
-                        client.deleteDocument(document._self, function (err, db) {
-                            assert.equal(err, undefined, "error deleting document");
-                            count++;
-                            if (count == length)
-                                done();
-                        });
-                    });
-                });
-            });
-        });
-    });
-        
-    describe("globaldb tests", function () {
-        this.timeout(60000);
-            
-        // This test fails intermittently with document not able to replicate to read region
-        it.skip("Test Read Write endpoints", function (done) {
-            var connectionPolicy = new DocumentBase.ConnectionPolicy();
-            connectionPolicy.EnableEndpointDiscovery = false;
-                
-            var client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
-                
-            var documentDefinition = {
-                id: "doc",
-                name: "sample document",
-                key: "value"
-            };
-                
-            // When EnableEndpointDiscovery is False, WriteEndpoint is set to the endpoint passed while creatingthe client instance
-            client.createDocument(testcoll._self, documentDefinition, function (err, createdDocument) {
-                assert.equal(err, undefined, "error creating document");
-                    
-                client.getWriteEndpoint(function (endpoint) {
-                    assert.equal(endpoint, host);
-                        
-                    // Delay to get these resources replicated to read location due to Eventual consistency
-                    setTimeout(function () {
-                        client.readDocument(createdDocument._self, function (err, document) {
-                            assert.equal(err, undefined, "error reading document");
-                                
-                            client.getReadEndpoint(function (endpoint) {
-                                assert.equal(endpoint, host);
-                                    
-                                connectionPolicy.EnableEndpointDiscovery = true;
-                                documentDefinition.id = "doc2";
-                                    
-                                client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
-                                    
-                                client.createDocument(testcoll._self, documentDefinition, function (err, createdDocument) {
-                                    assert.equal(err, undefined, "error creating document");
-                                        
-                                    // When EnableEndpointDiscovery is True, WriteEndpoint is set to the write endpoint
-                                    client.getWriteEndpoint(function (endpoint) {
-                                        assert.equal(endpoint, writeLocationHost);
-                                            
-                                        // Delay to get these resources replicated to read location due to Eventual consistency
-                                        setTimeout(function () {
-                                            client.readDocument(createdDocument._self, function (err, document) {
-                                                assert.equal(err, undefined, "error reading document");
-                                                    
-                                                // If no preferred locations is set, we return the write endpoint as ReadEndpoint for better latency performance
-                                                client.getReadEndpoint(function (endpoint) {
-                                                    assert.equal(endpoint, writeLocationHost);
-                                                    done();
-                                                });
-                                            });
-                                        }, 20000);
-                                    });
-                                });
-                            });
-                        });
-                    }, 20000);
-                });
-            });
-        });
-            
-        it("Test Endpoint discovery", function (done) {
-            var connectionPolicy = new DocumentBase.ConnectionPolicy();
-            connectionPolicy.EnableEndpointDiscovery = false;
-                
-            var readClient = new DocumentDBClient(readLocationHost, { masterKey: masterKey }, connectionPolicy);
-                
-            var documentDefinition = {
-                id: "doc",
-                name: "sample document",
-                key: "value"
-            };
-                
-            // Create Document will fail for the read location client since it has EnableEndpointDiscovery set to false, and hence the request will directly go to 
-            // the endpoint that was used to create the client instance(which happens to be a read endpoint)
-            readClient.createDocument(testcoll._self, documentDefinition, function (err, document) {
-                if (!(err.code === 403 && err.substatus === 3)) {
-                    assert.ok(false, "Create Document should have failed");
-                }
-                    
-                var querySpec = {
-                    query: "SELECT * FROM root r WHERE r.id=@id",
-                    parameters: [
-                        {
-                            name: "@id",
-                            value: testdb.id
-                        }
-                    ]
-                };
-                    
-                // Query databases will pass for the read location client as it's a GET operation
-                readClient.queryDatabases(querySpec).toArray(function (err, results) {
-                    assert.equal(err, undefined, "error querying databases");
-                        
-                    connectionPolicy.EnableEndpointDiscovery = true;
-                    readClient = new DocumentDBClient(readLocationHost, { masterKey: masterKey }, connectionPolicy);
-                        
-                    // CreateDocument call will go to the WriteEndpoint as EnableEndpointDiscovery is set to True and client will resolve the right endpoint based on the operation
-                    readClient.createDocument(testcoll._self, documentDefinition, function (err, createdDocument) {
-                        assert.equal(err, undefined, "error creating document");
-                            
-                        assert.equal(createdDocument.id, documentDefinition.id);
-                        done();
-                    });
-                });
-            });
-        });
-            
-        it("Test Preferred locations", function (done) {
-            var connectionPolicy = new DocumentBase.ConnectionPolicy();
-            connectionPolicy.EnableEndpointDiscovery = true;
-                
-            var client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
-                
-            var documentDefinition = {
-                id: "doc",
-                name: "sample document",
-                key: "value"
-            };
-                
-            client.createDocument(testcoll._self, documentDefinition, function (err, createdDocument) {
-                assert.equal(err, undefined, "error creating document");
-                    
-                // Delay to get these resources replicated to read location due to Eventual consistency
-                setTimeout(function () {
-                    client.readDocument(createdDocument._self, function (err, document) {
-                        assert.equal(err, undefined, "error reading document");
-                            
-                        // If no preferred locations is set, we return the write endpoint as ReadEndpoint for better latency performance
-                        client.getReadEndpoint(function (endpoint) {
-                            assert.equal(endpoint, writeLocationHost);
-                                
-                            connectionPolicy.PreferredLocations = [readLocation2]
-                            documentDefinition.id = "doc2";
-                                
-                            client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
-                                
-                            client.createDocument(testcoll._self, documentDefinition, function (err, createdDocument) {
-                                assert.equal(err, undefined, "error creating document");
-                                    
-                                // Delay to get these resources replicated to read location due to Eventual consistency
-                                setTimeout(function () {
-                                    client.readDocument(createdDocument._self, function (err, document) {
-                                        assert.equal(err, undefined, "error reading document");
-                                            
-                                        // Test that the preferred location is set as ReadEndpoint instead of default write endpoint when no preference is set
-                                        client.getReadEndpoint(function (endpoint) {
-                                            assert.equal(endpoint, readLocation2Host);
-                                            done();
-                                        });
-                                    });
-                                }, 20000);
-                            });
-                        });
-                    });
-                }, 20000);
-            });
-        });
-            
-        it("Test Endpoint assignments", function (done) {
-            var connectionPolicy = new DocumentBase.ConnectionPolicy();
-            connectionPolicy.EnableEndpointDiscovery = false;
-                
-            var client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
-                
-            // When EnableEndpointDiscovery is set to False, both Read and Write Endpoints point to endpoint passed while creating the client instance
-            client._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                assert.equal(writeEndpoint, host);
-                    
-                client._globalEndpointManager.getReadEndpoint(function (readEndpoint) {
-                    assert.equal(readEndpoint, host);
-                        
-                    connectionPolicy.EnableEndpointDiscovery = true;
-                    client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
-                        
-                    // If no preferred locations is set, we return the write endpoint as ReadEndpoint for better latency performance, write endpoint is set as expected
-                    client._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                        assert.equal(writeEndpoint, writeLocationHost);
-                            
-                        client._globalEndpointManager.getReadEndpoint(function (readEndpoint) {
-                            assert.equal(readEndpoint, writeLocationHost);
-                                
-                            connectionPolicy.PreferredLocations = [readLocation2];
-                            client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
-                                
-                            // Test that the preferred location is set as ReadEndpoint instead of default write endpoint when no preference is set
-                            client._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                                assert.equal(writeEndpoint, writeLocationHost);
-                                    
-                                client._globalEndpointManager.getReadEndpoint(function (readEndpoint) {
-                                    assert.equal(readEndpoint, readLocation2Host);
-                                    done();
-                                });
-                            });
-                        });
-                    });
-                });
-            });
-        });
-            
-        it("Test locations cache", function (done) {
-            var client = new DocumentDBClient(host, { masterKey: masterKey });
-                
-            var writableLocations = [{ name: writeLocation, databaseAccountEndpoint: writeLocationHost }];
-            var readableLocations = [{ name: readLocation, databaseAccountEndpoint: readLocationHost }, { name: readLocation2, databaseAccountEndpoint: readLocation2Host }];
-                
-            client._globalEndpointManager._updateLocationsCache(writableLocations, readableLocations, function (endpoints) {
-                // If no preferred locations is set, we return the write endpoint as ReadEndpoint for better latency performance, write endpoint is set as expected
-                assert.equal(endpoints[0], writeLocationHost);
-                assert.equal(endpoints[1], writeLocationHost);
-                    
-                writableLocations = [];
-                readableLocations = [];
-                    
-                client._globalEndpointManager._updateLocationsCache(writableLocations, readableLocations, function (endpoints) {
-                    // If writableLocations and readableLocations are empty, both Read and Write Endpoints point to endpoint passed while creating the client instance
-                    assert.equal(endpoints[0], host);
-                    assert.equal(endpoints[1], host);
-                        
-                    writableLocations = [{ name: writeLocation, databaseAccountEndpoint: writeLocationHost }];
-                    readableLocations = [];
-                        
-                    client._globalEndpointManager._updateLocationsCache(writableLocations, readableLocations, function (endpoints) {
-                        // If there are no readableLocations, we use the write endpoint as ReadEndpoint
-                        assert.equal(endpoints[0], writeLocationHost);
-                        assert.equal(endpoints[1], writeLocationHost);
-                            
-                        writableLocations = [];
-                        readableLocations = [{ name: readLocation, databaseAccountEndpoint: readLocationHost }];
-                            
-                        client._globalEndpointManager._updateLocationsCache(writableLocations, readableLocations, function (endpoints) {
-                            // If there are no writableLocations, both Read and Write Endpoints point to endpoint passed while creating the client instance
-                            assert.equal(endpoints[0], host);
-                            assert.equal(endpoints[1], host);
-                                
-                            writableLocations = [{ name: writeLocation, databaseAccountEndpoint: writeLocationHost }];
-                            readableLocations = [{ name: readLocation, databaseAccountEndpoint: readLocationHost }, { name: readLocation2, databaseAccountEndpoint: readLocation2Host }];
-                                
-                            var connectionPolicy = new DocumentBase.ConnectionPolicy();
-                            connectionPolicy.PreferredLocations = [readLocation2];
-                                
-                            client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
-                                
-                            client._globalEndpointManager._updateLocationsCache(writableLocations, readableLocations, function (endpoints) {
-                                // Test that the preferred location is set as ReadEndpoint instead of default write endpoint when no preference is set
-                                assert.equal(endpoints[0], writeLocationHost);
-                                assert.equal(endpoints[1], readLocation2Host);
-                                    
-                                writableLocations = [{ name: writeLocation, databaseAccountEndpoint: writeLocationHost }, { name: readLocation2, databaseAccountEndpoint: readLocation2Host }];
-                                readableLocations = [{ name: readLocation, databaseAccountEndpoint: readLocationHost }];
-                                    
-                                connectionPolicy = new DocumentBase.ConnectionPolicy();
-                                connectionPolicy.PreferredLocations = [readLocation2];
-                                    
-                                client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
-                                    
-                                client._globalEndpointManager._updateLocationsCache(writableLocations, readableLocations, function (endpoints) {
-                                    // Test that the preferred location is chosen from the WriteLocations if it 's not present in the ReadLocations
-                                    assert.equal(endpoints[0], writeLocationHost);
-                                    assert.equal(endpoints[1], readLocation2Host);
-                                        
-                                    writableLocations = [{ name: writeLocation, databaseAccountEndpoint: writeLocationHost }];
-                                    readableLocations = [{ name: readLocation, databaseAccountEndpoint: readLocationHost }, { name: readLocation2, databaseAccountEndpoint: readLocation2Host }];
-                                        
-                                    connectionPolicy.EnableEndpointDiscovery = false;
-                                    client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
-                                        
-                                    client._globalEndpointManager._updateLocationsCache(writableLocations, readableLocations, function (endpoints) {
-                                        // If EnableEndpointDiscovery is False, both Read and Write Endpoints point to endpoint passed while creating the client instance
-                                        assert.equal(endpoints[0], host);
-                                        assert.equal(endpoints[1], host);
-                                        done();
-                                    });
-                                });
-                            });
-                        });
-                    });
-                });
-            });
-        });
-            
-        it("Test Locational Endpoint parser", function (done) {
-            var client = new DocumentDBClient(host, { masterKey: masterKey });
-                
-            var urlEndpoint = "https://contoso.documents.azure.com:443/";
-            var locationName = "East US";
-                
-            // Creating a locational endpoint from the location name using the parser method
-            var locationalEndpoint = client._globalEndpointManager._getLocationalEndpoint(urlEndpoint, locationName);
-            assert.equal(locationalEndpoint, "https://contoso-EastUS.documents.azure.com:443/");
-                
-            urlEndpoint = "https://Contoso.documents.azure.com:443/";
-            locationName = "East US";
-                
-            // Note that the host name gets lowercased as the urlparser in Python doesn 't retains the casing 
-            locationalEndpoint = client._globalEndpointManager._getLocationalEndpoint(urlEndpoint, locationName);
-            assert.equal(locationalEndpoint, "https://contoso-EastUS.documents.azure.com:443/");
-                
-            done();
-        });
+//         this.timeout(300000);
 
-        it("Test endpoint discovery retry policy", function (done) {
-            var client = new DocumentDBClient(host, { masterKey: masterKey });
-                
-            // mocked request object stub that calls the callback with 403.3 error
-            var mockCreateRequestObjectStub = function (connectionPolicy, requestOptions, callback) {
-                callback({ code: 403, substatus: 3, body: "Write Forbidden" });
-            }
-            
-            // mocked database account to return the WritableLocations and ReadableLocations
-            // set with the default endpoint
-            var mockGetDatabaseAccount = function (options, callback) {
-                var databaseAccount = new AzureDocuments.DatabaseAccount();
-                callback(undefined, databaseAccount);
-            }
-                
-            var documentDefinition = {
-                id: "doc",
-                name: "sample document",
-                key: "value"
-            };
-            
-            var originalCreateRequestObjectStub = request._createRequestObjectStub;
-            request._createRequestObjectStub = mockCreateRequestObjectStub;
-            
-            var originalGetDatabaseAccount = client.getDatabaseAccount;
-            client.getDatabaseAccount = mockGetDatabaseAccount;
-            
-            var startDate = new Date();
-            var maxRetryAttemptCount = 10;
-            var retryAfterInMilliseconds = 1000;
-            var retryFinishCallback = function (currentRetryAttemptCount, maxRetryAttemptCount, callback) {
-                assert.equal(currentRetryAttemptCount, maxRetryAttemptCount, "Current retry attempts not maxed out");
-                callback();
-            }
-            
-            // configuring maxRetryAttemptCount and retryAfterInMilliseconds for testing purposes
-            EndpointDiscoveryRetryPolicy.maxRetryAttemptCount = maxRetryAttemptCount;
-            EndpointDiscoveryRetryPolicy.retryAfterInMilliseconds = retryAfterInMilliseconds;
-            EndpointDiscoveryRetryPolicy.retryFinishCallback = retryFinishCallback;
-            client.createDocument(testcoll._self, documentDefinition, function (err, createdDocument) {
-                assert.equal(err.code, 403, "invalid error code");
-                assert.equal(err.substatus, 3, "invalid error substatus");
-                    
-                var endDate = new Date();
-                    
-                // Test that it took at least (maxRetryAttemptCount * retryAfterInMilliseconds) milliseconds for the request
-                assert.ok(endDate.valueOf() - startDate.valueOf() > maxRetryAttemptCount * retryAfterInMilliseconds);
-                    
-                request._createRequestObjectStub = originalCreateRequestObjectStub;
-                client.getDatabaseAccount = originalGetDatabaseAccount;
-                done();
-            });
-        });
-    });
-});
+//         var collectionDefinition = {
+//             id: "sample collection"
+//         };
+
+//         var documentDefinition = {
+//             id: "doc",
+//             name: "sample document",
+//             key: "value"
+//         };
+
+//         var connectionPolicy = new AzureDocuments.ConnectionPolicy();
+
+//         // mocked database account to return the WritableLocations and ReadableLocations
+//         // set with the default endpoint
+//         var mockGetDatabaseAccount = function (options, callback) {
+//             var databaseAccount = new AzureDocuments.DatabaseAccount();
+//             callback(undefined, databaseAccount);
+//         }
+
+//         var retryAfterInMilliseconds = 1000;
+//         // mocked request object stub that calls the callback with 429 throttling error
+//         var mockCreateRequestObjectStub = function (connectionPolicy, requestOptions, callback) {
+//             callback({ code: 429, body: "Request rate is too large", retryAfterInMilliseconds: retryAfterInMilliseconds });
+//         }
+
+//         it("throttle retry policy test default retryAfter", function (done) {
+//             connectionPolicy.RetryOptions = new RetryOptions(5);
+
+//             var client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
+
+//             client.createDatabase({ "id": "sample database" }, function (err, db) {
+//                 assert.equal(err, undefined, "error creating database");
+
+//                 client.createCollection(db._self, collectionDefinition, function (err, collection) {
+//                     assert.equal(err, undefined, "error creating collection");
+
+//                     var originalGetDatabaseAccount = client.getDatabaseAccount;
+//                     client.getDatabaseAccount = mockGetDatabaseAccount;
+
+//                     var originalCreateRequestObjectStub = request._createRequestObjectStub;
+//                     request._createRequestObjectStub = mockCreateRequestObjectStub;
+
+//                     client.createDocument(collection._self, documentDefinition, function (err, createdDocument, responseHeaders) {
+//                         assert.equal(err.code, 429, "invalid error code");
+//                         assert.equal(responseHeaders[Constants.ThrottleRetryCount], connectionPolicy.RetryOptions.MaxRetryAttemptCount, "Current retry attempts not maxed out");
+//                         assert.ok(responseHeaders[Constants.ThrottleRetryWaitTimeInMs] >= connectionPolicy.RetryOptions.MaxRetryAttemptCount * retryAfterInMilliseconds);
+
+//                         request._createRequestObjectStub = originalCreateRequestObjectStub;
+//                         client.getDatabaseAccount = originalGetDatabaseAccount;
+
+//                         done();
+//                     });
+//                 });
+//             });
+//         });
+
+//         it("throttle retry policy test fixed retryAfter", function (done) {
+//             connectionPolicy.RetryOptions = new RetryOptions(5, 2000);
+
+//             var client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
+
+//             client.createDatabase({ "id": "sample database" }, function (err, db) {
+//                 assert.equal(err, undefined, "error creating database");
+
+//                 client.createCollection(db._self, collectionDefinition, function (err, collection) {
+//                     assert.equal(err, undefined, "error creating collection");
+
+//                     var originalGetDatabaseAccount = client.getDatabaseAccount;
+//                     client.getDatabaseAccount = mockGetDatabaseAccount;
+
+//                     var originalCreateRequestObjectStub = request._createRequestObjectStub;
+//                     request._createRequestObjectStub = mockCreateRequestObjectStub;
+
+//                     client.createDocument(collection._self, documentDefinition, function (err, createdDocument, responseHeaders) {
+//                         assert.equal(err.code, 429, "invalid error code");
+//                         assert.equal(responseHeaders[Constants.ThrottleRetryCount], connectionPolicy.RetryOptions.MaxRetryAttemptCount, "Current retry attempts not maxed out");
+//                         assert.ok(responseHeaders[Constants.ThrottleRetryWaitTimeInMs] >= connectionPolicy.RetryOptions.MaxRetryAttemptCount * connectionPolicy.RetryOptions.FixedRetryIntervalInMilliseconds);
+
+//                         request._createRequestObjectStub = originalCreateRequestObjectStub;
+//                         client.getDatabaseAccount = originalGetDatabaseAccount;
+
+//                         done();
+//                     });
+//                 });
+//             });
+//         });
+
+//         it("throttle retry policy test max wait time", function (done) {
+//             connectionPolicy.RetryOptions = new RetryOptions(5, 2000, 3);
+
+//             var client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
+
+//             client.createDatabase({ "id": "sample database" }, function (err, db) {
+//                 assert.equal(err, undefined, "error creating database");
+
+//                 client.createCollection(db._self, collectionDefinition, function (err, collection) {
+//                     assert.equal(err, undefined, "error creating collection");
+
+//                     var originalGetDatabaseAccount = client.getDatabaseAccount;
+//                     client.getDatabaseAccount = mockGetDatabaseAccount;
+
+//                     var originalCreateRequestObjectStub = request._createRequestObjectStub;
+//                     request._createRequestObjectStub = mockCreateRequestObjectStub;
+
+//                     client.createDocument(collection._self, documentDefinition, function (err, createdDocument, responseHeaders) {
+//                         assert.equal(err.code, 429, "invalid error code");
+//                         assert.ok(responseHeaders[Constants.ThrottleRetryWaitTimeInMs] >= connectionPolicy.RetryOptions.MaxWaitTimeInSeconds * 1000);
+
+//                         request._createRequestObjectStub = originalCreateRequestObjectStub;
+//                         client.getDatabaseAccount = originalGetDatabaseAccount;
+
+//                         done();
+//                     });
+//                 });
+//             });
+//         });
+//     });
+// });
+
+// describe.skip("GlobalDBTests", function () {
+//     var RetryUtility = require("../lib/retryUtility");
+//     var request = require("../lib/request");
+//     var AzureDocuments = require("../lib/documents");
+//     var EndpointDiscoveryRetryPolicy = require("../lib/endpointDiscoveryRetryPolicy");
+
+//     var host = "https://localhost:443/";
+//     var writeLocationHost = "https://localhost:443/";
+//     var readLocationHost = "https://localhost:1045/";
+//     var readLocation2Host = "https://localhost:1050/";
+//     var masterKey = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="
+
+//     var writeLocation = "South Central US";
+//     var readLocation = "West US";
+//     var readLocation2 = "East US";
+
+//     var testDatabase = "testdb";
+//     var testCollection = "testcoll";
+//     var testdb, testcoll;
+
+//     beforeEach(function (done) {
+//         var client = new DocumentDBClient(host, { masterKey: masterKey });
+//         client.readDatabase("dbs/" + testDatabase, function (err, db) {
+//             assert.equal(err, undefined, "error reading database");
+//             testdb = db;
+//             client.readCollection("dbs/" + testDatabase + "/colls/" + testCollection, function (err, coll) {
+//                 assert.equal(err, undefined, "error reading collection");
+//                 testcoll = coll;
+//                 done();
+//             });
+//         });
+//     });
+
+//     afterEach(function (done) {
+//         var client = new DocumentDBClient(host, { masterKey: masterKey });
+//         client.readDatabase("dbs/" + testDatabase, function (err, db) {
+//             assert.equal(err, undefined, "error reading database");
+//             client.readCollection("dbs/" + testDatabase + "/colls/" + testCollection, function (err, coll) {
+//                 assert.equal(err, undefined, "error reading collection");
+//                 client.readDocuments(coll._self).toArray(function (err, documents) {
+//                     assert.equal(err, undefined, "error reading documents");
+//                     var length = documents.length;
+//                     if (length === 0)
+//                         done();
+//                     var count = 0;
+//                     documents.forEach(function (document) {
+//                         client.deleteDocument(document._self, function (err, db) {
+//                             assert.equal(err, undefined, "error deleting document");
+//                             count++;
+//                             if (count == length)
+//                                 done();
+//                         });
+//                     });
+//                 });
+//             });
+//         });
+//     });
+
+//     describe("globaldb tests", function () {
+//         this.timeout(60000);
+
+//         // This test fails intermittently with document not able to replicate to read region
+//         it.skip("Test Read Write endpoints", function (done) {
+//             var connectionPolicy = new DocumentBase.ConnectionPolicy();
+//             connectionPolicy.EnableEndpointDiscovery = false;
+
+//             var client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
+
+//             var documentDefinition = {
+//                 id: "doc",
+//                 name: "sample document",
+//                 key: "value"
+//             };
+
+//             // When EnableEndpointDiscovery is False, WriteEndpoint is set to the endpoint passed while creatingthe client instance
+//             client.createDocument(testcoll._self, documentDefinition, function (err, createdDocument) {
+//                 assert.equal(err, undefined, "error creating document");
+
+//                 client.getWriteEndpoint(function (endpoint) {
+//                     assert.equal(endpoint, host);
+
+//                     // Delay to get these resources replicated to read location due to Eventual consistency
+//                     setTimeout(function () {
+//                         client.readDocument(createdDocument._self, function (err, document) {
+//                             assert.equal(err, undefined, "error reading document");
+
+//                             client.getReadEndpoint(function (endpoint) {
+//                                 assert.equal(endpoint, host);
+
+//                                 connectionPolicy.EnableEndpointDiscovery = true;
+//                                 documentDefinition.id = "doc2";
+
+//                                 client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
+
+//                                 client.createDocument(testcoll._self, documentDefinition, function (err, createdDocument) {
+//                                     assert.equal(err, undefined, "error creating document");
+
+//                                     // When EnableEndpointDiscovery is True, WriteEndpoint is set to the write endpoint
+//                                     client.getWriteEndpoint(function (endpoint) {
+//                                         assert.equal(endpoint, writeLocationHost);
+
+//                                         // Delay to get these resources replicated to read location due to Eventual consistency
+//                                         setTimeout(function () {
+//                                             client.readDocument(createdDocument._self, function (err, document) {
+//                                                 assert.equal(err, undefined, "error reading document");
+
+//                                                 // If no preferred locations is set, we return the write endpoint as ReadEndpoint for better latency performance
+//                                                 client.getReadEndpoint(function (endpoint) {
+//                                                     assert.equal(endpoint, writeLocationHost);
+//                                                     done();
+//                                                 });
+//                                             });
+//                                         }, 20000);
+//                                     });
+//                                 });
+//                             });
+//                         });
+//                     }, 20000);
+//                 });
+//             });
+//         });
+
+//         it("Test Endpoint discovery", function (done) {
+//             var connectionPolicy = new DocumentBase.ConnectionPolicy();
+//             connectionPolicy.EnableEndpointDiscovery = false;
+
+//             var readClient = new DocumentDBClient(readLocationHost, { masterKey: masterKey }, connectionPolicy);
+
+//             var documentDefinition = {
+//                 id: "doc",
+//                 name: "sample document",
+//                 key: "value"
+//             };
+
+//             // Create Document will fail for the read location client since it has EnableEndpointDiscovery set to false, and hence the request will directly go to 
+//             // the endpoint that was used to create the client instance(which happens to be a read endpoint)
+//             readClient.createDocument(testcoll._self, documentDefinition, function (err, document) {
+//                 if (!(err.code === 403 && err.substatus === 3)) {
+//                     assert.ok(false, "Create Document should have failed");
+//                 }
+
+//                 var querySpec = {
+//                     query: "SELECT * FROM root r WHERE r.id=@id",
+//                     parameters: [
+//                         {
+//                             name: "@id",
+//                             value: testdb.id
+//                         }
+//                     ]
+//                 };
+
+//                 // Query databases will pass for the read location client as it's a GET operation
+//                 readClient.queryDatabases(querySpec).toArray(function (err, results) {
+//                     assert.equal(err, undefined, "error querying databases");
+
+//                     connectionPolicy.EnableEndpointDiscovery = true;
+//                     readClient = new DocumentDBClient(readLocationHost, { masterKey: masterKey }, connectionPolicy);
+
+//                     // CreateDocument call will go to the WriteEndpoint as EnableEndpointDiscovery is set to True and client will resolve the right endpoint based on the operation
+//                     readClient.createDocument(testcoll._self, documentDefinition, function (err, createdDocument) {
+//                         assert.equal(err, undefined, "error creating document");
+
+//                         assert.equal(createdDocument.id, documentDefinition.id);
+//                         done();
+//                     });
+//                 });
+//             });
+//         });
+
+//         it("Test Preferred locations", function (done) {
+//             var connectionPolicy = new DocumentBase.ConnectionPolicy();
+//             connectionPolicy.EnableEndpointDiscovery = true;
+
+//             var client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
+
+//             var documentDefinition = {
+//                 id: "doc",
+//                 name: "sample document",
+//                 key: "value"
+//             };
+
+//             client.createDocument(testcoll._self, documentDefinition, function (err, createdDocument) {
+//                 assert.equal(err, undefined, "error creating document");
+
+//                 // Delay to get these resources replicated to read location due to Eventual consistency
+//                 setTimeout(function () {
+//                     client.readDocument(createdDocument._self, function (err, document) {
+//                         assert.equal(err, undefined, "error reading document");
+
+//                         // If no preferred locations is set, we return the write endpoint as ReadEndpoint for better latency performance
+//                         client.getReadEndpoint(function (endpoint) {
+//                             assert.equal(endpoint, writeLocationHost);
+
+//                             connectionPolicy.PreferredLocations = [readLocation2]
+//                             documentDefinition.id = "doc2";
+
+//                             client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
+
+//                             client.createDocument(testcoll._self, documentDefinition, function (err, createdDocument) {
+//                                 assert.equal(err, undefined, "error creating document");
+
+//                                 // Delay to get these resources replicated to read location due to Eventual consistency
+//                                 setTimeout(function () {
+//                                     client.readDocument(createdDocument._self, function (err, document) {
+//                                         assert.equal(err, undefined, "error reading document");
+
+//                                         // Test that the preferred location is set as ReadEndpoint instead of default write endpoint when no preference is set
+//                                         client.getReadEndpoint(function (endpoint) {
+//                                             assert.equal(endpoint, readLocation2Host);
+//                                             done();
+//                                         });
+//                                     });
+//                                 }, 20000);
+//                             });
+//                         });
+//                     });
+//                 }, 20000);
+//             });
+//         });
+
+//         it("Test Endpoint assignments", function (done) {
+//             var connectionPolicy = new DocumentBase.ConnectionPolicy();
+//             connectionPolicy.EnableEndpointDiscovery = false;
+
+//             var client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
+
+//             // When EnableEndpointDiscovery is set to False, both Read and Write Endpoints point to endpoint passed while creating the client instance
+//             client._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
+//                 assert.equal(writeEndpoint, host);
+
+//                 client._globalEndpointManager.getReadEndpoint(function (readEndpoint) {
+//                     assert.equal(readEndpoint, host);
+
+//                     connectionPolicy.EnableEndpointDiscovery = true;
+//                     client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
+
+//                     // If no preferred locations is set, we return the write endpoint as ReadEndpoint for better latency performance, write endpoint is set as expected
+//                     client._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
+//                         assert.equal(writeEndpoint, writeLocationHost);
+
+//                         client._globalEndpointManager.getReadEndpoint(function (readEndpoint) {
+//                             assert.equal(readEndpoint, writeLocationHost);
+
+//                             connectionPolicy.PreferredLocations = [readLocation2];
+//                             client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
+
+//                             // Test that the preferred location is set as ReadEndpoint instead of default write endpoint when no preference is set
+//                             client._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
+//                                 assert.equal(writeEndpoint, writeLocationHost);
+
+//                                 client._globalEndpointManager.getReadEndpoint(function (readEndpoint) {
+//                                     assert.equal(readEndpoint, readLocation2Host);
+//                                     done();
+//                                 });
+//                             });
+//                         });
+//                     });
+//                 });
+//             });
+//         });
+
+//         it("Test locations cache", function (done) {
+//             var client = new DocumentDBClient(host, { masterKey: masterKey });
+
+//             var writableLocations = [{ name: writeLocation, databaseAccountEndpoint: writeLocationHost }];
+//             var readableLocations = [{ name: readLocation, databaseAccountEndpoint: readLocationHost }, { name: readLocation2, databaseAccountEndpoint: readLocation2Host }];
+
+//             client._globalEndpointManager._updateLocationsCache(writableLocations, readableLocations, function (endpoints) {
+//                 // If no preferred locations is set, we return the write endpoint as ReadEndpoint for better latency performance, write endpoint is set as expected
+//                 assert.equal(endpoints[0], writeLocationHost);
+//                 assert.equal(endpoints[1], writeLocationHost);
+
+//                 writableLocations = [];
+//                 readableLocations = [];
+
+//                 client._globalEndpointManager._updateLocationsCache(writableLocations, readableLocations, function (endpoints) {
+//                     // If writableLocations and readableLocations are empty, both Read and Write Endpoints point to endpoint passed while creating the client instance
+//                     assert.equal(endpoints[0], host);
+//                     assert.equal(endpoints[1], host);
+
+//                     writableLocations = [{ name: writeLocation, databaseAccountEndpoint: writeLocationHost }];
+//                     readableLocations = [];
+
+//                     client._globalEndpointManager._updateLocationsCache(writableLocations, readableLocations, function (endpoints) {
+//                         // If there are no readableLocations, we use the write endpoint as ReadEndpoint
+//                         assert.equal(endpoints[0], writeLocationHost);
+//                         assert.equal(endpoints[1], writeLocationHost);
+
+//                         writableLocations = [];
+//                         readableLocations = [{ name: readLocation, databaseAccountEndpoint: readLocationHost }];
+
+//                         client._globalEndpointManager._updateLocationsCache(writableLocations, readableLocations, function (endpoints) {
+//                             // If there are no writableLocations, both Read and Write Endpoints point to endpoint passed while creating the client instance
+//                             assert.equal(endpoints[0], host);
+//                             assert.equal(endpoints[1], host);
+
+//                             writableLocations = [{ name: writeLocation, databaseAccountEndpoint: writeLocationHost }];
+//                             readableLocations = [{ name: readLocation, databaseAccountEndpoint: readLocationHost }, { name: readLocation2, databaseAccountEndpoint: readLocation2Host }];
+
+//                             var connectionPolicy = new DocumentBase.ConnectionPolicy();
+//                             connectionPolicy.PreferredLocations = [readLocation2];
+
+//                             client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
+
+//                             client._globalEndpointManager._updateLocationsCache(writableLocations, readableLocations, function (endpoints) {
+//                                 // Test that the preferred location is set as ReadEndpoint instead of default write endpoint when no preference is set
+//                                 assert.equal(endpoints[0], writeLocationHost);
+//                                 assert.equal(endpoints[1], readLocation2Host);
+
+//                                 writableLocations = [{ name: writeLocation, databaseAccountEndpoint: writeLocationHost }, { name: readLocation2, databaseAccountEndpoint: readLocation2Host }];
+//                                 readableLocations = [{ name: readLocation, databaseAccountEndpoint: readLocationHost }];
+
+//                                 connectionPolicy = new DocumentBase.ConnectionPolicy();
+//                                 connectionPolicy.PreferredLocations = [readLocation2];
+
+//                                 client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
+
+//                                 client._globalEndpointManager._updateLocationsCache(writableLocations, readableLocations, function (endpoints) {
+//                                     // Test that the preferred location is chosen from the WriteLocations if it 's not present in the ReadLocations
+//                                     assert.equal(endpoints[0], writeLocationHost);
+//                                     assert.equal(endpoints[1], readLocation2Host);
+
+//                                     writableLocations = [{ name: writeLocation, databaseAccountEndpoint: writeLocationHost }];
+//                                     readableLocations = [{ name: readLocation, databaseAccountEndpoint: readLocationHost }, { name: readLocation2, databaseAccountEndpoint: readLocation2Host }];
+
+//                                     connectionPolicy.EnableEndpointDiscovery = false;
+//                                     client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
+
+//                                     client._globalEndpointManager._updateLocationsCache(writableLocations, readableLocations, function (endpoints) {
+//                                         // If EnableEndpointDiscovery is False, both Read and Write Endpoints point to endpoint passed while creating the client instance
+//                                         assert.equal(endpoints[0], host);
+//                                         assert.equal(endpoints[1], host);
+//                                         done();
+//                                     });
+//                                 });
+//                             });
+//                         });
+//                     });
+//                 });
+//             });
+//         });
+
+//         it("Test Locational Endpoint parser", function (done) {
+//             var client = new DocumentDBClient(host, { masterKey: masterKey });
+
+//             var urlEndpoint = "https://contoso.documents.azure.com:443/";
+//             var locationName = "East US";
+
+//             // Creating a locational endpoint from the location name using the parser method
+//             var locationalEndpoint = client._globalEndpointManager._getLocationalEndpoint(urlEndpoint, locationName);
+//             assert.equal(locationalEndpoint, "https://contoso-EastUS.documents.azure.com:443/");
+
+//             urlEndpoint = "https://Contoso.documents.azure.com:443/";
+//             locationName = "East US";
+
+//             // Note that the host name gets lowercased as the urlparser in Python doesn 't retains the casing 
+//             locationalEndpoint = client._globalEndpointManager._getLocationalEndpoint(urlEndpoint, locationName);
+//             assert.equal(locationalEndpoint, "https://contoso-EastUS.documents.azure.com:443/");
+
+//             done();
+//         });
+
+//         it("Test endpoint discovery retry policy", function (done) {
+//             var client = new DocumentDBClient(host, { masterKey: masterKey });
+
+//             // mocked request object stub that calls the callback with 403.3 error
+//             var mockCreateRequestObjectStub = function (connectionPolicy, requestOptions, callback) {
+//                 callback({ code: 403, substatus: 3, body: "Write Forbidden" });
+//             }
+
+//             // mocked database account to return the WritableLocations and ReadableLocations
+//             // set with the default endpoint
+//             var mockGetDatabaseAccount = function (options, callback) {
+//                 var databaseAccount = new AzureDocuments.DatabaseAccount();
+//                 callback(undefined, databaseAccount);
+//             }
+
+//             var documentDefinition = {
+//                 id: "doc",
+//                 name: "sample document",
+//                 key: "value"
+//             };
+
+//             var originalCreateRequestObjectStub = request._createRequestObjectStub;
+//             request._createRequestObjectStub = mockCreateRequestObjectStub;
+
+//             var originalGetDatabaseAccount = client.getDatabaseAccount;
+//             client.getDatabaseAccount = mockGetDatabaseAccount;
+
+//             var startDate = new Date();
+//             var maxRetryAttemptCount = 10;
+//             var retryAfterInMilliseconds = 1000;
+//             var retryFinishCallback = function (currentRetryAttemptCount, maxRetryAttemptCount, callback) {
+//                 assert.equal(currentRetryAttemptCount, maxRetryAttemptCount, "Current retry attempts not maxed out");
+//                 callback();
+//             }
+
+//             // configuring maxRetryAttemptCount and retryAfterInMilliseconds for testing purposes
+//             EndpointDiscoveryRetryPolicy.maxRetryAttemptCount = maxRetryAttemptCount;
+//             EndpointDiscoveryRetryPolicy.retryAfterInMilliseconds = retryAfterInMilliseconds;
+//             EndpointDiscoveryRetryPolicy.retryFinishCallback = retryFinishCallback;
+//             client.createDocument(testcoll._self, documentDefinition, function (err, createdDocument) {
+//                 assert.equal(err.code, 403, "invalid error code");
+//                 assert.equal(err.substatus, 3, "invalid error substatus");
+
+//                 var endDate = new Date();
+
+//                 // Test that it took at least (maxRetryAttemptCount * retryAfterInMilliseconds) milliseconds for the request
+//                 assert.ok(endDate.valueOf() - startDate.valueOf() > maxRetryAttemptCount * retryAfterInMilliseconds);
+
+//                 request._createRequestObjectStub = originalCreateRequestObjectStub;
+//                 client.getDatabaseAccount = originalGetDatabaseAccount;
+//                 done();
+//             });
+//         });
+//     });
+// });
