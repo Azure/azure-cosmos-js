@@ -1,67 +1,63 @@
-var DocumentDBClient = require('../../../').DocumentClient;
-var async = require('async');
+const CosmosClient = require('../../../').DocumentClient;
+const TaskDao = require('../models/TaskDao');
+const async = require('async');
 
-function TaskList(taskDao) {
-  this.taskDao = taskDao;
-}
-
-module.exports = TaskList;
-TaskList.prototype = {
-    showTasks: function (req, res) {
-        var self = this;
-
-        var querySpec = {
+class TaskList {
+    /**
+     * 
+     * @param {TaskDao} taskDao 
+     */
+    constructor(taskDao) {
+        this.taskDao = taskDao;
+    }
+    async showTasks(req, res) {
+        const querySpec = {
             query: 'SELECT * FROM root r WHERE r.completed=@completed',
             parameters: [{
                 name: '@completed',
                 value: false
             }]
         };
-        self.taskDao.init();
 
-        self.taskDao.find(querySpec, function (err, items) {
-            if (err) {
-                throw (err);
-            }
-
+        try {
+            const items = await this.taskDao.find()
             res.render('index', {
                 title: 'My ToDo List ',
                 tasks: items
             });
-        });
-    },
 
-    addTask: function (req, res) {
-        var self = this;
-        var item = req.body;
+        } catch (err) {
+            throw err;
+        }
+    }
 
-        self.taskDao.addItem(item, function (err) {
-            if (err) {
-                throw (err);
-            }
+    async addTask(req, res) {
+        const item = req.body;
+
+        try {
+            await this.taskDao.addItem(item);
+            res.redirect('/');
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async completeTask(req, res) {
+        const completedTasks = Object.keys(req.body);
+        const tasks = [];
+
+        try {
+            completedTasks.forEach((task) => {
+                tasks.push(this.taskDao.updateItem(task));
+            });
+
+            await Promise.all(tasks);
 
             res.redirect('/');
-        });
-    },
-
-    completeTask: function (req, res) {
-        var self = this;
-        var completedTasks = Object.keys(req.body);
-
-        async.forEach(completedTasks, function taskIterator(completedTask, callback) {
-            self.taskDao.updateItem(completedTask, function (err) {
-                if (err) {
-                    callback(err);
-                } else {
-                    callback(null);
-                }
-            });
-        }, function goHome(err) {
-            if (err) {
-                throw err;
-            } else {
-                res.redirect('/');
-            }
-        });
+        } catch (err) {
+            throw err;
+        }
     }
-};
+}
+
+module.exports = TaskList;

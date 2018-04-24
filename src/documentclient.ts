@@ -1588,7 +1588,7 @@ export class DocumentClient extends DocumentClientBase {
             const path = this.getPathFromLink(documentLink, "", isNameBased);
             const id = this.getIdFromLink(documentLink, isNameBased);
 
-            this.replace(newDocument, path, "docs", id, undefined, options, callback);
+            return this.replace(newDocument, path, "docs", id, undefined, options, callback);
         } catch (err) {
             Base.ThrowOrCallback(callback, err);
         }

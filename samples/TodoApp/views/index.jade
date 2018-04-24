@@ -25,7 +25,10 @@ block content
             - var year  = date.getFullYear();
             td #{month + "/" + day + "/" + year}
             td
-              input(type="checkbox", name="#{task.id}", value="#{!task.completed}", checked=task.completed)
+              if(task.completed) 
+                input(type="checkbox", disabled, name="#{task.id}", value="#{!task.completed}", checked=task.completed)
+              else
+                input(type="checkbox", name="#{task.id}", value="#{!task.completed}", checked=task.completed)
     button.btn(type="submit") Update tasks
   hr
   form.well(action="/addtask", method="post")
