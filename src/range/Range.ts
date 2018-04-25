@@ -27,9 +27,12 @@ export class Range {
         }
         this.low = options.low;
         this.high = options.high;
+
+        Object.freeze(this);
     }
 
-    private _compare(x: string, y: string, compareFunction?: CompareFunction) {
+    // TODO: private?
+    public _compare(x: string, y: string, compareFunction?: CompareFunction) {
         // Same semantics as Array.sort
         // http://www.ecma-international.org/ecma-262/6.0/#sec-sortcompare
         if (x === undefined && y === undefined) {
@@ -59,6 +62,10 @@ export class Range {
         return 0;
     }
 
+    // TODO: This is an alias for backwards compatibility. Need to decide if this is public surface area or not
+    // tslint:disable-next-line:variable-name
+    public _contains = this.contains;
+
     public contains(other: string | Range, compareFunction?: CompareFunction) {
         if (Range.isRange(other)) {
             return this._containsRange(other as Range, compareFunction);
@@ -67,15 +74,21 @@ export class Range {
         }
     }
 
-    private _containsPoint(point: string, compareFunction?: CompareFunction) {
+    // TODO: private?
+    public _containsPoint(point: string, compareFunction?: CompareFunction) {
         return this._compare(point, this.low, compareFunction) >= 0
             && this._compare(point, this.high, compareFunction) <= 0;
     }
 
-    private _containsRange(range: Range, compareFunction?: CompareFunction) {
+    // TODO: private?
+    public _containsRange(range: Range, compareFunction?: CompareFunction) {
         return this._compare(range.low, this.low, compareFunction) >= 0
             && this._compare(range.high, this.high, compareFunction) <= 0;
     }
+
+    // TODO: alias for backwards compat
+    // tslint:disable-next-line:variable-name
+    public _intersect = this.intersect;
 
     public intersect(range: Range, compareFunction?: CompareFunction) {
         if (range === undefined || range === null) {
@@ -86,9 +99,17 @@ export class Range {
         return this._compare(maxLow, minHigh, compareFunction) <= 0;
     }
 
+    // TODO: alias for backwards compat
+    // tslint:disable-next-line:variable-name
+    public _toString = this.toString;
+
     public toString() {
         return String(this.low) + "," + String(this.high);
     }
+
+    // TODO: alias for backwards compat
+    // tslint:disable-next-line:variable-name
+    public static _isRange = Range.isRange;
 
     public static isRange(pointOrRange: string | Range) {
         if (pointOrRange === undefined) {

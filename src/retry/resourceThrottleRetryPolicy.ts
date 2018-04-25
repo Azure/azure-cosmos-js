@@ -1,4 +1,5 @@
 ﻿import { StatusCodes } from "../common";
+import { ErrorResponse } from "../request";
 
 /**
  * This class implements the resource throttle retry policy for requests.
@@ -38,7 +39,7 @@ export class ResourceThrottleRetryPolicy {
      * Determines whether the request should be retried or not.
      * @param {object} err - Error returned by the request.
      */
-    public async shouldRetry(err: any): Promise<boolean> { // TODO: any custom error object
+    public async shouldRetry(err: ErrorResponse): Promise<boolean> { // TODO: any custom error object
         if (err) {
             if (this.currentRetryAttemptCount < this.maxRetryAttemptCount) {
                 this.currentRetryAttemptCount++;

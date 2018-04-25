@@ -1,6 +1,7 @@
 ﻿import * as url from "url";
 import { Constants, StatusCodes, SubStatusCodes } from "../common";
 import { GlobalEndpointManager } from "../globalEndpointManager";
+import { ErrorResponse } from "../request";
 
 /**
  * This class implements the retry policy for session consistent reads.
@@ -33,7 +34,8 @@ export class SessionReadRetryPolicy {
      * @param {function} callback - The callback function which takes bool argument which specifies whether the request\
      * will be retried or not.
      */
-    public async shouldRetry(err: any): Promise<boolean | [boolean, url.UrlWithStringQuery]> { // TODO: any custom error
+    public async shouldRetry(err: ErrorResponse):
+        Promise<boolean | [boolean, url.UrlWithStringQuery]> { // TODO: any custom error
         if (err) {
             if (this.currentRetryAttemptCount <= this.maxRetryAttemptCount
                 && (this.request.operationType === Constants.OperationTypes.Read ||

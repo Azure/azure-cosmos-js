@@ -103,7 +103,7 @@ export class RangePartitionResolver {
             return mapEntry.link;
         }
         throw new Error(`Invalid operation: A containing range for \
-            ${range.toString()} doesn't exist in the partition map.`);
+'${range.toString()}' doesn't exist in the partition map.`);
     }
 
     /**

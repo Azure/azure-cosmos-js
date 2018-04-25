@@ -1,5 +1,6 @@
 ﻿import { Constants, StatusCodes } from "../common";
 import { GlobalEndpointManager } from "../globalEndpointManager";
+import { ErrorResponse } from "../request";
 
 /**
  * This class implements the retry policy for endpoint discovery.
@@ -32,7 +33,7 @@ export class EndpointDiscoveryRetryPolicy {
      * Determines whether the request should be retried or not.
      * @param {object} err - Error returned by the request.
      */
-    public async shouldRetry(err: Error): Promise<boolean> {
+    public async shouldRetry(err: ErrorResponse): Promise<boolean> {
         if (err) {
             if (this.currentRetryAttemptCount < this.maxRetryAttemptCount
                 && this.globalEndpointManager.enableEndpointDiscovery) {

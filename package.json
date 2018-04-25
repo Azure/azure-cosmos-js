@@ -22,7 +22,7 @@
     "clean": "rimraf lib",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
     "build": "npm run clean && npm run lint && echo Using TypeScript && tsc --version && tsc --pretty",
-    "test": "mocha ./test/test.js",
+    "test": "mocha ./test/legacy --timeout 30000",
     "watch": "npm run build -- --watch",
     "watch:test": "npm run test -- --watch",
     "e2etst": "npm run "

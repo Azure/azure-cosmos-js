@@ -7,7 +7,7 @@ import { Constants } from "../common";
 import { ConnectionPolicy } from "../documents";
 import { GlobalEndpointManager } from "../globalEndpointManager";
 import { IHeaders } from "../queryExecutionContext";
-import { Response } from "../request";
+import { ErrorResponse, Response } from "../request";
 
 export interface Body {
     buffer?: Buffer;
@@ -85,7 +85,10 @@ export class RetryUtility {
                 resourceThrottleRetryPolicy.cummulativeWaitTimeinMilliseconds;
             return { result, headers };
         } catch (err) { // TODO: any error
-            let retryPolicy: any = null; // TODO: any Need an interface
+            let retryPolicy:
+                SessionReadRetryPolicy |
+                EndpointDiscoveryRetryPolicy |
+                ResourceThrottleRetryPolicy = null; // TODO: any Need an interface
             const headers = err.headers || {};
             if (err.code === EndpointDiscoveryRetryPolicy.FORBIDDEN_STATUS_CODE
                 && err.substatus === EndpointDiscoveryRetryPolicy.WRITE_FORBIDDEN_SUB_STATUS_CODE) {
@@ -97,31 +100,32 @@ export class RetryUtility {
                 retryPolicy = sessionReadRetryPolicy;
             }
             if (retryPolicy) {
-                retryPolicy.shouldRetry(err, (shouldRetry: boolean, newUrl: url.UrlWithStringQuery) => {
-                    if (!shouldRetry) {
-                        headers[Constants.ThrottleRetryCount] =
-                            resourceThrottleRetryPolicy.currentRetryAttemptCount;
-                        headers[Constants.ThrottleRetryWaitTimeInMs] =
-                            resourceThrottleRetryPolicy.cummulativeWaitTimeinMilliseconds;
-                        return { result: err.response, headers };
-                    } else {
-                        return new Promise<Response<any>>((resolve, reject) => {
-                            setTimeout(async () => {
-                                if (typeof newUrl !== "undefined") {
-                                    requestOptions = this.modifyRequestOptions(requestOptions, newUrl);
-                                }
-                                resolve(await this.apply(
-                                    body,
-                                    createRequestObjectFunc,
-                                    connectionPolicy,
-                                    requestOptions,
-                                    endpointDiscoveryRetryPolicy,
-                                    resourceThrottleRetryPolicy,
-                                    sessionReadRetryPolicy));
-                            }, retryPolicy.retryAfterInMilliseconds);
-                        });
-                    }
-                });
+                const results = await retryPolicy.shouldRetry(err);
+                if (!results) {
+                    headers[Constants.ThrottleRetryCount] =
+                        resourceThrottleRetryPolicy.currentRetryAttemptCount;
+                    headers[Constants.ThrottleRetryWaitTimeInMs] =
+                        resourceThrottleRetryPolicy.cummulativeWaitTimeinMilliseconds;
+                    err.headers = {...err.headers, ...headers};
+                    throw err;
+                } else {
+                    const newUrl = (results as any)[1]; // TODO: any hack
+                    return new Promise<Response<any>>((resolve, reject) => {
+                        setTimeout(async () => {
+                            if (typeof newUrl !== "undefined") {
+                                requestOptions = this.modifyRequestOptions(requestOptions, newUrl);
+                            }
+                            resolve(await this.apply(
+                                body,
+                                createRequestObjectFunc,
+                                connectionPolicy,
+                                requestOptions,
+                                endpointDiscoveryRetryPolicy,
+                                resourceThrottleRetryPolicy,
+                                sessionReadRetryPolicy));
+                        }, retryPolicy.retryAfterInMilliseconds);
+                    });
+                }
             } else {
                 throw err;
             }

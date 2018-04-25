@@ -177,7 +177,8 @@ export abstract class DocumentClientBase {
 
         // callback
         if (callbackIn !== undefined && typeof callbackIn !== "function") {
-            // NO OP
+            throw new Error(
+                `The "callback" parameter must be of type "function". Actual type is: "${typeof callbackIn}".`);
         } else if (typeof callbackIn === "function") {
             callback = callbackIn;
         }
