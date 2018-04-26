@@ -31,7 +31,7 @@ export abstract class DocumentClientBase {
         auth: any, // TODO: any auth
         connectionPolicy: ConnectionPolicy,
         consistencyLevel: ConsistencyLevel) {
-        if (auth !== undefined) {
+        if (auth) {
             this.masterKey = auth.masterKey;
             this.resourceTokens = auth.resourceTokens;
             if (auth.permissionFeed) {

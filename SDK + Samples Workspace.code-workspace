@@ -8,10 +8,15 @@
 		}
 	],
 	"settings": {
-		"mocha.files.glob":"test/legacy/**/*.js",
+		"mocha.files.glob":"test/**/*.spec.ts",
 		"mocha.logVerbose": true,
 		"mocha.options": {
-			"timeout":30000
-		}
+			"compilers":{
+				"ts": "ts-node/register"
+			}
+		},
+		"mocha.requires": [
+			"ts-node/register"
+		]
 	}
 }

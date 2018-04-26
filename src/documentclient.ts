@@ -15,6 +15,7 @@ import { QueryIterator } from "./queryIterator";
 import { RequestHandler, Response } from "./request";
 import { RetryOptions } from "./retry";
 import { SessionContainer } from "./sessionContainer";
+import { Readable } from "stream";
 
 // var Base = require("./base")
 //     , https = require("https")
@@ -59,8 +60,8 @@ export class DocumentClient extends DocumentClientBase {
     constructor(
         public urlConnection: string,
         auth: any,
-        connectionPolicy: ConnectionPolicy,
-        consistencyLevel: ConsistencyLevel) { // TODO: any auth options
+        connectionPolicy?: ConnectionPolicy,
+        consistencyLevel?: ConsistencyLevel) { // TODO: any auth options
         super(urlConnection, auth, connectionPolicy, consistencyLevel);
     }
     /**
@@ -114,7 +115,7 @@ export class DocumentClient extends DocumentClientBase {
      */
     public createDatabase(
         body: object,
-        options: RequestOptions,
+        options?: RequestOptions,
         callback?: ResponseCallback<any>): Promise<Response<any>> { // TODO: any database
         const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
@@ -508,13 +509,13 @@ export class DocumentClient extends DocumentClientBase {
      * @memberof DocumentClient
      * @instance
      * @param {string} documentLink             - The self-link of the document.
-     * @param {stream.Readable} readableStream  - the stream that represents the media itself that needs to be uploaded.
+     * @param {Readable} readableStream  - the stream that represents the media itself that needs to be uploaded.
      * @param {MediaOptions} [options]          - The request options.
      * @param {ResponseCallback} callback        - The callback for the request.
      */
     public async createAttachmentAndUploadMedia(
         documentLink: string,
-        readableStream: ReadableStream,
+        readableStream: Readable,
         options?: MediaOptions,
         callback?: ResponseCallback<any>): Promise<Response<any>> { // TODO: any
         const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);

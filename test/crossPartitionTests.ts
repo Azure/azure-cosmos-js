@@ -1,50 +1,42 @@
-﻿/*
-The MIT License (MIT)
-Copyright (c) 2017 Microsoft Corporation
+﻿import {
+    Base,
+    DocumentClient,
+    DocumentBase,
+    Constants,
+    Range,
+    RangePartitionResolver,
+    HashPartitionResolver,
+    RetryOptions,
+    AzureDocuments,
+} from "../src";
+import * as assert from "assert";
+import testConfig from "./_testConfig";
+import * as stream from "stream";
+import * as util from "util";
+import * as _ from "underscore";
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+// var lib = require("../lib/"),
+//     assert = require("assert"),
+//     testConfig = require("./_testConfig"),
+//     Stream = require("stream"),
+//     util = require("util"),
+//     HeaderUtils = require("../lib/queryExecutionContext/headerUtils"),
+//     _ = require('underscore');
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+// var Base = lib.Base,
+//     DocumentDBClient = lib.DocumentClient,
+//     DocumentBase = lib.DocumentBase,
+//     Constants = lib.Constants,
+//     Range = lib.Range,
+//     RangePartitionResolver = lib.RangePartitionResolver,
+//     HashPartitionResolver = lib.HashPartitionResolver,
+//     AzureDocuments = lib.AzureDocuments,
+//     RetryOptions = lib.RetryOptions;
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
+// process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
-"use strict";
-
-var lib = require("../lib/"),
-    assert = require("assert"),
-    testConfig = require("./_testConfig"),
-    Stream = require("stream"),
-    util = require("util"),
-    HeaderUtils = require("../lib/queryExecutionContext/headerUtils"),
-    _ = require('underscore');
-
-var Base = lib.Base,
-    DocumentDBClient = lib.DocumentClient,
-    DocumentBase = lib.DocumentBase,
-    Constants = lib.Constants,
-    Range = lib.Range,
-    RangePartitionResolver = lib.RangePartitionResolver,
-    HashPartitionResolver = lib.HashPartitionResolver,
-    AzureDocuments = lib.AzureDocuments,
-    RetryOptions = lib.RetryOptions;
-
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-
-var host = testConfig.host;
-var masterKey = testConfig.masterKey;
+const host = testConfig.host;
+const masterKey = testConfig.masterKey;
 
 describe("NodeJS Cross Partition Tests", function () {
     console.log("host is " + testConfig.host);
@@ -483,7 +475,7 @@ describe("NodeJS Cross Partition Tests", function () {
         it("Validate Parallel Query As String With maxDegreeOfParallelism = 0", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r';
-            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 0};
+            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 0 };
 
             // prepare expected results
             var getOrderByKey = function (r) {
@@ -634,7 +626,7 @@ describe("NodeJS Cross Partition Tests", function () {
         it("Validate Simple OrderBy Query As String With maxDegreeOfParallelism = 0", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r order by r.spam';
-            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 0};
+            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 0 };
 
             // prepare expected results
             var getOrderByKey = function (r) {
@@ -668,7 +660,7 @@ describe("NodeJS Cross Partition Tests", function () {
         it("Validate Simple OrderBy Query As String With maxDegreeOfParallelism = 3", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r order by r.spam';
-            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 3};
+            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 3 };
 
             // prepare expected results
             var getOrderByKey = function (r) {
@@ -789,7 +781,7 @@ describe("NodeJS Cross Partition Tests", function () {
                 return r['id'];
             })).slice(0, topCount);
 
-           executeQueryAndValidateResults(getCollectionLink(isNameBased, db, collection), querySpec, options, expectedOrderedIds, done);
+            executeQueryAndValidateResults(getCollectionLink(isNameBased, db, collection), querySpec, options, expectedOrderedIds, done);
 
         });
 
@@ -975,13 +967,13 @@ describe("NodeJS Cross Partition Tests", function () {
             }
             var expectedOrderedIds = (_.sortBy(documentDefinitions, getOrderByKey)
                 .filter(
-                function (r) {
-                    return r['cnt'] > 5;
-                })
+                    function (r) {
+                        return r['cnt'] > 5;
+                    })
                 .map(
-                function (r) {
-                    return r['id'];
-                }));
+                    function (r) {
+                        return r['id'];
+                    }));
 
             executeQueryAndValidateResults(getCollectionLink(isNameBased, db, collection), querySpec, options, expectedOrderedIds, done);
         });
@@ -1079,7 +1071,7 @@ describe("NodeJS Cross Partition Tests", function () {
             }
             var expectedOrderedIds = (_.sortBy(documentDefinitions, getOrderByKey).map(function (r) {
                 return r['id'];
-            })).slice(0,1);
+            })).slice(0, 1);
 
             var queryIterator = client.queryDocuments(getCollectionLink(isNameBased, db, collection), query, options);
 
@@ -1102,14 +1094,14 @@ describe("NodeJS Cross Partition Tests", function () {
 
             var queryIterator = client.queryDocuments(getCollectionLink(isNameBased, db, collection), query, options);
 
-            
+
             var firstTime = true;
 
             queryIterator.current(function (err, callback) {
 
                 if (firstTime) {
                     firstTime = false;
-                //    console.log("print me " + Object.entries( queryIterator.queryExecutionContext));
+                    //    console.log("print me " + Object.entries( queryIterator.queryExecutionContext));
                 }
                 done();
 

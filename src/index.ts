@@ -1,7 +1,7 @@
 import * as DocumentBase from "./documents";
 
-export { DocumentClient } from "./documentclient";
-export { DocumentBase };
+export { DocumentClient, DocumentClient as CosmosClient } from "./documentclient";
+export { DocumentBase, DocumentBase as AzureDocuments };
 export { Range, RangePartitionResolver } from "./range";
 export { HashPartitionResolver } from "./hash";
 export { Constants, UriFactory } from "./common";

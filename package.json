@@ -13,8 +13,8 @@
   ],
   "version": "1.14.2",
   "author": "Microsoft Corporation",
-  "main": "./lib/index.js",
-  "types":"./lib/index.d.ts",
+  "main": "./lib/src/index.js",
+  "types": "./lib/src/index.d.ts",
   "engine": {
     "node": ">=0.8"
   },
@@ -22,18 +22,19 @@
     "clean": "rimraf lib",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
     "build": "npm run clean && npm run lint && echo Using TypeScript && tsc --version && tsc --pretty",
-    "test": "mocha ./test/legacy --timeout 30000",
+    "test": "mocha ./lib/test/authorization.spec.js",
+    "test-legacy": "mocha ./test/legacy --timeout 30000",
     "watch": "npm run build -- --watch",
     "watch:test": "npm run test -- --watch",
     "e2etst": "npm run "
   },
   "devDependencies": {
-    "@types/node": "^8.10.0",
+    "@types/mocha": "^5.2.0",
+    "@types/node": "^8.10.10",
     "@types/priorityqueuejs": "^1.0.1",
     "@types/semaphore": "^1.1.0",
     "@types/tunnel": "0.0.0",
     "@types/underscore": "^1.8.8",
-    "big-integer": "^1.6.27",
     "child_process": "*",
     "eslint": "*",
     "grunt": "^0.4.5",
@@ -42,16 +43,17 @@
     "int64-buffer": "^0.1.10",
     "jsdoc": "*",
     "load-grunt-tasks": "^3.1.0",
-    "mocha": "*",
+    "mocha": "^5.1.1",
     "mocha-junit-reporter": "^1.15.0",
     "mocha-multi-reporters": "^1.1.6",
     "sinon": "^3.2.1",
     "time-grunt": "^1.2.0",
+    "ts-node": "^6.0.0",
     "tslint": "^5.9.1",
-    "typescript": "^2.7.2"
+    "typescript": "^2.8.3"
   },
   "dependencies": {
-    "big-integer": "^1.6.25",
+    "big-integer": "^1.6.28",
     "binary-search-bounds": "2.0.3",
     "int64-buffer": "^0.1.9",
     "priorityqueuejs": "1.0.0",
@@ -62,7 +64,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Azure/azure-documentdb-node"
+    "url": "https://github.com/Azure/azure-cosmos-js"
   },
   "license": "MIT"
 }

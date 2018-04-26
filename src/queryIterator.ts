@@ -109,7 +109,7 @@ export class QueryIterator {
      * @instance
      * @param {callback} callback - Function execute on the feed response, takes two parameters error, resourcesList
      */
-    public toArray(callback?: QueryIteratorCallback) {
+    public toArray(callback?: QueryIteratorCallback): Promise<Response<any[]>> {
         this.reset();
         this.toArrayTempResources = [];
         const p = this._toArrayImplementation();
