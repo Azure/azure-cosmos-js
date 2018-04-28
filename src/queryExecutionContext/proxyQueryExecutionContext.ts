@@ -50,7 +50,8 @@ export class ProxyQueryExecutionContext implements IExecutionContext {
      */
     public async nextItem(): Promise<Response<any>> {
         try {
-            return this.queryExecutionContext.nextItem();
+            const r = await this.queryExecutionContext.nextItem();
+            return r;
         } catch (err) {
             if (this._hasPartitionedExecutionInfo(err)) {
                 // if this's a partitioned execution info switches the execution context
@@ -90,9 +91,9 @@ export class ProxyQueryExecutionContext implements IExecutionContext {
      * @param {callback} callback - Function to execute for the current element. \
      * the function takes two parameters error, element.
      */
-    public current(): Promise<Response<any>> {
+    public async current(): Promise<Response<any>> {
         try {
-            return this.queryExecutionContext.current();
+            return await this.queryExecutionContext.current();
         } catch (err) {
             if (this._hasPartitionedExecutionInfo(err)) {
                 // if this's a partitioned execution info switches the execution context
@@ -121,9 +122,9 @@ export class ProxyQueryExecutionContext implements IExecutionContext {
         return this.queryExecutionContext.hasMoreResults();
     }
 
-    public fetchMore(): Promise<Response<any>> {
+    public async fetchMore(): Promise<Response<any>> {
         try {
-            return this.queryExecutionContext.fetchMore();
+            return await this.queryExecutionContext.fetchMore();
         } catch (err) {
             if (this._hasPartitionedExecutionInfo(err)) {
                 // if this's a partitioned execution info switches the execution context

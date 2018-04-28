@@ -1,14 +1,14 @@
 ﻿import * as assert from "assert";
 import * as stream from "stream";
-import {CosmosClient, UriFactory} from "../src";
+import {DocumentClient, UriFactory} from "../src";
 import testConfig from "./_testConfig";
 import { TestHelpers } from "./TestHelpers";
 
 const host = testConfig.host;
 const masterKey = testConfig.masterKey;
 
-describe("Collection Naming Test", function () {
-    const client = new CosmosClient(host, { masterKey });
+describe("Collection Naming", function () {
+    const client = new DocumentClient(host, { masterKey });
     const databaseId = "collNamingTestDB";
     const collectionId = "media";
     const documentId = "doc1";

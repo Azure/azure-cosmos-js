@@ -6,7 +6,7 @@ import { TestHelpers } from "./TestHelpers";
 const host = testConfig.host;
 const masterKey = testConfig.masterKey;
 
-describe("Authorization bug fix Test", function () {
+describe("Authorization", function () {
     this.timeout(5000);
     const client = new CosmosClient(host, { masterKey });
 

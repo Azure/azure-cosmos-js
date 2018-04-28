@@ -1,5 +1,6 @@
 import { resolvePtr } from "dns";
 import { basename } from "path";
+import { Readable } from "stream";
 import * as tunnel from "tunnel";
 import * as url from "url";
 import * as util from "util";
@@ -15,7 +16,6 @@ import { QueryIterator } from "./queryIterator";
 import { RequestHandler, Response } from "./request";
 import { RetryOptions } from "./retry";
 import { SessionContainer } from "./sessionContainer";
-import { Readable } from "stream";
 
 // var Base = require("./base")
 //     , https = require("https")

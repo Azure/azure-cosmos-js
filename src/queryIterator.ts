@@ -1,3 +1,4 @@
+import { Base } from ".";
 import { Constants } from "./common";
 import { DocumentClient } from "./documentclient";
 import {
@@ -63,13 +64,12 @@ export class QueryIterator {
      * @param {callback} callback - Function to execute for each element. \
      * the function takes two parameters error, element.
      */
-    public nextItem(callback?: QueryIteratorCallback): Promise<Response<any>> {
-        const p = this.queryExecutionContext.nextItem();
-        if (callback) {
-            p.then<void>(({result, headers}) => {callback(undefined, result, headers); })
-            .catch((err) => {callback(err, undefined, err.headers); });
-        } else {
-            return p;
+    public async nextItem(callback?: QueryIteratorCallback): Promise<Response<any>> {
+        try {
+            const p = await this.queryExecutionContext.nextItem();
+            return Base.ResponseOrCallback(callback, p);
+        } catch (err) {
+            Base.ThrowOrCallback(callback, err);
         }
     }
 
@@ -80,13 +80,12 @@ export class QueryIterator {
      * @param {callback} callback - Function to execute for the current element. \
      * the function takes two parameters error, element.
      */
-    public current(callback?: QueryIteratorCallback) {
-        const p = this.queryExecutionContext.current();
-        if (callback) {
-            p.then<void>(({result, headers}) => {callback(undefined, result, headers); })
-            .catch((err) => {callback(err, undefined, err.headers); });
-        } else {
-            return p;
+    public async current(callback?: QueryIteratorCallback) {
+        try {
+            const p = await this.queryExecutionContext.current();
+            return Base.ResponseOrCallback(callback, p);
+        } catch (err) {
+            Base.ThrowOrCallback(callback, err);
         }
     }
 
@@ -109,15 +108,14 @@ export class QueryIterator {
      * @instance
      * @param {callback} callback - Function execute on the feed response, takes two parameters error, resourcesList
      */
-    public toArray(callback?: QueryIteratorCallback): Promise<Response<any[]>> {
-        this.reset();
-        this.toArrayTempResources = [];
-        const p = this._toArrayImplementation();
-        if (callback) {
-            p.then<void>(({result, headers}) => {callback(undefined, result, headers); })
-            .catch((err) => {callback(err, undefined, err.headers); });
-        } else {
-            return p;
+    public async toArray(callback?: QueryIteratorCallback): Promise<Response<any[]>> {
+        try {
+            this.reset();
+            this.toArrayTempResources = [];
+            const p = await this._toArrayImplementation();
+            return Base.ResponseOrCallback(callback, p);
+        } catch (err) {
+            Base.ThrowOrCallback(callback, err);
         }
     }
 
@@ -127,13 +125,12 @@ export class QueryIterator {
      * @instance
      * @param {callback} callback - Function execute on the feed response, takes two parameters error, resourcesList
      */
-    public executeNext(callback?: QueryIteratorCallback) {
-        const p = this.queryExecutionContext.fetchMore();
-        if (callback) {
-            p.then<void>(({result, headers}) => {callback(undefined, result, headers); })
-            .catch((err) => {callback(err, undefined, err.headers); });
-        } else {
-            return p;
+    public async executeNext(callback?: QueryIteratorCallback) {
+        try {
+            const p = await this.queryExecutionContext.fetchMore();
+            return Base.ResponseOrCallback(callback, p);
+        } catch (err) {
+            Base.ThrowOrCallback(callback, err);
         }
     }
 
@@ -149,14 +146,14 @@ export class QueryIterator {
     /** @ignore */
     private async _toArrayImplementation(): Promise<Response<any>> {
         try {
-            const {result, headers} = await this.queryExecutionContext.nextItem();
+            const { result, headers } = await this.queryExecutionContext.nextItem();
             // concatinate the results and fetch more
             this.toArrayLastResHeaders = headers;
 
             if (result === undefined) {
 
                 // no more results
-                return {result: this.toArrayTempResources, headers: this.toArrayLastResHeaders};
+                return { result: this.toArrayTempResources, headers: this.toArrayLastResHeaders };
             }
 
             this.toArrayTempResources.push(result);
@@ -171,7 +168,7 @@ export class QueryIterator {
     private async _forEachImplementation(
         callback: QueryIteratorCallback) { // TODO: any error
         try {
-            const {result, headers} = await this.queryExecutionContext.nextItem();
+            const { result, headers } = await this.queryExecutionContext.nextItem();
             if (result === undefined) {
                 // no more results. This is last iteration
                 return callback(undefined, undefined, headers);

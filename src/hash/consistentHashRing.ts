@@ -4,8 +4,8 @@ import { Key, MurmurHash } from "./murmurHash";
 export { Key } from "./murmurHash";
 
 export class ConsistentHashRing {
-    private computeHash: any; // TODO
-    private partitions: any[]; // TODO
+    private computeHash: any; // TODO: any
+    public partitions: any[]; // TODO: any , public
 
     /**
      * Initializes a new instance of the ConsistentHashRing
@@ -15,7 +15,7 @@ export class ConsistentHashRing {
      * @param {function} options.numberOfVirtualNodesPerCollection - Number of points in the ring to assign \
      * to each collection link
      */
-    constructor(nodes: string[], options: any) { // TODO: options
+    constructor(nodes: string[], options?: any) { // TODO: options
         ConsistentHashRing._throwIfInvalidNodes(nodes);
 
         options = options || {};
@@ -24,16 +24,16 @@ export class ConsistentHashRing {
 
         this.computeHash = options.computeHash;
         this.partitions = ConsistentHashRing
-            ._constructPartitions(nodes, options.numberOfVirtualNodesPerCollection, options.computeHash);
+            .constructPartitions(nodes, options.numberOfVirtualNodesPerCollection, options.computeHash);
     }
 
     public getNode(key: Key) {
         const hash = this.computeHash(key);
-        const partition = ConsistentHashRing._search(this.partitions, hash);
+        const partition = ConsistentHashRing.search(this.partitions, hash);
         return this.partitions[partition].node;
     }
 
-    private static _constructPartitions(
+    private static constructPartitions(
         nodes: string[], partitionsPerNode: number, computeHashFunction: any) { // TODO: computeHashFunction
         const partitions = nodes.reduce((p, node) => {
             let hashValue = computeHashFunction(node);
@@ -49,18 +49,18 @@ export class ConsistentHashRing {
         }, []);
 
         partitions.sort((x, y) => {
-            return ConsistentHashRing._compareHashes(x.hashValue, y.hashValue);
+            return ConsistentHashRing.compareHashes(x.hashValue, y.hashValue);
         });
         return partitions;
     }
 
-    private static _compareHashes(x: number, y: number) {
+    private static compareHashes(x: number, y: number) {
         if (x < y) { return -1; }
         if (x > y) { return 1; }
         return 0;
     }
 
-    private static _search(partitions: any[], hashValue: string) { // TODO: Partitions
+    private static search(partitions: any[], hashValue: string) { // TODO: Partitions
         for (let i = 0; i < partitions.length - 1; i++) {
             if (hashValue >= partitions[i].hashValue && hashValue < partitions[i + 1].hashValue) {
                 return i;

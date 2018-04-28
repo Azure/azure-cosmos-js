@@ -67,7 +67,6 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
         this.state = ParallelQueryExecutionContextBase.STATES.started;
         this.routingProvider = new SmartRoutingMapProvider(this.documentclient);
         this.sortOrders = PartitionedQueryExecutionContextInfoParser.parseOrderBy(this.partitionedQueryExecutionInfo);
-        this.state = ParallelQueryExecutionContextBase.STATES.started;
 
         if (options === undefined || options["maxItemCount"] === undefined) {
             this.pageSize = ParallelQueryExecutionContextBase.DEFAULT_PAGE_SIZE;
@@ -101,7 +100,7 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
                 const parallelismSem = semaphore(maxDegreeOfParallelism);
                 let filteredPartitionKeyRanges = [];
                 // The document producers generated from filteredPartitionKeyRanges
-                const targetPartitionQueryExecutionContextList: any[] = [];
+                const targetPartitionQueryExecutionContextList: DocumentProducer[] = [];
 
                 if (this.requestContinuation) {
                     // Need to create the first documentProducer with the suppliedCompositeContinuationToken
@@ -139,7 +138,7 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
                         // has async callback
                         const throttledFunc = async () => {
                             try {
-                                const [document, headers] = documentProducer.current();
+                                const {result: document, headers} = await documentProducer.current();
                                 this._mergeWithActiveResponseHeaders(headers);
                                 if (document === undefined) {
                                     // no results on this one
@@ -331,7 +330,7 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
             } else {
                 // Something actually bad happened ...
                 this.err = err;
-                return;
+                throw err;
             }
         }
     }
@@ -356,7 +355,8 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
                     this.sem.leave();
                     // if there is a prior error return error
                     this.err.headers = this._getAndResetActiveResponseHeaders();
-                    throw this.err;
+                    reject(this.err);
+                    return;
                 }
 
                 if (this.orderByPQ.size() === 0) {
@@ -384,7 +384,8 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
                         // release the lock before invoking callback
                         this.sem.leave();
                         this.err.headers = this._getAndResetActiveResponseHeaders();
-                        throw this.err;
+                        reject(this.err);
+                        return;
                     }
 
                     let item: any;
@@ -415,6 +416,8 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
                         this.err.headers = this._getAndResetActiveResponseHeaders();
                         // release the lock before invoking callback
                         this.sem.leave();
+                        reject(this.err);
+                        return;
                     }
 
                     // we need to put back the document producer to the queue if it has more elements.
@@ -443,6 +446,7 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
                         } else {
                             // Something actually bad happened
                             this.err = err;
+                            reject(this.err);
                         }
                     } finally {
                         // release the lock before returning

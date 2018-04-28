@@ -1,10 +1,10 @@
 import * as assert from "assert";
-import { CosmosClient, DocumentBase } from "../src";
+import { DocumentBase, DocumentClient } from "../src";
 
 export class TestHelpers {
     public static async removeAllDatabases(host: string, masterKey: string) {
         try {
-            const client = new CosmosClient(host, { masterKey });
+            const client = new DocumentClient(host, { masterKey });
             const { result: databases } = await client.readDatabases().toArray();
 
             const length = databases.length;
@@ -14,7 +14,7 @@ export class TestHelpers {
             }
 
             const count = 0;
-            await databases.map<Promise<any>>(async (database) => client.deleteDatabase(database._self));
+            await Promise.all(databases.map<Promise<any>>(async (database) => client.deleteDatabase(database._self)));
         } catch (err) {
             // TODO: remove console logging for errors and add ts-lint flag back
             console.log("An error occured", err);
@@ -48,7 +48,7 @@ export class TestHelpers {
     }
 
     public static async bulkInsertDocuments (
-        client: CosmosClient, isNameBased: boolean, db: any, collection: any, documents: any) {
+        client: DocumentClient, isNameBased: boolean, db: any, collection: any, documents: any) {
         const returnedDocuments = [];
         for (const doc of documents) {
             try {

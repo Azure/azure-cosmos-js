@@ -5,5 +5,5 @@ export interface SqlQuerySpec {
 
 export interface SqlParameter {
     name: string;
-    value: string;
+    value: string | number | boolean;
 }

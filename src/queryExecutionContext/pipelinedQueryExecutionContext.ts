@@ -108,6 +108,7 @@ export class PipelinedQueryExecutionContext implements IExecutionContext {
     private async _fetchMoreImplementation(): Promise<Response<any>> {
         try {
             const {result: item, headers} = await this.endpoint.nextItem();
+            HeaderUtils.mergeHeaders(this.fetchMoreRespHeaders, headers);
             if (item === undefined) {
                 // no more results
                 if (this.fetchBuffer.length === 0) {

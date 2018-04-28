@@ -20,7 +20,7 @@ export class DocumentProducer {
     // // Static Members
     // STATES: Object.freeze({ started: "started", inProgress: "inProgress", ended: "ended" })
     private static readonly STATES = DocumentProducerStates;
-    private documentclient: any; // TODO: any documentclient
+    private documentclient: DocumentClient; // TODO: any documentclient
     private collectionLink: string;
     private query: string | SqlQuerySpec;
     public targetPartitionKeyRange: any; // TODO: any partitionkeyrange
@@ -62,32 +62,9 @@ export class DocumentProducer {
         this.continuationToken = undefined;
         this.respHeaders = HeaderUtils.getInitialHeader();
 
-        const isNameBased = Base.isLinkNameBased(collectionLink);
-        const path = this.documentclient.getPathFromLink(collectionLink, "docs", isNameBased);
-        const id = this.documentclient.getIdFromLink(collectionLink, isNameBased);
-
         // tslint:disable-next-line:no-shadowed-variable
-        const fetchFunction: FetchFunctionCallback = (options: any) => { // TODO: any
-            return new Promise((resolve, reject) => {
-                const callback = (err: Error, results: Response<any>) => {
-                    if (err) { return reject(err); }
-                    resolve(results);
-                };
-                this.documentclient.queryFeed.call(documentclient, // TODO: Promisify
-                    documentclient,
-                    path,
-                    "docs",
-                    id,
-                    (result: any) => result.Documents, // TODO: any
-                    (parent: any, body: any) => body, // TODO: any
-                    query,
-                    options,
-                    callback,
-                    this.targetPartitionKeyRange["id"]);
-            });
-
-        };
-        this.internalExecutionContext = new DefaultQueryExecutionContext(documentclient, query, options, fetchFunction);
+        this.internalExecutionContext =
+            new DefaultQueryExecutionContext(documentclient, query, options, this.fetchFunction);
         this.state = DocumentProducer.STATES.inProgress;
     }
     /**
@@ -112,6 +89,23 @@ export class DocumentProducer {
             }
         }
         return bufferedResults;
+    }
+
+    public fetchFunction: FetchFunctionCallback = async (options: any) => {
+        const isNameBased = Base.isLinkNameBased(this.collectionLink);
+        const path = this.documentclient.getPathFromLink(this.collectionLink, "docs", isNameBased);
+        const id = this.documentclient.getIdFromLink(this.collectionLink, isNameBased);
+
+        return this.documentclient.queryFeed(
+            this.documentclient,
+            path,
+            "docs",
+            id,
+            (result: any) => result.Documents, // TODO: any
+            (parent: any, body: any) => body, // TODO: any
+            this.query,
+            options,
+            this.targetPartitionKeyRange["id"]);
     }
 
     public hasMoreResults() {
@@ -187,7 +181,7 @@ export class DocumentProducer {
         }
 
         try {
-            const {result: resources, headers: headerResponse} = await this.internalExecutionContext.fetchMore();
+            const { result: resources, headers: headerResponse } = await this.internalExecutionContext.fetchMore();
             this._updateStates(undefined, resources === undefined);
             if (resources !== undefined) {
                 // some more results
@@ -196,7 +190,7 @@ export class DocumentProducer {
                 });
             }
 
-            return {result: resources, headers: headerResponse};
+            return { result: resources, headers: headerResponse };
         } catch (err) { // TODO: any error
             if (DocumentProducer._needPartitionKeyRangeCacheRefresh(err)) {
                 // Split just happend
@@ -204,7 +198,7 @@ export class DocumentProducer {
                 const bufferedError = new FetchResult(undefined, err);
                 this.fetchResults.push(bufferedError);
                 // Putting a dummy result so that the rest of code flows
-                return {result: [bufferedError], headers: err.headers};
+                return { result: [bufferedError], headers: err.headers };
             } else {
                 this._updateStates(err, err.resources === undefined);
                 throw err;
@@ -235,19 +229,19 @@ export class DocumentProducer {
         }
 
         try {
-            const {result, headers} = await this.current();
+            const { result, headers } = await this.current();
 
             const fetchResult = this.fetchResults.shift();
             this._updateStates(undefined, result === undefined);
             assert.equal(fetchResult.feedResponse, result);
             switch (fetchResult.fetchResultType) {
                 case FetchResultType.Done:
-                    return {result: undefined, headers};
+                    return { result: undefined, headers };
                 case FetchResultType.Exception:
                     fetchResult.error.headers = headers;
                     throw fetchResult.error;
                 case FetchResultType.Result:
-                    return {result: fetchResult.feedResponse, headers};
+                    return { result: fetchResult.feedResponse, headers };
             }
         } catch (err) {
             this._updateStates(err, err.item === undefined);
@@ -269,25 +263,25 @@ export class DocumentProducer {
             // Need to unwrap fetch results
             switch (fetchResult.fetchResultType) {
                 case FetchResultType.Done:
-                    return {result: undefined, headers: this._getAndResetActiveResponseHeaders()};
+                    return { result: undefined, headers: this._getAndResetActiveResponseHeaders() };
                 case FetchResultType.Exception:
                     fetchResult.error.headers = this._getAndResetActiveResponseHeaders();
                     throw fetchResult.error;
                 case FetchResultType.Result:
-                    return {result: fetchResult.feedResponse, headers: this._getAndResetActiveResponseHeaders()};
+                    return { result: fetchResult.feedResponse, headers: this._getAndResetActiveResponseHeaders() };
             }
         }
 
         // If there isn't anymore items left to fetch then let the user know.
         if (this.allFetched) {
-            return {result: undefined, headers: this._getAndResetActiveResponseHeaders()};
+            return { result: undefined, headers: this._getAndResetActiveResponseHeaders() };
         }
 
         // If there are no more bufferd items and there are still items to be fetched then buffer more
         try {
-            const {result, headers} = await this.bufferMore();
+            const { result, headers } = await this.bufferMore();
             if (result === undefined) {
-                return {result: undefined, headers};
+                return { result: undefined, headers };
             }
             HeaderUtils.mergeHeaders(this.respHeaders, headers);
 
