@@ -1565,7 +1565,7 @@ export class DocumentClient extends DocumentClientBase {
      */
     public async replaceDocument(
         documentLink: string,
-        newDocument: string,
+        newDocument: any,
         options?: RequestOptions,
         callback?: ResponseCallback<any>) {
         const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);

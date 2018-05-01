@@ -7,7 +7,8 @@ export class SessionContainer {
     constructor(
         private hostname: string,
         private collectionNameToCollectionResourceId: { [collectionName: string]: string } = {},
-        private collectionResourceIdToSessionTokens:
+        // TODO: chrande made this public for a test
+        public  collectionResourceIdToSessionTokens:
             { [collectionResourceId: string]: { [SessionName: string]: string } } = {}) {
         this.hostname = hostname;
     }
