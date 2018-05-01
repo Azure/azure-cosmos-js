@@ -1,55 +1,33 @@
-﻿/*
-The MIT License (MIT)
-Copyright (c) 2017 Microsoft Corporation
+﻿import * as assert from "assert";
+import { CosmosClient, UriFactory } from "../src";
+import testConfig from "./_testConfig";
+import { TestHelpers } from "./TestHelpers";
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+// var lib = require("../lib/"),
+//     assert = require("assert"),
+//     testConfig = require("./_testConfig"),
+//     UriFactory = require("../lib/uriFactory").UriFactory,
+//     CosmosClient = lib.DocumentClient;
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-
-"use strict";
-
-var lib = require("../lib/"),
-    assert = require("assert"),
-    testConfig = require("./_testConfig"),
-    UriFactory = require("../lib/uriFactory").UriFactory,
-    DocumentDBClient = lib.DocumentClient;
-
-var host = testConfig.host;
-var masterKey = testConfig.masterKey;
-
+const host = testConfig.host;
+const masterKey = testConfig.masterKey;
 
 describe("URI Factory Tests", function () {
 
-    var executeExceptionThrowingFunction = function (func) {
-        var isThrown = false;
+    const executeExceptionThrowingFunction = function (func: () => void) {
+        let isThrown = false;
         try {
             func();
-        }
-        catch (err) {
+        } catch (err) {
             isThrown = true;
         }
         assert(isThrown, "function did not throw an exception");
-    }
+    };
 
     describe("Create Database URI", function () {
-        var createDatabaseUriTest = function (dbId, expectedUri) {
+        const createDatabaseUriTest = function (dbId: string, expectedUri: string) {
             assert.equal(UriFactory.createDatabaseUri(dbId), expectedUri, "error invalid database URI");
-        }
+        };
 
         it("Normal database Id", function () {
             createDatabaseUriTest("database1", "dbs/database1");
@@ -57,7 +35,7 @@ describe("URI Factory Tests", function () {
 
         it("Empty database Id", function () {
             executeExceptionThrowingFunction(function () {
-                createDatabaseUriTest("", "exception")
+                createDatabaseUriTest("", "exception");
             });
         });
 
@@ -69,9 +47,9 @@ describe("URI Factory Tests", function () {
     });
 
     describe("Create Collection URI", function () {
-        var createCollectionUriTest = function (dbId, collId, expectedUri) {
+        const createCollectionUriTest = function (dbId: string, collId: string, expectedUri: string) {
             assert.equal(UriFactory.createDocumentCollectionUri(dbId, collId), expectedUri);
-        }
+        };
 
         it("Normal database & collection IDs", function () {
             createCollectionUriTest("db1", "col1", "dbs/db1/colls/col1");
@@ -91,7 +69,7 @@ describe("URI Factory Tests", function () {
     });
 
     describe("Create User URI", function () {
-        var createUserUriTest = function (dbId, userId, expectedUri) {
+        const createUserUriTest = function (dbId: string, userId: string, expectedUri: string) {
             assert.equal(UriFactory.createUserUri(dbId, userId), expectedUri);
         };
 
@@ -114,9 +92,9 @@ describe("URI Factory Tests", function () {
     });
 
     describe("Create Document URI", function () {
-        var createDocumentUriTest = function (dbId, collId, docId, expectedUri) {
+        const createDocumentUriTest = function (dbId: string, collId: string, docId: string, expectedUri: string) {
             assert.equal(UriFactory.createDocumentUri(dbId, collId, docId), expectedUri);
-        }
+        };
 
         it("Normal database Id, collection Id and, document Id", function () {
             createDocumentUriTest("db1", "coll1", "doc1", "dbs/db1/colls/coll1/docs/doc1");
@@ -136,9 +114,9 @@ describe("URI Factory Tests", function () {
     });
 
     describe("Create Permission URI", function () {
-        var createPermissionUriTest = function (dbId, userId, permId, expectedUri) {
+        const createPermissionUriTest = function (dbId: string, userId: string, permId: string, expectedUri: string) {
             assert.equal(UriFactory.createPermissionUri(dbId, userId, permId), expectedUri);
-        }
+        };
 
         it("Normal database Id, user Id and, permission Id", function () {
             createPermissionUriTest("db1", "user1", "perm1", "dbs/db1/users/user1/permissions/perm1");
@@ -158,9 +136,10 @@ describe("URI Factory Tests", function () {
     });
 
     describe("Create StoredProcedure URI", function () {
-        var createStoredProcedureUriTest = function (dbId, collId, sprocId, expectedUri) {
-            assert.equal(UriFactory.createStoredProcedureUri(dbId, collId, sprocId), expectedUri);
-        }
+        const createStoredProcedureUriTest =
+            function (dbId: string, collId: string, sprocId: string, expectedUri: string) {
+                assert.equal(UriFactory.createStoredProcedureUri(dbId, collId, sprocId), expectedUri);
+            };
 
         it("Normal database Id, collection Id and, storedProcedure Id", function () {
             createStoredProcedureUriTest("db1", "col1", "sproc1", "dbs/db1/colls/col1/sprocs/sproc1");
@@ -180,9 +159,9 @@ describe("URI Factory Tests", function () {
     });
 
     describe("Create Trigger URI", function () {
-        var createTriggerUriTest = function (dbId, collId, trgId, expectedUri) {
+        const createTriggerUriTest = function (dbId: string, collId: string, trgId: string, expectedUri: string) {
             assert.equal(UriFactory.createTriggerUri(dbId, collId, trgId), expectedUri);
-        }
+        };
 
         it("Normal database Id, collection Id and, trigger Id", function () {
             createTriggerUriTest("db1", "col1", "trig1", "dbs/db1/colls/col1/triggers/trig1");
@@ -202,9 +181,10 @@ describe("URI Factory Tests", function () {
     });
 
     describe("Create User-Defined-Function URI", function () {
-        var createUserDefinedFunctionUriTest = function (dbId, collId, udfId, expectedUri) {
-            assert.equal(UriFactory.createUserDefinedFunctionUri(dbId, collId, udfId), expectedUri);
-        }
+        const createUserDefinedFunctionUriTest =
+            function (dbId: string, collId: string, udfId: string, expectedUri: string) {
+                assert.equal(UriFactory.createUserDefinedFunctionUri(dbId, collId, udfId), expectedUri);
+            };
 
         it("Normal database Id, collection Id and, UDF Id", function () {
             createUserDefinedFunctionUriTest("db1", "col1", "udf1", "dbs/db1/colls/col1/udfs/udf1");
@@ -224,9 +204,9 @@ describe("URI Factory Tests", function () {
     });
 
     describe("Create Conflict URI", function () {
-        var createConflictUriTest = function (dbId, collId, confId, expectedUri) {
+        const createConflictUriTest = function (dbId: string, collId: string, confId: string, expectedUri: string) {
             assert.equal(UriFactory.createConflictUri(dbId, collId, confId), expectedUri);
-        }
+        };
 
         it("Normal database Id, collection Id and, conflict Id", function () {
             createConflictUriTest("db1", "col1", "conf1", "dbs/db1/colls/col1/conflicts/conf1");
@@ -246,9 +226,10 @@ describe("URI Factory Tests", function () {
     });
 
     describe("Create Attachment URI", function () {
-        var createAttachmentUriTest = function (dbId, collId, docId, atchId, expectedUri) {
-            assert.equal(UriFactory.createAttachmentUri(dbId, collId, docId, atchId), expectedUri);
-        }
+        const createAttachmentUriTest =
+            function (dbId: string, collId: string, docId: string, atchId: string, expectedUri: string) {
+                assert.equal(UriFactory.createAttachmentUri(dbId, collId, docId, atchId), expectedUri);
+            };
 
         it("Normal database Id, collection Id and, document Id, attachmentId", function () {
             createAttachmentUriTest("db1", "coll1", "doc1", "atch1", "dbs/db1/colls/coll1/docs/doc1/attachments/atch1");
@@ -268,9 +249,9 @@ describe("URI Factory Tests", function () {
     });
 
     describe("Create PartitionKeyRanges URI", function () {
-        var createPartitionKeyRangesUriTest = function (dbId, collId, expectedUir) {
+        const createPartitionKeyRangesUriTest = function (dbId: string, collId: string, expectedUir: string) {
             assert.equal(UriFactory.createPartitionKeyRangesUri(dbId, collId), expectedUir);
-        }
+        };
 
         it("Normal database & collection IDs", function () {
             createPartitionKeyRangesUriTest("db1", "col1", "dbs/db1/colls/col1/pkranges");
@@ -278,73 +259,37 @@ describe("URI Factory Tests", function () {
     });
 
     describe("Use uriFactory in integration with other methods", function () {
-        var testDatabaseId = "uriFactoryTestDb";
+        const testDatabaseId = "uriFactoryTestDb";
 
-        var client = new DocumentDBClient(host, { masterKey: masterKey });
+        const client = new CosmosClient(host, { masterKey });
 
-        var deleteDatabases = function (done) {
-            client.readDatabases().toArray(function (err, databases) {
-                if (err) {
-                    console.log("error occured reading databases", err);
-                    return done();
-                }
-
-                var index = databases.length;
-                if (index === 0) {
-                    return done();
-                }
-
-                databases.forEach(function (database) {
-                    index--;
-                    if (database.id === testDatabaseId) {
-                        client.deleteDatabase(database._self, function (err, db) {
-                            if (err) {
-                                console.log("error occured deleting databases", err);
-                                return done();
-                            }
-                        });
-                    }
-                    if (index === 0) {
-                        return done();
-                    }
-                });
-            });
-        }
-
-        var createDocumentUsingUriFactory = function (databaseId, collectionId, documentId, done) {
-            client.createDatabase({ id: databaseId }, function (err, database) {
-                assert.equal(err, undefined, "error creating database");
+        const createDocumentUsingUriFactory =
+            async function (databaseId: string, collectionId: string, documentId: string) {
+                const { result: database } = await client.createDatabase({ id: databaseId });
                 assert.equal(database.id, databaseId, "invalid database Id");
 
-                var databaseUri = UriFactory.createDatabaseUri(databaseId);
-                var collectionBody = {
+                const databaseUri = UriFactory.createDatabaseUri(databaseId);
+                const collectionBody = {
                     id: collectionId,
-                    indexingPolicy: { indexingMode: "Lazy" } //Modes : Lazy, Consistent
+                    indexingPolicy: { indexingMode: "Lazy" }, // Modes : Lazy, Consistent
                 };
-                client.createCollection(databaseUri, collectionBody, function (err, collection) {
-                    assert.equal(err, undefined, "error creating collection" + err);
-                    assert.equal(collection.id, collectionBody.id, "invalid collection Id");
+                const { result: collection } = await client.createCollection(databaseUri, collectionBody);
+                assert.equal(collection.id, collectionBody.id, "invalid collection Id");
 
-                    var collectionUri = UriFactory.createDocumentCollectionUri(databaseId, collectionId);
-                    var documentBody = {
-                        id: documentId,
-                        context: "something to consume space"
-                    };
-                    client.createDocument(collectionUri, documentBody, function (err, document) {
-                        assert.equal(err, undefined, "error creating document");
-                        assert.equal(document.id, documentId, "invalid document Id");
-                        done();
-                    });
-                });
-            });
-        }
+                const collectionUri = UriFactory.createDocumentCollectionUri(databaseId, collectionId);
+                const documentBody = {
+                    id: documentId,
+                    context: "something to consume space",
+                };
+                const { result: document } = await client.createDocument(collectionUri, documentBody);
+                assert.equal(document.id, documentId, "invalid document Id");
+            };
 
-        afterEach(function (done) { deleteDatabases(done) });
-        beforeEach(function (done) { deleteDatabases(done) });
+        afterEach(async function () { await TestHelpers.removeAllDatabases(host, masterKey); });
+        beforeEach(async function () { await TestHelpers.removeAllDatabases(host, masterKey); });
 
-        it("check uriFactory generates valid URIs when resource Ids contain unicode", function (done) {
-            createDocumentUsingUriFactory(testDatabaseId, "डेटाबेस پایگاه داده 数据库", "doc1", done);
+        it("check uriFactory generates valid URIs when resource Ids contain unicode", async function () {
+            await createDocumentUsingUriFactory(testDatabaseId, "डेटाबेस پایگاه داده 数据库", "doc1");
         });
     });
 });
-
