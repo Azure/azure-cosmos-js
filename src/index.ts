@@ -7,3 +7,5 @@ export { HashPartitionResolver } from "./hash";
 export { Constants, UriFactory } from "./common";
 export { Base } from "./base";
 export { RetryOptions } from "./retry";
+
+export { IHeaders } from "./queryExecutionContext";

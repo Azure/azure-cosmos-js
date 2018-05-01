@@ -2536,8 +2536,9 @@ export class DocumentClient extends DocumentClientBase {
         return undefined;
     }
 
+    // TODO: chrande made this public to maintain test coverage, but not really happy about it
     /** @ignore */
-    private isResourceValid(resource: any, err: any) { // TODO: any TODO: code smell
+    public isResourceValid(resource: any, err: any) { // TODO: any TODO: code smell
         if (resource.id) {
             if (typeof resource.id !== "string") {
                 err.message = "Id must be a string.";
@@ -2828,6 +2829,8 @@ export interface FeedOptions {
     partitionKey?: string;
     sessionToken?: string;
     initialHeaders?: IHeaders;
+    a_im?: string;
+    accessCondition?: any; // TODO: any
 }
 
 /**

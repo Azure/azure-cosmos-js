@@ -19,7 +19,7 @@ export class HashPartitionResolver {
      * function to extract the partition key from an object.
      */
     constructor(
-        partitionKeyExtractor: PartitionKeyExtractor, collectionLinks: string[], options: any) { // TODO: options
+        partitionKeyExtractor: PartitionKeyExtractor, collectionLinks: string[], options?: any) { // TODO: options
         HashPartitionResolver._throwIfInvalidPartitionKeyExtractor(partitionKeyExtractor);
         HashPartitionResolver._throwIfInvalidCollectionLinks(collectionLinks);
         this.partitionKeyExtractor = partitionKeyExtractor;
@@ -64,12 +64,14 @@ export class HashPartitionResolver {
         return this._resolve(partitionKey);
     }
 
-    private _resolve(partitionKey: PartitionKey) {
+    // TODO: chrande made this public to satisfy a test. Shouldn't be testing private apis
+    public _resolve(partitionKey: PartitionKey) {
         HashPartitionResolver._throwIfInvalidPartitionKey(partitionKey);
         return this.consistentHashRing.getNode(partitionKey as string); // TODO: code smell, type assertion
     }
 
-    private static _throwIfInvalidPartitionKeyExtractor(partitionKeyExtractor: PartitionKeyExtractor) {
+    // TODO: chrande made this public to satisfy a test. Shouldn't be testing private apis
+    public static _throwIfInvalidPartitionKeyExtractor(partitionKeyExtractor: PartitionKeyExtractor) {
         if (partitionKeyExtractor === undefined || partitionKeyExtractor === null) {
             throw new Error("partitionKeyExtractor cannot be null or undefined");
         }
@@ -79,14 +81,17 @@ export class HashPartitionResolver {
         }
     }
 
-    private static _throwIfInvalidPartitionKey(partitionKey: PartitionKey) {
+    // TODO: chrande made this public to satisfy a test. Shouldn't be testing private apis
+    public static _throwIfInvalidPartitionKey(partitionKey: PartitionKey) {
         const partitionKeyType = typeof partitionKey;
         if (partitionKeyType !== "string") {
             throw new Error("partitionKey must be a 'string'");
         }
     }
+
+    // TODO: chrande made this public for tests, but it's implementation detail and shouldn't tested
     /** @ignore */
-    private static _throwIfInvalidCollectionLinks(collectionLinks: any[]) {
+    public static _throwIfInvalidCollectionLinks(collectionLinks: any[]) {
         if (!Array.isArray(collectionLinks)) {
             throw new Error("collectionLinks must be an array.");
         }

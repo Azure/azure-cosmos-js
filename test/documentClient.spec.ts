@@ -1,43 +1,17 @@
-﻿/*
-The MIT License (MIT)
-Copyright (c) 2017 Microsoft Corporation
+﻿import * as assert from "assert";
+import {Constants, CosmosClient, IHeaders} from "../src";
+import testConfig from "./_testConfig";
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-
-"use strict";
-
-var lib = require("../lib/"),
-    testConfig = require("./_testConfig"),
-    assert = require("assert");
-
-var DocumentClient = lib.DocumentClient,
-    Constants = lib.Constants;
+// TODO: Should evaluate whether any of these tests are necessary. Are these really public apis?
 
 describe("DocumentClient Tests", function () {
-    var host = testConfig.host;
-    var masterKey = testConfig.masterKey;
-    var client = new DocumentClient(host, { masterKey: masterKey });
+    const host = testConfig.host;
+    const masterKey = testConfig.masterKey;
+    const client = new CosmosClient(host, { masterKey });
 
     describe("setIsUpsertHeader", function () {
         it("Should add is-upsert header.", function (done) {
-            var headers = client.defaultHeaders;
+            const headers = client.defaultHeaders;
             assert.equal(undefined, headers[Constants.HttpHeaders.IsUpsert]);
             client.setIsUpsertHeader(headers);
             assert.equal(true, headers[Constants.HttpHeaders.IsUpsert]);
@@ -45,7 +19,7 @@ describe("DocumentClient Tests", function () {
         });
 
         it("Should update is-upsert header.", function (done) {
-            var headers = {};
+            const headers: IHeaders = {};
             headers[Constants.HttpHeaders.IsUpsert] = false;
             assert.equal(false, headers[Constants.HttpHeaders.IsUpsert]);
             client.setIsUpsertHeader(headers);
@@ -55,8 +29,8 @@ describe("DocumentClient Tests", function () {
 
         it("Should throw on undefined headers", function (done) {
             assert.throws(
-                function () { client.setIsUpsertHeader(); },
-                /The "headers" parameter must not be null or undefined/
+                function () { client.setIsUpsertHeader(undefined); },
+                /The "headers" parameter must not be null or undefined/,
             );
             done();
         });
@@ -64,67 +38,39 @@ describe("DocumentClient Tests", function () {
         it("Should throw on null headers", function (done) {
             assert.throws(
                 function () { client.setIsUpsertHeader(null); },
-                /The "headers" parameter must not be null or undefined/
+                /The "headers" parameter must not be null or undefined/,
             );
             done();
         });
 
         it("Should throw on invalid string headers", function (done) {
             assert.throws(
-                function () { client.setIsUpsertHeader(""); },
-                /The "headers" parameter must be an instance of "Object". Actual type is: "string"./
+                function () { client.setIsUpsertHeader("" as any); }, // Any type is intentional for test failure
+                /The "headers" parameter must be an instance of "Object". Actual type is: "string"./,
             );
             done();
         });
 
         it("Should throw on invalid number headers", function (done) {
             assert.throws(
-                function () { client.setIsUpsertHeader(0); },
-                /The "headers" parameter must be an instance of "Object". Actual type is: "number"./
+                function () { client.setIsUpsertHeader(0 as any); }, // Any type is intentional for test failure
+                /The "headers" parameter must be an instance of "Object". Actual type is: "number"./,
             );
             done();
         });
 
         it("Should throw on invalid boolean headers", function (done) {
             assert.throws(
-                function () { client.setIsUpsertHeader(false); },
-                /The "headers" parameter must be an instance of "Object". Actual type is: "boolean"./
+                function () { client.setIsUpsertHeader(false as any); }, // Any type is intentional for test failure
+                /The "headers" parameter must be an instance of "Object". Actual type is: "boolean"./,
             );
-            done();
-        });
-    });
-
-    //we are using util.format function instead.
-    describe.skip("sprintf", function () {
-        it("0 strings", function (done) {
-            assert.equal("foo", client.sprintf("foo"));
-            done();
-        });
-
-        it("1 string", function (done) {
-            assert.equal("foo", client.sprintf("%s", "foo"));
-            done();
-        });
-
-        it("2 strings", function (done) {
-            assert.equal("foobar", client.sprintf("%s%s", "foo", "bar"));
-            done();
-        });
-
-        it("3 strings", function (done) {
-            assert.equal("foobarbaz", client.sprintf("%s%s%s", "foo", "bar", "baz"));
-            done();
-        });
-
-        it("%% escapes", function (done) {
-            assert.equal('%s', client.sprintf("%%s", 'foo'));
             done();
         });
     });
 
     describe("validateOptionsAndCallback Unit Tests", function () {
         it("no parameters", function (done) {
-            var result = client.validateOptionsAndCallback();
+            const result = client.validateOptionsAndCallback(undefined, undefined);
 
             assert.notEqual(null, result.options);
             assert.equal("object", typeof result.options);
@@ -134,7 +80,7 @@ describe("DocumentClient Tests", function () {
         });
 
         it("options", function (done) {
-            var result = client.validateOptionsAndCallback({});
+            const result = client.validateOptionsAndCallback({}, undefined);
 
             assert.notEqual(null, result.options);
             assert.equal("object", typeof result.options);
@@ -144,7 +90,7 @@ describe("DocumentClient Tests", function () {
         });
 
         it("callback", function (done) {
-            var result = client.validateOptionsAndCallback(function () { });
+            const result = client.validateOptionsAndCallback(function () { /* no op */ }, undefined);
             assert.notEqual(null, result.options);
             assert.equal("object", typeof result.options);
 
@@ -153,7 +99,7 @@ describe("DocumentClient Tests", function () {
         });
 
         it("options, callback.", function (done) {
-            var result = client.validateOptionsAndCallback({}, function () { });
+            const result = client.validateOptionsAndCallback({}, function () { /* no up */ });
             assert.notEqual(null, result.options);
             assert.equal("object", typeof result.options);
 
@@ -162,7 +108,7 @@ describe("DocumentClient Tests", function () {
         });
 
         it("undefined, callback", function (done) {
-            var result = client.validateOptionsAndCallback(undefined, function () { });
+            const result = client.validateOptionsAndCallback(undefined, function () { /* no op */ });
             assert.notEqual(null, result.options);
             assert.equal("object", typeof result.options);
 
@@ -171,7 +117,7 @@ describe("DocumentClient Tests", function () {
         });
 
         it("null, callback", function (done) {
-            var result = client.validateOptionsAndCallback(null, function () { });
+            const result = client.validateOptionsAndCallback(null, function () { /* no op */ });
             assert.equal(null, result.options);
             assert.equal("object", typeof result.options);
 
@@ -179,27 +125,26 @@ describe("DocumentClient Tests", function () {
             done();
         });
 
-
         it("invalid string options", function (done) {
             assert.throws(
-                function () { client.validateOptionsAndCallback("foo", function () { }); },
-                /The "options" parameter must be of type "object". Actual type is: "string"/
+                function () { client.validateOptionsAndCallback("foo", function () { /* no op */ }); },
+                /The "options" parameter must be of type "object". Actual type is: "string"/,
             );
             done();
         });
 
         it("invalid number options", function (done) {
             assert.throws(
-                function () { client.validateOptionsAndCallback(0, function () { }); },
-                /The "options" parameter must be of type "object". Actual type is: "number"/
+                function () { client.validateOptionsAndCallback(0, function () { /* no op */ }); },
+                /The "options" parameter must be of type "object". Actual type is: "number"/,
             );
             done();
         });
 
         it("invalid bool options", function (done) {
             assert.throws(
-                function () { client.validateOptionsAndCallback(false, function () { }); },
-                /The "options" parameter must be of type "object". Actual type is: "boolean"/
+                function () { client.validateOptionsAndCallback(false, function () { /* no op */ }); },
+                /The "options" parameter must be of type "object". Actual type is: "boolean"/,
             );
             done();
         });
@@ -207,7 +152,7 @@ describe("DocumentClient Tests", function () {
         it("invalid string callback", function (done) {
             assert.throws(
                 function () { client.validateOptionsAndCallback({}, "bar"); },
-                /The "callback" parameter must be of type "function". Actual type is: "string"/
+                /The "callback" parameter must be of type "function". Actual type is: "string"/,
             );
             done();
         });
@@ -215,7 +160,7 @@ describe("DocumentClient Tests", function () {
         it("invalid number callback", function (done) {
             assert.throws(
                 function () { client.validateOptionsAndCallback({}, 0); },
-                /The "callback" parameter must be of type "function". Actual type is: "number"/
+                /The "callback" parameter must be of type "function". Actual type is: "number"/,
             );
             done();
         });
@@ -223,7 +168,7 @@ describe("DocumentClient Tests", function () {
         it("invalid boolean callback", function (done) {
             assert.throws(
                 function () { client.validateOptionsAndCallback({}, false); },
-                /The "callback" parameter must be of type "function". Actual type is: "boolean"/
+                /The "callback" parameter must be of type "function". Actual type is: "boolean"/,
             );
             done();
         });
@@ -231,7 +176,7 @@ describe("DocumentClient Tests", function () {
         it("invalid options, invalid callback", function (done) {
             assert.throws(
                 function () { client.validateOptionsAndCallback("foo", "bar"); },
-                /The "options" parameter must be of type "object". Actual type is: "string"/
+                /The "options" parameter must be of type "object". Actual type is: "string"/,
             );
             done();
         });
@@ -239,60 +184,58 @@ describe("DocumentClient Tests", function () {
 
     describe("isResourceValid Unit Tests", function () {
         it("id is not string", function (done) {
-            var err = {};
-            var result = client.isResourceValid({id: 1}, err);
+            const err = {};
+            const result = client.isResourceValid({id: 1}, err);
 
             assert.equal(result, false);
-            assert.deepEqual(err, {"message": "Id must be a string."});
+            assert.deepEqual(err, { message: "Id must be a string."});
             done();
         });
     });
 
     describe("extractPartitionKey", function() {
-        var document, partitionKeyDefinition;
+        let partitionKeyDefinition: any; // TODO: any
 
         beforeEach(function() {
-            document = undefined;
             partitionKeyDefinition = undefined;
         });
 
         describe("With undefined partitionKeyDefinition", function() {
             it("should return undefined", function() {
-                var document = {};
-                var result = client.extractPartitionKey(document, partitionKeyDefinition);
+                const document: any = {};
+                const result = client.extractPartitionKey(document, partitionKeyDefinition);
                 assert.equal(result, undefined);
             });
         });
 
         describe("With a defined partitionKeyDefinition", function() {
             beforeEach(function() {
-                partitionKeyDefinition = { paths: ["/a/b"] }
+                partitionKeyDefinition = { paths: ["/a/b"] };
             });
 
             it("should return [{}] when document has no partition key value", function() {
-                var document = {};
-                var result = client.extractPartitionKey(document, partitionKeyDefinition);
+                const document = {};
+                const result = client.extractPartitionKey(document, partitionKeyDefinition);
                 assert.deepEqual(result, [{}]);
             });
 
             it("should return [null] when document has a null partition key value", function() {
-                var document = { a: { b: null } };
-                var result = client.extractPartitionKey(document, partitionKeyDefinition);
+                const document: any = { a: { b: null } };
+                const result = client.extractPartitionKey(document, partitionKeyDefinition);
                 assert.deepEqual(result, [null]);
             });
 
             it("should return [{}] when document has a partially defined partition key value", function() {
-                var document = { a: "some value" };
-                var result = client.extractPartitionKey(document, partitionKeyDefinition);
+                const document = { a: "some value" };
+                const result = client.extractPartitionKey(document, partitionKeyDefinition);
                 assert.deepEqual(result, [{}]);
             });
 
             it("should return [value] when document has a valid partition key value", function() {
-                var document = { a: { b: "some value" } };
-                var result = client.extractPartitionKey(document, partitionKeyDefinition);
+                const document = { a: { b: "some value" } };
+                const result = client.extractPartitionKey(document, partitionKeyDefinition);
                 assert.deepEqual(result, ["some value"]);
             });
         });
     });
-
 });

@@ -4,11 +4,12 @@ import { Constants } from "../common";
 import { QueryRange } from "./QueryRange";
 
 export class InMemoryCollectionRoutingMap {
-    private rangeById: string;
+    private rangeById: Range[];
     private rangeByInfo: string;
     private orderedPartitionKeyRanges: any[];
     private orderedRanges: QueryRange[];
-    private orderedPartitionInfo: any;
+    // TODO: chrande made this public, even though it is implementation detail for a test
+    public orderedPartitionInfo: any;
     private collectionUniqueId: any;
 
     /**
@@ -17,7 +18,7 @@ export class InMemoryCollectionRoutingMap {
      * convenience methods for working with set of ranges.
      */
     constructor(
-        rangeById: string,
+        rangeById: Range[],
         rangeByInfo: string,
         orderedPartitionKeyRanges: any[],
         orderedPartitionInfo: any,
@@ -73,15 +74,15 @@ export class InMemoryCollectionRoutingMap {
         return 0;
     }
 
-    private getRangeByPartitionKeyRangeId(partitionKeyRangeId: number) {
+    // TODO: nothing calls this, remove it?
+    // private getRangeByPartitionKeyRangeId(partitionKeyRangeId: number) {
+    //     const t = this.rangeById[partitionKeyRangeId];
 
-        const t = this.rangeById[partitionKeyRangeId];
-
-        if (t === undefined) {
-            return undefined;
-        }
-        return t[0];
-    }
+    //     if (t === undefined) {
+    //         return undefined;
+    //     }
+    //     return t[0];
+    // }
 
     public getOverlappingRanges(providedQueryRanges: QueryRange | QueryRange[]) {
         const pqr: QueryRange[] = Array.isArray(providedQueryRanges) ? providedQueryRanges : [providedQueryRanges];
