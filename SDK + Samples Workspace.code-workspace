@@ -9,6 +9,13 @@
 	],
 	"settings": {
 		"mocha.files.glob":"test/**/*.spec.ts",
+		"mocha.sideBarOptions": {
+			"lens": true,
+			"decoration": true,
+			"autoUpdateTime": 0,
+			"showDebugTestStatus": true
+		},
+		"mocha.runTestsOnSave": "false",
 		"mocha.logVerbose": true,
 		"mocha.options": {
 			"compilers":{

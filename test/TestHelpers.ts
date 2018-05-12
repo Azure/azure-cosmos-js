@@ -1,5 +1,5 @@
 import * as assert from "assert";
-import { DocumentBase, DocumentClient } from "../src";
+import { DocumentBase, DocumentClient, Response } from "../src";
 
 export class TestHelpers {
     public static async removeAllDatabases(host: string, masterKey: string) {
@@ -23,7 +23,7 @@ export class TestHelpers {
         }
     }
 
-    public static getDatabaseLink (isNameBasedLink: boolean, db: any) {
+    public static getDatabaseLink(isNameBasedLink: boolean, db: any) {
         if (isNameBasedLink) {
             return "dbs/" + db.id;
         } else {
@@ -31,7 +31,7 @@ export class TestHelpers {
         }
     }
 
-    public static getCollectionLink (isNameBasedLink: boolean, db: any, coll: any) {
+    public static getCollectionLink(isNameBasedLink: boolean, db: any, coll: any) {
         if (isNameBasedLink) {
             return "dbs/" + db.id + "/colls/" + coll.id;
         } else {
@@ -39,7 +39,7 @@ export class TestHelpers {
         }
     }
 
-    public static getDocumentLink (isNameBasedLink: boolean, db: any, coll: any, doc: any) {
+    public static getDocumentLink(isNameBasedLink: boolean, db: any, coll: any, doc: any) {
         if (isNameBasedLink) {
             return "dbs/" + db.id + "/colls/" + coll.id + "/docs/" + doc.id;
         } else {
@@ -47,18 +47,271 @@ export class TestHelpers {
         }
     }
 
-    public static async bulkInsertDocuments (
+    public static async bulkInsertDocuments(
         client: DocumentClient, isNameBased: boolean, db: any, collection: any, documents: any) {
         const returnedDocuments = [];
         for (const doc of documents) {
             try {
-            const {result: document} = await client.createDocument(
-                TestHelpers.getCollectionLink(isNameBased, db, collection), doc);
-            returnedDocuments.push(document);
+                const { result: document } = await client.createDocument(
+                    TestHelpers.getCollectionLink(isNameBased, db, collection), doc);
+                returnedDocuments.push(document);
             } catch (err) {
                 throw err;
             }
         }
         return returnedDocuments;
+    }
+
+    public static async bulkReadDocuments(
+        client: DocumentClient, isNameBased: boolean, db: any,
+        collection: any, documents: any[], partitionKey: string) {
+        for (const document of documents) {
+            try {
+                const options = (partitionKey && document.hasOwnProperty(partitionKey))
+                    ? { partitionKey: document[partitionKey] }
+                    : { partitionKey: {} };
+
+                // TODO: should we block or do all requests in parallel?
+                const { result: doc } = await client.readDocument(
+                    TestHelpers.getDocumentLink(isNameBased, db, collection, document), options);
+                assert.equal(JSON.stringify(doc), JSON.stringify(document));
+            } catch (err) {
+                throw err;
+            }
+        }
+    }
+
+    public static async bulkReplaceDocuments(
+        client: DocumentClient, isNameBased: boolean, db: any,
+        collection: any, documents: any[], partitionKey: string): Promise<any[]> {
+        const returnedDocuments: any[] = [];
+        for (const document of documents) {
+            try {
+                const { result: doc } =
+                    await client.replaceDocument(
+                        TestHelpers.getDocumentLink(isNameBased, db, collection, document), document);
+                const expectedModifiedDocument = JSON.parse(JSON.stringify(document));
+                delete expectedModifiedDocument._etag;
+                delete expectedModifiedDocument._ts;
+                const actualModifiedDocument = JSON.parse(JSON.stringify(doc));
+                delete actualModifiedDocument._etag;
+                delete actualModifiedDocument._ts;
+                assert.equal(JSON.stringify(actualModifiedDocument), JSON.stringify(expectedModifiedDocument));
+                returnedDocuments.push(doc);
+            } catch (err) {
+                throw err;
+            }
+        }
+        return returnedDocuments;
+    }
+
+    public static async bulkDeleteDocuments(
+        client: DocumentClient, isNameBased: boolean, db: any,
+        collection: any, documents: any[], partitionKey: string): Promise<void> {
+        for (const document of documents) {
+            try {
+                const options = (partitionKey && document.hasOwnProperty(partitionKey))
+                    ? { partitionKey: document[partitionKey] }
+                    : { partitionKey: {} };
+
+                const { result } = await client.deleteDocument(
+                    TestHelpers.getDocumentLink(isNameBased, db, collection, document), options);
+            } catch (err) {
+                throw err;
+            }
+        }
+    }
+
+    public static async bulkQueryDocumentsWithPartitionKey(
+        client: DocumentClient, isNameBased: boolean,
+        db: any, collection: any, documents: any[], partitionKey: any): Promise<void> {
+        for (const document of documents) {
+            try {
+                if (!document.hasOwnProperty(partitionKey)) {
+                    continue;
+                }
+
+                const querySpec = {
+                    query: "SELECT * FROM root r WHERE r." + partitionKey + "=@key",
+                    parameters: [
+                        {
+                            name: "@key",
+                            value: document[partitionKey],
+                        },
+                    ],
+                };
+
+                const { result: results } = await client.queryDocuments(
+                    TestHelpers.getCollectionLink(isNameBased, db, collection), querySpec).toArray();
+                assert.equal(results.length, 1, "Expected exactly 1 document");
+                assert.equal(JSON.stringify(results[0]), JSON.stringify(document));
+            } catch (err) {
+                throw err;
+            }
+        }
+    }
+
+    // Document
+    public static async createOrUpsertDocument(
+        collectionLink: string, body: any, options: any,
+        client: DocumentClient, isUpsertTest: boolean): Promise<Response<any>> {
+        if (isUpsertTest) {
+            return client.upsertDocument(collectionLink, body, options);
+        } else {
+            return client.createDocument(collectionLink, body, options);
+        }
+    }
+
+    public static async replaceOrUpsertDocument(
+        collectionLink: string, documentLink: string, body: any,
+        options: any, client: DocumentClient, isUpsertTest: boolean) {
+        if (isUpsertTest) {
+            return client.upsertDocument(collectionLink, body, options);
+        } else {
+            return client.replaceDocument(documentLink, body, options);
+        }
+    }
+
+    // Attachment
+    public static async createOrUpsertAttachment(
+        documentLink: string, body: any, options: any,
+        client: DocumentClient, isUpsertTest: boolean): Promise<Response<any>> {
+        if (isUpsertTest) {
+            return client.upsertAttachment(documentLink, body, options);
+        } else {
+            return client.createAttachment(documentLink, body, options);
+        }
+    }
+
+    public static replaceOrUpsertAttachment(
+        documentLink: string, attachmentLink: string, body: any,
+        options: any, client: DocumentClient, isUpsertTest: boolean): Promise<Response<any>> {
+        if (isUpsertTest) {
+            return client.upsertAttachment(documentLink, body, options);
+        } else {
+            return client.replaceAttachment(attachmentLink, body, options);
+        }
+    }
+
+    // User
+    public static createOrUpsertUser(
+        databaseLink: string, body: any, options: any,
+        client: DocumentClient, isUpsertTest: boolean): Promise<Response<any>> {
+        if (isUpsertTest) {
+            return client.upsertUser(databaseLink, body, options);
+        } else {
+            return client.createUser(databaseLink, body, options);
+        }
+    }
+    public static replaceOrUpsertUser(
+        databaseLink: string, userLink: string, body: any,
+        options: any, client: DocumentClient, isUpsertTest: boolean): Promise<Response<any>> {
+        if (isUpsertTest) {
+            return client.upsertUser(databaseLink, body, options);
+        } else {
+            return client.replaceUser(userLink, body, options);
+        }
+    }
+
+    // Permission
+    public static createOrUpsertPermission(
+        userLink: string, body: any, options: any,
+        client: DocumentClient, isUpsertTest: boolean): Promise<Response<any>> {
+        if (isUpsertTest) {
+            return client.upsertPermission(userLink, body, options);
+        } else {
+            return client.createPermission(userLink, body, options);
+        }
+    }
+
+    public static replaceOrUpsertPermission(
+        userLink: string, permissionLink: string, body: any,
+        options: any, client: DocumentClient, isUpsertTest: boolean): Promise<Response<any>> {
+        if (isUpsertTest) {
+            return client.upsertPermission(userLink, body, options);
+        } else {
+            return client.replacePermission(permissionLink, body, options);
+        }
+    }
+
+    // Trigger
+    public static createOrUpsertTrigger(
+        collectionLink: string, body: any, options: any,
+        client: DocumentClient, isUpsertTest: boolean): Promise<Response<any>> {
+        if (isUpsertTest) {
+            return client.upsertTrigger(collectionLink, body, options);
+        } else {
+            return client.createTrigger(collectionLink, body, options);
+        }
+    }
+    public static replaceOrUpsertTrigger(
+        collectionLink: string, triggerLink: string, body: any, options: any,
+        client: DocumentClient, isUpsertTest: boolean): Promise<Response<any>> {
+        if (isUpsertTest) {
+            return client.upsertTrigger(collectionLink, body, options);
+        } else {
+            return client.replaceTrigger(triggerLink, body, options);
+        }
+    }
+
+    // User Defined Function
+    public static createOrUpsertUserDefinedFunction(
+        collectionLink: string, body: any, options: any,
+        client: DocumentClient, isUpsertTest: boolean): Promise<Response<any>> {
+        if (isUpsertTest) {
+            return client.upsertUserDefinedFunction(collectionLink, body, options);
+        } else {
+            return client.createUserDefinedFunction(collectionLink, body, options);
+        }
+    }
+    public static replaceOrUpsertUserDefinedFunction(
+        collectionLink: string, udfLink: string, body: any, options: any,
+        client: DocumentClient, isUpsertTest: boolean): Promise<Response<any>> {
+        if (isUpsertTest) {
+            return client.upsertUserDefinedFunction(collectionLink, body, options);
+        } else {
+            return client.replaceUserDefinedFunction(udfLink, body, options);
+        }
+    }
+
+    // Stored Procedure
+    public static createOrUpsertStoredProcedure(
+        collectionLink: string, body: any, options: any,
+        client: DocumentClient, isUpsertTest: boolean): Promise<Response<any>> {
+        if (isUpsertTest) {
+            return client.upsertStoredProcedure(collectionLink, body, options);
+        } else {
+            return client.createStoredProcedure(collectionLink, body, options);
+        }
+    }
+    public static replaceOrUpsertStoredProcedure(
+        collectionLink: string, sprocLink: string, body: any, options: any,
+        client: DocumentClient, isUpsertTest: boolean): Promise<Response<any>> {
+        if (isUpsertTest) {
+            return client.upsertStoredProcedure(collectionLink, body, options);
+        } else {
+            return client.replaceStoredProcedure(sprocLink, body, options);
+        }
+    }
+
+    // Attachment and Upload Media
+    public static createOrUpsertAttachmentAndUploadMedia(
+        documentLink: string, readableStream: any, options: any,
+        client: DocumentClient, isUpsertTest: boolean): Promise<Response<any>> {
+        if (isUpsertTest) {
+            return client.upsertAttachmentAndUploadMedia(documentLink, readableStream, options);
+        } else {
+            return client.createAttachmentAndUploadMedia(documentLink, readableStream, options);
+        }
+    }
+
+    public static updateOrUpsertMedia(
+        documentLink: string, mediaLink: string, readableStream: any, options: any,
+        client: DocumentClient, isUpsertTest: boolean): Promise<Response<any>> {
+        if (isUpsertTest) {
+            return client.upsertAttachmentAndUploadMedia(documentLink, readableStream, options);
+        } else {
+            return client.updateMedia(mediaLink, readableStream, options);
+        }
     }
 }

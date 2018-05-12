@@ -1,9 +1,11 @@
 
-export type CompareFunction = (x: string, y: string) => number;
+export type CompareFunction = (x: Point , y: Point) => number;
+
+export type Point = number | string;
 
 export class Range {
-    public readonly low: string;
-    public readonly high: string;
+    public readonly low: Point;
+    public readonly high: Point;
 
     /**
      * Represents a range object used by the RangePartitionResolver in the Azure Cosmos DB database service.
@@ -12,7 +14,7 @@ export class Range {
      * @param {any} options.low                  - The low value in the range.
      * @param {any} options.high                 - The high value in the range.
      */
-    constructor(options: any) { // TODO: any options
+    constructor(options?: any) { // TODO: any options
         if (options === undefined) {
             options = {};
         }
@@ -32,7 +34,7 @@ export class Range {
     }
 
     // TODO: private?
-    public _compare(x: string, y: string, compareFunction?: CompareFunction) {
+    public _compare(x: Point, y: Point, compareFunction?: CompareFunction) {
         // Same semantics as Array.sort
         // http://www.ecma-international.org/ecma-262/6.0/#sec-sortcompare
         if (x === undefined && y === undefined) {
@@ -66,16 +68,16 @@ export class Range {
     // tslint:disable-next-line:variable-name
     public _contains = this.contains;
 
-    public contains(other: string | Range, compareFunction?: CompareFunction) {
+    public contains(other: Point | Range, compareFunction?: CompareFunction) {
         if (Range.isRange(other)) {
             return this._containsRange(other as Range, compareFunction);
         } else {
-            return this._containsPoint(other as string, compareFunction);
+            return this._containsPoint(other as number, compareFunction);
         }
     }
 
     // TODO: private?
-    public _containsPoint(point: string, compareFunction?: CompareFunction) {
+    public _containsPoint(point: Point, compareFunction?: CompareFunction) {
         return this._compare(point, this.low, compareFunction) >= 0
             && this._compare(point, this.high, compareFunction) <= 0;
     }
@@ -111,7 +113,7 @@ export class Range {
     // tslint:disable-next-line:variable-name
     public static _isRange = Range.isRange;
 
-    public static isRange(pointOrRange: string | Range) {
+    public static isRange(pointOrRange: Point | Range) {
         if (pointOrRange === undefined) {
             return false;
         }

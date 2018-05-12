@@ -1,11 +1,11 @@
-import { Range } from "../range";
+import { Point, Range } from "../range";
 import { RetryOptions } from "../retry";
 
 export interface Document {
     [key: string]: any;
 }
 
-export type PartitionKey = string | Range;
+export type PartitionKey = Point | Range;
 
 /**
  * <p>Represents the consistency levels supported for Azure Cosmos DB client operations.<br>

@@ -1853,7 +1853,7 @@ export class DocumentClient extends DocumentClientBase {
         const path = this.getPathFromLink(documentLink, "attachments", isNameBased);
         const id = this.getIdFromLink(documentLink, isNameBased);
 
-        this.upsert(body, path, "attachments", id, undefined, options, callback);
+        return this.upsert(body, path, "attachments", id, undefined, options, callback);
     }
 
     /**

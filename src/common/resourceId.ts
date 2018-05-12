@@ -407,8 +407,8 @@ export class ResourceId {
         let val = BigInt(buffer[offset + --i]);
         while (i > 0 && mul) {
             const temp = BigInt(buffer[offset + --i]);
-            val = val.plus(temp.times(mul));
             mul = mul.times(0x100);
+            val = val.plus(temp.times(mul));
         }
         mul = mul.times(0x80);
 

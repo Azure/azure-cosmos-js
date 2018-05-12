@@ -9,9 +9,10 @@ export interface PartitionKeyMapItem {
 }
 
 export class RangePartitionResolver {
-    private partitionKeyExtractor: PartitionKeyExtractor;
-    private partitionKeyMap: PartitionKeyMapItem[];
-    private compareFunction: CompareFunction;
+    // TODO: should these be public?
+    public partitionKeyExtractor: PartitionKeyExtractor;
+    public partitionKeyMap: PartitionKeyMapItem[];
+    public compareFunction: CompareFunction;
     /**
      * RangePartitionResolver implements partitioning using a partition map of ranges of values to a \
      * collection link in the Azure Cosmos DB database service.
@@ -80,7 +81,7 @@ export class RangePartitionResolver {
      */
     public getPartitionKey(document: Document): PartitionKey {
         if (typeof this.partitionKeyExtractor === "string") {
-            return document[this.partitionKeyExtractor] as string;
+            return document[this.partitionKeyExtractor] as number;
         }
         if (typeof this.partitionKeyExtractor === "function") {
             return this.partitionKeyExtractor(document);
@@ -98,7 +99,7 @@ export class RangePartitionResolver {
      */
     public resolveForCreate(partitionKey: PartitionKey) {
         const range = new Range({ low: partitionKey });
-        const mapEntry = this._getFirstContainingMapEntryOrNull(range);
+        const mapEntry = this.getFirstContainingMapEntryOrNull(range);
         if (mapEntry !== undefined && mapEntry !== null) {
             return mapEntry.link;
         }
@@ -121,7 +122,7 @@ export class RangePartitionResolver {
         }
     }
 
-    private _getFirstContainingMapEntryOrNull(point: any) { // TODO: any Point
+    public getFirstContainingMapEntryOrNull(point: any) { // TODO: any Point
         const containingMapEntries = this.partitionKeyMap
             .filter((p) => p.range !== undefined && p.range.contains(point, this.compareFunction));
         if (containingMapEntries && containingMapEntries.length > 0) {
@@ -130,7 +131,7 @@ export class RangePartitionResolver {
         return null;
     }
 
-    private _getIntersectingMapEntries(partitionKey: PartitionKey) {
+    public _getIntersectingMapEntries(partitionKey: PartitionKey) {
         const partitionKeys: PartitionKey[] = (Array.isArray(partitionKey)) ? partitionKey : [partitionKey];
         const ranges: Range[] = partitionKeys.map<Range>((p) =>
             Range.isRange(p)
