@@ -1492,7 +1492,7 @@ describe("NodeJS CRUD Tests", function () {
             // tslint:disable:prefer-const
             const triggerDefinition: any = {
                 id: "sample trigger",
-                serverScript () { var x = 10; },
+                serverScript() { var x = 10; },
                 triggerType: DocumentBase.TriggerType.Pre,
                 triggerOperation: DocumentBase.TriggerOperation.All,
             };
@@ -1615,7 +1615,7 @@ describe("NodeJS CRUD Tests", function () {
             const beforeCreateUdfsCount = udfs.length;
             const udfDefinition: any = {
                 id: "sample udf",
-                body () { const x = 10; },
+                body() { const x = 10; },
             };
             const { result: udf } = await TestHelpers.createOrUpsertUserDefinedFunction(
                 TestHelpers.getCollectionLink(isNameBased, db, collection),
@@ -1734,7 +1734,7 @@ describe("NodeJS CRUD Tests", function () {
             const beforeCreateSprocsCount = sprocs.length;
             const sprocDefinition: any = {
                 id: "sample sproc",
-                serverScript() { const x = 10; },
+                body() { const x = 10; },
             };
             const { result: sproc } = await TestHelpers.createOrUpsertStoredProcedure(
                 TestHelpers.getCollectionLink(isNameBased, db, collection),
@@ -1750,7 +1750,7 @@ describe("NodeJS CRUD Tests", function () {
             // read sprocs after creation
             const { result: sprocsAfterCreation } = await client.readStoredProcedures(
                 TestHelpers.getCollectionLink(isNameBased, db, collection)).toArray();
-            assert.equal(sprocs.length, beforeCreateSprocsCount + 1, "create should increase the number of sprocs");
+            assert.equal(sprocsAfterCreation.length, beforeCreateSprocsCount + 1, "create should increase the number of sprocs");
 
             // query sprocs
             const querySpec = {
@@ -2213,6 +2213,7 @@ describe("NodeJS CRUD Tests", function () {
     });
 
     describe("Validate QueryIterator Functionality", function () {
+        this.timeout(30000);
         const createResources = async function (isNameBased: boolean, client: CosmosClient) {
             try {
                 const { result: db } = await client.createDatabase({ id: "sample database" + Math.random() });
@@ -2238,15 +2239,19 @@ describe("NodeJS CRUD Tests", function () {
         };
 
         const queryIteratorToArrayTest = async function (isNameBased: boolean) {
-            const client = new CosmosClient(host, { masterKey });
-            const resources = await createResources(isNameBased, client);
-            const queryIterator = client.readDocuments(
-                TestHelpers.getCollectionLink(isNameBased, resources.db, resources.coll), { maxItemCount: 2 });
-            const { result: docs } = await queryIterator.toArray();
-            assert.equal(docs.length, 3, "queryIterator should return all documents using continuation");
-            assert.equal(docs[0].id, resources.doc1.id);
-            assert.equal(docs[1].id, resources.doc2.id);
-            assert.equal(docs[2].id, resources.doc3.id);
+            try {
+                const client = new CosmosClient(host, { masterKey });
+                const resources = await createResources(isNameBased, client);
+                const queryIterator = client.readDocuments(
+                    TestHelpers.getCollectionLink(isNameBased, resources.db, resources.coll), { maxItemCount: 2 });
+                const { result: docs } = await queryIterator.toArray();
+                assert.equal(docs.length, 3, "queryIterator should return all documents using continuation");
+                assert.equal(docs[0].id, resources.doc1.id);
+                assert.equal(docs[1].id, resources.doc2.id);
+                assert.equal(docs[2].id, resources.doc3.id);
+            } catch (err) {
+                throw err;
+            }
         };
 
         it("nativeApi validate QueryIterator iterator toArray name based", async function () {
@@ -2274,17 +2279,22 @@ describe("NodeJS CRUD Tests", function () {
             // test queryIterator.forEach
             return new Promise((resolve, reject) => {
                 queryIterator.forEach((err, doc) => {
-                    counter++;
-                    if (counter === 1) {
-                        assert.equal(doc.id, resources.doc1.id, "first document should be doc1");
-                    } else if (counter === 2) {
-                        assert.equal(doc.id, resources.doc2.id, "second document should be doc2");
-                    } else if (counter === 3) {
-                        assert.equal(doc.id, resources.doc3.id, "third document should be doc3");
-                    }
+                    try {
+                        counter++;
+                        if (counter === 1) {
+                            assert.equal(doc.id, resources.doc1.id, "first document should be doc1");
+                        } else if (counter === 2) {
+                            assert.equal(doc.id, resources.doc2.id, "second document should be doc2");
+                        } else if (counter === 3) {
+                            assert.equal(doc.id, resources.doc3.id, "third document should be doc3");
+                        }
 
-                    if (doc === undefined) {
-                        assert(counter < 5, "iterator should have stopped");
+                        if (doc === undefined) {
+                            assert(counter < 5, "iterator should have stopped");
+                            resolve();
+                        }
+                    } catch (err) {
+                        reject(err);
                     }
                 });
             });
