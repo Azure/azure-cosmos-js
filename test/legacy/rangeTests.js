@@ -23,7 +23,7 @@ SOFTWARE.
 
 "use strict";
 
-var lib = require("../../lib/"),
+var lib = require("../../lib/src/"),
     assert = require("assert");
 
 var Range = lib.Range;

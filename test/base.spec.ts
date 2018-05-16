@@ -2,6 +2,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { Base } from "../src";
+import content from "./BaselineTest.PathParser";
 
 describe("Base", function () {
     describe("#._trimSlashes", function () {
@@ -155,10 +156,7 @@ describe("Base", function () {
         });
 
         it("test paths", function () {
-            const content = fs.readFileSync(path.resolve(__dirname, "BaselineTest.PathParser.json"), {
-                encoding: "utf8",
-            });
-            const obj: any[] = JSON.parse(content);
+            const obj: any[] = JSON.parse(JSON.stringify(content));
             obj.forEach(function (entry) {
                 test(entry.path, entry.parts);
             });

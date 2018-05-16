@@ -123,7 +123,7 @@ export class DocumentClient extends DocumentClientBase {
 
         const err = {};
         if (!this.isResourceValid(body, err)) {
-            callback(err);
+            Base.ThrowOrCallback(callback, err);
             return;
         }
 
@@ -163,7 +163,7 @@ export class DocumentClient extends DocumentClientBase {
 
         const err = {};
         if (!this.isResourceValid(body, err)) {
-            callback(err);
+            Base.ThrowOrCallback(callback, err);
             return;
         }
 
@@ -1845,7 +1845,7 @@ export class DocumentClient extends DocumentClientBase {
 
         const err = {};
         if (!this.isResourceValid(body, err)) {
-            callback(err);
+            Base.ThrowOrCallback(callback, err);
             return;
         }
 

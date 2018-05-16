@@ -122,6 +122,10 @@ export class RangePartitionResolver {
         }
     }
 
+    // TODO: did this for backwards compat test, probably need to consider making these private
+    public _getFirstContainingMapEntryOrNull(point: any) {
+        return this.getFirstContainingMapEntryOrNull(point);
+    }
     public getFirstContainingMapEntryOrNull(point: any) { // TODO: any Point
         const containingMapEntries = this.partitionKeyMap
             .filter((p) => p.range !== undefined && p.range.contains(point, this.compareFunction));

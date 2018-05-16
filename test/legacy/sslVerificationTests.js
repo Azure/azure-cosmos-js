@@ -23,7 +23,7 @@
 
 "use strict";
 
-var lib = require("../../lib/"),
+var lib = require("../../lib/src/"),
     assert = require("assert");
 
 var Base = lib.Base,

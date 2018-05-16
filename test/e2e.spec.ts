@@ -2412,7 +2412,8 @@ describe("NodeJS CRUD Tests", function () {
                 // tslint:disable:prefer-const
                 // tslint:disable:curly
                 // tslint:disable:no-string-throw
-                body() {
+                // tslint:disable:object-literal-shorthand
+                body: function () {
                     var item = getContext().getRequest().getBody();
                     item.id = item.id.toUpperCase() + "t1";
                     getContext().getRequest().setBody(item);
@@ -2428,7 +2429,7 @@ describe("NodeJS CRUD Tests", function () {
             },
             {
                 id: "t3",
-                body() {
+                body: function () {
                     const item = getContext().getRequest().getBody();
                     item.id = item.id.toLowerCase() + "t3";
                     getContext().getRequest().setBody(item);
@@ -2438,7 +2439,7 @@ describe("NodeJS CRUD Tests", function () {
             },
             {
                 id: "response1",
-                body() {
+                body: function () {
                     const prebody = getContext().getRequest().getBody();
                     if (prebody.id !== "TESTING POST TRIGGERt1") throw "name mismatch";
                     const postbody = getContext().getResponse().getBody();
@@ -2458,6 +2459,7 @@ describe("NodeJS CRUD Tests", function () {
         // tslint:enable:prefer-const
         // tslint:enable:curly
         // tslint:enable:no-string-throw
+        // tslint:enable:object-literal-shorthand
 
         const createTriggers = async function (client: CosmosClient, collection: any, isUpsertTest: boolean) {
             for (const trigger of triggers) {
@@ -2498,8 +2500,13 @@ describe("NodeJS CRUD Tests", function () {
             const { result: document5, headers } = await TestHelpers.createOrUpsertDocument(
                 TestHelpers.getCollectionLink(isNameBased, db, collection), { id: "responseheaders" }, { preTriggerInclude: "t1" }, client, isUpsertTest);
             assert.equal(document5.id, "RESPONSEHEADERSt1");
-            const { result: document6 } = await TestHelpers.createOrUpsertDocument(
-                TestHelpers.getCollectionLink(isNameBased, db, collection), { id: "Docoptype" }, { postTriggerInclude: "triggerOpType" }, client, isUpsertTest);
+            try {
+                const { result: document6 } = await TestHelpers.createOrUpsertDocument(
+                    TestHelpers.getCollectionLink(isNameBased, db, collection), { id: "Docoptype" }, { postTriggerInclude: "triggerOpType" }, client, isUpsertTest);
+                assert.fail("Must fail");
+            } catch (err) {
+                assert.equal(err.code, 400, "Must throw when using a DELETE trigger on a CREATE operation");
+            }
         };
 
         it("nativeApi Should do trigger operations successfully name based", async function () {
@@ -2548,10 +2555,11 @@ describe("NodeJS CRUD Tests", function () {
             // tslint:disable:prefer-const
             // tslint:disable:curly
             // tslint:disable:no-string-throw
+            // tslint:disable:object-literal-shorthand
             const sproc1 = {
 
                 id: "storedProcedure1",
-                body() {
+                body: function () {
                     for (var i = 0; i < 1000; i++) {
                         const item = getContext().getResponse().getBody();
                         if (i > 0 && item !== i - 1) throw "body mismatch";
@@ -2562,7 +2570,7 @@ describe("NodeJS CRUD Tests", function () {
 
             const sproc2 = {
                 id: "storedProcedure2",
-                body() {
+                body: function () {
                     for (var i = 0; i < 10; i++) getContext().getResponse().appendValue("Body", i);
                 },
             };
@@ -2570,7 +2578,7 @@ describe("NodeJS CRUD Tests", function () {
             const sproc3 = {
                 id: "storedProcedure3",
                 // TODO: I put any in here, but not sure how this will work...
-                body(input: any) {
+                body: function (input: any) {
                     getContext().getResponse().setBody("a" + input.temp);
                 },
             };
@@ -2579,6 +2587,7 @@ describe("NodeJS CRUD Tests", function () {
             // tslint:enable:prefer-const
             // tslint:enable:curly
             // tslint:enable:no-string-throw
+            // tslint:enable:object-literal-shorthand
 
             const { result: retrievedSproc } = await TestHelpers.createOrUpsertStoredProcedure(
                 TestHelpers.getCollectionLink(isNameBased, db, collection), sproc1, undefined, client, isUpsertTest);
@@ -2617,9 +2626,10 @@ describe("NodeJS CRUD Tests", function () {
             // tslint:disable:curly
             // tslint:disable:no-string-throw
             // tslint:disable:no-shadowed-variable
+            // tslint:disable:object-literal-shorthand
             const querySproc = {
                 id: "querySproc",
-                body() {
+                body: function () {
                     var context = getContext();
                     var collection = context.getCollection();
                     var response = context.getResponse();
@@ -2639,6 +2649,7 @@ describe("NodeJS CRUD Tests", function () {
             // tslint:enable:curly
             // tslint:enable:no-string-throw
             // tslint:enable:no-shadowed-variable
+            // tslint:enable:object-literal-shorthand
 
             const documents = [
                 { id: "document1" },
@@ -2726,9 +2737,10 @@ describe("NodeJS CRUD Tests", function () {
             // tslint:disable:no-string-throw
             // tslint:disable:no-shadowed-variable
             // tslint:disable:one-line
+            // tslint:disable:object-literal-shorthand
             const sproc1 = {
                 id: "storedProcedure",
-                body() {
+                body: function () {
                     const mytext = "x";
                     const myval = 1;
                     try {
@@ -2746,7 +2758,8 @@ describe("NodeJS CRUD Tests", function () {
             // tslint:enable:curly
             // tslint:enable:no-string-throw
             // tslint:enable:no-shadowed-variable
-            // tslint:disable:one-line
+            // tslint:enable:one-line
+            // tslint:enable:object-literal-shorthand
 
             const { result: retrievedSproc } = await client.createStoredProcedure(
                 TestHelpers.getCollectionLink(true, db, collection), sproc1);
@@ -3308,7 +3321,7 @@ describe("NodeJS CRUD Tests", function () {
 
                 const { result: doc } = await client.createDocument(collection._self, documentDefinition);
                 await sleep(5000);
-                await positiveDefaultTtlStep2(client, collection, createdDocument, documentDefinition);
+                await positiveDefaultTtlStep2(client, collection, doc, documentDefinition);
             } catch (err) {
                 throw err;
             }

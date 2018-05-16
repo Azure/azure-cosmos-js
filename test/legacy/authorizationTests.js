@@ -24,7 +24,7 @@ SOFTWARE.
 "use strict";
 
 var assert = require("assert"),
-    lib = require("../../lib/"),
+    lib = require("../../lib/src/"),
     testConfig = require("./_testConfig.js"),
     DocumentBase = lib.DocumentBase,
     UriFactory = lib.UriFactory;

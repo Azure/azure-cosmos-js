@@ -26,7 +26,7 @@
 var http = require("http"),
     net = require("net"),
     url = require("url"),
-    lib = require("../../lib/"),
+    lib = require("../../lib/src/"),
     testConfig = require("./_testConfig");
 
 var Base = lib.Base,
