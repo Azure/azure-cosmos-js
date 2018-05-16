@@ -111,7 +111,7 @@ export abstract class DocumentClientBase {
      * callback will be of type {@link DatabaseAccount}.
      */
     public async getDatabaseAccount(
-        options: RequestOptions,
+        options?: RequestOptions,
         callback?: ResponseCallback<DatabaseAccount>): Promise<Response<DatabaseAccount>> {
         const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;

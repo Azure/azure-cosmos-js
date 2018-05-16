@@ -39,11 +39,67 @@ export class TestHelpers {
         }
     }
 
+    public static getUserLink(isNameBasedLink: boolean, db: any, user: any) {
+        if (isNameBasedLink) {
+            return "dbs/" + db.id + "/users/" + user.id;
+        } else {
+            return user._self;
+        }
+    }
+
     public static getDocumentLink(isNameBasedLink: boolean, db: any, coll: any, doc: any) {
         if (isNameBasedLink) {
             return "dbs/" + db.id + "/colls/" + coll.id + "/docs/" + doc.id;
         } else {
             return doc._self;
+        }
+    }
+
+    public static getAttachmentLink(isNameBasedLink: boolean, db: any, coll: any, doc: any, attachment: any) {
+        if (isNameBasedLink) {
+            return "dbs/" + db.id + "/colls/" + coll.id + "/docs/" + doc.id + "/attachments/" + attachment.id;
+        } else {
+            return attachment._self;
+        }
+    }
+
+    public static getPermissionLink(isNameBasedLink: boolean, db: any, user: any, permission: any) {
+        if (isNameBasedLink) {
+            return "dbs/" + db.id + "/users/" + user.id + "/permissions/" + permission.id;
+        } else {
+            return permission._self;
+        }
+    }
+
+    public static getTriggerLink(isNameBasedLink: boolean, db: any, coll: any, trigger: any) {
+        if (isNameBasedLink) {
+            return "dbs/" + db.id + "/colls/" + coll.id + "/triggers/" + trigger.id;
+        } else {
+            return trigger._self;
+        }
+    }
+
+    public static getUserDefinedFunctionLink(isNameBasedLink: boolean, db: any, coll: any, udf: any) {
+        if (isNameBasedLink) {
+            return "dbs/" + db.id + "/colls/" + coll.id + "/udfs/" + udf.id;
+        } else {
+            return udf._self;
+        }
+    }
+
+    public static getStoredProcedureLink(isNameBasedLink: boolean, db: any, coll: any, sproc: any) {
+        if (isNameBasedLink) {
+            return "dbs/" + db.id + "/colls/" + coll.id + "/sprocs/" + sproc.id;
+        } else {
+            return sproc._self;
+        }
+    }
+
+    public static getConflictLink(isNameBasedLink: boolean, db: any, coll: any, conflict: any) {
+        if (isNameBasedLink) {
+            return "dbs/" + db.id + "/colls/" + coll.id + "/conflicts/" + conflict.id;
+        } else {
+            return conflict._self;
         }
     }
 

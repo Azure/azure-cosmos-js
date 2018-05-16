@@ -1098,7 +1098,7 @@ export class DocumentClient extends DocumentClientBase {
      * Optional partition key to be used with the partition resolver
      * @returns {QueryIterator}                             - An instance of queryIterator to handle reading feed.
      */
-    public queryDocuments(documentsFeedOrDatabaseLink: string, query: string | SqlQuerySpec, options?: FeedOptions) {
+    public queryDocuments(documentsFeedOrDatabaseLink: string, query?: string | SqlQuerySpec, options?: FeedOptions) {
         const partitionResolver = this.partitionResolvers[documentsFeedOrDatabaseLink];
         const collectionLinks = (partitionResolver === undefined || partitionResolver === null)
             ? [documentsFeedOrDatabaseLink]
@@ -2162,7 +2162,8 @@ export class DocumentClient extends DocumentClientBase {
      * @param {RequestCallback} callback    - The callback for the request.
      */
     public async executeStoredProcedure(
-        sprocLink: string, params?: string[], options?: RequestOptions, callback?: ResponseCallback<any>) {
+        sprocLink: string, params?: any[], // TODO: any
+        options?: RequestOptions, callback?: ResponseCallback<any>) {
         if (!callback && !options) {
             if (typeof params === "function") {
                 callback = params;
@@ -2783,7 +2784,7 @@ export interface RequestOptions {
     offerEnableRUPerMinuteThroughput?: boolean;
     offerThroughput?: number;
     offerType?: string;
-    partitionKey?: string;
+    partitionKey?: PartitionKey;
     populateQuotaInfo?: boolean;
     postTriggerInclude?: string | string[];
     preTriggerInclude?: string | string[];

@@ -182,93 +182,93 @@ export class Base {
         verb: string, path: string,
         resourceId: string,
         resourceType: string,
-        options: Options,
+        options: RequestOptions | FeedOptions | MediaOptions,
         partitionKeyRangeId?: string): Promise<IHeaders> {
 
         const headers: IHeaders = { ...defaultHeaders };
-        options = options || {};
+        const opts: RequestOptions & FeedOptions & MediaOptions = (options || {}) as any; // TODO: this is dirty
 
-        if (options.continuation) {
-            headers[Constants.HttpHeaders.Continuation] = options.continuation;
+        if (opts.continuation) {
+            headers[Constants.HttpHeaders.Continuation] = opts.continuation;
         }
 
-        if (options.preTriggerInclude) {
+        if (opts.preTriggerInclude) {
             headers[Constants.HttpHeaders.PreTriggerInclude] =
-                options.preTriggerInclude.constructor === Array
-                    ? (options.preTriggerInclude as string[]).join(",")
-                    : options.preTriggerInclude as string;
+                opts.preTriggerInclude.constructor === Array
+                    ? (opts.preTriggerInclude as string[]).join(",")
+                    : opts.preTriggerInclude as string;
         }
 
-        if (options.postTriggerInclude) {
+        if (opts.postTriggerInclude) {
             headers[Constants.HttpHeaders.PostTriggerInclude] =
-                options.postTriggerInclude.constructor === Array
-                    ? (options.postTriggerInclude as string[]).join(",")
-                    : options.postTriggerInclude as string;
+                opts.postTriggerInclude.constructor === Array
+                    ? (opts.postTriggerInclude as string[]).join(",")
+                    : opts.postTriggerInclude as string;
         }
 
-        if (options.offerType) {
-            headers[Constants.HttpHeaders.OfferType] = options.offerType;
+        if (opts.offerType) {
+            headers[Constants.HttpHeaders.OfferType] = opts.offerType;
         }
 
-        if (options.offerThroughput) {
-            headers[Constants.HttpHeaders.OfferThroughput] = options.offerThroughput;
+        if (opts.offerThroughput) {
+            headers[Constants.HttpHeaders.OfferThroughput] = opts.offerThroughput;
         }
 
-        if (options.maxItemCount) {
-            headers[Constants.HttpHeaders.PageSize] = options.maxItemCount;
+        if (opts.maxItemCount) {
+            headers[Constants.HttpHeaders.PageSize] = opts.maxItemCount;
         }
 
-        if (options.accessCondition) {
-            if (options.accessCondition.type === "IfMatch") {
-                headers[Constants.HttpHeaders.IfMatch] = options.accessCondition.condition;
+        if (opts.accessCondition) {
+            if (opts.accessCondition.type === "IfMatch") {
+                headers[Constants.HttpHeaders.IfMatch] = opts.accessCondition.condition;
             } else {
-                headers[Constants.HttpHeaders.IfNoneMatch] = options.accessCondition.condition;
+                headers[Constants.HttpHeaders.IfNoneMatch] = opts.accessCondition.condition;
             }
         }
 
-        if (options.a_im) {
-            headers[Constants.HttpHeaders.A_IM] = options.a_im;
+        if (opts.a_im) {
+            headers[Constants.HttpHeaders.A_IM] = opts.a_im;
         }
 
-        if (options.indexingDirective) {
-            headers[Constants.HttpHeaders.IndexingDirective] = options.indexingDirective;
+        if (opts.indexingDirective) {
+            headers[Constants.HttpHeaders.IndexingDirective] = opts.indexingDirective;
         }
 
         // TODO: add consistency level validation.
-        if (options.consistencyLevel) {
-            headers[Constants.HttpHeaders.ConsistencyLevel] = options.consistencyLevel;
+        if (opts.consistencyLevel) {
+            headers[Constants.HttpHeaders.ConsistencyLevel] = opts.consistencyLevel;
         }
 
-        if (options.resourceTokenExpirySeconds) {
-            headers[Constants.HttpHeaders.ResourceTokenExpiry] = options.resourceTokenExpirySeconds;
+        if (opts.resourceTokenExpirySeconds) {
+            headers[Constants.HttpHeaders.ResourceTokenExpiry] = opts.resourceTokenExpirySeconds;
         }
 
         // TODO: add session token automatic handling in case of session consistency.
-        if (options.sessionToken) {
-            headers[Constants.HttpHeaders.SessionToken] = options.sessionToken;
+        if (opts.sessionToken) {
+            headers[Constants.HttpHeaders.SessionToken] = opts.sessionToken;
         }
 
-        if (options.enableScanInQuery) {
-            headers[Constants.HttpHeaders.EnableScanInQuery] = options.enableScanInQuery;
+        if (opts.enableScanInQuery) {
+            headers[Constants.HttpHeaders.EnableScanInQuery] = opts.enableScanInQuery;
         }
 
-        if (options.enableCrossPartitionQuery) {
-            headers[Constants.HttpHeaders.EnableCrossPartitionQuery] = options.enableCrossPartitionQuery;
+        if (opts.enableCrossPartitionQuery) {
+            headers[Constants.HttpHeaders.EnableCrossPartitionQuery] = opts.enableCrossPartitionQuery;
         }
 
-        if (options.maxDegreeOfParallelism !== undefined) {
+        if (opts.maxDegreeOfParallelism !== undefined) {
             headers[Constants.HttpHeaders.ParallelizeCrossPartitionQuery] = true;
         }
 
-        if (options.populateQuotaInfo) {
+        if (opts.populateQuotaInfo) {
             headers[Constants.HttpHeaders.PopulateQuotaInfo] = true;
         }
 
         // If the user is not using partition resolver, we add options.partitonKey to the header for elastic collections
         if ((documentClient as any).partitionResolver === undefined // TODO: paritionResolver does not exist
             || (documentClient as any).partitionResolver === null) {
-            if (options.partitionKey !== undefined) {
-                let partitionKey: string[] | string = options.partitionKey;
+            if (opts.partitionKey !== undefined) {
+                let partitionKey: string[] | string = opts.partitionKey;
                 if (partitionKey === null || !Array.isArray(partitionKey)) {
                     partitionKey = [partitionKey as string];
                 }
@@ -294,15 +294,15 @@ export class Base {
             headers[Constants.HttpHeaders.PartitionKeyRangeID] = partitionKeyRangeId;
         }
 
-        if (options.enableScriptLogging) {
-            headers[Constants.HttpHeaders.EnableScriptLogging] = options.enableScriptLogging;
+        if (opts.enableScriptLogging) {
+            headers[Constants.HttpHeaders.EnableScriptLogging] = opts.enableScriptLogging;
         }
 
-        if (options.offerEnableRUPerMinuteThroughput) {
+        if (opts.offerEnableRUPerMinuteThroughput) {
             headers[Constants.HttpHeaders.OfferIsRUPerMinuteThroughputEnabled] = true;
         }
 
-        if (options.disableRUPerMinuteUsage) {
+        if (opts.disableRUPerMinuteUsage) {
             headers[Constants.HttpHeaders.DisableRUPerMinuteUsage] = true;
         }
         if (documentClient.masterKey || documentClient.resourceTokens || documentClient.tokenProvider) {
