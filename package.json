@@ -11,7 +11,7 @@
     "database",
     "cloud"
   ],
-  "version": "1.14.2",
+  "version": "2.0.0-0",
   "author": "Microsoft Corporation",
   "main": "./lib/src/index.js",
   "types": "./lib/src/index.d.ts",
@@ -23,7 +23,7 @@
     "lint": "tslint 'src/**/*.ts'",
     "compile": "echo Using TypeScript && tsc --version && tsc --pretty",
     "copy-legacy-js": "./node_modules/.bin/copy-cli src/test/legacy/* ./lib/test/legacy/",
-    "docs":"typedoc --mode file --out ./lib/docs ./src",
+    "docs": "typedoc --mode file --out ./lib/docs ./src",
     "build": "npm run clean && npm run lint && npm run compile && npm run docs && npm run copy-legacy-js",
     "test": "mocha ./lib/test/ --recursive --timeout 30000 -i -g .*ignore.js"
   },
