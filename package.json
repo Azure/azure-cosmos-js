@@ -23,11 +23,9 @@
     "lint": "tslint 'src/**/*.ts'",
     "compile": "echo Using TypeScript && tsc --version && tsc --pretty",
     "copy-legacy-js": "./node_modules/.bin/copy-cli src/test/legacy/* ./lib/test/legacy/",
-    "build": "npm run clean && npm run lint && npm run compile && npm run copy-legacy-js",
-    "test": "mocha ./lib/test/ --recursive --timeout 30000 -i -g .*ignore.js",
-    "watch": "npm run build -- --watch",
-    "watch:test": "npm run test -- --watch",
-    "e2etst": "npm run "
+    "docs":"typedoc --mode file --out ./lib/docs ./src",
+    "build": "npm run clean && npm run lint && npm run compile && npm run docs && npm run copy-legacy-js",
+    "test": "mocha ./lib/test/ --recursive --timeout 30000 -i -g .*ignore.js"
   },
   "devDependencies": {
     "@types/mocha": "^5.2.0",
@@ -51,6 +49,7 @@
     "time-grunt": "^1.2.0",
     "ts-node": "^6.0.0",
     "tslint": "^5.9.1",
+    "typedoc": "^0.11.1",
     "typescript": "^2.8.3"
   },
   "dependencies": {
