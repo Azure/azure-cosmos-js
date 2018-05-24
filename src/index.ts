@@ -10,3 +10,4 @@ export { RetryOptions } from "./retry";
 export { Response } from "./request";
 
 export { IHeaders } from "./queryExecutionContext";
+export { QueryIterator } from "./queryIterator";

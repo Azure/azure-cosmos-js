@@ -1,5 +1,5 @@
 {
-  "name": "azure-cosmos-js",
+  "name": "@azure/cosmos",
   "description": "Azure Cosmos DB Service Node.js SDK for SQL API",
   "keywords": [
     "cosmosdb",
@@ -20,10 +20,11 @@
   },
   "scripts": {
     "clean": "rimraf lib",
-    "lint": "tslint -c tslint.json 'src/**/*.ts'",
-    "build": "npm run clean && npm run lint && echo Using TypeScript && tsc --version && tsc --pretty",
-    "test": "mocha ./lib/test/**.spec.js -g \"Session Token\"",
-    "test-legacy": "mocha ./test/legacy --timeout 30000",
+    "lint": "tslint 'src/**/*.ts'",
+    "compile": "echo Using TypeScript && tsc --version && tsc --pretty",
+    "copy-legacy-js": "./node_modules/.bin/copy-cli src/test/legacy/* ./lib/test/legacy/",
+    "build": "npm run clean && npm run lint && npm run compile && npm run copy-legacy-js",
+    "test": "mocha ./lib/test/ --recursive --timeout 30000 -i -g .*ignore.js",
     "watch": "npm run build -- --watch",
     "watch:test": "npm run test -- --watch",
     "e2etst": "npm run "
@@ -36,12 +37,11 @@
     "@types/sinon": "^4.3.1",
     "@types/tunnel": "0.0.0",
     "@types/underscore": "^1.8.8",
-    "child_process": "*",
+    "copy": "0.3.2",
     "eslint": "*",
     "grunt": "^0.4.5",
     "grunt-eslint": "^13.0.0",
     "grunt-mocha-test": "^0.13.3",
-    "int64-buffer": "^0.1.10",
     "jsdoc": "*",
     "load-grunt-tasks": "^3.1.0",
     "mocha": "^5.1.1",
