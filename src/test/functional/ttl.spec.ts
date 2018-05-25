@@ -64,34 +64,38 @@ describe("NodeJS CRUD Tests", function () {
         }
 
         it("nativeApi Validate Collection and Document TTL values.", async function () {
-            const client = new CosmosClient(host, { masterKey });
+            try {
+                const client = new CosmosClient(host, { masterKey });
 
-            const { result: db } = await client.createDatabase({ id: "sample database" });
+                const { result: db } = await client.createDatabase({ id: "sample database" });
 
-            const collectionDefinition = {
-                id: "sample collection1",
-                defaultTtl: 5,
-            };
+                const collectionDefinition = {
+                    id: "sample collection1",
+                    defaultTtl: 5,
+                };
 
-            const { result: collection } = await client.createCollection(db._self, collectionDefinition);
-            assert.equal(collectionDefinition.defaultTtl, collection.defaultTtl);
+                const { result: collection } = await client.createCollection(db._self, collectionDefinition);
+                assert.equal(collectionDefinition.defaultTtl, collection.defaultTtl);
 
-            // null, 0, -10 are unsupported value for defaultTtl.Valid values are -1 or a non-zero positive 32-bit integer value
-            await createCollectionWithInvalidDefaultTtl(client, db, collectionDefinition, "sample collection2", null);
-            await createCollectionWithInvalidDefaultTtl(client, db, collectionDefinition, "sample collection3", 0);
-            await createCollectionWithInvalidDefaultTtl(client, db, collectionDefinition, "sample collection4", -10);
+                // null, 0, -10 are unsupported value for defaultTtl.Valid values are -1 or a non-zero positive 32-bit integer value
+                await createCollectionWithInvalidDefaultTtl(client, db, collectionDefinition, "sample collection2", null);
+                await createCollectionWithInvalidDefaultTtl(client, db, collectionDefinition, "sample collection3", 0);
+                await createCollectionWithInvalidDefaultTtl(client, db, collectionDefinition, "sample collection4", -10);
 
-            const documentDefinition = {
-                id: "doc",
-                name: "sample document",
-                key: "value",
-                ttl: 2,
-            };
+                const documentDefinition = {
+                    id: "doc",
+                    name: "sample document",
+                    key: "value",
+                    ttl: 2,
+                };
 
-            // 0, null, -10 are unsupported value for ttl.Valid values are -1 or a non-zero positive 32-bit integer value
-            await createDocumentWithInvalidTtl(client, collection, documentDefinition, "doc1", 0);
-            await createDocumentWithInvalidTtl(client, collection, documentDefinition, "doc2", null);
-            await createDocumentWithInvalidTtl(client, collection, documentDefinition, "doc3", -10);
+                // 0, null, -10 are unsupported value for ttl.Valid values are -1 or a non-zero positive 32-bit integer value
+                await createDocumentWithInvalidTtl(client, collection, documentDefinition, "doc1", 0);
+                await createDocumentWithInvalidTtl(client, collection, documentDefinition, "doc2", null);
+                await createDocumentWithInvalidTtl(client, collection, documentDefinition, "doc3", -10);
+            } catch (err) {
+                throw err;
+            }
         });
 
         async function checkDocumentGone(client: CosmosClient, collection: any, createdDocument: any) {

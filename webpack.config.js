@@ -2,7 +2,7 @@ var path = require("path");
 var webpack = require("webpack");
 
 module.exports = {
-    entry: "./index.js",
+    entry: "./lib/index.js",
     node: {
         buffer: true,
         net: "mock",
@@ -12,8 +12,9 @@ module.exports = {
         new webpack.SourceMapDevToolPlugin({})
     ],
     output: {
-        filename: "bundle.js",
-        path: path.resolve(__dirname, "dist"),
-        library: "documentDBClient"
-    }
+        filename: "azurecosmos.js",
+        path: path.resolve(__dirname, "lib", "dist"),
+        library: "CosmosClient"
+    },
+    devtool: "inline-source-map"
 };

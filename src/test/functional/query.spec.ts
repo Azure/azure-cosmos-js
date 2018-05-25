@@ -290,30 +290,34 @@ describe("NodeJS CRUD Tests", function () {
         });
 
         const queryIteratorExecuteNextTest = async function (isNameBased: boolean) {
-            const client = new CosmosClient(host, { masterKey });
-            const resources = await createResources(isNameBased, client);
-            let queryIterator = client.readDocuments(
-                TestHelpers.getCollectionLink(isNameBased, resources.db, resources.coll), { maxItemCount: 2 });
-            const { result: docs, headers } = await queryIterator.executeNext();
+            try {
+                const client = new CosmosClient(host, { masterKey });
+                const resources = await createResources(isNameBased, client);
+                let queryIterator = client.readDocuments(
+                    TestHelpers.getCollectionLink(isNameBased, resources.db, resources.coll), { maxItemCount: 2 });
+                const { result: docs, headers } = await queryIterator.executeNext();
 
-            assert(headers !== undefined, "executeNext should pass headers as the third parameter to the callback");
-            assert(headers[Constants.HttpHeaders.RequestCharge] > 0, "RequestCharge has to be non-zero");
-            assert.equal(docs.length, 2, "first batch size should be 2");
-            assert.equal(docs[0].id, resources.doc1.id, "first batch first document should be doc1");
-            assert.equal(docs[1].id, resources.doc2.id, "batch first second document should be doc2");
-            const { result: docs2 } = await queryIterator.executeNext();
-            assert.equal(docs2.length, 1, "second batch size is unexpected");
-            assert.equal(docs2[0].id, resources.doc3.id, "second batch element should be doc3");
+                assert(headers !== undefined, "executeNext should pass headers as the third parameter to the callback");
+                assert(headers[Constants.HttpHeaders.RequestCharge] > 0, "RequestCharge has to be non-zero");
+                assert.equal(docs.length, 2, "first batch size should be 2");
+                assert.equal(docs[0].id, resources.doc1.id, "first batch first document should be doc1");
+                assert.equal(docs[1].id, resources.doc2.id, "batch first second document should be doc2");
+                const { result: docs2 } = await queryIterator.executeNext();
+                assert.equal(docs2.length, 1, "second batch size is unexpected");
+                assert.equal(docs2[0].id, resources.doc3.id, "second batch element should be doc3");
 
-            // validate Iterator.executeNext with continuation token
-            queryIterator = client.readDocuments(
-                TestHelpers.getCollectionLink(isNameBased, resources.db, resources.coll),
-                { maxItemCount: 2, continuation: headers[Constants.HttpHeaders.Continuation] as string });
-            const { result: docsWithContinuation, headers: headersWithContinuation } = await queryIterator.executeNext();
-            assert(headersWithContinuation !== undefined, "executeNext should pass headers as the third parameter to the callback");
-            assert(headersWithContinuation[Constants.HttpHeaders.RequestCharge] > 0, "RequestCharge has to be non-zero");
-            assert.equal(docsWithContinuation.length, 1, "second batch size with continuation token is unexpected");
-            assert.equal(docsWithContinuation[0].id, resources.doc3.id, "second batch element should be doc3");
+                // validate Iterator.executeNext with continuation token
+                queryIterator = client.readDocuments(
+                    TestHelpers.getCollectionLink(isNameBased, resources.db, resources.coll),
+                    { maxItemCount: 2, continuation: headers[Constants.HttpHeaders.Continuation] as string });
+                const { result: docsWithContinuation, headers: headersWithContinuation } = await queryIterator.executeNext();
+                assert(headersWithContinuation !== undefined, "executeNext should pass headers as the third parameter to the callback");
+                assert(headersWithContinuation[Constants.HttpHeaders.RequestCharge] > 0, "RequestCharge has to be non-zero");
+                assert.equal(docsWithContinuation.length, 1, "second batch size with continuation token is unexpected");
+                assert.equal(docsWithContinuation[0].id, resources.doc3.id, "second batch element should be doc3");
+            } catch (err) {
+                throw err;
+            }
         };
 
         it("nativeApi validate queryIterator iterator executeNext name based", async function () {

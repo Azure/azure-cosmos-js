@@ -32,6 +32,10 @@ export class TestHelpers {
     }
 
     public static getCollectionLink(isNameBasedLink: boolean, db: any, coll: any) {
+        if (!(db && coll)) {
+            throw new Error("db and coll must be set");
+        }
+
         if (isNameBasedLink) {
             return "dbs/" + db.id + "/colls/" + coll.id;
         } else {

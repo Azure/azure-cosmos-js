@@ -109,83 +109,87 @@ describe("NodeJS CRUD Tests", function () {
         };
 
         const permissionCRUDOverMultiplePartitionsTest = async function (isNameBased: boolean, isUpsertTest: boolean) {
-            const client = new CosmosClient(host, { masterKey });
-
-            // create database
-            const { result: db } = await client.createDatabase({ id: "sample database" });
-            // create collection
-            const partitionKey = "id";
-            const collectionDefinition = {
-                id: "coll1",
-                partitionKey: { paths: ["/" + partitionKey], kind: DocumentBase.PartitionKind.Hash },
-            };
-            const { result: coll } = await client.createCollection(
-                TestHelpers.getDatabaseLink(isNameBased, db), collectionDefinition, { offerThroughput: 12000 });
-
-            // create user
-            const { result: user } = await client.createUser(
-                TestHelpers.getDatabaseLink(isNameBased, db), { id: "new user" });
-
-            // list permissions
-            const { result: permissions } = await client.readPermissions(
-                TestHelpers.getUserLink(isNameBased, db, user)).toArray();
-            assert(Array.isArray(permissions), "Value should be an array");
-            const beforeCreateCount = permissions.length;
-            const permissionDefinition = { id: "new permission", permissionMode: DocumentBase.PermissionMode.Read, resource: coll._self, resourcePartitionKey: [1] };
-
-            // create permission
-            const { result: permission } = await TestHelpers.createOrUpsertPermission(
-                TestHelpers.getUserLink(isNameBased, db, user), permissionDefinition, undefined, client, isUpsertTest);
-            assert.equal(permission.id, permissionDefinition.id, "permission name error");
-            assert.equal(JSON.stringify(permission.resourcePartitionKey), JSON.stringify(permissionDefinition.resourcePartitionKey), "permission resource partition key error");
-
-            // list permissions after creation
-            const { result: permissionsAfterCreation } = await client.readPermissions(
-                TestHelpers.getUserLink(isNameBased, db, user)).toArray();
-            assert.equal(permissionsAfterCreation.length, beforeCreateCount + 1);
-
-            // query permissions
-            const querySpec = {
-                query: "SELECT * FROM root r WHERE r.id=@id",
-                parameters: [
-                    {
-                        name: "@id",
-                        value: permission.id,
-                    },
-                ],
-            };
-            const { result: results } = await client.queryPermissions(
-                TestHelpers.getUserLink(isNameBased, db, user), querySpec).toArray();
-            assert(results.length > 0, "number of results for the query should be > 0");
-            permission.permissionMode = DocumentBase.PermissionMode.All;
-            const { result: replacedPermission } = await TestHelpers.replaceOrUpsertPermission(
-                TestHelpers.getUserLink(isNameBased, db, user), permission._self, permission, undefined, client, isUpsertTest);
-            assert.equal(replacedPermission.permissionMode, DocumentBase.PermissionMode.All, "permission mode should change");
-            assert.equal(replacedPermission.id, permission.id, "permission id should stay the same");
-            assert.equal(JSON.stringify(replacedPermission.resourcePartitionKey), JSON.stringify(permission.resourcePartitionKey), "permission resource partition key error");
-
-            // to change the id of an existing resourcewe have to use replace
-            permission.id = "replaced permission";
-            const { result: replacedPermission2 } = await client.replacePermission(permission._self, permission);
-            assert.equal(replacedPermission2.id, permission.id);
-
-            // read permission
-            const { result: permissionAfterReplace } = await client.readPermission(
-                TestHelpers.getPermissionLink(isNameBased, db, user, replacedPermission2));
-            assert.equal(permissionAfterReplace.id, replacedPermission2.id);
-
-            // delete permission
-            const { result: res } = await client.deletePermission(
-                TestHelpers.getPermissionLink(isNameBased, db, user, permissionAfterReplace));
-
-            // read permission after deletion
             try {
-                const { result: badPermission } = await client.readPermission(
+                const client = new CosmosClient(host, { masterKey });
+
+                // create database
+                const { result: db } = await client.createDatabase({ id: "sample database" });
+                // create collection
+                const partitionKey = "id";
+                const collectionDefinition = {
+                    id: "coll1",
+                    partitionKey: { paths: ["/" + partitionKey], kind: DocumentBase.PartitionKind.Hash },
+                };
+                const { result: coll } = await client.createCollection(
+                    TestHelpers.getDatabaseLink(isNameBased, db), collectionDefinition, { offerThroughput: 12000 });
+
+                // create user
+                const { result: user } = await client.createUser(
+                    TestHelpers.getDatabaseLink(isNameBased, db), { id: "new user" });
+
+                // list permissions
+                const { result: permissions } = await client.readPermissions(
+                    TestHelpers.getUserLink(isNameBased, db, user)).toArray();
+                assert(Array.isArray(permissions), "Value should be an array");
+                const beforeCreateCount = permissions.length;
+                const permissionDefinition = { id: "new permission", permissionMode: DocumentBase.PermissionMode.Read, resource: coll._self, resourcePartitionKey: [1] };
+
+                // create permission
+                const { result: permission } = await TestHelpers.createOrUpsertPermission(
+                    TestHelpers.getUserLink(isNameBased, db, user), permissionDefinition, undefined, client, isUpsertTest);
+                assert.equal(permission.id, permissionDefinition.id, "permission name error");
+                assert.equal(JSON.stringify(permission.resourcePartitionKey), JSON.stringify(permissionDefinition.resourcePartitionKey), "permission resource partition key error");
+
+                // list permissions after creation
+                const { result: permissionsAfterCreation } = await client.readPermissions(
+                    TestHelpers.getUserLink(isNameBased, db, user)).toArray();
+                assert.equal(permissionsAfterCreation.length, beforeCreateCount + 1);
+
+                // query permissions
+                const querySpec = {
+                    query: "SELECT * FROM root r WHERE r.id=@id",
+                    parameters: [
+                        {
+                            name: "@id",
+                            value: permission.id,
+                        },
+                    ],
+                };
+                const { result: results } = await client.queryPermissions(
+                    TestHelpers.getUserLink(isNameBased, db, user), querySpec).toArray();
+                assert(results.length > 0, "number of results for the query should be > 0");
+                permission.permissionMode = DocumentBase.PermissionMode.All;
+                const { result: replacedPermission } = await TestHelpers.replaceOrUpsertPermission(
+                    TestHelpers.getUserLink(isNameBased, db, user), permission._self, permission, undefined, client, isUpsertTest);
+                assert.equal(replacedPermission.permissionMode, DocumentBase.PermissionMode.All, "permission mode should change");
+                assert.equal(replacedPermission.id, permission.id, "permission id should stay the same");
+                assert.equal(JSON.stringify(replacedPermission.resourcePartitionKey), JSON.stringify(permission.resourcePartitionKey), "permission resource partition key error");
+
+                // to change the id of an existing resourcewe have to use replace
+                permission.id = "replaced permission";
+                const { result: replacedPermission2 } = await client.replacePermission(permission._self, permission);
+                assert.equal(replacedPermission2.id, permission.id);
+
+                // read permission
+                const { result: permissionAfterReplace } = await client.readPermission(
+                    TestHelpers.getPermissionLink(isNameBased, db, user, replacedPermission2));
+                assert.equal(permissionAfterReplace.id, replacedPermission2.id);
+
+                // delete permission
+                const { result: res } = await client.deletePermission(
                     TestHelpers.getPermissionLink(isNameBased, db, user, permissionAfterReplace));
-                assert.fail("Must throw on read after delete");
+
+                // read permission after deletion
+                try {
+                    const { result: badPermission } = await client.readPermission(
+                        TestHelpers.getPermissionLink(isNameBased, db, user, permissionAfterReplace));
+                    assert.fail("Must throw on read after delete");
+                } catch (err) {
+                    const notFoundErrorCode = 404;
+                    assert.equal(err.code, notFoundErrorCode, "response should return error code 404");
+                }
             } catch (err) {
-                const notFoundErrorCode = 404;
-                assert.equal(err.code, notFoundErrorCode, "response should return error code 404");
+                throw err;
             }
 
         };

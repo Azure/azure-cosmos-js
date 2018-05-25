@@ -423,35 +423,43 @@ describe("NodeJS CRUD Tests", function () {
 
     describe("Validate response headers", function () {
         const createThenReadCollection = async function (isNameBased: boolean, client: CosmosClient, db: any, body: any) {
-            const { result: createdCollection, headers } = await client.createCollection(
-                TestHelpers.getDatabaseLink(isNameBased, db), body);
-            const response = await client.readCollection(
-                TestHelpers.getCollectionLink(isNameBased, db, createdCollection));
-            return response;
+            try {
+                const { result: createdCollection, headers } = await client.createCollection(
+                    TestHelpers.getDatabaseLink(isNameBased, db), body);
+                const response = await client.readCollection(
+                    TestHelpers.getCollectionLink(isNameBased, db, createdCollection));
+                return response;
+            } catch (err) {
+                throw err;
+            }
         };
 
         const indexProgressHeadersTest = async function (isNameBased: boolean) {
-            const client = new CosmosClient(host, { masterKey });
-            const { result: db } = await client.createDatabase({ id: "sample database" });
-            const { headers: headers1 } = await createThenReadCollection(isNameBased, client, db, { id: "consistent_coll" });
-            assert.notEqual(headers1[Constants.HttpHeaders.IndexTransformationProgress], undefined);
-            assert.equal(headers1[Constants.HttpHeaders.LazyIndexingProgress], undefined);
+            try {
+                const client = new CosmosClient(host, { masterKey });
+                const { result: db } = await client.createDatabase({ id: "sample database" });
+                const { headers: headers1 } = await createThenReadCollection(isNameBased, client, db, { id: "consistent_coll" });
+                assert.notEqual(headers1[Constants.HttpHeaders.IndexTransformationProgress], undefined);
+                assert.equal(headers1[Constants.HttpHeaders.LazyIndexingProgress], undefined);
 
-            const lazyCollectionDefinition = {
-                id: "lazy_coll",
-                indexingPolicy: { indexingMode: DocumentBase.IndexingMode.Lazy },
-            };
-            const { headers: headers2 } = await createThenReadCollection(isNameBased, client, db, lazyCollectionDefinition);
-            assert.notEqual(headers2[Constants.HttpHeaders.IndexTransformationProgress], undefined);
-            assert.notEqual(headers2[Constants.HttpHeaders.LazyIndexingProgress], undefined);
+                const lazyCollectionDefinition = {
+                    id: "lazy_coll",
+                    indexingPolicy: { indexingMode: DocumentBase.IndexingMode.Lazy },
+                };
+                const { headers: headers2 } = await createThenReadCollection(isNameBased, client, db, lazyCollectionDefinition);
+                assert.notEqual(headers2[Constants.HttpHeaders.IndexTransformationProgress], undefined);
+                assert.notEqual(headers2[Constants.HttpHeaders.LazyIndexingProgress], undefined);
 
-            const noneCollectionDefinition = {
-                id: "none_coll",
-                indexingPolicy: { indexingMode: DocumentBase.IndexingMode.None, automatic: false },
-            };
-            const { headers: headers3 } = await createThenReadCollection(isNameBased, client, db, noneCollectionDefinition);
-            assert.notEqual(headers3[Constants.HttpHeaders.IndexTransformationProgress], undefined);
-            assert.equal(headers3[Constants.HttpHeaders.LazyIndexingProgress], undefined);
+                const noneCollectionDefinition = {
+                    id: "none_coll",
+                    indexingPolicy: { indexingMode: DocumentBase.IndexingMode.None, automatic: false },
+                };
+                const { headers: headers3 } = await createThenReadCollection(isNameBased, client, db, noneCollectionDefinition);
+                assert.notEqual(headers3[Constants.HttpHeaders.IndexTransformationProgress], undefined);
+                assert.equal(headers3[Constants.HttpHeaders.LazyIndexingProgress], undefined);
+            } catch (err) {
+                throw err;
+            }
         };
 
         it("nativeApi Validate index progress headers name based", async function () {
