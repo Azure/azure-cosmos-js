@@ -8,7 +8,7 @@ Info on how to build the SDK and run the samples
     - Recommend using Node 8 LTS
     - Recommend using a Node version manager ([nvm-windows](https://github.com/coreybutler/nvm-windows/releases), [nvm (mac/linux)](https://github.com/creationix/nvm/), [n (mac/linux)](https://github.com/tj/n)) 
 - npm (comes with Node)(all tooling is done via npm scripts)
-- All OS's should be supported (but only tested on Windows so far)
+- All OS's should be supported (but only tested on Windows so far)(Requires a Cosmos Emulator running on a Windows container on your machine or local network)
 - (Recommended) [VS Code](https://code.visualstudio.com/)
 - Cosmos DB (Azure or Local Emulator) (emulator only works on Windows, right now, so mac/linux needs a cloud instance)
 
