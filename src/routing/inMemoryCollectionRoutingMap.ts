@@ -74,16 +74,6 @@ export class InMemoryCollectionRoutingMap {
         return 0;
     }
 
-    // TODO: nothing calls this, remove it?
-    // private getRangeByPartitionKeyRangeId(partitionKeyRangeId: number) {
-    //     const t = this.rangeById[partitionKeyRangeId];
-
-    //     if (t === undefined) {
-    //         return undefined;
-    //     }
-    //     return t[0];
-    // }
-
     public getOverlappingRanges(providedQueryRanges: QueryRange | QueryRange[]) {
         const pqr: QueryRange[] = Array.isArray(providedQueryRanges) ? providedQueryRanges : [providedQueryRanges];
         const minToPartitionRange: any = {}; // TODO: any
@@ -98,7 +88,6 @@ export class InMemoryCollectionRoutingMap {
 
         // this for loop doesn't invoke any async callback
         for (const queryRange of pqr) {
-            // const queryRange = pqr[i];
             if (queryRange.isEmpty()) {
                 continue;
             }

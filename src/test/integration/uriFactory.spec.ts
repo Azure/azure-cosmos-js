@@ -3,12 +3,6 @@ import { CosmosClient, UriFactory } from "../../";
 import testConfig from "./../common/_testConfig";
 import { TestHelpers } from "./../common/TestHelpers";
 
-// var lib = require("../lib/"),
-//     assert = require("assert"),
-//     testConfig = require("./_testConfig"),
-//     UriFactory = require("../lib/uriFactory").UriFactory,
-//     CosmosClient = lib.DocumentClient;
-
 const host = testConfig.host;
 const masterKey = testConfig.masterKey;
 

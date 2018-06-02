@@ -10,7 +10,7 @@ module.exports = function (config) {
 
     // list of files / patterns to load in the browser
     files: [
-      { pattern: './browser-test.js' }
+      './browser-test.js'
     ],
 
 

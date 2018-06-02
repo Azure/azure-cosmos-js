@@ -5,14 +5,6 @@ import { ResourceId } from "../../common";
 import { SessionContainer } from "../../sessionContainer";
 import testConfig from "./../common/_testConfig";
 
-// const lib = require("../lib/"),
-//     sinon = require("sinon"),
-//     Base = require("../lib/base"),
-//     assert = require("assert"),
-//     testConfig = require("./_testConfig"),
-//     ResourceId = require("../lib/resourceId"),
-//     SessionContainer = require("../lib/sessionContainer");
-
 const host = testConfig.host;
 const masterKey = testConfig.masterKey;
 

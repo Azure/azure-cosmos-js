@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "set NODE_TLS_REJECT_UNAUTHORIZED=0&& node ./bin/www"
+    "start": "set NODE_TLS_REJECT_UNAUTHORIZED=0 && node ./bin/www"
   },
   "dependencies": {
     "async": "^2.1.2",

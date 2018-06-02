@@ -978,9 +978,6 @@ export class DocumentClient extends DocumentClientBase {
         query: SqlQuerySpec | string,
         options: FeedOptions,
         partitionKeyRangeId?: string): Promise<Response<any>> {
-        // const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
-        // options = optionsCallbackTuple.options;
-        // callback = optionsCallbackTuple.callback;
 
         try {
             // Query operations will use ReadEndpoint even though it uses

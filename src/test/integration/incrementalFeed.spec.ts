@@ -4,16 +4,6 @@ import { FeedOptions } from "../../documentclient";
 import testConfig from "./../common/_testConfig";
 import { TestHelpers } from "./../common/TestHelpers";
 
-// var lib = require("../lib/"),
-//     assert = require("assert"),
-//     testConfig = require("./_testConfig");
-
-// var Base = lib.Base,
-//     CosmosClient = lib.DocumentClient,
-//     Range = lib.Range;
-
-// process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-
 const host = testConfig.host;
 const masterKey = testConfig.masterKey;
 
@@ -37,13 +27,6 @@ describe("NodeJS Incremental Feed Tests using 'a_im' and 'IfNoneMatch' options",
         const dbLink = TestHelpers.getDatabaseLink(false, db);
         return client.createCollection(dbLink, collectionDefinition);
     };
-
-    // const deleteCollection = function (done) {
-    //     client.deleteCollection(getCollectionLink(isNameBased, db, collection), function (err) {
-    //         assert.equal(err, undefined, "error deleting collection");
-    //         done();
-    //     });
-    // };
 
     describe("Newly updated documents should be fetched incremetally", function () {
         let collection: any;

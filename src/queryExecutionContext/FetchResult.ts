@@ -25,9 +25,4 @@ export class FetchResult {
             this.fetchResultType = FetchResultType.Exception;
         }
     }
-    // {
-    //     DoneResult: {
-    //         fetchResultType: FetchResultType.Done
-    //     }
-    // }
 }

@@ -123,21 +123,6 @@ export class DocumentProducer {
         return false;
     }
 
-    // no one calls this and it doesn't work, so I'm going to remove it. (Chris A)
-    // /**
-    //  * Synchronously gives the buffered items if any and moves inner indices.
-    //  * @returns {Object}       - buffered current items if any
-    //  * @ignore
-    //  */
-    // public consumeBufferedItems() {
-    //     // I don't think this method works...
-    //     throw new Error("Not yet implemented");
-    //     // const res = this._getBufferedResults(); // _getBufferedResults doesn't exist
-    //     // this.fetchResults = [];
-    //     // this._updateStates(undefined, this.continuationToken === null || this.continuationToken === undefined);
-    //     // return res;
-    // }
-
     private _getAndResetActiveResponseHeaders() {
         const ret = this.respHeaders;
         this.respHeaders = HeaderUtils.getInitialHeader();

@@ -11,18 +11,6 @@ describe("Smart Routing Map Provider OverlappingRanges", function () {
 
     const collectionLink = "dbs/7JZZAA==/colls/7JZZAOS-JQA=/";
     const collectionId = "my collection";
-    // const MockedQueryIterator = Base.defineClass(function (results) { this._results = results; },
-    //     { toArray: function (callback) { callback(undefined, this._results); } });
-
-    // const MockedDocumentClient =
-    // Base.defineClass(function (partitionKeyRanges) { this._partitionKeyRanges = partitionKeyRanges; }, {
-    //     readPartitionKeyRanges: function (collectionLink) {
-    //         return new MockedQueryIterator(this._partitionKeyRanges);
-    //     },
-    //     getIdFromLink: function () {
-    //         return collectionId;
-    //     }
-    // });
 
     const partitionKeyRanges = [
         { id: "0", minInclusive: "", maxExclusive: "05C1C9CD673398" },
@@ -220,7 +208,6 @@ describe("Smart Routing Map Provider OverlappingRanges", function () {
     // smartRoutingMapProvider.getOverlappingRanges()
     // partitionKeyRangeCache.getOverlappingRanges() is equal
     const assertBothProvidersResultsEqual = async (queryRanges: any) => {
-        // const errorExpected = errorExpected || false;
         let results1: any; let results2: any; let err1: any; let err2: any;
         results1 = results2 = null;
         err1 = err2 = null;
@@ -268,7 +255,6 @@ describe("Smart Routing Map Provider OverlappingRanges", function () {
     // provider.getOverlappingRanges() is the same on both queryRanges1, queryRanges2
     const assertProviderOverlappingRangesAreEqual = async function (
         provider: SmartRoutingMapProvider, queryRanges1: any, queryRanges2: any) {
-        // const errorExpected = errorExpected || false;
         let results1: any; let results2: any; let err1: any; let err2: any;
         try {
             results1 = await provider.getOverlappingRanges(collectionLink, queryRanges1);

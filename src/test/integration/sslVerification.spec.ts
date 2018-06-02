@@ -1,13 +1,6 @@
 ﻿import * as assert from "assert";
 import { Base, CosmosClient, DocumentBase } from "../../";
 
-// var lib = require("../lib/"),
-//     assert = require("assert");
-
-// var Base = lib.Base,
-//     CosmosClient = lib.DocumentClient,
-//     DocumentBase = lib.DocumentBase;
-
 const host = "https://localhost:443";
 const masterKey = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
 

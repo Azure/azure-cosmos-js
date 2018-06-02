@@ -55,7 +55,7 @@ export class AuthHandler {
         const MasterToken = "master";
         const TokenVersion = "1.0";
 
-        return "type=" + MasterToken + "&ver=" + TokenVersion + "&sig=" + signature;
+        return `type=${MasterToken}&ver=${TokenVersion}&sig=${signature}`;
     }
 
     // TODO: Resource tokens
