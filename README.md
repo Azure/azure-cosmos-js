@@ -53,9 +53,9 @@ Follow these instructions to run the tests locally.
 
 1. Clone Azure/azure-cosmos-js repository
 
-```bash
-git clone https://github.com/azure/azure-cosmos-js.git
-```
+    ```bash
+    git clone https://github.com/azure/azure-cosmos-js.git
+    ```
 
 2. Install Node.js and npm
 [https://docs.npmjs.com/getting-started/installing-node](https://docs.npmjs.com/getting-started/installing-node)
