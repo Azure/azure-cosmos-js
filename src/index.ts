@@ -1,6 +1,6 @@
 import * as DocumentBase from "./documents";
 
-export { DocumentClient, DocumentClient as CosmosClient } from "./documentclient";
+export { DocumentClient } from "./documentclient";
 export { DocumentBase, DocumentBase as AzureDocuments };
 export { Range, RangePartitionResolver } from "./range";
 export { HashPartitionResolver } from "./hash";
@@ -11,3 +11,37 @@ export { Response } from "./request";
 
 export { IHeaders } from "./queryExecutionContext";
 export { QueryIterator } from "./queryIterator";
+
+export {CosmosClient} from "./CosmosClient";
+export * from "./Attachment";
+export * from "./AttachmentDefinition";
+export * from "./Attachments";
+export * from "./Conflict";
+export * from "./ConflictDefinition";
+export * from "./Conflicts";
+export * from "./Container";
+export * from "./ContainerDefinition";
+export * from "./Containers";
+export * from "./Database";
+export * from "./DatabaseDefinition";
+export * from "./Databases";
+export * from "./Item";
+export * from "./Items";
+export * from "./Offer";
+export * from "./OfferDefinition";
+export * from "./Offers";
+export * from "./Permission";
+export * from "./PermissionDefinition";
+export * from "./Permissions";
+export * from "./StoredProcedure";
+export * from "./StoredProcedureDefinition";
+export * from "./StoredProcedures";
+export * from "./Trigger";
+export * from "./TriggerDefinition";
+export * from "./Triggers";
+export * from "./User";
+export * from "./UserDefinition";
+export * from "./Users";
+export * from "./UserDefinedFunction";
+export * from "./UserDefinedFunctionDefinition";
+export * from "./UserDefinedFunctions";

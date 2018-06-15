@@ -1,31 +1,35 @@
 import { Container } from "./Container";
+import { CosmosClient } from "./CosmosClient";
 import { FeedOptions, RequestOptions } from "./documentclient";
 import { SqlQuerySpec } from "./queryExecutionContext";
 import { QueryIterator } from "./queryIterator";
+import { Response } from "./request";
 import { Trigger } from "./Trigger";
 import { TriggerDefinition } from "./TriggerDefinition";
-import { Response } from "./request";
 
 export class Triggers {
-    constructor(public readonly container: Container) {}
+    private client: CosmosClient;
+    constructor(public readonly container: Container) {
+        this.client = this.container.database.client;
+    }
 
     public getTrigger(id: string): Trigger {
         return new Trigger(this.container, id);
     }
 
     public query(query: SqlQuerySpec, options?: FeedOptions): QueryIterator<TriggerDefinition> {
-        throw new Error("Not yet implemented");
+        return this.client.documentClient.queryTriggers(this.container.url, query, options);
     }
 
     public read(options?: FeedOptions): QueryIterator<TriggerDefinition> {
-        throw new Error("Not yet implemented");
+        return this.client.documentClient.readTriggers(this.container.url, options);
     }
 
     public create(body: TriggerDefinition, options?: RequestOptions): Promise<Response<TriggerDefinition>> {
-        throw new Error("Not yet implemented");
+        return this.client.documentClient.createTrigger(this.container.url, body, options);
     }
 
     public upsert(body: TriggerDefinition, options?: RequestOptions): Promise<Response<TriggerDefinition>> {
-        throw new Error("Not yet implemented");
+        return this.client.documentClient.upsertTrigger(this.container.url, body, options);
     }
 }

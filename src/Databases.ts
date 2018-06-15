@@ -13,14 +13,14 @@ export class Databases {
     }
 
     public query(query: SqlQuerySpec, options?: FeedOptions): QueryIterator<DatabaseDefinition> {
-        throw new Error("Not yet implemented");
+        return this.client.documentClient.queryDatabases(query, options);
     }
 
     public create(body: DatabaseDefinition, options?: RequestOptions): Promise<Response<DatabaseDefinition>> {
-        throw new Error("Not yet implemented");
+        return this.client.documentClient.createDatabase(body, options);
     }
 
     public read(options?: FeedOptions): QueryIterator<DatabaseDefinition> {
-        throw new Error("Not yet implemented");
+        return this.client.documentClient.readDatabases(options);
     }
 }

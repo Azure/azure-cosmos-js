@@ -196,6 +196,7 @@ export const Constants = {
         AttachmentsPathSegment: "attachments",
         PartitionKeyRangesPathSegment: "pkranges",
         SchemasPathSegment: "schemas",
+        OffersPathSegment: "offers",
     },
 
     OperationTypes: {

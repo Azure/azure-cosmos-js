@@ -14,14 +14,14 @@ export class Containers {
     }
 
     public query(query: SqlQuerySpec, options?: FeedOptions): QueryIterator<ContainerDefinition> {
-        throw new Error("Not yet implemented");
+        return this.database.client.documentClient.queryCollections(this.database.url, query, options);
     }
 
     public create(body: ContainerDefinition, options?: RequestOptions): Promise<Response<ContainerDefinition>> {
-        throw new Error("Not yet implemented");
+        return this.database.client.documentClient.createCollection(this.database.url, body, options);
     }
 
     public read(options?: FeedOptions): QueryIterator<ContainerDefinition> {
-        throw new Error("Not yet implemented");
+        return this.database.client.documentClient.readCollections(this.database.url, options);
     }
 }

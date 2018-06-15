@@ -1,3 +1,4 @@
+import { Constants } from "./common";
 import { ContainerDefinition } from "./ContainerDefinition";
 import { Database } from "./Database";
 import { RequestOptions } from "./documentclient";
@@ -13,6 +14,10 @@ export class Container {
     public readonly triggers: Triggers;
     public readonly userDefinedFunctions: UserDefinedFunctions;
 
+    public get url() {
+        return `${this.database.url}/${Constants.Path.CollectionsPathSegment}/${this.id}`;
+    }
+
     constructor(public readonly database: Database, public readonly id: string) {
         this.items = new Items(this);
         this.storedProcedures = new StoredProcedures(this);
@@ -21,14 +26,14 @@ export class Container {
     }
 
     public read(options?: RequestOptions): Promise<Response<ContainerDefinition>> {
-        throw new Error("Not yet implemented");
+        return this.database.client.documentClient.readCollection(this.url, options);
     }
 
-    public replace(options?: RequestOptions): Promise<Response<ContainerDefinition>> {
-        throw new Error("Not yet implemented");
+    public replace(body: ContainerDefinition, options?: RequestOptions): Promise<Response<ContainerDefinition>> {
+        return this.database.client.documentClient.replaceCollection(this.url, body, options);
     }
 
     public delete(options?: RequestOptions): Promise<Response<ContainerDefinition>> {
-        throw new Error("Not yet implemented");
+        return this.database.client.documentClient.deleteCollection(this.url, options);
     }
 }

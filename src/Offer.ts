@@ -1,16 +1,21 @@
 import { Response } from ".";
+import { Constants } from "./common";
 import { CosmosClient } from "./CosmosClient";
 import { RequestOptions } from "./documentclient";
 import { OfferDefinition } from "./OfferDefinition";
 
 export class Offer {
+
+    public get url() {
+        return `/${Constants.Path.OffersPathSegment}/${this.id}`;
+    }
     constructor(public readonly client: CosmosClient, public readonly id: string) {}
 
     public read(options?: RequestOptions): Promise<Response<OfferDefinition>> {
-        throw new Error("Not yet implemented");
+        return this.client.documentClient.readOffer(this.url); // TODO: options?
     }
 
-    public replace(options?: RequestOptions): Promise<Response<OfferDefinition>> {
-        throw new Error("Not yet implemented");
+    public replace(body: OfferDefinition, options?: RequestOptions): Promise<Response<OfferDefinition>> {
+        return this.client.documentClient.replaceOffer(this.url, body); // TODO: options?
     }
 }

@@ -2054,7 +2054,7 @@ export class DocumentClient extends DocumentClientBase {
      * @param {RequestCallback} callback        - The callback for the request.
      */
     public upsertAttachmentAndUploadMedia(
-        documentLink: string, readableStream: ReadableStream,
+        documentLink: string, readableStream: Readable,
         options?: MediaOptions, callback?: ResponseCallback<any>) {
         const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
@@ -2114,7 +2114,7 @@ export class DocumentClient extends DocumentClientBase {
      * @param {RequestCallback} callback        - The callback for the request.
      */
     public async updateMedia(
-        mediaLink: string, readableStream: ReadableStream,
+        mediaLink: string, readableStream: Readable,
         options?: MediaOptions, callback?: ResponseCallback<any>): Promise<Response<any>> {
         const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;

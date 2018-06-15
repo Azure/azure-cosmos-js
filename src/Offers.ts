@@ -8,10 +8,10 @@ export class Offers {
     constructor(public readonly client: CosmosClient) {}
 
     public query(query: SqlQuerySpec, options?: FeedOptions): QueryIterator<OfferDefinition> {
-        throw new Error("Not yet implemented");
+        return this.client.documentClient.queryOffers(query, options);
     }
 
     public read(options?: FeedOptions): QueryIterator<OfferDefinition> {
-        throw new Error("Not yet implemented");
+        return this.client.documentClient.readOffers(options);
     }
 }

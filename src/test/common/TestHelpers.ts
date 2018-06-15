@@ -14,7 +14,8 @@ export class TestHelpers {
             }
 
             const count = 0;
-            await Promise.all(databases.map<Promise<any>>(async (database) => client.deleteDatabase(database._self)));
+            await Promise.all(databases.map<Promise<any>>(
+                async (database: any) => client.deleteDatabase(database._self)));
         } catch (err) {
             // TODO: remove console logging for errors and add ts-lint flag back
             console.log("An error occured", err);
