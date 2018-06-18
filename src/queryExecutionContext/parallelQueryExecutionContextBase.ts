@@ -14,7 +14,7 @@ import {
 } from ".";
 import { Constants, StatusCodes, SubStatusCodes } from "../common";
 import { DocumentClient } from "../documentclient";
-import { Response } from "../request";
+import { Response } from "../request/request";
 import { InMemoryCollectionRoutingMap, PARITIONKEYRANGE, QueryRange, SmartRoutingMapProvider } from "../routing";
 
 export enum ParallelQueryExecutionContextBaseStates {

@@ -1,7 +1,8 @@
 import { Constants } from "./common";
 import { Container } from "./Container";
-import { DocumentClient, RequestOptions } from "./documentclient";
-import { Response } from "./request";
+import { DocumentClient } from "./documentclient";
+import { Response } from "./request/request";
+import { RequestOptions } from "./request/RequestOptions";
 import { StoredProcedureDefinition } from "./StoredProcedureDefinition";
 
 export class StoredProcedure {

@@ -1,10 +1,7 @@
-﻿import * as assert from "assert";
-import * as util from "util";
-import { Constants } from "../common";
+﻿import { Constants } from "../common";
 
-export interface IHeaders {
-    [key: string]: string | boolean | number;
-}
+import { IHeaders } from "./IHeaders";
+export { IHeaders };
 
 // TODO: docs
 export class HeaderUtils {

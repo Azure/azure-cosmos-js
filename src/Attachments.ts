@@ -2,9 +2,10 @@ import { Readable } from "stream";
 import { CosmosClient, QueryIterator, Response } from ".";
 import { Attachment } from "./Attachment";
 import { AttachmentDefinition } from "./AttachmentDefinition";
-import { FeedOptions, RequestOptions } from "./documentclient";
 import { Item } from "./Item";
 import { SqlQuerySpec } from "./queryExecutionContext";
+import { FeedOptions } from "./request/FeedOptions";
+import { RequestOptions } from "./request/RequestOptions";
 
 export class Attachments {
     private client: CosmosClient;

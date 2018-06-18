@@ -1,9 +1,9 @@
 import { Constants } from "./common";
 import { ContainerDefinition } from "./ContainerDefinition";
 import { Database } from "./Database";
-import { RequestOptions } from "./documentclient";
 import { Items } from "./Items";
-import { Response } from "./request";
+import { Response } from "./request/request";
+import { RequestOptions } from "./request/RequestOptions";
 import { StoredProcedures } from "./StoredProcedures";
 import { Triggers } from "./Triggers";
 import { UserDefinedFunctions } from "./UserDefinedFunctions";

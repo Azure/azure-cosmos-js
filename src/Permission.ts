@@ -1,9 +1,9 @@
 import { Response } from ".";
 import { Constants } from "./common";
 import { CosmosClient } from "./CosmosClient";
-import { RequestOptions } from "./documentclient";
 import { PermissionDefinition } from "./PermissionDefinition";
 import { User } from "./User";
+import { RequestOptions } from "./request/RequestOptions";
 
 export class Permission {
     public get url() {

@@ -1,10 +1,11 @@
 import { Container } from "./Container";
 import { ContainerDefinition } from "./ContainerDefinition";
 import { Database } from "./Database";
-import { FeedOptions, RequestOptions } from "./documentclient";
 import { SqlQuerySpec } from "./queryExecutionContext";
 import { QueryIterator } from "./queryIterator";
-import { Response } from "./request";
+import { FeedOptions } from "./request/FeedOptions";
+import { Response } from "./request/request";
+import { RequestOptions } from "./request/RequestOptions";
 
 export class Containers {
     constructor(public readonly database: Database) { }

@@ -2,7 +2,7 @@ import { Response } from ".";
 import { Constants } from "./common";
 import { CosmosClient } from "./CosmosClient";
 import { Database } from "./Database";
-import { RequestOptions } from "./documentclient";
+import { RequestOptions } from "./request/RequestOptions";
 import { UserDefinition } from "./UserDefinition";
 
 export class User {

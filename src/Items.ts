@@ -1,9 +1,11 @@
 import { Response } from ".";
 import { Container } from "./Container";
-import { DocumentClient, FeedOptions, RequestOptions } from "./documentclient";
+import { DocumentClient } from "./documentclient";
 import { Item } from "./Item";
 import { SqlQuerySpec } from "./queryExecutionContext";
 import { QueryIterator } from "./queryIterator";
+import { FeedOptions } from "./request/FeedOptions";
+import { RequestOptions } from "./request/RequestOptions";
 
 export class Items {
     private client: DocumentClient;

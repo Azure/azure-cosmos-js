@@ -2,8 +2,8 @@ import { Constants } from "./common";
 import { ConflictDefinition } from "./ConflictDefinition";
 import { Container } from "./Container";
 import { CosmosClient } from "./CosmosClient";
-import { RequestOptions } from "./documentclient";
-import { Response } from "./request";
+import { Response } from "./request/request";
+import { RequestOptions } from "./request/RequestOptions";
 
 export class Conflict {
     public get url() {

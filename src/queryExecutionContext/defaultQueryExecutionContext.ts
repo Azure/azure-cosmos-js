@@ -1,9 +1,8 @@
-import { IExecutionContext, IHeaders } from ".";
-import { Base } from "../base";
+import { IExecutionContext } from ".";
 import { Constants } from "../common";
 import { DocumentClient } from "../documentclient";
-import { Response } from "../request";
-import { SqlParameter, SqlQuerySpec } from "./SqlQuerySpec";
+import { Response } from "../request/request";
+import { SqlQuerySpec } from "./SqlQuerySpec";
 
 export type FetchFunctionCallback = (options: any) => Promise<Response<any>>;
 

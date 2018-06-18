@@ -1,8 +1,9 @@
 import { QueryIterator, Response } from ".";
 import { CosmosClient } from "./CosmosClient";
 import { Database } from "./Database";
-import { FeedOptions, RequestOptions } from "./documentclient";
 import { SqlQuerySpec } from "./queryExecutionContext";
+import { FeedOptions } from "./request/FeedOptions";
+import { RequestOptions } from "./request/RequestOptions";
 import { User } from "./User";
 import { UserDefinition } from "./UserDefinition";
 

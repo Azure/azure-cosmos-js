@@ -2,7 +2,7 @@ import { Response } from ".";
 import { Constants } from "./common";
 import { Container } from "./Container";
 import { CosmosClient } from "./CosmosClient";
-import { RequestOptions } from "./documentclient";
+import { RequestOptions } from "./request/RequestOptions";
 import { UserDefinedFunctionDefinition } from "./UserDefinedFunctionDefinition";
 
 export class UserDefinedFunction {

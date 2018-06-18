@@ -4,21 +4,17 @@ import { Socket } from "net";
 import * as querystring from "querystring";
 import { Stream } from "stream";
 import * as url from "url";
-import { Constants } from "./common";
-import { ConnectionPolicy, MediaReadMode } from "./documents";
-import { GlobalEndpointManager } from "./globalEndpointManager";
-import { IHeaders } from "./queryExecutionContext";
-import { Body, RetryUtility } from "./retry";
+import { Constants } from "../common";
+import { ConnectionPolicy, MediaReadMode } from "../documents";
+import { GlobalEndpointManager } from "../globalEndpointManager";
+import { IHeaders } from "../queryExecutionContext";
+import { Body, RetryUtility } from "../retry";
 
-export interface ErrorResponse {
-    code?: number;
-    substatus?: number;
-    body?: any;
-    headers?: IHeaders;
-    activityId?: string;
-    retryAfterInMilliseconds?: number;
-    [key: string]: any;
-}
+import { ErrorResponse } from "./ErrorResponse";
+export { ErrorResponse }; // Should refactor this out
+
+import { Response } from "./Response";
+export { Response }; // Should refactor this out
 
 const isBrowser = new Function("try {return this===window;}catch(e){ return false;}");
 
@@ -48,11 +44,6 @@ function bodyFromData(data: Stream | Buffer | string | object) {
 }
 
 function parse(urlString: string) { return url.parse(urlString); }
-
-export interface Response<T> {
-    headers?: IHeaders;
-    result?: T;
-}
 
 function createRequestObject(
     connectionPolicy: ConnectionPolicy,

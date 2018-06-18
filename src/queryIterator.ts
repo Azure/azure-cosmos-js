@@ -1,6 +1,4 @@
-import { Base } from ".";
-import { Constants } from "./common";
-import { DocumentClient, FeedOptions } from "./documentclient";
+import { DocumentClient } from "./documentclient";
 import {
     FetchFunctionCallback,
     IExecutionContext,
@@ -8,7 +6,8 @@ import {
     ProxyQueryExecutionContext,
     SqlQuerySpec,
 } from "./queryExecutionContext";
-import { Response } from "./request";
+import { FeedOptions } from "./request/FeedOptions";
+import { Response } from "./request/request";
 
 export class QueryIterator<T> {
     private toArrayTempResources: T[]; // TODO

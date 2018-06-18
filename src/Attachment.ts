@@ -2,8 +2,8 @@ import { Response } from ".";
 import { AttachmentDefinition } from "./AttachmentDefinition";
 import { Constants } from "./common";
 import { CosmosClient } from "./CosmosClient";
-import { RequestOptions } from "./documentclient";
 import { Item } from "./Item";
+import { RequestOptions } from "./request/RequestOptions";
 
 export class Attachment {
     private client: CosmosClient;

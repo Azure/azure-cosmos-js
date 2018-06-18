@@ -1,7 +1,7 @@
 ﻿import * as url from "url";
 import { Constants, StatusCodes, SubStatusCodes } from "../common";
 import { GlobalEndpointManager } from "../globalEndpointManager";
-import { ErrorResponse } from "../request";
+import { ErrorResponse } from "../request/request";
 
 /**
  * This class implements the retry policy for session consistent reads.

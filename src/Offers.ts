@@ -1,8 +1,8 @@
 import { QueryIterator } from ".";
 import { CosmosClient } from "./CosmosClient";
-import { FeedOptions } from "./documentclient";
 import { OfferDefinition } from "./OfferDefinition";
 import { SqlQuerySpec } from "./queryExecutionContext";
+import { FeedOptions } from "./request/FeedOptions";
 
 export class Offers {
     constructor(public readonly client: CosmosClient) {}

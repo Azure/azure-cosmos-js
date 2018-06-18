@@ -1,9 +1,10 @@
 import { Container } from "./Container";
 import { CosmosClient } from "./CosmosClient";
-import { DocumentClient, FeedOptions, RequestOptions } from "./documentclient";
 import { SqlQuerySpec } from "./queryExecutionContext";
 import { QueryIterator } from "./queryIterator";
-import { Response } from "./request";
+import { FeedOptions } from "./request/FeedOptions";
+import { Response } from "./request/request";
+import { RequestOptions } from "./request/RequestOptions";
 import { StoredProcedure } from "./StoredProcedure";
 import { StoredProcedureDefinition } from "./StoredProcedureDefinition";
 

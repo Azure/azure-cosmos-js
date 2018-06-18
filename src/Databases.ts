@@ -2,9 +2,10 @@ import { Response } from ".";
 import { CosmosClient } from "./CosmosClient";
 import { Database } from "./Database";
 import { DatabaseDefinition } from "./DatabaseDefinition";
-import { FeedOptions, RequestOptions } from "./documentclient";
 import { SqlQuerySpec } from "./queryExecutionContext";
 import { QueryIterator } from "./queryIterator";
+import { FeedOptions } from "./request/FeedOptions";
+import { RequestOptions } from "./request/RequestOptions";
 
 export class Databases {
     constructor(private readonly client: CosmosClient) {}

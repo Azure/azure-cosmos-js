@@ -1,9 +1,9 @@
 import { ConflictDefinition } from "./ConflictDefinition";
 import { Container } from "./Container";
 import { CosmosClient } from "./CosmosClient";
-import { FeedOptions } from "./documentclient";
 import { SqlQuerySpec } from "./queryExecutionContext";
 import { QueryIterator } from "./queryIterator";
+import { FeedOptions } from "./request/FeedOptions";
 
 export class Conflicts {
     private client: CosmosClient;

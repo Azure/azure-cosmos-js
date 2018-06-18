@@ -13,7 +13,10 @@ import {
 import { GlobalEndpointManager } from "./globalEndpointManager";
 import { FetchFunctionCallback, IHeaders, SqlQuerySpec } from "./queryExecutionContext";
 import { QueryIterator } from "./queryIterator";
-import { RequestHandler, Response } from "./request";
+import { FeedOptions } from "./request/FeedOptions";
+import { MediaOptions } from "./request/MediaOptions";
+import { RequestHandler, Response } from "./request/request";
+import { RequestOptions } from "./request/RequestOptions";
 import { RetryOptions } from "./retry";
 import { SessionContainer } from "./sessionContainer";
 
@@ -2727,121 +2730,6 @@ export class DocumentClient extends DocumentClientBase {
             resourceType,
         };
     }
-}
-
-/**
- * The request options
- * @typedef {Object} RequestOptions                          -         \
- * Options that can be specified for a requested issued to the Azure Cosmos DB servers.
- * @property {object} [accessCondition]                      -         \
- * Conditions Associated with the request.
- * @property {string} accessCondition.type                   -         \
- * Conditional HTTP method header type (IfMatch or IfNoneMatch).
- * @property {string} accessCondition.condition              -         \
- * Conditional HTTP method header value (the _etag field from the last version you read).
- * @property {string} [consistencyLevel]                     -         \
- * Consistency level required by the client.
- * @property {boolean} [disableRUPerMinuteUsage]             -         \
- * DisableRUPerMinuteUsage is used to enable/disable Request Units(RUs)/minute capacity to \
- * serve the request if regular provisioned RUs/second is exhausted.
- * @property {boolean} [enableScriptLogging]                 -         \
- * Enables or disables logging in JavaScript stored procedures.
- * @property {string} [indexingDirective]                    -         \
- * Specifies indexing directives (index, do not index .. etc).
- * @property {boolean} [offerEnableRUPerMinuteThroughput]    -         \
- * Represents Request Units(RU)/Minute throughput is enabled/disabled for a collection \
- * in the Azure Cosmos DB database service.
- * @property {number} [offerThroughput]                      -         \
- * The offer throughput provisioned for a collection in measurement of Requests-per-Unit \
- * in the Azure Cosmos DB database service.
- * @property {string} [offerType]                            -         Offer type when creating document collections.
- * <p>This option is only valid when creating a document collection.</p>
- * @property {string} [partitionKey]                         -         \
- * Specifies a partition key definition for a particular path in the Azure Cosmos DB database service.
- * @property {boolean} [populateQuotaInfo]                   -         \
- * Enables/disables getting document collection quota related stats for document collection read requests.
- * @property {string} [postTriggerInclude]                   -         \
- * Indicates what is the post trigger to be invoked after the operation.
- * @property {string} [preTriggerInclude]                    -         \
- * Indicates what is the pre trigger to be invoked before the operation.
- * @property {number} [resourceTokenExpirySeconds]           -         \
- * Expiry time (in seconds) for resource token associated with permission (applicable only for requests on permissions).
- * @property {string} [sessionToken]                         -         Token for use with Session consistency.
- */
-
-export interface RequestOptions {
-    accessCondition?: {
-        type: string;
-        condition: string;
-    };
-    consistencyLevel?: string;
-    disableRUPerMinuteUsage?: boolean;
-    enableScriptLogging?: boolean;
-    indexingDirective?: string;
-    offerEnableRUPerMinuteThroughput?: boolean;
-    offerThroughput?: number;
-    offerType?: string;
-    partitionKey?: PartitionKey;
-    populateQuotaInfo?: boolean;
-    postTriggerInclude?: string | string[];
-    preTriggerInclude?: string | string[];
-    resourceTokenExpirySeconds?: number;
-    sessionToken?: string;
-    initialHeaders?: IHeaders;
-    urlConnection?: string;
-    skipGetPartitionKeyDefinition?: boolean;
-    disableAutomaticIdGeneration?: boolean;
-}
-
-/**
- * The feed options
- * @typedef {Object} FeedOptions                    -       \
- * The feed options and query methods.
- * @property {string} [continuation]                -       Opaque token for continuing the enumeration.
- * @property {boolean} [disableRUPerMinuteUsage]    -       \
- * DisableRUPerMinuteUsage is used to enable/disable Request Units(RUs)/minute capacity to serve the \
- * request if regular provisioned RUs/second is exhausted.
- * @property {boolean} [enableCrossPartitionQuery]  -       \
- * A value indicating whether users are enabled to send more than one request to execute the query \
- * in the Azure Cosmos DB database service.
- * <p>More than one request is necessary if the query is not scoped to single partition key value.</p>
- * @property {boolean} [enableScanInQuery]          -       \
- * Allow scan on the queries which couldn't be served as indexing was opted out on the requested paths.
- * @property {number} [maxDegreeOfParallelism]      -       \
- * The maximum number of concurrent operations that run client side during parallel query execution \
- * in the Azure Cosmos DB database service. Negative values make the system automatically decides the \
- * number of concurrent operations to run.
- * @property {number} [maxItemCount]                -       \
- * Max number of items to be returned in the enumeration operation.
- * @property {string} [partitionKey]                -       \
- * Specifies a partition key definition for a particular path in the Azure Cosmos DB database service.
- * @property {string} [sessionToken]                -       Token for use with Session consistency.
- */
-export interface FeedOptions {
-    continuation?: string;
-    disableRUPerMinuteUsage?: boolean;
-    enableCrossPartitionQuery?: boolean;
-    enableScanInQuery?: boolean;
-    maxDegreeOfParallelism?: number;
-    maxItemCount?: number;
-    partitionKey?: string;
-    sessionToken?: string;
-    initialHeaders?: IHeaders;
-    a_im?: string;
-    accessCondition?: any; // TODO: any
-}
-
-/**
- * The media options
- * @typedef {Object} MediaOptions                                   -         Options associated with upload media.
- * @property {string} [slug]                                        -         HTTP Slug header value.
- * @property {string} [contentType=application/octet-stream]        -         HTTP ContentType header value.
- *
- */
-export interface MediaOptions {
-    initialHeaders?: IHeaders;
-    slug?: string;
-    contentType?: string;
 }
 
 /**

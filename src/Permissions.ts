@@ -1,8 +1,9 @@
 import { QueryIterator, Response } from ".";
 import { CosmosClient } from "./CosmosClient";
-import { FeedOptions, RequestOptions } from "./documentclient";
 import { PermissionDefinition } from "./PermissionDefinition";
 import { SqlQuerySpec } from "./queryExecutionContext";
+import { FeedOptions } from "./request/FeedOptions";
+import { RequestOptions } from "./request/RequestOptions";
 import { User } from "./User";
 
 export class Permissions {
