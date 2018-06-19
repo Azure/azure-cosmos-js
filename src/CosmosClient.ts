@@ -1,7 +1,7 @@
+import { Databases } from "./client/Database/";
+import { Offers } from "./client/Offer/";
 import { CosmosClientOptions } from "./CosmosClientOptions";
-import { Databases } from "./Databases";
 import { DocumentClient } from "./documentclient";
-import { Offers } from "./Offers";
 
 export class CosmosClient {
     public readonly databases: Databases;
