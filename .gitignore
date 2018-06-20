@@ -257,4 +257,4 @@ node_modules
 
 *.dat
 
-lib/**
+lib

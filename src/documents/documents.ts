@@ -1,5 +1,4 @@
 import { Point, Range } from "../range";
-import { RetryOptions } from "../retry";
 
 export interface Document {
     [key: string]: any;

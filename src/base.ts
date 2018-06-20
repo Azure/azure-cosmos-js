@@ -1,9 +1,11 @@
 import { AuthHandler } from "./auth";
 import { Constants, Platform } from "./common";
-import { DocumentClient, FeedOptions, MediaOptions, Options, RequestOptions } from "./documentclient";
 import { DocumentClientBase } from "./DocumentClientBase";
 import { IHeaders } from "./queryExecutionContext";
-import { Response } from "./request";
+import { FeedOptions } from "./request/FeedOptions";
+import { MediaOptions } from "./request/MediaOptions";
+import { Response } from "./request/request";
+import { RequestOptions } from "./request/RequestOptions";
 
 export class Base {
     public static extend(arg0: any, arg1: any): any {
