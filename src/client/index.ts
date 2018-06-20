@@ -1,4 +1,3 @@
-export * from "./Attachment";
 export * from "./Conflict";
 export * from "./Container";
 export * from "./Database";

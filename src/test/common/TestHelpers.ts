@@ -1,6 +1,6 @@
 import * as assert from "assert";
 import {
-    AttachmentDefinition, Container, CosmosClient,
+    Container, CosmosClient,
     Database, DatabaseDefinition, Item, RequestOptions, Response,
 } from "../../";
 import { User } from "../../client";
@@ -140,27 +140,6 @@ export class TestHelpers {
         }
     }
 
-    // Attachment
-    public static async createOrUpsertAttachment(
-        item: Item, body: any, options: any,
-        isUpsertTest: boolean): Promise<Response<any>> {
-        if (isUpsertTest) {
-            return item.attachments.upsert(body, options);
-        } else {
-            return item.attachments.create(body, options);
-        }
-    }
-
-    public static replaceOrUpsertAttachment(
-        item: Item, body: AttachmentDefinition,
-        options: any, isUpsertTest: boolean): Promise<Response<any>> {
-        if (isUpsertTest) {
-            return item.attachments.upsert(body, options);
-        } else {
-            return item.attachments.getAttachment(body.id).replace(body, options);
-        }
-    }
-
     // User
     public static createOrUpsertUser(
         database: Database, body: any, options: any,
@@ -254,24 +233,4 @@ export class TestHelpers {
             return container.storedProcedures.getStoredProcedure(body.id).replace(body, options);
         }
     }
-
-    // Attachment and Upload Media
-    public static createOrUpsertAttachmentAndUploadMedia(
-        item: Item, readableStream: any, options: any, isUpsertTest: boolean): Promise<Response<any>> {
-        if (isUpsertTest) {
-            return item.attachments.upsertAndUploadMedia(readableStream, options);
-        } else {
-            return item.attachments.createAndUploadMedia(readableStream, options);
-        }
-    }
-
-    // public static updateOrUpsertMedia(
-    //     documentLink: string, mediaLink: string, readableStream: any, options: any,
-    //     client: DocumentClient, isUpsertTest: boolean): Promise<Response<any>> {
-    //     if (isUpsertTest) {
-    //         return client.upsertAttachmentAndUploadMedia(documentLink, readableStream, options);
-    //     } else {
-    //         return client.updateMedia(mediaLink, readableStream, options);
-    //     }
-    // }
 }

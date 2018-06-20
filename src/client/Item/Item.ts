@@ -1,7 +1,6 @@
 import { Constants } from "../../common";
 import { CosmosClient } from "../../CosmosClient";
 import { RequestOptions, Response } from "../../request";
-import { Attachments } from "../Attachment";
 import { Container } from "../Container";
 
 export class Item {
@@ -10,14 +9,12 @@ export class Item {
     public get url() {
         return `${this.container.url}/${Constants.Path.DocumentsPathSegment}/${this.id}`;
     }
-    public attachments: Attachments;
 
     constructor(
         public readonly container: Container,
         public readonly id: string,
         public readonly primaryKey: string) {
         this.client = this.container.database.client;
-        this.attachments = new Attachments(this);
     }
 
     public read<T>(options?: RequestOptions): Promise<Response<T>> {
