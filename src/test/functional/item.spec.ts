@@ -1,22 +1,15 @@
 import * as assert from "assert";
-import * as Stream from "stream";
 import {
-    AzureDocuments, Base, Constants, CosmosClient,
-    DocumentBase, HashPartitionResolver, Range,
-    RangePartitionResolver, Response, RetryOptions,
+    Container,
+    CosmosClient,
+    Database,
+    DocumentBase,
 } from "../../";
 import testConfig from "./../common/_testConfig";
 import { TestHelpers } from "./../common/TestHelpers";
 
-// Used for sproc
-declare var getContext: any;
-// declare var body: (input?: any) => void; // TODO: remove this if it's not necessary
-
-// TODO: should fix long lines
-// tslint:disable:max-line-length
-
-const host = testConfig.host;
-const masterKey = testConfig.masterKey;
+const endpoint = testConfig.host;
+const masterkey = testConfig.masterKey;
 
 describe("NodeJS CRUD Tests", function () {
     this.timeout(process.env.MOCHA_TIMEOUT || 10000);
@@ -24,49 +17,49 @@ describe("NodeJS CRUD Tests", function () {
     beforeEach(async function () {
         this.timeout(10000);
         try {
-            await TestHelpers.removeAllDatabases(host, masterKey);
+            await TestHelpers.removeAllDatabases(new CosmosClient({ endpoint, auth: { masterkey } }));
         } catch (err) {
             throw err;
         }
     });
 
     describe("Validate Document CRUD", function () {
-        const documentCRUDTest = async function (isNameBased: boolean, isUpsertTest: boolean) {
+        const documentCRUDTest = async function (isUpsertTest: boolean) {
             try {
-                const client = new CosmosClient(host, { masterKey });
+                const client = new CosmosClient({ endpoint, auth: { masterkey } });
                 // create database
-                const { result: db } = await client.createDatabase({ id: "sample 中文 database" });
-                // create collection
-                const { result: collection } =
-                    await client.createCollection("dbs/sample 中文 database", { id: "sample collection" });
-                // read documents
-                const { result: documents } = await client.readDocuments(
-                    TestHelpers.getCollectionLink(isNameBased, db, collection)).toArray();
-                assert(Array.isArray(documents), "Value should be an array");
-                // create a document
-                const beforeCreateDocumentsCount = documents.length;
-                const documentDefinition = {
+                const { result: dbdef } = await client.databases.create({ id: "sample 中文 database" });
+                const db: Database = client.databases.getDatabase(dbdef.id);
+                // create container
+                const { result: containerdef } =
+                    await db.containers.create({ id: "sample container" });
+                const container: Container = db.containers.getContainer(containerdef.id);
+
+                // read items
+                const { result: items } = await container.items.read().toArray();
+                assert(Array.isArray(items), "Value should be an array");
+
+                // create an item
+                const beforeCreateDocumentsCount = items.length;
+                const itemDefinition = {
                     name: "sample document",
                     foo: "bar",
                     key: "value",
                     replace: "new property",
                 };
                 try {
-                    const { result: badUpdate } = await TestHelpers.createOrUpsertDocument(
-                        TestHelpers.getCollectionLink(isNameBased, db, collection), documentDefinition,
-                        { disableAutomaticIdGeneration: true }, client, isUpsertTest);
+                    await TestHelpers.createOrUpsertItem(container, itemDefinition,
+                        { disableAutomaticIdGeneration: true }, isUpsertTest);
                     assert.fail("id generation disabled must throw with invalid id");
                 } catch (err) {
                     assert(err !== undefined, "should throw an error because automatic id generation is disabled");
                 }
-                const { result: document } = await TestHelpers.createOrUpsertDocument(
-                    TestHelpers.getCollectionLink(isNameBased, db, collection),
-                    documentDefinition, undefined, client, isUpsertTest);
-                assert.equal(document.name, documentDefinition.name);
+                const { result: document } = await TestHelpers.createOrUpsertItem(
+                    container, itemDefinition, undefined, isUpsertTest);
+                assert.equal(document.name, itemDefinition.name);
                 assert(document.id !== undefined);
                 // read documents after creation
-                const { result: documents2 } = await client.readDocuments(
-                    TestHelpers.getCollectionLink(isNameBased, db, collection)).toArray();
+                const { result: documents2 } = await container.items.read().toArray();
                 assert.equal(documents2.length, beforeCreateDocumentsCount + 1,
                     "create should increase the number of documents");
                 // query documents
@@ -79,36 +72,29 @@ describe("NodeJS CRUD Tests", function () {
                         },
                     ],
                 };
-                const { result: results } = await client.queryDocuments(
-                    TestHelpers.getCollectionLink(isNameBased, db, collection), querySpec).toArray();
+                const { result: results } = await container.items.query(querySpec).toArray();
                 assert(results.length > 0, "number of results for the query should be > 0");
-                const { result: results2 } = await client.queryDocuments(
-                    TestHelpers.getCollectionLink(isNameBased, db, collection),
+                const { result: results2 } = await container.items.query(
                     querySpec, { enableScanInQuery: true }).toArray();
                 assert(results2.length > 0, "number of results for the query should be > 0");
 
                 // replace document
                 document.name = "replaced document";
                 document.foo = "not bar";
-                const { result: replacedDocument } = await TestHelpers.replaceOrUpsertDocument(
-                    TestHelpers.getCollectionLink(isNameBased, db, collection),
-                    TestHelpers.getDocumentLink(isNameBased, db, collection, document),
-                    document, undefined, client, isUpsertTest);
+                const { result: replacedDocument } = await TestHelpers.replaceOrUpsertItem(
+                    container, document, undefined, isUpsertTest);
                 assert.equal(replacedDocument.name, "replaced document", "document name property should change");
                 assert.equal(replacedDocument.foo, "not bar", "property should have changed");
                 assert.equal(document.id, replacedDocument.id, "document id should stay the same");
                 // read document
-                const { result: document2 } = await client.readDocument(
-                    TestHelpers.getDocumentLink(isNameBased, db, collection, replacedDocument));
+                const { result: document2 } = await container.items.getItem(replacedDocument.id).read();
                 assert.equal(replacedDocument.id, document.id);
                 // delete document
-                const { result: res } = await client.deleteDocument(
-                    TestHelpers.getDocumentLink(isNameBased, db, collection, replacedDocument));
+                const { result: res } = await container.items.getItem(replacedDocument.id).delete();
 
                 // read documents after deletion
                 try {
-                    const { result: document3 } = await client.readDocument(
-                        TestHelpers.getDocumentLink(isNameBased, db, collection, document));
+                    const { result: document3 } = await container.items.getItem(replacedDocument.id).read();
                     assert.fail("must throw if document doesn't exist");
                 } catch (err) {
                     const notFoundErrorCode = 404;
@@ -121,10 +107,10 @@ describe("NodeJS CRUD Tests", function () {
 
         const documentCRUDMultiplePartitionsTest = async function (isNameBased: boolean) {
             try {
-                const client = new CosmosClient(host, { masterKey });
+                const client = new CosmosClient({endpoint, auth: { masterkey }});
                 // create database
-                const { result: db } = await client.createDatabase({ id: "db1" });
-
+                const { result: dbdef } = await client.databases.create({ id: "db1" });
+                const db = client.databases.getDatabase(dbdef.id);
                 const partitionKey = "key";
 
                 // create collection
@@ -133,9 +119,9 @@ describe("NodeJS CRUD Tests", function () {
                     partitionKey: { paths: ["/" + partitionKey], kind: DocumentBase.PartitionKind.Hash },
                 };
 
-                const { result: collection } =
-                    await client.createCollection(
-                        TestHelpers.getDatabaseLink(isNameBased, db), collectionDefinition, { offerThroughput: 12000 });
+                const { result: containerdef } =
+                    await db.containers.create(collectionDefinition, { offerThroughput: 12000 });
+                const container = db.containers.getContainer(containerdef.id);
 
                 const documents = [
                     { id: "document1" },
@@ -147,16 +133,14 @@ describe("NodeJS CRUD Tests", function () {
                 ];
 
                 let returnedDocuments =
-                    await TestHelpers.bulkInsertDocuments(client, isNameBased, db, collection, documents);
+                    await TestHelpers.bulkInsertItems(container, documents);
 
                 assert.equal(returnedDocuments.length, documents.length);
                 returnedDocuments.sort(function (doc1, doc2) {
                     return doc1.id.localeCompare(doc2.id);
                 });
-                await TestHelpers.bulkReadDocuments(
-                    client, isNameBased, db, collection, returnedDocuments, partitionKey);
-                const { result: successDocuments } = await client.readDocuments(
-                    TestHelpers.getCollectionLink(isNameBased, db, collection)).toArray();
+                await TestHelpers.bulkReadItems(container, returnedDocuments, partitionKey);
+                const { result: successDocuments } = await container.items.read().toArray();
                 assert(successDocuments !== undefined, "error reading documents");
                 assert.equal(successDocuments.length, returnedDocuments.length,
                     "Expected " + returnedDocuments.length + " documents to be succesfully read");
@@ -168,17 +152,14 @@ describe("NodeJS CRUD Tests", function () {
 
                 returnedDocuments.forEach(function (document) { ++document.prop; });
                 const newReturnedDocuments =
-                    await TestHelpers.bulkReplaceDocuments(client, isNameBased, db,
-                        collection, returnedDocuments, partitionKey);
+                    await TestHelpers.bulkReplaceItems(container, returnedDocuments);
                 returnedDocuments = newReturnedDocuments;
-                await TestHelpers.bulkQueryDocumentsWithPartitionKey(client, isNameBased, db,
-                    collection, returnedDocuments, partitionKey);
+                await TestHelpers.bulkQueryItemsWithPartitionKey(container, returnedDocuments, partitionKey);
                 const querySpec = {
                     query: "SELECT * FROM Root",
                 };
                 try {
-                    const { result: badUpdate } = await client.queryDocuments(
-                        TestHelpers.getCollectionLink(isNameBased, db, collection),
+                    const { result: badUpdate } = await container.items.query(
                         querySpec, { enableScanInQuery: true }).toArray();
                     assert.fail("Must fail");
                 } catch (err) {
@@ -186,9 +167,8 @@ describe("NodeJS CRUD Tests", function () {
                     assert.equal(err.code, badRequestErrorCode,
                         "response should return error code " + badRequestErrorCode);
                 }
-                const { result: results } = await client.queryDocuments(
-                    TestHelpers.getCollectionLink(isNameBased, db, collection), querySpec,
-                    { enableScanInQuery: true, enableCrossPartitionQuery: true }).toArray();
+                const { result: results } = await container.items.query(
+                    querySpec, { enableScanInQuery: true, enableCrossPartitionQuery: true }).toArray();
                 assert(results !== undefined, "error querying documents");
                 results.sort(function (doc1, doc2) {
                     return doc1.id.localeCompare(doc2.id);
@@ -197,8 +177,8 @@ describe("NodeJS CRUD Tests", function () {
                     "Expected " + returnedDocuments.length + " documents to be succesfully queried");
                 assert.equal(JSON.stringify(results), JSON.stringify(returnedDocuments), "Unexpected query results");
 
-                await TestHelpers.bulkDeleteDocuments(
-                    client, isNameBased, db, collection, returnedDocuments, partitionKey);
+                await TestHelpers.bulkDeleteItems(
+                    container, returnedDocuments, partitionKey);
             } catch (err) {
                 throw err;
             }
@@ -206,15 +186,7 @@ describe("NodeJS CRUD Tests", function () {
 
         it("nativeApi Should do document CRUD operations successfully name based", async function () {
             try {
-                await documentCRUDTest(true, false);
-            } catch (err) {
-                throw err;
-            }
-        });
-
-        it("nativeApi Should do document CRUD operations successfully rid based", async function () {
-            try {
-                await documentCRUDTest(false, false);
+                await documentCRUDTest(false);
             } catch (err) {
                 throw err;
             }
@@ -222,15 +194,7 @@ describe("NodeJS CRUD Tests", function () {
 
         it("nativeApi Should do document CRUD operations successfully name based with upsert", async function () {
             try {
-                await documentCRUDTest(true, true);
-            } catch (err) {
-                throw err;
-            }
-        });
-
-        it("nativeApi Should do document CRUD operations successfully rid based with upsert", async function () {
-            try {
-                await documentCRUDTest(false, true);
+                await documentCRUDTest(true);
             } catch (err) {
                 throw err;
             }
