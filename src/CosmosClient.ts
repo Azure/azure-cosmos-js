@@ -2,6 +2,8 @@ import { Databases } from "./client/Database/";
 import { Offers } from "./client/Offer/";
 import { CosmosClientOptions } from "./CosmosClientOptions";
 import { DocumentClient } from "./documentclient";
+import { DatabaseAccount } from "./documents";
+import { Response } from "./request";
 
 export class CosmosClient {
     public readonly databases: Databases;
@@ -17,5 +19,9 @@ export class CosmosClient {
             options.connectionPolicy,
             options.consistencyLevel,
         );
+    }
+
+    public async getDatabaseAccount(): Promise<Response<DatabaseAccount>> {
+        return this.documentClient.getDatabaseAccount();
     }
 }

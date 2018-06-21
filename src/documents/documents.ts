@@ -1,10 +1,11 @@
 import { Point, Range } from "../range";
+import { PartitionKeyDefinition } from "./PartitionKeyDefinition";
 
 export interface Document {
     [key: string]: any;
 }
 
-export type PartitionKey = Point | Range;
+export type PartitionKey = PartitionKeyDefinition | Point | Range;
 
 /**
  * <p>Represents the consistency levels supported for Azure Cosmos DB client operations.<br>

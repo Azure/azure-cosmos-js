@@ -9,7 +9,7 @@ import testConfig from "./../common/_testConfig";
 import { TestHelpers } from "./../common/TestHelpers";
 
 const endpoint = testConfig.host;
-const masterkey = testConfig.masterKey;
+const masterKey = testConfig.masterKey;
 
 describe("NodeJS CRUD Tests", function () {
     this.timeout(process.env.MOCHA_TIMEOUT || 10000);
@@ -17,7 +17,7 @@ describe("NodeJS CRUD Tests", function () {
     beforeEach(async function () {
         this.timeout(10000);
         try {
-            await TestHelpers.removeAllDatabases(new CosmosClient({ endpoint, auth: { masterkey } }));
+            await TestHelpers.removeAllDatabases(new CosmosClient({ endpoint, auth: { masterKey } }));
         } catch (err) {
             throw err;
         }
@@ -26,7 +26,7 @@ describe("NodeJS CRUD Tests", function () {
     describe("Validate Document CRUD", function () {
         const documentCRUDTest = async function (isUpsertTest: boolean) {
             try {
-                const client = new CosmosClient({ endpoint, auth: { masterkey } });
+                const client = new CosmosClient({ endpoint, auth: { masterKey } });
                 // create database
                 const { result: dbdef } = await client.databases.create({ id: "sample 中文 database" });
                 const db: Database = client.databases.getDatabase(dbdef.id);
@@ -107,7 +107,7 @@ describe("NodeJS CRUD Tests", function () {
 
         const documentCRUDMultiplePartitionsTest = async function (isNameBased: boolean) {
             try {
-                const client = new CosmosClient({endpoint, auth: { masterkey }});
+                const client = new CosmosClient({endpoint, auth: { masterKey }});
                 // create database
                 const { result: dbdef } = await client.databases.create({ id: "db1" });
                 const db = client.databases.getDatabase(dbdef.id);

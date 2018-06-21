@@ -27,6 +27,13 @@ export class TestHelpers {
         }
     }
 
+    public static async getTestDatabase(client: CosmosClient, testName: string) {
+        const entropy = Math.floor(Math.random() * 10000);
+        const id = `${testName.replace(" ", "").substring(0, 30)}${entropy}`;
+        const {result: dbdef} = await client.databases.create({id: testName});
+        return client.databases.getDatabase(dbdef.id);
+    }
+
     public static async bulkInsertItems(
         container: Container, documents: any[]) {
         const returnedDocuments = [];
