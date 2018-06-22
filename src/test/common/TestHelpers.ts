@@ -3,13 +3,12 @@ import {
     Container, CosmosClient,
     Database, DatabaseDefinition, Item, RequestOptions, Response,
 } from "../../";
-import { User } from "../../client";
+import { ContainerDefinition, PermissionDefinition, User, UserDefinition } from "../../client";
 
 export class TestHelpers {
     public static async removeAllDatabases(client: CosmosClient) {
         try {
             const { result: databases } = await client.databases.read().toArray();
-
             const length = databases.length;
 
             if (length === 0) {
@@ -30,8 +29,16 @@ export class TestHelpers {
     public static async getTestDatabase(client: CosmosClient, testName: string) {
         const entropy = Math.floor(Math.random() * 10000);
         const id = `${testName.replace(" ", "").substring(0, 30)}${entropy}`;
-        const {result: dbdef} = await client.databases.create({id: testName});
-        return client.databases.getDatabase(dbdef.id);
+        await client.databases.create({id});
+        return client.databases.getDatabase(id);
+    }
+
+    public static async getTestContainer(client: CosmosClient, testName: string, containerDef?: ContainerDefinition) {
+        const db = await TestHelpers.getTestDatabase(client, testName);
+        const entropy = Math.floor(Math.random() * 10000);
+        const id = `${testName.replace(" ", "").substring(0, 30)}${entropy}`;
+        await db.containers.create({...containerDef, ...{id}});
+        return db.containers.getContainer(id);
     }
 
     public static async bulkInsertItems(
@@ -150,7 +157,7 @@ export class TestHelpers {
     // User
     public static createOrUpsertUser(
         database: Database, body: any, options: any,
-        isUpsertTest: boolean): Promise<Response<any>> {
+        isUpsertTest: boolean): Promise<Response<UserDefinition>> {
         if (isUpsertTest) {
             return database.users.upsert(body, options);
         } else {
@@ -159,7 +166,7 @@ export class TestHelpers {
     }
     public static replaceOrUpsertUser(
         database: Database, userLink: string, body: any,
-        options: any, isUpsertTest: boolean): Promise<Response<any>> {
+        options: any, isUpsertTest: boolean): Promise<Response<UserDefinition>> {
         if (isUpsertTest) {
             return database.users.upsert(body, options);
         } else {
@@ -169,7 +176,7 @@ export class TestHelpers {
 
     // Permission
     public static createOrUpsertPermission(
-        user: User, body: any, options: any, isUpsertTest: boolean): Promise<Response<any>> {
+        user: User, body: any, options: any, isUpsertTest: boolean): Promise<Response<PermissionDefinition>> {
         if (isUpsertTest) {
             return user.permissions.upsert(body, options);
         } else {
@@ -179,7 +186,7 @@ export class TestHelpers {
 
     public static replaceOrUpsertPermission(
         user: User, body: any,
-        options: any, isUpsertTest: boolean): Promise<Response<any>> {
+        options: any, isUpsertTest: boolean): Promise<Response<PermissionDefinition>> {
         if (isUpsertTest) {
             return user.permissions.upsert(body, options);
         } else {
