@@ -165,7 +165,7 @@ export class TestHelpers {
         }
     }
     public static replaceOrUpsertUser(
-        database: Database, userLink: string, body: any,
+        database: Database, body: any,
         options: any, isUpsertTest: boolean): Promise<Response<UserDefinition>> {
         if (isUpsertTest) {
             return database.users.upsert(body, options);
