@@ -29,15 +29,16 @@ export class TestHelpers {
     public static async getTestDatabase(client: CosmosClient, testName: string) {
         const entropy = Math.floor(Math.random() * 10000);
         const id = `${testName.replace(" ", "").substring(0, 30)}${entropy}`;
-        await client.databases.create({id});
+        await client.databases.create({ id });
         return client.databases.getDatabase(id);
     }
 
-    public static async getTestContainer(client: CosmosClient, testName: string, containerDef?: ContainerDefinition) {
+    public static async getTestContainer(
+        client: CosmosClient, testName: string, containerDef?: ContainerDefinition, options?: RequestOptions) {
         const db = await TestHelpers.getTestDatabase(client, testName);
         const entropy = Math.floor(Math.random() * 10000);
         const id = `${testName.replace(" ", "").substring(0, 30)}${entropy}`;
-        await db.containers.create({...containerDef, ...{id}});
+        await db.containers.create({ ...containerDef, ...{ id } }, options);
         return db.containers.getContainer(id);
     }
 
@@ -233,7 +234,7 @@ export class TestHelpers {
     // Stored Procedure
     public static createOrUpsertStoredProcedure(
         container: Container, body: any, options: any, isUpsertTest: boolean): Promise<Response<any>> {
-            if (isUpsertTest) {
+        if (isUpsertTest) {
             return container.storedProcedures.upsert(body, options);
         } else {
             return container.storedProcedures.create(body, options);
@@ -241,8 +242,8 @@ export class TestHelpers {
     }
     public static replaceOrUpsertStoredProcedure(
         container: Container, body: any, options: any, isUpsertTest: boolean): Promise<Response<any>> {
-            if (isUpsertTest) {
-                return container.storedProcedures.upsert(body, options);
+        if (isUpsertTest) {
+            return container.storedProcedures.upsert(body, options);
         } else {
             return container.storedProcedures.getStoredProcedure(body.id).replace(body, options);
         }
