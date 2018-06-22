@@ -1,6 +1,4 @@
 ﻿import * as assert from "assert";
-import * as sinon from "sinon";
-import { Base } from "../../";
 import { ResourceId } from "../../common";
 import { SessionContainer } from "../../sessionContainer";
 import testConfig from "./../common/_testConfig";
