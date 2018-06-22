@@ -15,7 +15,7 @@ export class Items {
         return new Item(this.container, id, partitionKey);
     }
 
-    public query(query: SqlQuerySpec, options?: FeedOptions): QueryIterator<any>;
+    public query(query: string | SqlQuerySpec, options?: FeedOptions): QueryIterator<any>;
     public query<T>(query: SqlQuerySpec, options?: FeedOptions): QueryIterator<T> {
         return this.client.queryDocuments(this.container.url, query, options) as QueryIterator<T>;
     }

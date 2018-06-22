@@ -16,5 +16,5 @@ export interface IndexedPath {
 export interface Index {
     kind: IndexKind;
     dataType: DataType;
-    precision: number;
+    precision?: number;
 }
