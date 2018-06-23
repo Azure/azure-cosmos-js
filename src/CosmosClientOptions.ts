@@ -4,8 +4,9 @@ export interface CosmosClientOptions {
     endpoint: string;
     auth: {
         masterKey?: string;
-        permissionFeed?: any; // TODO: resource tokens
-        tokenProvider?: any; // TODO: auth callback
+        permissionFeed?: any; // TODO: any
+        resourceTokens?: any; // TODO: any
+        tokenProvider?: any; // TODO: any
     };
     connectionPolicy?: ConnectionPolicy;
     consistencyLevel?: ConsistencyLevel;
