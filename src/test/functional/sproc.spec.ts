@@ -71,7 +71,7 @@ describe("NodeJS CRUD Tests", function () {
             assert.equal(replacedSproc.body, "function () { const x = 20; }");
 
             // read sproc
-            const { result: sprocAfterReplace } = container.storedProcedures.getStoredProcedure(replacedSproc.id).read();
+            const { result: sprocAfterReplace } = await container.storedProcedures.getStoredProcedure(replacedSproc.id).read();
             assert.equal(replacedSproc.id, sprocAfterReplace.id);
 
             // delete sproc
@@ -123,7 +123,7 @@ describe("NodeJS CRUD Tests", function () {
             assert.equal(replacedSproc.body, "function () { const x = 20; }");
 
             // read sproc
-            const { result: sprocAfterReplace } = container.storedProcedures.getStoredProcedure(replacedSproc.id).read();
+            const { result: sprocAfterReplace } = await container.storedProcedures.getStoredProcedure(replacedSproc.id).read();
             assert.equal(replacedSproc.id, sprocAfterReplace.id);
 
             // delete sproc
