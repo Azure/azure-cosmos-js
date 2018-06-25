@@ -4,4 +4,5 @@ export interface ContainerDefinition {
     id?: string;
     partitionKey?: PartitionKeyDefinition;
     indexingPolicy?: IndexingPolicy;
+    defaultTtl?: number;
 }
