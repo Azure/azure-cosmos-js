@@ -1,8 +1,8 @@
 ﻿import * as assert from "assert";
 import { CosmosClient, UriFactory } from "../../";
+import { PartitionKind } from "../../documents";
 import testConfig from "./../common/_testConfig";
 import { TestHelpers } from "./../common/TestHelpers";
-import { PartitionKind } from "../../documents";
 
 const host = testConfig.host;
 const masterKey = testConfig.masterKey;
