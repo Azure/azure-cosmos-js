@@ -85,7 +85,7 @@ describe("NodeJS CRUD Tests", function () {
                     await container.replace(containerDef);
                     assert.fail("Replacing container id must throw");
                 } catch (err) {
-                    const notFoundErrorCode = 404;
+                    const notFoundErrorCode = 400;
                     assert.equal(err.code, notFoundErrorCode, "response should return error code 404");
                 }
 
