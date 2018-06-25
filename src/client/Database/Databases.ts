@@ -11,7 +11,7 @@ export class Databases {
         return new Database(this.client, id);
     }
 
-    public query(query: SqlQuerySpec, options?: FeedOptions): QueryIterator<DatabaseDefinition> {
+    public query(query: string | SqlQuerySpec, options?: FeedOptions): QueryIterator<DatabaseDefinition> {
         return this.client.documentClient.queryDatabases(query, options);
     }
 
