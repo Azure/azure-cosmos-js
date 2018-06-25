@@ -17,6 +17,8 @@ export class Item {
         this.client = this.container.database.client;
     }
 
+    public read(options?: RequestOptions): Promise<Response<any>>;
+    public read<T>(options?: RequestOptions): Promise<Response<T>>;
     public read<T>(options?: RequestOptions): Promise<Response<T>> {
         if (!options.partitionKey && this.primaryKey) {
             options.partitionKey = this.primaryKey;
@@ -24,6 +26,8 @@ export class Item {
         return this.client.documentClient.readDocument(this.url, options) as Promise<Response<T>>;
     }
 
+    public replace(body: any, options?: RequestOptions): Promise<Response<any>>;
+    public replace<T>(body: T, options?: RequestOptions): Promise<Response<T>>;
     public replace<T>(body: T, options?: RequestOptions): Promise<Response<T>> {
         if (!options.partitionKey && this.primaryKey) {
             options.partitionKey = this.primaryKey;
@@ -31,6 +35,8 @@ export class Item {
         return this.client.documentClient.replaceDocument(this.url, body, options) as Promise<Response<T>>;
     }
 
+    public delete(options?: RequestOptions): Promise<Response<any>>;
+    public delete<T>(options?: RequestOptions): Promise<Response<T>>;
     public delete<T>(options?: RequestOptions): Promise<Response<T>> {
         if (!options.partitionKey && this.primaryKey) {
             options.partitionKey = this.primaryKey;
