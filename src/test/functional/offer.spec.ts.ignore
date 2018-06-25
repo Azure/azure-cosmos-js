@@ -1,37 +1,28 @@
+/* Offer is going to be moved to the resources themselves, not a first class top level object */
+
+
+
 import * as assert from "assert";
-import * as Stream from "stream";
-import {
-    AzureDocuments, Base, Constants, CosmosClient,
-    DocumentBase, HashPartitionResolver, Range,
-    RangePartitionResolver, Response, RetryOptions,
-} from "../../";
+import { Base, Constants, CosmosClient } from "../../";
 import testConfig from "./../common/_testConfig";
 import { TestHelpers } from "./../common/TestHelpers";
+import { OfferDefinition } from "../../client";
 
-// Used for sproc
-declare var getContext: any;
-// declare var body: (input?: any) => void; // TODO: remove this if it's not necessary
-
-// TODO: should fix long lines
-// tslint:disable:max-line-length
-
-const host = testConfig.host;
+const endpoint = testConfig.host;
 const masterKey = testConfig.masterKey;
+const client = new CosmosClient({ endpoint, auth: { masterKey } });
 
 describe("NodeJS CRUD Tests", function () {
     this.timeout(process.env.MOCHA_TIMEOUT || 10000);
     // remove all databases from the endpoint before each test
     beforeEach(async function () {
         this.timeout(10000);
-        try {
-            await TestHelpers.removeAllDatabases(host, masterKey);
-        } catch (err) {
-            throw err;
-        }
+        await TestHelpers.removeAllDatabases(client);
     });
 
     describe("Validate Offer CRUD", function () {
-        const validateOfferResponseBody = function (offer: any, expectedCollLink: string, expectedOfferType: string) {
+        const validateOfferResponseBody = function (
+            offer: any, expectedCollLink: string, expectedOfferType: string) {
             assert(offer.id, "Id cannot be null");
             assert(offer._rid, "Resource Id (Rid) cannot be null");
             assert(offer._self, "Self Link cannot be null");
@@ -43,10 +34,9 @@ describe("NodeJS CRUD Tests", function () {
             }
         };
 
-        const offerReadAndQueryTest = async function (isNameBased: boolean, isPartitionedCollection: boolean, offerThroughput: number, expectedCollectionSize: number) {
-            const client = new CosmosClient(host, { masterKey });
-            // create database
-            const { result: db } = await client.createDatabase({ id: "new database" });
+        const offerReadAndQueryTest = async function (
+            isPartitionedCollection: boolean, offerThroughput: number, expectedCollectionSize: number) {
+
             const collectionRequestOptions = { offerThroughput };
             let collectionDefinition: any = "";
             if (isPartitionedCollection) {
@@ -79,11 +69,10 @@ describe("NodeJS CRUD Tests", function () {
             } else {
                 collectionDefinition = { id: "sample collection" };
             }
-            const { result: createdCollection } = await client.createCollection(
-                TestHelpers.getDatabaseLink(isNameBased, db), collectionDefinition, collectionRequestOptions);
+            const container = await TestHelpers.getTestContainer(
+                client, "Validate Offer CRUD", collectionDefinition, collectionRequestOptions);
 
-            const { result: collection, headers } = await client.readCollection(
-                TestHelpers.getCollectionLink(isNameBased, db, createdCollection), { populateQuotaInfo: true });
+            const { result: createdContainerDef, headers } = await container.read({ populateQuotaInfo: true });
 
             // Validate the collection size quota
             assert.notEqual(headers[Constants.HttpHeaders.MaxResourceQuota], null);
@@ -96,14 +85,16 @@ describe("NodeJS CRUD Tests", function () {
                 }, {})[Constants.Quota.CollectionSize]);
             assert.equal(collectionSize, expectedCollectionSize, "Collection size is unexpected");
 
-            const { result: offers } = await client.readOffers({}).toArray();
+            const { result: offers } = await client.offers.read().toArray();
             assert.equal(offers.length, 1);
             const expectedOffer = offers[0];
-            assert.equal(expectedOffer.content.offerThroughput, collectionRequestOptions.offerThroughput, "Expected offerThroughput to be " + collectionRequestOptions.offerThroughput);
-            validateOfferResponseBody(expectedOffer, collection._self, undefined);
+            assert.equal(expectedOffer.content.offerThroughput, collectionRequestOptions.offerThroughput,
+                "Expected offerThroughput to be " + collectionRequestOptions.offerThroughput);
+            validateOfferResponseBody(expectedOffer, createdContainerDef._self, undefined);
+            
             // Read the offer
             const { result: readOffer } = await client.readOffer(expectedOffer._self);
-            validateOfferResponseBody(readOffer, collection._self, undefined);
+            validateOfferResponseBody(readOffer, createdContainerDef._self, undefined);
             // Check if the read offer is what we expected.
             assert.equal(expectedOffer.id, readOffer.id);
             assert.equal(expectedOffer._rid, readOffer._rid);
@@ -131,10 +122,10 @@ describe("NodeJS CRUD Tests", function () {
             const { result: offers2 } = await client.queryOffers(querySpec).toArray();
             assert.equal(offers2.length, 1);
             const oneOffer = offers2[0];
-            validateOfferResponseBody(oneOffer, collection._self, undefined);
+            validateOfferResponseBody(oneOffer, createdContainerDef._self, undefined);
             // Now delete the collection.
             await client.deleteCollection(
-                TestHelpers.getCollectionLink(isNameBased, db, collection));
+                TestHelpers.getCollectionLink(isNameBased, db, createdContainerDef));
             // read offer after deleting collection.
             try {
                 await client.readOffer(expectedOffer._self);
@@ -200,7 +191,7 @@ describe("NodeJS CRUD Tests", function () {
 
         const offerReplaceTest = async function (isNameBased: boolean) {
             try {
-                const client = new CosmosClient(host, { masterKey });
+                const client = new CosmosClient(endpoint, { masterKey });
                 // create database
                 const { result: db } = await client.createDatabase({ id: "sample database" });
                 // create collection
@@ -276,7 +267,7 @@ describe("NodeJS CRUD Tests", function () {
 
         const createCollectionWithOfferTypeTest = async function (isNameBased: boolean) {
             try {
-                const client = new CosmosClient(host, { masterKey });
+                const client = new CosmosClient(endpoint, { masterKey });
                 // create database
                 const { result: db } = await client.createDatabase({ id: "sample database" });
                 // create collection
