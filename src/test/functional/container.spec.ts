@@ -322,7 +322,7 @@ describe("NodeJS CRUD Tests", function () {
                 };
 
                 const { result: containerWithPartialPolicyDef } = await client.databases.create(containerDefinition02);
-                checkDefaultIndexingPolicyPaths(containerWithPartialPolicyDef["indexingPolicy"]);
+                checkDefaultIndexingPolicyPaths((containerWithPartialPolicyDef as any)["indexingPolicy"]);
 
                 // create container with default policy.
                 const containerDefinition03 = {
@@ -330,7 +330,7 @@ describe("NodeJS CRUD Tests", function () {
                     indexingPolicy: {},
                 };
                 const { result: containerDefaultPolicy } = await client.databases.create(containerDefinition03);
-                checkDefaultIndexingPolicyPaths(containerDefaultPolicy["indexingPolicy"]);
+                checkDefaultIndexingPolicyPaths((containerDefaultPolicy as any)["indexingPolicy"]);
 
                 // create container with indexing policy missing indexes.
                 const containerDefinition04 = {
@@ -344,7 +344,7 @@ describe("NodeJS CRUD Tests", function () {
                     },
                 };
                 const { result: containerMissingIndexes } = await client.databases.create(containerDefinition04);
-                checkDefaultIndexingPolicyPaths(containerMissingIndexes["indexingPolicy"]);
+                checkDefaultIndexingPolicyPaths((containerMissingIndexes as any)["indexingPolicy"]);
 
                 // create container with indexing policy missing precision.
                 const containerDefinition05 = {
@@ -368,7 +368,7 @@ describe("NodeJS CRUD Tests", function () {
                     },
                 };
                 const { result: containerMissingPrecision } = await client.databases.create(containerDefinition05);
-                checkDefaultIndexingPolicyPaths(containerMissingPrecision["indexingPolicy"]);
+                checkDefaultIndexingPolicyPaths((containerMissingPrecision as any)["indexingPolicy"]);
             } catch (err) {
                 throw err;
             }
