@@ -17,11 +17,13 @@ export class Permissions {
     }
 
     public query(query: SqlQuerySpec, options?: FeedOptions): QueryIterator<PermissionDefinition> {
-        return this.client.documentClient.queryPermissions(this.user.url, query, options);
+        return this.client.documentClient
+            .queryPermissions(this.user.url, query, options) as QueryIterator<PermissionDefinition>;
     }
 
     public read(options?: FeedOptions): QueryIterator<PermissionDefinition> {
-        return this.client.documentClient.readPermissions(this.user.url, options);
+        return this.client.documentClient
+            .readPermissions(this.user.url, options) as QueryIterator<PermissionDefinition>;
     }
 
     public create(

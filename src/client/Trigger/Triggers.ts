@@ -17,11 +17,12 @@ export class Triggers {
     }
 
     public query(query: SqlQuerySpec, options?: FeedOptions): QueryIterator<TriggerDefinition> {
-        return this.client.documentClient.queryTriggers(this.container.url, query, options);
+        return this.client.documentClient
+            .queryTriggers(this.container.url, query, options) as QueryIterator<TriggerDefinition>;
     }
 
     public read(options?: FeedOptions): QueryIterator<TriggerDefinition> {
-        return this.client.documentClient.readTriggers(this.container.url, options);
+        return this.client.documentClient.readTriggers(this.container.url, options) as QueryIterator<TriggerDefinition>;
     }
 
     public create(body: TriggerDefinition, options?: RequestOptions): Promise<Response<TriggerDefinition>> {
