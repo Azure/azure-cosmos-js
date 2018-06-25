@@ -38,7 +38,7 @@ describe("NodeJS CRUD Tests", function() {
             // create container
             await client.databases
                 .getDatabase(dbId)
-                .containers.create({ id: "sample container" });
+                .containers.create({ id: containerId });
 
             container = await client.databases
                 .getDatabase(dbId)
