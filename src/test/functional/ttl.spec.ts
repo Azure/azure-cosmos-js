@@ -38,7 +38,7 @@ describe("NodeJS CRUD Tests", function () {
             containerDefinition.id = collId;
             containerDefinition.defaultTtl = defaultTtl;
             try {
-                await db.containers.getContainer(containerDefinition.id).read();
+                await db.containers.create(containerDefinition);
             } catch (err) {
                 const badRequestErrorCode = 400;
                 assert.equal(err.code, badRequestErrorCode, "response should return error code " + badRequestErrorCode);
