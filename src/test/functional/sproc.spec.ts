@@ -96,7 +96,8 @@ describe("NodeJS CRUD Tests", function () {
             const beforeCreateSprocsCount = sprocs.length;
             const sprocDefinition: StoredProcedureDefinition = {
                 id: "sample sproc",
-                body() { const x = 10; },
+                // tslint:disable-next-line:object-literal-shorthand
+                body: function() { const x = 10; },
             };
 
             const { result: sproc } = await container.storedProcedures.upsert(sprocDefinition);
@@ -270,7 +271,7 @@ describe("NodeJS CRUD Tests", function () {
             id: "querySproc",
             body: function () {
                 var context = getContext();
-                var container = context.getcontainer();
+                var container = context.getCollection();
                 var response = context.getResponse();
 
                 // query for players
@@ -354,7 +355,7 @@ describe("NodeJS CRUD Tests", function () {
         let requestOptions = { enableScriptLogging: true };
         const { result: result2, headers: headers2 } = await container.storedProcedures.getStoredProcedure(retrievedSproc.id).execute([], requestOptions);
         assert.equal(result2, "Success!");
-        assert.equal(headers2[Constants.HttpHeaders.ScriptLogResults], "The value of x is 1.");
+        assert.equal(headers2[Constants.HttpHeaders.ScriptLogResults],  encodeURIComponent("The value of x is 1."));
 
         requestOptions = { enableScriptLogging: false };
         const { result: result3, headers: headers3 } =  await container.storedProcedures.getStoredProcedure(retrievedSproc.id).execute([], requestOptions);

@@ -59,7 +59,7 @@ describe("NodeJS CRUD Tests", function () {
             // tslint:disable:prefer-const
             const triggerDefinition: TriggerDefinition = {
                     id: "sample trigger",
-                    body() { var x = 10; },
+                    body: "serverScript() { var x = 10; }",
                     triggerType: DocumentBase.TriggerType.Pre,
                     triggerOperation: DocumentBase.TriggerOperation.All,
                 };
@@ -123,7 +123,7 @@ describe("NodeJS CRUD Tests", function () {
             // tslint:disable:prefer-const
             const triggerDefinition: TriggerDefinition = {
                     id: "sample trigger",
-                    body() { var x = 10; },
+                    body: "serverScript() { var x = 10; }",
                     triggerType: DocumentBase.TriggerType.Pre,
                     triggerOperation: DocumentBase.TriggerOperation.All,
                 };

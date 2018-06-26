@@ -1,5 +1,6 @@
 import * as assert from "assert";
 import { Container, CosmosClient } from "../../";
+import { UserDefinedFunctionDefinition } from "../../client";
 import testConfig from "./../common/_testConfig";
 import { TestHelpers } from "./../common/TestHelpers";
 
@@ -51,11 +52,9 @@ describe("NodeJS CRUD Tests", function() {
 
             // create a udf
             const beforeCreateUdfsCount = udfs.length;
-            const udfDefinition = {
+            const udfDefinition: UserDefinedFunctionDefinition = {
                 id: "sample udf",
-                body() {
-                    const x = 10;
-                },
+                body: "function () { const x = 10; }",
             };
 
             // TODO also handle upsert case
@@ -95,9 +94,7 @@ describe("NodeJS CRUD Tests", function() {
             );
 
             // replace udf
-            udfDefinition.body = function() {
-                const x = 20;
-            };
+            udfDefinition.body = "function () { const x = 10; }";
             const {
                 result: replacedUdf,
             } = await container.userDefinedFunctions
@@ -150,9 +147,7 @@ describe("NodeJS CRUD Tests", function() {
             const beforeCreateUdfsCount = udfs.length;
             const udfDefinition = {
                 id: "sample udf",
-                body() {
-                    const x = 10;
-                },
+                body: "function () { const x = 10; }",
             };
 
             const { result: udf } = await container.userDefinedFunctions.upsert(
@@ -191,9 +186,7 @@ describe("NodeJS CRUD Tests", function() {
             );
 
             // replace udf
-            udfDefinition.body = function() {
-                const x = 20;
-            };
+            udfDefinition.body = "function () { const x = 10; }";
             const {
                 result: replacedUdf,
             } = await container.userDefinedFunctions.upsert(udfDefinition);
