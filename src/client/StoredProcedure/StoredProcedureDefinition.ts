@@ -1,4 +1,4 @@
 export interface StoredProcedureDefinition {
     id?: string;
-    body?(...inputs: any[]): void;
+    body?: string | ((...inputs: any[]) => void);
 }

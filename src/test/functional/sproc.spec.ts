@@ -44,7 +44,7 @@ describe("NodeJS CRUD Tests", function () {
             const beforeCreateSprocsCount = sprocs.length;
             const sprocDefinition: StoredProcedureDefinition = {
                 id: "sample sproc",
-                body() { const x = 10; },
+                body: "function () { const x = 10; }",
             };
 
             const { result: sproc } = await container.storedProcedures.create(sprocDefinition);
