@@ -15,8 +15,8 @@ describe("Authorization", function () {
     let database: Database;
     let container: Container;
 
-    let userReadPermission: any = { id: "User With Read Permission" };
-    let userAllPermission: any = { id: "User With All Permission" };
+    let userReadDefinition: any = { id: "User With Read Permission" };
+    let userAllDefinition: any = { id: "User With All Permission" };
     let collReadPermission: any = {
         id: "collection Read Permission",
         permissionMode: DocumentBase.PermissionMode.Read,
@@ -35,25 +35,26 @@ describe("Authorization", function () {
         database = container.database;
 
         // create userReadPermission
-        const { result: userDef } = await container.database.users.create(userReadPermission);
-        assert.equal(userReadPermission.id, userDef.id, "userReadPermission is not created properly");
-        userReadPermission = userDef;
-        const user = container.database.users.getUser(userDef.id);
+        const { result: userDef } = await container.database.users.create(userReadDefinition);
+        assert.equal(userReadDefinition.id, userDef.id, "userReadPermission is not created properly");
+        userReadDefinition = userDef;
+        const userRead = container.database.users.getUser(userDef.id);
 
         // give permission to read container, to userReadPermission
         collReadPermission.resource = container.url;
-        const { result: readPermission } = await user.permissions.create(collReadPermission);
+        const { result: readPermission } = await userRead.permissions.create(collReadPermission);
         assert.equal(readPermission.id, collReadPermission.id, "permission to read coll1 is not created properly");
         collReadPermission = readPermission;
 
         // create userAllPermission
-        const { result: userAllPerm } = await user.permissions.create(userAllPermission);
-        assert.equal(userAllPermission.id, userAllPerm.id, "userAllPermission is not created properly");
-        userAllPermission = userAllPerm;
+        const { result: userAllDef } = await container.database.users.create(userAllDefinition);
+        assert.equal(userAllDefinition.id, userAllDef.id, "userAllPermission is not created properly");
+        userAllDefinition = userAllDef;
+        const userAll = container.database.users.getUser(userAllDef.id);
 
         // create collAllPermission
         collAllPermission.resource = container.url;
-        const { result: allPermission } = await user.permissions.create(collAllPermission);
+        const { result: allPermission } = await userAll.permissions.create(collAllPermission);
         assert.equal(collAllPermission.id, allPermission.id, "permission to read coll2 is not created properly");
         collAllPermission = allPermission;
     });
@@ -112,8 +113,6 @@ describe("Authorization", function () {
     it("Modifying collection by resourceTokens", async function () {
         const rTokens: any = {};
         rTokens[container.id] = collAllPermission._token;
-
-        const collectionUri = UriFactory.createDocumentCollectionUri(database.id, container.id);
         const clientAllPermission = new CosmosClient({ endpoint, auth: { resourceTokens: rTokens } });
 
         // delete collection
