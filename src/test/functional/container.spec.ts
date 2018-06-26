@@ -2,8 +2,8 @@ import * as assert from "assert";
 import {
     Constants, CosmosClient, DocumentBase,
 } from "../../";
-import { ContainerDefinition, Database } from "../../client";
-import { Index, IndexedPath, IndexingMode, IndexingPolicy } from "../../documents";
+import { Container, ContainerDefinition, Database } from "../../client";
+import { DataType, Index, IndexedPath, IndexingMode, IndexingPolicy, IndexKind } from "../../documents";
 import testConfig from "./../common/_testConfig";
 import { TestHelpers } from "./../common/TestHelpers";
 
@@ -313,15 +313,16 @@ describe("NodeJS CRUD Tests", function () {
                 checkDefaultIndexingPolicyPaths(containerNoIndexPolicyDef["indexingPolicy"]);
 
                 // create container with partial policy specified.
-                const containerDefinition02 = {
+                const containerDefinition02: ContainerDefinition = {
                     id: "TestCreateDefaultPolicy02",
                     indexingPolicy: {
-                        indexingMode: "Lazy",
+                        indexingMode: IndexingMode.Lazy,
                         automatic: true,
                     },
                 };
 
-                const { result: containerWithPartialPolicyDef } = await client.databases.create(containerDefinition02);
+                const { result: containerWithPartialPolicyDef } =
+                    await database.containers.create(containerDefinition02);
                 checkDefaultIndexingPolicyPaths((containerWithPartialPolicyDef as any)["indexingPolicy"]);
 
                 // create container with default policy.
@@ -329,7 +330,7 @@ describe("NodeJS CRUD Tests", function () {
                     id: "TestCreateDefaultPolicy03",
                     indexingPolicy: {},
                 };
-                const { result: containerDefaultPolicy } = await client.databases.create(containerDefinition03);
+                const { result: containerDefaultPolicy } = await database.containers.create(containerDefinition03);
                 checkDefaultIndexingPolicyPaths((containerDefaultPolicy as any)["indexingPolicy"]);
 
                 // create container with indexing policy missing indexes.
@@ -343,7 +344,7 @@ describe("NodeJS CRUD Tests", function () {
                         ],
                     },
                 };
-                const { result: containerMissingIndexes } = await client.databases.create(containerDefinition04);
+                const { result: containerMissingIndexes } = await database.containers.create(containerDefinition04);
                 checkDefaultIndexingPolicyPaths((containerMissingIndexes as any)["indexingPolicy"]);
 
                 // create container with indexing policy missing precision.
@@ -355,19 +356,19 @@ describe("NodeJS CRUD Tests", function () {
                                 path: "/*",
                                 indexes: [
                                     {
-                                        kind: "Hash",
-                                        dataType: "String",
+                                        kind: IndexKind.Hash,
+                                        dataType: DataType.String,
                                     },
                                     {
-                                        kind: "Range",
-                                        dataType: "Number",
+                                        kind: IndexKind.Range,
+                                        dataType: DataType.Number,
                                     },
                                 ],
                             },
                         ],
                     },
                 };
-                const { result: containerMissingPrecision } = await client.databases.create(containerDefinition05);
+                const { result: containerMissingPrecision } = await database.containers.create(containerDefinition05);
                 checkDefaultIndexingPolicyPaths((containerMissingPrecision as any)["indexingPolicy"]);
             } catch (err) {
                 throw err;
