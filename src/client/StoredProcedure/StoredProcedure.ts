@@ -1,4 +1,4 @@
-import { Constants } from "../../common";
+import { Constants, UriFactory } from "../../common";
 import { DocumentClient } from "../../documentclient";
 import { RequestOptions, Response } from "../../request";
 import { Container } from "../Container";
@@ -7,7 +7,7 @@ import { StoredProcedureDefinition } from "./StoredProcedureDefinition";
 export class StoredProcedure {
     private client: DocumentClient;
     public get url() {
-        return `${this.container.url}/${Constants.Path.StoredProceduresPathSegment}/${this.id}`;
+        return UriFactory.createStoredProcedureUri(this.container.database.id, this.container.id, this.id);
     }
     constructor(public readonly container: Container, public readonly id: string) {
         this.client = this.container.database.client.documentClient;

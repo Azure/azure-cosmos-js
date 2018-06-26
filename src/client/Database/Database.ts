@@ -1,4 +1,4 @@
-import { Constants } from "../../common";
+import { Constants, UriFactory } from "../../common";
 import { CosmosClient } from "../../CosmosClient";
 import { RequestOptions, Response } from "../../request";
 import { Containers } from "../Container";
@@ -10,7 +10,7 @@ export class Database {
     public readonly users: Users;
 
     public get url() {
-        return `/${Constants.Path.DatabasesPathSegment}/${this.id}`;
+        return UriFactory.createDatabaseUri(this.id);
     }
 
     constructor(public readonly client: CosmosClient, public readonly id: string) {

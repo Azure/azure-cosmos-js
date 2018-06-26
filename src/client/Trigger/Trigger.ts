@@ -1,4 +1,4 @@
-import { Constants } from "../../common";
+import { Constants, UriFactory } from "../../common";
 import { CosmosClient } from "../../CosmosClient";
 import { RequestOptions, Response } from "../../request";
 import { Container } from "../Container";
@@ -6,7 +6,7 @@ import { TriggerDefinition } from "./TriggerDefinition";
 
 export class Trigger {
     public get url() {
-        return `${this.container.url}/${Constants.Path.TriggersPathSegment}/${this.id}`;
+        return UriFactory.createTriggerUri(this.container.database.id, this.container.id, this.id);
     }
 
     private client: CosmosClient;

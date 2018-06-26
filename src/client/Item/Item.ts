@@ -1,4 +1,4 @@
-import { Constants } from "../../common";
+import { Constants, UriFactory } from "../../common";
 import { CosmosClient } from "../../CosmosClient";
 import { RequestOptions, Response } from "../../request";
 import { Container } from "../Container";
@@ -7,7 +7,7 @@ export class Item {
 
     private client: CosmosClient;
     public get url() {
-        return `${this.container.url}/${Constants.Path.DocumentsPathSegment}/${this.id}`;
+        return UriFactory.createDocumentUri(this.container.database.id, this.container.id, this.id);
     }
 
     constructor(
@@ -20,7 +20,7 @@ export class Item {
     public read(options?: RequestOptions): Promise<Response<any>>;
     public read<T>(options?: RequestOptions): Promise<Response<T>>;
     public read<T>(options?: RequestOptions): Promise<Response<T>> {
-        if (!options.partitionKey && this.primaryKey) {
+        if ((!options || !options.partitionKey) && this.primaryKey) {
             options.partitionKey = this.primaryKey;
         }
         return this.client.documentClient.readDocument(this.url, options) as Promise<Response<T>>;
@@ -29,7 +29,7 @@ export class Item {
     public replace(body: any, options?: RequestOptions): Promise<Response<any>>;
     public replace<T>(body: T, options?: RequestOptions): Promise<Response<T>>;
     public replace<T>(body: T, options?: RequestOptions): Promise<Response<T>> {
-        if (!options.partitionKey && this.primaryKey) {
+        if ((!options || !options.partitionKey) && this.primaryKey) {
             options.partitionKey = this.primaryKey;
         }
         return this.client.documentClient.replaceDocument(this.url, body, options) as Promise<Response<T>>;
@@ -38,7 +38,7 @@ export class Item {
     public delete(options?: RequestOptions): Promise<Response<any>>;
     public delete<T>(options?: RequestOptions): Promise<Response<T>>;
     public delete<T>(options?: RequestOptions): Promise<Response<T>> {
-        if (!options.partitionKey && this.primaryKey) {
+        if ((!options || !options.partitionKey) && this.primaryKey) {
             options.partitionKey = this.primaryKey;
         }
         return this.client.documentClient.deleteDocument(this.url, options) as Promise<Response<T>>;

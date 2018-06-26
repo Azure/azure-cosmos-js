@@ -1,4 +1,4 @@
-import { Constants } from "../../common";
+import { Constants, UriFactory } from "../../common";
 import { CosmosClient } from "../../CosmosClient";
 import { Response } from "../../request";
 import { RequestOptions } from "../../request/RequestOptions";
@@ -7,7 +7,7 @@ import { PermissionDefinition } from "./PermissionDefinition";
 
 export class Permission {
     public get url() {
-        return `/${this.user.url}/${Constants.Path.PermissionsPathSegment}/${this.id}`;
+        return UriFactory.createPermissionUri(this.user.database.id, this.user.id, this.id);
     }
     private client: CosmosClient;
     constructor(public readonly user: User, public readonly id: string) {

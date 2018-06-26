@@ -1,4 +1,4 @@
-import { Constants } from "../../common";
+import { Constants, UriFactory } from "../../common";
 import { RequestOptions, Response } from "../../request";
 import { Database } from "../Database";
 import { Items } from "../Item";
@@ -14,7 +14,7 @@ export class Container {
     public readonly userDefinedFunctions: UserDefinedFunctions;
 
     public get url() {
-        return `${this.database.url}/${Constants.Path.CollectionsPathSegment}/${this.id}`;
+        return UriFactory.createDocumentCollectionUri(this.database.id, this.id);
     }
 
     constructor(public readonly database: Database, public readonly id: string) {

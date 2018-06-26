@@ -37,6 +37,6 @@ export class Permissions {
         body: PermissionDefinition,
         options?: RequestOptions,
     ): Promise<Response<PermissionDefinition>> {
-        return this.client.documentClient.upsertPermission(this.user.id, body, options);
+        return this.client.documentClient.upsertPermission(this.user.url, body, options);
     }
 }
