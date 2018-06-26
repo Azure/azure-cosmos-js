@@ -29,7 +29,7 @@ describe("NodeJS CRUD Tests", function () {
                 const { result: userDef } = await container.database.users.create({ id: "new user" });
                 const user = container.database.users.getUser(userDef.id);
                 // list permissions
-                const { result: permissions } = await container.database.users.read().toArray();
+                const { result: permissions } = await user.permissions.read().toArray();
                 assert.equal(permissions.constructor, Array, "Value should be an array");
                 const beforeCreateCount = permissions.length;
                 const permissionDef: PermissionDefinition = {
@@ -41,7 +41,7 @@ describe("NodeJS CRUD Tests", function () {
                 // create permission
                 const { result: createdPermission } = await TestHelpers.createOrUpsertPermission(
                     user, permissionDef, undefined, isUpsertTest);
-                const permission = user.permissions.getPermission(createdPermission.id);
+                let permission = user.permissions.getPermission(createdPermission.id);
                 assert.equal(createdPermission.id, "new permission", "permission name error");
 
                 // list permissions after creation
@@ -74,6 +74,7 @@ describe("NodeJS CRUD Tests", function () {
                 const { result: replacedPermission2 } = await permission.replace(permissionDef);
                 assert.equal(replacedPermission2.id, "replaced permission", "permission name should change");
                 assert.equal(permissionDef.id, replacedPermission2.id, "permission id should stay the same");
+                permission = user.permissions.getPermission(replacedPermission2.id);
 
                 // read permission
                 const { result: permissionAfterReplace } = await permission.read();
@@ -125,7 +126,7 @@ describe("NodeJS CRUD Tests", function () {
                 // create permission
                 const { result: permissionDef } = await TestHelpers.createOrUpsertPermission(
                     user, permissionDefinition, undefined, isUpsertTest);
-                const permission = user.permissions.getPermission(permissionDef.id);
+                let permission = user.permissions.getPermission(permissionDef.id);
                 assert.equal(permissionDef.id, permissionDefinition.id, "permission name error");
                 assert.equal(JSON.stringify(permissionDef.resourcePartitionKey),
                     JSON.stringify(permissionDefinition.resourcePartitionKey),
@@ -164,6 +165,7 @@ describe("NodeJS CRUD Tests", function () {
                 permissionDef.id = "replaced permission";
                 const { result: replacedPermission2 } = await permission.replace(permissionDef);
                 assert.equal(replacedPermission2.id, permissionDef.id);
+                permission = user.permissions.getPermission(replacedPermission2.id);
 
                 // read permission
                 const { result: permissionAfterReplace } = await permission.read();
