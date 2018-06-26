@@ -135,6 +135,8 @@ describe("NodeJS CRUD Tests", function () {
             assert(successDoc !== undefined, "error reading document");
             assert.equal(successDoc.id, entities.doc1.id, "Expected to read children using parent permissions");
 
+            // TODO: Permission Feed uses RID right now
+            /*
             const col2Client = new CosmosClient({
                 endpoint,
                 auth: { permissionFeed: [entities.permissionOnColl2] },
@@ -147,6 +149,7 @@ describe("NodeJS CRUD Tests", function () {
             assert(successDoc2 !== undefined, "error creating document");
             assert.equal(successDoc2.CustomProperty1, doc.CustomProperty1,
                 "document should have been created successfully");
+            */
         };
 
         const authorizationCRUDOverMultiplePartitionsTest = async function () {
