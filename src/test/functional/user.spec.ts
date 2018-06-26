@@ -1,5 +1,6 @@
 import * as assert from "assert";
 import { CosmosClient } from "../../";
+import { UserDefinition } from "../../client";
 import testConfig from "./../common/_testConfig";
 import { TestHelpers } from "./../common/TestHelpers";
 
@@ -32,7 +33,7 @@ describe("NodeJS CRUD Tests", function () {
             const { result: userDef } = await TestHelpers.createOrUpsertUser(
                 database, { id: "new user" }, undefined, isUpsertTest);
             assert.equal(userDef.id, "new user", "user name error");
-            const user = database.users.getUser(userDef.id);
+            let user = database.users.getUser(userDef.id);
 
             // list users after creation
             const { result: usersAfterCreation } = await database.users.read().toArray();
@@ -53,10 +54,17 @@ describe("NodeJS CRUD Tests", function () {
 
             // replace user
             userDef.id = "replaced user";
-            const { result: replacedUser } = await TestHelpers.replaceOrUpsertUser(
-                database, userDef, undefined, isUpsertTest);
+            let replacedUser: UserDefinition;
+            if (isUpsertTest) {
+                const r = await database.users.upsert(userDef);
+                replacedUser = r.result;
+            } else {
+                const r = await user.replace(userDef);
+                replacedUser = r.result;
+            }
             assert.equal(replacedUser.id, "replaced user", "user name should change");
             assert.equal(userDef.id, replacedUser.id, "user id should stay the same");
+            user = database.users.getUser(replacedUser.id);
 
             // read user
             const { result: userAfterReplace } = await user.read();

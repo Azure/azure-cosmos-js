@@ -25,6 +25,6 @@ export class User {
     }
 
     public delete(options?: RequestOptions): Promise<Response<UserDefinition>> {
-        return this.client.documentClient.deleteUser(this.id, options);
+        return this.client.documentClient.deleteUser(this.url, options);
     }
 }
