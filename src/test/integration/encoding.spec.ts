@@ -43,7 +43,7 @@ describe("Create And Read Validation", function () {
 
             // Read the collection and see if it matches to the initial document
             const { result: resultDoc } = await container.items.getItem(doc.id)
-                .read<{ id: string, content: string }>(doc._self);
+                .read<{ id: string, content: string }>();
             assert.equal(testDoc.content, resultDoc.content, "read document result is different from initial document");
         } catch (err) {
             throw err;
