@@ -285,7 +285,7 @@ describe("NodeJS CRUD Tests", function () {
             const { result: doc } = await container.items.create(itemDefinition);
             assert.equal(itemDefinition.id, doc.id);
             await sleep(3000);
-            miscCasesStep2(container, itemDefinition);
+            return miscCasesStep2(container, itemDefinition);
         }
 
         it("nativeApi Validate Item TTL Misc cases.", async function () {
