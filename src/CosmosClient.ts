@@ -5,6 +5,10 @@ import { DocumentClient } from "./documentclient";
 import { DatabaseAccount } from "./documents";
 import { Response } from "./request";
 
+/**
+ * Provides a client-side logical representation of the Azure Cosmos DB database account.
+ * This client is used to configure and execute requests in the Azure Cosmos DB database service.
+ */
 export class CosmosClient {
     public readonly databases: Databases;
     public readonly offers: Offers;
