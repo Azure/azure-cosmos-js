@@ -825,25 +825,6 @@ describe("Cross Partition", function () {
             }
         });
 
-        it("Validate forEach quick termination", async function () {
-            // simple order by query in string format
-            const query = "SELECT * FROM root r order by r.spam";
-
-            const options = { enableCrossPartitionQuery: true, maxItemCount: 2 };
-
-            // prepare expected results
-            const getOrderByKey = function (r: any) {
-                return r["spam"];
-            };
-            const expectedOrderedIds = (_.sortBy(documentDefinitions, getOrderByKey).map(function (r) {
-                return r["id"];
-            })).slice(0, 1);
-
-            const queryIterator = container.items.query(query, options);
-
-            await validateForEach(queryIterator, expectedOrderedIds);
-        });
-
         it("Validate Failure", async function () {
             // simple order by query in string format
             const query = "SELECT * FROM root r order by r.spam";
