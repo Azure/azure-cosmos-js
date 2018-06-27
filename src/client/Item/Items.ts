@@ -27,12 +27,28 @@ export class Items {
         return this.client.readDocuments(this.container.url, options) as QueryIterator<T>;
     }
 
+    /**
+     * Create a item.
+     * <p>
+     * There is no set schema for JSON items. They may contain any number of custom properties as \
+     * well as an optional list of attachments. <br>
+     * A item is an application resource and can be authorized using the master key or resource keys
+     * </p>
+     * @param body  - Represents the body of the item. Can contain any number of user defined properties.
+     */
     public async create(body: any, options?: RequestOptions): Promise<Response<any>>;
     public async create<T>(body: T, options?: RequestOptions): Promise<Response<T>>;
     public async create<T>(body: T, options?: RequestOptions): Promise<Response<T>> {
         return this.client.createDocument(this.container.url, body, options) as Promise<Response<T>>;
     }
 
+    /**
+     * Upsert an item.
+     * <p>
+     * There is no set schema for JSON items. They may contain any number of custom properties.<br>
+     * An Item is an application resource and can be authorized using the master key or resource keys
+     * </p>
+     */
     public async upsert(body: any, options?: RequestOptions): Promise<Response<any>>;
     public async upsert<T>(body: T, options?: RequestOptions): Promise<Response<T>>;
     public async upsert<T>(body: T, options?: RequestOptions): Promise<Response<T>> {

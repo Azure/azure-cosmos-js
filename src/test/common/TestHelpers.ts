@@ -5,6 +5,7 @@ import {
 } from "../../";
 import { ContainerDefinition, PermissionDefinition, User, UserDefinition } from "../../client";
 
+/** @hidden */
 export class TestHelpers {
     public static async removeAllDatabases(client: CosmosClient) {
         try {

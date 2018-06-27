@@ -11,6 +11,7 @@ import { RequestOptions } from "./request/RequestOptions";
 import { SessionContainer } from "./sessionContainer";
 
 // Using this to organize public vs internal methods
+/** @hidden */
 export abstract class DocumentClientBase {
     public masterKey: string;
     public resourceTokens: { [key: string]: string };
