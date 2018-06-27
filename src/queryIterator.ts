@@ -51,12 +51,12 @@ export class QueryIterator<T> {
      */
     public async *forEach(): AsyncIterable<Response<T>> {
         this.reset();
-        try {
-            while (this.queryExecutionContext.hasMoreResults()) {
-                yield await this.queryExecutionContext.nextItem();
+        while (this.queryExecutionContext.hasMoreResults()) {
+            const result = await this.queryExecutionContext.nextItem();
+            if (result.result === undefined) {
+                return;
             }
-        } catch (err) {
-            throw err;
+            yield result;
         }
     }
 
@@ -102,6 +102,9 @@ export class QueryIterator<T> {
      * @param {callback} callback - Function execute on the feed response, takes two parameters error, resourcesList
      */
     public async toArray(): Promise<Response<T[]>> {
+        if (arguments.length !== 0) {
+            throw new Error("toArray takes no arguments");
+        }
         this.reset();
         this.toArrayTempResources = [];
         return this._toArrayImplementation();
@@ -128,23 +131,19 @@ export class QueryIterator<T> {
 
     /** @ignore */
     private async _toArrayImplementation(): Promise<Response<T[]>> {
-        try {
+        while (this.queryExecutionContext.hasMoreResults()) {
             const { result, headers } = await this.queryExecutionContext.nextItem();
             // concatinate the results and fetch more
             this.toArrayLastResHeaders = headers;
 
             if (result === undefined) {
-
                 // no more results
-                return { result: this.toArrayTempResources, headers: this.toArrayLastResHeaders };
+                break;
             }
 
             this.toArrayTempResources.push(result);
-
-            return this._toArrayImplementation();
-        } catch (err) {
-            throw err;
         }
+        return { result: this.toArrayTempResources, headers: this.toArrayLastResHeaders };
     }
 
     /** @ignore */
