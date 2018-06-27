@@ -26,6 +26,15 @@ export class Permissions {
             .readPermissions(this.user.url, options) as QueryIterator<PermissionDefinition>;
     }
 
+    /**
+     * Create a permission.
+     * <p> A permission represents a per-User Permission to access a specific resource \
+     * e.g. Item or Container.  </p>
+     * @param body                 - Represents the body of the permission.
+     * @param {string} body.id              - The id of the permission
+     * @param {string} body.permissionMode  - The mode of the permission, must be a value of {@link PermissionMode}
+     * @param {string} body.resource        - The link of the resource that the permission will be applied to.
+     */
     public create(
         body: PermissionDefinition,
         options?: RequestOptions,
@@ -33,6 +42,11 @@ export class Permissions {
         return this.client.documentClient.createPermission(this.user.url, body, options);
     }
 
+    /**
+     * Upsert a permission.
+     * <p> A permission represents a per-User Permission to access a \
+     * specific resource e.g. Item or Cotnainer.  </p>
+     */
     public upsert(
         body: PermissionDefinition,
         options?: RequestOptions,

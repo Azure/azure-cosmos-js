@@ -24,11 +24,26 @@ export class Triggers {
     public read(options?: FeedOptions): QueryIterator<TriggerDefinition> {
         return this.client.documentClient.readTriggers(this.container.url, options) as QueryIterator<TriggerDefinition>;
     }
-
+    /**
+     * Create a trigger.
+     * <p>
+     * Azure Cosmos DB supports pre and post triggers defined in JavaScript to be executed \
+     * on creates, updates and deletes. <br>
+     * For additional details, refer to the server-side JavaScript API documentation.
+     * </p>
+     */
     public create(body: TriggerDefinition, options?: RequestOptions): Promise<Response<TriggerDefinition>> {
         return this.client.documentClient.createTrigger(this.container.url, body, options);
     }
 
+    /**
+     * Upsert a trigger.
+     * <p>
+     * Azure Cosmos DB supports pre and post triggers defined in JavaScript to be
+     * executed on creates, updates and deletes. <br>
+     * For additional details, refer to the server-side JavaScript API documentation.
+     * </p>
+     */
     public upsert(body: TriggerDefinition, options?: RequestOptions): Promise<Response<TriggerDefinition>> {
         return this.client.documentClient.upsertTrigger(this.container.url, body, options);
     }

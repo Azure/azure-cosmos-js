@@ -23,6 +23,10 @@ export class Users {
         return this.client.documentClient.readUsers(this.database.url, options);
     }
 
+    /**
+     * Create a database user.
+     * @param body                 - Represents the body of the user.
+     */
     public create(
         body: UserDefinition,
         options?: RequestOptions,

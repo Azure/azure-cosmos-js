@@ -24,6 +24,13 @@ export class UserDefinedFunctions {
         return this.client.documentClient.readUserDefinedFunctions(this.container.url, options);
     }
 
+    /**
+     * Create a UserDefinedFunction.
+     * <p>
+     * Azure Cosmos DB supports JavaScript UDFs which can be used inside queries, stored procedures and triggers. <br>
+     * For additional details, refer to the server-side JavaScript API documentation.
+     * </p>
+     */
     public create(
         body: UserDefinedFunctionDefinition,
         options?: RequestOptions,
@@ -31,6 +38,13 @@ export class UserDefinedFunctions {
         return this.client.documentClient.createUserDefinedFunction(this.container.url, body, options);
     }
 
+    /**
+     * Upsert a UserDefinedFunction.
+     * <p>
+     * Azure Cosmos DB supports JavaScript UDFs which can be used inside queries, stored procedures and triggers. <br>
+     * For additional details, refer to the server-side JavaScript API documentation.
+     * </p>
+     */
     public upsert(
         body: UserDefinedFunctionDefinition,
         options?: RequestOptions,
