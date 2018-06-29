@@ -105,7 +105,7 @@ describe("NodeJS CRUD Tests", function () {
             }
         };
 
-        const documentCRUDMultiplePartitionsTest = async function (isNameBased: boolean) {
+        const documentCRUDMultiplePartitionsTest = async function () {
             try {
                 const client = new CosmosClient({endpoint, auth: { masterKey }});
                 // create database
@@ -200,22 +200,8 @@ describe("NodeJS CRUD Tests", function () {
             }
         });
 
-        it("nativeApi Should do document CRUD operations over multiple partitions successfully name based",
-            async function () {
-                try {
-                    await documentCRUDMultiplePartitionsTest(true);
-                } catch (err) {
-                    throw err;
-                }
-            });
-
-        it("nativeApi Should do document CRUD operations over multiple partitions successfully rid based",
-            async function () {
-                try {
-                    await documentCRUDMultiplePartitionsTest(false);
-                } catch (err) {
-                    throw err;
-                }
-            });
+        it("nativeApi Should do document CRUD operations over multiple partitions successfully name based", async function () {
+            await documentCRUDMultiplePartitionsTest();
+        });
     });
 });

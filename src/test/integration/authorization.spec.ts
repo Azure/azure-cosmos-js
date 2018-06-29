@@ -8,7 +8,7 @@ const endpoint = testConfig.host;
 const masterKey = testConfig.masterKey;
 
 describe("Authorization", function () {
-    this.timeout(5000);
+    this.timeout(process.env.MOCHA_TIMEOUT || 10000);
     const client = new CosmosClient({ endpoint, auth: { masterKey } });
 
     // TODO: should have types for all these things
