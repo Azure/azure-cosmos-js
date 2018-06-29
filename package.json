@@ -20,7 +20,7 @@
   },
   "scripts": {
     "clean": "rimraf lib",
-    "lint": "tslint --project tsconfig.json --config tslint.json --exclude ./src/test/**",
+    "lint": "tslint --project tsconfig.json",
     "compile": "echo Using TypeScript && tsc --version && tsc --pretty",
     "docs": "typedoc --mode file --out ./lib/docs ./src",
     "pack": "webpack",

@@ -10,12 +10,12 @@ const client = new CosmosClient({ endpoint, auth: { masterKey } });
 
 // TODO: This is required for Node 6 and above, so just putting it in here.
 // Might want to decide on only supporting async iterators once Node supports them officially.
-(Symbol as any).asyncIterator = Symbol.asyncIterator || Symbol.for("Symbol.asyncIterator");
+if (!Symbol || !Symbol.asyncIterator) { (Symbol as any).asyncIterator = Symbol.for("Symbol.asyncIterator"); }
 
 describe("NodeJS CRUD Tests", function () {
     this.timeout(process.env.MOCHA_TIMEOUT || 10000);
     // remove all databases from the endpoint before each test
-    beforeEach(async function () {
+    before(async function () {
         this.timeout(10000);
         try {
             await TestHelpers.removeAllDatabases(client);
