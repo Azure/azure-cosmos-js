@@ -200,7 +200,7 @@ describe("NodeJS CRUD Tests", function () {
             }
         });
 
-        it("nativeApi Should do document CRUD operations over multiple partitions successfully name based", async function () {
+        it("nativeApi Should do document CRUD operations over multiple partitions", async function () {
             await documentCRUDMultiplePartitionsTest();
         });
     });
