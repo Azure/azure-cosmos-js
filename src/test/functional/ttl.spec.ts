@@ -24,15 +24,13 @@ async function sleep(time: number) {
 }
 
 describe("NodeJS CRUD Tests", function () {
-    this.timeout(process.env.MOCHA_TIMEOUT || 10000);
+    this.timeout(process.env.MOCHA_TIMEOUT || 600000);
     // remove all databases from the endpoint before each test
     beforeEach(async function () {
-        this.timeout(10000);
         await TestHelpers.removeAllDatabases(client);
     });
 
     describe("TTL tests", function () {
-        this.timeout(60000);
 
         async function createcontainerWithInvalidDefaultTtl(db: Database, containerDefinition: ContainerDefinition, collId: any, defaultTtl: number) {
             containerDefinition.id = collId;

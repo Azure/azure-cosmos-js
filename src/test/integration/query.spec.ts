@@ -10,12 +10,11 @@ const masterKey = testConfig.masterKey;
 const doc = { id: "myId", pk: "pk" };
 
 describe("ResourceLink Trimming of leading and trailing slashes", function () {
-    this.timeout(10000);
+    this.timeout(process.env.MOCHA_TIMEOUT || 10000);
     const client = new CosmosClient({ endpoint: host, auth: { masterKey } });
     const databaseId = "testDatabase";
     const collectionId = "testCollection";
 
-    afterEach(async function () { await TestHelpers.removeAllDatabases(client); });
     beforeEach(async function () { await TestHelpers.removeAllDatabases(client); });
 
     it("validate correct execution of query using named collection link with leading and trailing slashes"
