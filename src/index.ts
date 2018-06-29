@@ -13,4 +13,5 @@ export { IHeaders } from "./queryExecutionContext";
 export { QueryIterator } from "./queryIterator";
 
 export {CosmosClient} from "./CosmosClient";
+export {CosmosClientOptions} from "./CosmosClientOptions";
 export * from "./client/";
