@@ -7,7 +7,7 @@ import { Constants } from "../common";
 import { ConnectionPolicy } from "../documents";
 import { GlobalEndpointManager } from "../globalEndpointManager";
 import { IHeaders } from "../queryExecutionContext";
-import { ErrorResponse, Response } from "../request";
+import { ErrorResponse, Response } from "../request/request";
 
 export interface Body {
     buffer?: Buffer;

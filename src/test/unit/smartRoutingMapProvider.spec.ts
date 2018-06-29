@@ -28,13 +28,13 @@ describe("Smart Routing Map Provider OverlappingRanges", function () {
         it('query ranges: ["", ""FF)', function () {
             // query range is the whole partition key range
             const pkRange = new QueryRange("", "FF", true, false);
-            validateOverlappingRanges([pkRange], partitionKeyRanges);
+            return validateOverlappingRanges([pkRange], partitionKeyRanges);
         });
 
         it('query ranges: ("", ""FF)', function () {
             // query range is the whole partition key range
             const pkRange = new QueryRange("", "FF", false, false);
-            validateOverlappingRanges([pkRange], partitionKeyRanges);
+            return validateOverlappingRanges([pkRange], partitionKeyRanges);
         });
     });
 
