@@ -20,23 +20,23 @@ describe("NodeJS CRUD Tests", function () {
             // create database
             const { result: db } = await client.databases.create({ id: "Validate Authorization database" });
             // create collection1
-            const { result: collection1 } = await client.databases.getDatabase(db.id)
+            const { result: collection1 } = await client.databases.get(db.id)
                 .containers.create({ id: "Validate Authorization container" });
             // create document1
-            const { result: document1 } = await client.databases.getDatabase(db.id)
-                .containers.getContainer(collection1.id)
+            const { result: document1 } = await client.databases.get(db.id)
+                .containers.get(collection1.id)
                 .items.create({ id: "coll1doc1", foo: "bar", key: "value" });
             // create document 2
-            const { result: document2 } = await client.databases.getDatabase(db.id)
-                .containers.getContainer(collection1.id)
+            const { result: document2 } = await client.databases.get(db.id)
+                .containers.get(collection1.id)
                 .items.create({ id: "coll1doc2", foo: "bar2", key: "value2" });
 
             // create collection 2
-            const { result: collection2 } = await client.databases.getDatabase(db.id)
+            const { result: collection2 } = await client.databases.get(db.id)
                 .containers.create({ id: "sample collection2" });
 
             // create user1
-            const { result: user1 } = await client.databases.getDatabase(db.id)
+            const { result: user1 } = await client.databases.get(db.id)
                 .users.create({ id: "user1" });
             let permission = {
                 id: "permission On Coll1",
@@ -45,7 +45,7 @@ describe("NodeJS CRUD Tests", function () {
             }; // TODO: any rid stuff
             // create permission for collection1
             const { result: permissionOnColl1 } = await TestHelpers.createOrUpsertPermission(
-                client.databases.getDatabase(db.id).users.getUser(user1.id), permission, undefined, isUpsertTest);
+                client.databases.get(db.id).users.get(user1.id), permission, undefined, isUpsertTest);
             assert((permissionOnColl1 as any)._token !== undefined, "permission token is invalid");
             permission = {
                 id: "permission On Doc1",
@@ -54,11 +54,11 @@ describe("NodeJS CRUD Tests", function () {
             };
             // create permission for document 2
             const { result: permissionOnDoc2 } = await TestHelpers.createOrUpsertPermission(
-                client.databases.getDatabase(db.id).users.getUser(user1.id), permission, undefined, isUpsertTest);
+                client.databases.get(db.id).users.get(user1.id), permission, undefined, isUpsertTest);
             assert((permissionOnDoc2 as any)._token !== undefined, "permission token is invalid");  // TODO: any rid
 
             // create user 2
-            const { result: user2 } = await client.databases.getDatabase(db.id)
+            const { result: user2 } = await client.databases.get(db.id)
                 .users.create({ id: "user2" });
             permission = {
                 id: "permission On coll2",
@@ -67,7 +67,7 @@ describe("NodeJS CRUD Tests", function () {
             };
             // create permission on collection 2
             const { result: permissionOnColl2 } = await TestHelpers.createOrUpsertPermission(
-                client.databases.getDatabase(db.id).users.getUser(user2.id), permission, undefined, isUpsertTest);
+                client.databases.get(db.id).users.get(user2.id), permission, undefined, isUpsertTest);
             const entities = {
                 db,
                 coll1: collection1,
@@ -107,14 +107,14 @@ describe("NodeJS CRUD Tests", function () {
             const col1Client = new CosmosClient({ endpoint, auth: { resourceTokens } });
 
             // 1. Success-- Use Col1 Permission to Read
-            const { result: successColl1 } = await col1Client.databases.getDatabase(entities.db.id)
-                .containers.getContainer(entities.coll1.id).read();
+            const { result: successColl1 } = await col1Client.databases.get(entities.db.id)
+                .containers.get(entities.coll1.id).read();
             assert(successColl1 !== undefined, "error reading collection");
 
             // 2. Failure-- Use Col1 Permission to delete
             try {
-                await col1Client.databases.getDatabase(entities.db.id)
-                    .containers.getContainer(entities.coll1.id).delete();
+                await col1Client.databases.get(entities.db.id)
+                    .containers.get(entities.coll1.id).delete();
                 assert.fail("must fail if no permission");
             } catch (err) {
                 assert(err !== undefined, "expected to fail, no permission to delete");
@@ -122,16 +122,16 @@ describe("NodeJS CRUD Tests", function () {
             }
 
             // 3. Success-- Use Col1 Permission to Read All Docs
-            const { result: successDocuments } = await col1Client.databases.getDatabase(entities.db.id)
-                .containers.getContainer(entities.coll1.id)
+            const { result: successDocuments } = await col1Client.databases.get(entities.db.id)
+                .containers.get(entities.coll1.id)
                 .items.readAll().toArray();
             assert(successDocuments !== undefined, "error reading documents");
             assert.equal(successDocuments.length, 2, "Expected 2 Documents to be succesfully read");
 
             // 4. Success-- Use Col1 Permission to Read Col1Doc1
-            const { result: successDoc } = await col1Client.databases.getDatabase(entities.db.id)
-                .containers.getContainer(entities.coll1.id)
-                .items.getItem(entities.doc1.id).read();
+            const { result: successDoc } = await col1Client.databases.get(entities.db.id)
+                .containers.get(entities.coll1.id)
+                .items.get(entities.doc1.id).read();
             assert(successDoc !== undefined, "error reading document");
             assert.equal(successDoc.id, entities.doc1.id, "Expected to read children using parent permissions");
 
@@ -165,7 +165,7 @@ describe("NodeJS CRUD Tests", function () {
                 client, "authorization CRUD multiple partitons", collectionDefinition);
             // create user
             const { result: userDef } = await container.database.users.create({ id: "user1" });
-            const user = container.database.users.getUser(userDef.id);
+            const user = container.database.users.get(userDef.id);
 
             const key = 1;
             const permissionDefinition: PermissionDefinition = {
@@ -183,13 +183,13 @@ describe("NodeJS CRUD Tests", function () {
 
             const restrictedClient = new CosmosClient({ endpoint, auth: { resourceTokens } });
             await restrictedClient
-                .databases.getDatabase(container.database.id)
-                .containers.getContainer(container.id)
+                .databases.get(container.database.id)
+                .containers.get(container.id)
                 .items.create({ id: "document1", key: 1 });
             try {
                 await restrictedClient
-                    .databases.getDatabase(container.database.id)
-                    .containers.getContainer(container.id)
+                    .databases.get(container.database.id)
+                    .containers.get(container.id)
                     .items.create({ id: "document2", key: 2 });
                 assert.fail("Must throw unauthorized on read");
             } catch (err) {

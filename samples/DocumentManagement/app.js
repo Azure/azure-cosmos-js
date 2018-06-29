@@ -53,8 +53,8 @@ async function run() {
 //ensuring a database & collection exists for us to work with
     await init();
     
-    const database = client.databases.getDatabase(databaseId);
-    const container = database.containers.getContainer(collectionId);
+    const database = client.databases.get(databaseId);
+    const container = database.containers.get(collectionId);
 
     //1.
     console.log('\n1. insertDocuments in to database \'' + databaseId + '\' and collection \'' + collectionId + '\'');
@@ -75,7 +75,7 @@ async function run() {
     }
 
     //3.1
-    const item = container.items.getItem(docs[0].id);
+    const item = container.items.get(docs[0].id);
     console.log('\n3.1 readDocument \'' + item.id + '\'');
     const {result: readDoc} = await item.read();
     console.log('Document with id \'' + item.id + '\' found');
@@ -175,10 +175,10 @@ async function init() {
 }
 
 async function getOrCreateCollection(databaseId, id, callback) {
-    const database = client.databases.getDatabase(databaseId);
+    const database = client.databases.get(databaseId);
     try {
         try {
-            await database.containers.getContainer(id).read();
+            await database.containers.get(id).read();
         } catch (err) {
             // if it doesn't exist, create it
             if(err.code === 404) {
@@ -195,7 +195,7 @@ async function getOrCreateCollection(databaseId, id, callback) {
 async function getOrCreateDatabase(id, callback) {    
     try {
         try {
-            await client.databases.getDatabase(id).read();
+            await client.databases.get(id).read();
         } catch (err) {
             // if it doesn't exist, create it
             if(err.code === 404) {
@@ -217,7 +217,7 @@ async function handleError(error) {async
 }
 
 async function finish() {
-    await client.databases.getDatabase(dbLink).delete();
+    await client.databases.get(dbLink).delete();
     console.log('\nEnd of demo.');
 }
 

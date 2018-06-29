@@ -50,10 +50,10 @@ describe("NodeJS CRUD Tests", function () {
                 assert(results.length > 0, "number of results for the query should be > 0");
 
                 // delete database
-                await client.databases.getDatabase(db.id).delete();
+                await client.databases.get(db.id).delete();
                 try {
                     // read database after deletion
-                    await client.databases.getDatabase(db.id).read();
+                    await client.databases.get(db.id).read();
                     assert.fail("Read database on non-existent database should fail");
                 } catch (err) {
                     const notFoundErrorCode = 404;

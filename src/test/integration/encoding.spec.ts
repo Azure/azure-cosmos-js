@@ -34,7 +34,7 @@ describe("Create And Read Validation", function () {
 
             // Create a collection inside the database
             const { result: containerDef } = await database.containers.create(collectionBody);
-            const container = database.containers.getContainer(containerDef.id);
+            const container = database.containers.get(containerDef.id);
             assert.equal(containerDef.id, collectionBody.id, "invalid collection Id");
 
             // Add the document in the collection
@@ -42,7 +42,7 @@ describe("Create And Read Validation", function () {
             assert.equal(doc.id, testDoc.id, "invalid document Id");
 
             // Read the collection and see if it matches to the initial document
-            const { result: resultDoc } = await container.items.getItem(doc.id)
+            const { result: resultDoc } = await container.items.get(doc.id)
                 .read<{ id: string, content: string }>();
             assert.equal(testDoc.content, resultDoc.content, "read document result is different from initial document");
         } catch (err) {

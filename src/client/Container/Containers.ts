@@ -8,7 +8,7 @@ import { ContainerDefinition } from "./ContainerDefinition";
 export class Containers {
     constructor(public readonly database: Database) { }
 
-    public getContainer(id: string): Container {
+    public get(id: string): Container {
         return new Container(this.database, id);
     }
 

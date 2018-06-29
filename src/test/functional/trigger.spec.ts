@@ -39,12 +39,12 @@ describe("NodeJS CRUD Tests", function () {
 
         // create container
         await client.databases
-            .getDatabase(dbId)
+            .get(dbId)
             .containers.create({ id: containerId });
 
         container = await client.databases
-            .getDatabase(dbId)
-            .containers.getContainer(containerId);
+            .get(dbId)
+            .containers.get(containerId);
     });
 
     describe("Validate Trigger CRUD", function () {
@@ -91,21 +91,21 @@ describe("NodeJS CRUD Tests", function () {
 
             // replace trigger
             trigger.body = function () { const x = 20; };
-            const { result: replacedTrigger } = await container.triggers.getTrigger(trigger.id).replace(trigger);
+            const { result: replacedTrigger } = await container.triggers.get(trigger.id).replace(trigger);
 
             assert.equal(replacedTrigger.id, trigger.id);
             assert.equal(replacedTrigger.body, "function () { const x = 20; }");
 
             // read trigger
-            const { result: triggerAfterReplace } = await container.triggers.getTrigger(replacedTrigger.id).read();
+            const { result: triggerAfterReplace } = await container.triggers.get(replacedTrigger.id).read();
             assert.equal(replacedTrigger.id, triggerAfterReplace.id);
 
             // delete trigger
-            await await container.triggers.getTrigger(replacedTrigger.id).delete();
+            await await container.triggers.get(replacedTrigger.id).delete();
 
             // read triggers after deletion
             try {
-                await container.triggers.getTrigger(replacedTrigger.id).read();
+                await container.triggers.get(replacedTrigger.id).read();
                 assert.fail("Must fail to read after deletion");
             } catch (err) {
                 assert.equal(err.code, notFoundErrorCode, "response should return error code 404");
@@ -161,15 +161,15 @@ describe("NodeJS CRUD Tests", function () {
             assert.equal(replacedTrigger.body, "function () { const x = 20; }");
 
             // read trigger
-            const { result: triggerAfterReplace } = await container.triggers.getTrigger(replacedTrigger.id).read();
+            const { result: triggerAfterReplace } = await container.triggers.get(replacedTrigger.id).read();
             assert.equal(replacedTrigger.id, triggerAfterReplace.id);
 
             // delete trigger
-            await await container.triggers.getTrigger(replacedTrigger.id).delete();
+            await await container.triggers.get(replacedTrigger.id).delete();
 
             // read triggers after deletion
             try {
-                await container.triggers.getTrigger(replacedTrigger.id).read();
+                await container.triggers.get(replacedTrigger.id).read();
                 assert.fail("Must fail to read after deletion");
             } catch (err) {
                 assert.equal(err.code, notFoundErrorCode, "response should return error code 404");

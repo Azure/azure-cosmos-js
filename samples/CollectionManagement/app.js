@@ -48,7 +48,7 @@ async function run() {
 
     //3.
     console.log('\n3. collection.read');
-    const container = database.containers.getContainer(collectionId);
+    const container = database.containers.get(collectionId);
     const {result: collection} = await container.read();
 
     console.log('Collection with url \'' + container.url + '\' was found its id is \'' + collection.id);
@@ -78,10 +78,10 @@ async function init(databaseId) {
         var databaseDef = { id: databaseId };
 
         const { result: newDB } = await client.databases.create(databaseDef);
-        client.databases.getDatabase(newDB.id);
+        client.databases.get(newDB.id);
         //database found, return it
     } else {
-        client.databases.getDatabase(results[0].id);
+        client.databases.get(results[0].id);
     }
 }
 

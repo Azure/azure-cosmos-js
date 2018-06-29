@@ -12,7 +12,7 @@ export class UserDefinedFunctions {
         this.client = this.container.database.client;
      }
 
-    public getUserDefinedFunction(id: string): UserDefinedFunction {
+    public get(id: string): UserDefinedFunction {
         return new UserDefinedFunction(this.container, id);
     }
 

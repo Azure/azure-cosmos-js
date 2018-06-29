@@ -12,7 +12,7 @@ export class Permissions {
         this.client = this.user.database.client;
     }
 
-    public getPermission(id: string): Permission {
+    public get(id: string): Permission {
         return new Permission(this.user, id);
     }
 

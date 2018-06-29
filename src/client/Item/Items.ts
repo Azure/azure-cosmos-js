@@ -11,7 +11,7 @@ export class Items {
         this.client = this.container.database.client.documentClient;
     }
 
-    public getItem(id: string, partitionKey?: string): Item {
+    public get(id: string, partitionKey?: string): Item {
         return new Item(this.container, id, partitionKey);
     }
 

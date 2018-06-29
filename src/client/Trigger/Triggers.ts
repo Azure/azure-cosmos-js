@@ -12,7 +12,7 @@ export class Triggers {
         this.client = this.container.database.client;
     }
 
-    public getTrigger(id: string): Trigger {
+    public get(id: string): Trigger {
         return new Trigger(this.container, id);
     }
 

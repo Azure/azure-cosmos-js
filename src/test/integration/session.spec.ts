@@ -58,11 +58,11 @@ describe("Session Token", function () {
         let index2;
 
         const { result: databaseDef } = await client.databases.create(databaseBody);
-        const database = client.databases.getDatabase(databaseDef.id);
+        const database = client.databases.get(databaseDef.id);
 
         const { result: createdContainerDef } =
             await database.containers.create(containerDefinition, collectionOptions);
-        const container = database.containers.getContainer(createdContainerDef.id);
+        const container = database.containers.get(createdContainerDef.id);
         assert.equal(postSpy.lastCall.args[3][Constants.HttpHeaders.SessionToken], undefined);
         // TODO: testing implementation detail by looking at collectionResourceIdToSesssionTokens
         assert.deepEqual(client.documentClient.sessionContainer.collectionResourceIdToSessionTokens, {});
@@ -85,7 +85,7 @@ describe("Session Token", function () {
         assert.notEqual(tokens[index2], undefined);
         let secondPartitionLSN = tokens[index2];
 
-        const { result: document12 } = await container.items.getItem(document1.id, "1").read();
+        const { result: document12 } = await container.items.get(document1.id, "1").read();
         assert.equal(getSpy.lastCall.args[2][Constants.HttpHeaders.SessionToken],
             client.documentClient.sessionContainer.getCombinedSessionToken(tokens));
         tokens = getToken(client.documentClient.sessionContainer.collectionResourceIdToSessionTokens);
@@ -101,7 +101,7 @@ describe("Session Token", function () {
         assert.equal(tokens[index2], secondPartitionLSN);
         firstPartitionLSN = tokens[index1];
 
-        const { result: document22 } = await container.items.getItem(document2.id, "2").delete();
+        const { result: document22 } = await container.items.get(document2.id, "2").delete();
         assert.equal(deleteSpy.lastCall.args[2][Constants.HttpHeaders.SessionToken],
             client.documentClient.sessionContainer.getCombinedSessionToken(tokens));
         tokens = getToken(client.documentClient.sessionContainer.collectionResourceIdToSessionTokens);
@@ -110,7 +110,7 @@ describe("Session Token", function () {
         secondPartitionLSN = tokens[index2];
 
         const { result: document14 } =
-            await container.items.getItem(document13.id)
+            await container.items.get(document13.id)
                 .replace({ id: "1", operation: "replace" }, { partitionKey: "1" });
         assert.equal(putSpy.lastCall.args[3][Constants.HttpHeaders.SessionToken],
             client.documentClient.sessionContainer.getCombinedSessionToken(tokens));
@@ -143,7 +143,7 @@ describe("Session Token", function () {
 
     it("validate 'lsn not caught up' error for higher lsn and clearing session token", async function () {
         const { result: databaseDef } = await client.databases.create(databaseBody);
-        const database = client.databases.getDatabase(databaseDef.id);
+        const database = client.databases.get(databaseDef.id);
         const increaseLSN = function (oldTokens: any) {
             for (const coll in oldTokens) {
                 if (oldTokens.hasOwnProperty(coll)) {
@@ -158,7 +158,7 @@ describe("Session Token", function () {
         };
 
         await database.containers.create(containerDefinition, collectionOptions);
-        const container = database.containers.getContainer(containerDefinition.id);
+        const container = database.containers.get(containerDefinition.id);
         await container.items.create({ id: "1" });
         const callbackSpy = sinon.spy(function (pat: string, reqHeaders: IHeaders) {
             const oldTokens = client.documentClient.sessionContainer.collectionResourceIdToSessionTokens;
@@ -167,7 +167,7 @@ describe("Session Token", function () {
         const applySessionTokenStub = sinon.stub(client.documentClient, "applySessionToken").callsFake(callbackSpy);
         try {
             const { result: document11 } =
-                await container.items.getItem("1").read({ partitionKey: "1" });
+                await container.items.get("1").read({ partitionKey: "1" });
             assert.fail("readDocument must throw");
         } catch (err) {
             assert.equal(err.substatus, 1002, "Substatus should indicate the LSN didn't catchup.");
@@ -175,7 +175,7 @@ describe("Session Token", function () {
             assert.equal(Base._trimSlashes(callbackSpy.lastCall.args[0]), collectionLink + "/docs/1");
             applySessionTokenStub.restore();
         }
-        await container.items.getItem("1").read({ partitionKey: "1" });
+        await container.items.get("1").read({ partitionKey: "1" });
     });
 
     // TODO: chrande - looks like this might be broken by going name based?
@@ -185,20 +185,20 @@ describe("Session Token", function () {
         const client2 = new CosmosClient({ endpoint, auth: { masterKey }, consistencyLevel: ConsistencyLevel.Session });
 
         const { result: databaseDef } = await client.databases.create(databaseBody);
-        const database = client.databases.getDatabase(databaseDef.id);
+        const database = client.databases.get(databaseDef.id);
         await database.containers.create(containerDefinition, collectionOptions);
-        const container = database.containers.getContainer(containerDefinition.id);
+        const container = database.containers.get(containerDefinition.id);
         await container.read();
-        await client2.databases.getDatabase(databaseDef.id)
-            .containers.getContainer(containerDefinition.id)
+        await client2.databases.get(databaseDef.id)
+            .containers.get(containerDefinition.id)
             .delete();
 
         const { result: createdCollection2 } =
-            await client2.databases.getDatabase(databaseDef.id)
+            await client2.databases.get(databaseDef.id)
                 .containers.create(containerDefinition, collectionOptions);
 
-        const { result: collection2 } = await client2.databases.getDatabase(databaseDef.id)
-            .containers.getContainer(containerDefinition.id)
+        const { result: collection2 } = await client2.databases.get(databaseDef.id)
+            .containers.get(containerDefinition.id)
             .read();
         assert.equal(client.documentClient.getSessionToken(container.url), ""); // TODO: _self
         assert.notEqual(client2.documentClient.getSessionToken(container.url), "");

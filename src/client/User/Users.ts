@@ -11,7 +11,7 @@ export class Users {
     constructor(public readonly database: Database) {
         this.client = this.database.client;
     }
-    public getUser(id: string): User {
+    public get(id: string): User {
         return new User(this.database, id);
     }
 

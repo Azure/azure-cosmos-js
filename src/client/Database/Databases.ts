@@ -7,7 +7,7 @@ import { DatabaseDefinition } from "./DatabaseDefinition";
 
 export class Databases {
     constructor(private readonly client: CosmosClient) {}
-    public getDatabase(id: string): Database {
+    public get(id: string): Database {
         return new Database(this.client, id);
     }
 
