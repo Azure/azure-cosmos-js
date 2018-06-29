@@ -56,53 +56,53 @@ describe("QueryMetrics", function () {
         new ClientSideMetrics(requestCharge));
 
     const assertQueryMetricsEquality = function (queryMetrics1: QueryMetrics, queryMetrics2: QueryMetrics) {
-        assert.deepEqual(queryMetrics1.getIndexHitRatio(), queryMetrics2.getIndexHitRatio());
-        assert.deepEqual(queryMetrics1.getOutputDocumentCount(), queryMetrics2.getOutputDocumentCount());
-        assert.deepEqual(queryMetrics1.getOutputDocumentSize(), queryMetrics2.getOutputDocumentSize());
-        assert.deepEqual(queryMetrics1.getRetrievedDocumentCount(), queryMetrics2.getRetrievedDocumentCount());
-        assert.deepEqual(queryMetrics1.getRetrievedDocumentSize(), queryMetrics2.getRetrievedDocumentSize());
-        assert.deepEqual(queryMetrics1.getTotalQueryExecutionTime(), queryMetrics2.getTotalQueryExecutionTime());
+        assert.deepEqual(queryMetrics1.indexHitRatio, queryMetrics2.indexHitRatio);
+        assert.deepEqual(queryMetrics1.outputDocumentCount, queryMetrics2.outputDocumentCount);
+        assert.deepEqual(queryMetrics1.outputDocumentSize, queryMetrics2.outputDocumentSize);
+        assert.deepEqual(queryMetrics1.retrievedDocumentCount, queryMetrics2.retrievedDocumentCount);
+        assert.deepEqual(queryMetrics1.retrievedDocumentSize, queryMetrics2.retrievedDocumentSize);
+        assert.deepEqual(queryMetrics1.totalQueryExecutionTime, queryMetrics2.totalQueryExecutionTime);
 
-        assert.deepEqual(queryMetrics1.getDocumentLoadTime(), queryMetrics2.getDocumentLoadTime());
-        assert.deepEqual(queryMetrics1.getDocumentWriteTime(), queryMetrics2.getDocumentWriteTime());
-        assert.deepEqual(queryMetrics1.getIndexLookupTime(), queryMetrics2.getIndexLookupTime());
-        assert.deepEqual(queryMetrics1.getVMExecutionTime(), queryMetrics2.getVMExecutionTime());
+        assert.deepEqual(queryMetrics1.documentLoadTime, queryMetrics2.documentLoadTime);
+        assert.deepEqual(queryMetrics1.documentWriteTime, queryMetrics2.documentWriteTime);
+        assert.deepEqual(queryMetrics1.indexLookupTime, queryMetrics2.indexLookupTime);
+        assert.deepEqual(queryMetrics1.vmExecutionTime, queryMetrics2.vmExecutionTime);
 
-        assert.deepEqual(queryMetrics1.getQueryPreparationTimes().getLogicalPlanBuildTime(),
-            queryMetrics2.getQueryPreparationTimes().getLogicalPlanBuildTime());
-        assert.deepEqual(queryMetrics1.getQueryPreparationTimes().getPhysicalPlanBuildTime(),
-            queryMetrics2.getQueryPreparationTimes().getPhysicalPlanBuildTime());
-        assert.deepEqual(queryMetrics1.getQueryPreparationTimes().getQueryCompilationTime(),
-            queryMetrics2.getQueryPreparationTimes().getQueryCompilationTime());
-        assert.deepEqual(queryMetrics1.getQueryPreparationTimes().getQueryOptimizationTime(),
-            queryMetrics2.getQueryPreparationTimes().getQueryOptimizationTime());
+        assert.deepEqual(queryMetrics1.queryPreparationTimes.logicalPlanBuildTime,
+            queryMetrics2.queryPreparationTimes.logicalPlanBuildTime);
+        assert.deepEqual(queryMetrics1.queryPreparationTimes.physicalPlanBuildTime,
+            queryMetrics2.queryPreparationTimes.physicalPlanBuildTime);
+        assert.deepEqual(queryMetrics1.queryPreparationTimes.queryCompilationTime,
+            queryMetrics2.queryPreparationTimes.queryCompilationTime);
+        assert.deepEqual(queryMetrics1.queryPreparationTimes.queryOptimizationTime,
+            queryMetrics2.queryPreparationTimes.queryOptimizationTime);
 
-        assert.deepEqual(queryMetrics1.getRuntimeExecutionTimes().getQueryEngineExecutionTime(),
-            queryMetrics2.getRuntimeExecutionTimes().getQueryEngineExecutionTime());
-        assert.deepEqual(queryMetrics1.getRuntimeExecutionTimes().getSystemFunctionExecutionTime(),
-            queryMetrics2.getRuntimeExecutionTimes().getSystemFunctionExecutionTime());
-        assert.deepEqual(queryMetrics1.getRuntimeExecutionTimes().getUserDefinedFunctionExecutionTime(),
-            queryMetrics2.getRuntimeExecutionTimes().getUserDefinedFunctionExecutionTime());
+        assert.deepEqual(queryMetrics1.runtimeExecutionTimes.queryEngineExecutionTime,
+            queryMetrics2.runtimeExecutionTimes.queryEngineExecutionTime);
+        assert.deepEqual(queryMetrics1.runtimeExecutionTimes.systemFunctionExecutionTime,
+            queryMetrics2.runtimeExecutionTimes.systemFunctionExecutionTime);
+        assert.deepEqual(queryMetrics1.runtimeExecutionTimes.userDefinedFunctionExecutionTime,
+            queryMetrics2.runtimeExecutionTimes.userDefinedFunctionExecutionTime);
 
-        assert.deepEqual(queryMetrics1.getClientSideMetrics().getRequestCharge(),
-            queryMetrics2.getClientSideMetrics().getRequestCharge());
+        assert.deepEqual(queryMetrics1.clientSideMetrics.requestCharge,
+            queryMetrics2.clientSideMetrics.requestCharge);
     };
 
     it("Can Be Cloned", function () {
         const queryMetrics2 = new QueryMetrics(
-            queryMetrics.getRetrievedDocumentCount(),
-            queryMetrics.getRetrievedDocumentSize(),
-            queryMetrics.getOutputDocumentCount(),
-            queryMetrics.getOutputDocumentSize(),
-            queryMetrics.getIndexHitDocumentCount(),
-            queryMetrics.getTotalQueryExecutionTime(),
-            queryMetrics.getQueryPreparationTimes(),
-            queryMetrics.getIndexLookupTime(),
-            queryMetrics.getDocumentLoadTime(),
-            queryMetrics.getVMExecutionTime(),
-            queryMetrics.getRuntimeExecutionTimes(),
-            queryMetrics.getDocumentWriteTime(),
-            queryMetrics.getClientSideMetrics());
+            queryMetrics.retrievedDocumentCount,
+            queryMetrics.retrievedDocumentSize,
+            queryMetrics.outputDocumentCount,
+            queryMetrics.outputDocumentSize,
+            queryMetrics.indexHitDocumentCount,
+            queryMetrics.totalQueryExecutionTime,
+            queryMetrics.queryPreparationTimes,
+            queryMetrics.indexLookupTime,
+            queryMetrics.documentLoadTime,
+            queryMetrics.vmExecutionTime,
+            queryMetrics.runtimeExecutionTimes,
+            queryMetrics.documentWriteTime,
+            queryMetrics.clientSideMetrics);
 
         assertQueryMetricsEquality(queryMetrics, queryMetrics2);
     });

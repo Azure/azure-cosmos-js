@@ -160,18 +160,18 @@ export class DefaultQueryExecutionContext implements IExecutionContext {
             // Add the request charge to the query metrics so that we can have per partition request charge.
             if (Constants.HttpHeaders.RequestCharge in responseHeaders) {
                 queryMetrics = new QueryMetrics(
-                    queryMetrics.getRetrievedDocumentCount(),
-                    queryMetrics.getRetrievedDocumentSize(),
-                    queryMetrics.getOutputDocumentCount(),
-                    queryMetrics.getOutputDocumentSize(),
-                    queryMetrics.getIndexHitDocumentCount(),
-                    queryMetrics.getTotalQueryExecutionTime(),
-                    queryMetrics.getQueryPreparationTimes(),
-                    queryMetrics.getIndexLookupTime(),
-                    queryMetrics.getDocumentLoadTime(),
-                    queryMetrics.getVMExecutionTime(),
-                    queryMetrics.getRuntimeExecutionTimes(),
-                    queryMetrics.getDocumentWriteTime(),
+                    queryMetrics.retrievedDocumentCount,
+                    queryMetrics.retrievedDocumentSize,
+                    queryMetrics.outputDocumentCount,
+                    queryMetrics.outputDocumentSize,
+                    queryMetrics.indexHitDocumentCount,
+                    queryMetrics.totalQueryExecutionTime,
+                    queryMetrics.queryPreparationTimes,
+                    queryMetrics.indexLookupTime,
+                    queryMetrics.documentLoadTime,
+                    queryMetrics.vmExecutionTime,
+                    queryMetrics.runtimeExecutionTimes,
+                    queryMetrics.documentWriteTime,
                     new ClientSideMetrics(responseHeaders[Constants.HttpHeaders.RequestCharge]));
             }
 

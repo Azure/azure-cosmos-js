@@ -6,141 +6,20 @@ import { RuntimeExecutionTimes } from "./runtimeExecutionTimes";
 import { TimeSpan } from "./timeSpan";
 
 export class QueryMetrics {
-    private retrievedDocumentCount: number;
-    private retrievedDocumentSize: number;
-    private outputDocumentCount: number;
-    private outputDocumentSize: number;
-    private indexHitDocumentCount: number;
-    private totalQueryExecutionTime: TimeSpan;
-    private queryPreparationTimes: QueryPreparationTimes;
-    private indexLookupTime: TimeSpan;
-    private documentLoadTime: TimeSpan;
-    private vmExecutionTime: TimeSpan;
-    private runtimeExecutionTimes: RuntimeExecutionTimes;
-    private documentWriteTime: TimeSpan;
-    private clientSideMetrics: ClientSideMetrics;
     constructor(
-        retrievedDocumentCount: number,
-        retrievedDocumentSize: number,
-        outputDocumentCount: number,
-        outputDocumentSize: number,
-        indexHitDocumentCount: number,
-        totalQueryExecutionTime: TimeSpan,
-        queryPreparationTimes: QueryPreparationTimes,
-        indexLookupTime: TimeSpan,
-        documentLoadTime: TimeSpan,
-        vmExecutionTime: TimeSpan,
-        runtimeExecutionTimes: RuntimeExecutionTimes,
-        documentWriteTime: TimeSpan,
-        clientSideMetrics: ClientSideMetrics) {
-        // Constructor
-
-        if (!QueryMetricsUtils.isNumeric(retrievedDocumentCount)) {
-            throw new Error("retrievedDocumentCount is not a numeric type");
-        }
-
-        if (!QueryMetricsUtils.isNumeric(retrievedDocumentSize)) {
-            throw new Error("retrievedDocumentSize is not a numeric type");
-        }
-
-        if (!QueryMetricsUtils.isNumeric(outputDocumentCount)) {
-            throw new Error("outputDocumentCount is not a numeric type");
-        }
-
-        if (!QueryMetricsUtils.isNumeric(indexHitDocumentCount)) {
-            throw new Error("indexHitDocumentCount is not a numeric type");
-        }
-
-        if (totalQueryExecutionTime == null) {
-            throw new Error("totalQueryExecutionTime is null or undefined");
-        }
-
-        if (queryPreparationTimes == null) {
-            throw new Error("queryPreparationTimes is null or undefined");
-        }
-
-        if (documentLoadTime == null) {
-            throw new Error("documentLoadTime is null or undefined");
-        }
-
-        if (vmExecutionTime == null) {
-            throw new Error("vmExecutionTime is null or undefined");
-        }
-
-        if (runtimeExecutionTimes == null) {
-            throw new Error("runtimeExecutionTimes is null or undefined");
-        }
-
-        if (documentWriteTime == null) {
-            throw new Error("documentWriteTime is null or undefined");
-        }
-
-        if (clientSideMetrics == null) {
-            throw new Error("clientSideMetrics is null or undefined");
-        }
-
-        this.retrievedDocumentCount = retrievedDocumentCount;
-        this.retrievedDocumentSize = retrievedDocumentSize;
-        this.outputDocumentCount = outputDocumentCount;
-        this.outputDocumentSize = outputDocumentSize;
-        this.indexHitDocumentCount = indexHitDocumentCount;
-        this.totalQueryExecutionTime = totalQueryExecutionTime;
-        this.queryPreparationTimes = queryPreparationTimes;
-        this.indexLookupTime = indexLookupTime;
-        this.documentLoadTime = documentLoadTime;
-        this.vmExecutionTime = vmExecutionTime;
-        this.runtimeExecutionTimes = runtimeExecutionTimes;
-        this.documentWriteTime = documentWriteTime;
-        this.clientSideMetrics = clientSideMetrics;
-    }
-
-    /**
-     * Gets the RetrievedDocumentCount
-     * @instance
-     * @ignore
-     */
-    public getRetrievedDocumentCount() {
-        return this.retrievedDocumentCount;
-    }
-
-    /**
-     * Gets the RetrievedDocumentSize
-     * @memberof QueryMetrics
-     * @instance
-     * @ignore
-     */
-    public getRetrievedDocumentSize() {
-        return this.retrievedDocumentSize;
-    }
-
-    /**
-     * Gets the OutputDocumentCount
-     * @memberof QueryMetrics
-     * @instance
-     * @ignore
-     */
-    public getOutputDocumentCount() {
-        return this.outputDocumentCount;
-    }
-
-    /**
-     * Gets the OutputDocumentSize
-     * @memberof QueryMetrics
-     * @instance
-     * @ignore
-     */
-    public getOutputDocumentSize() {
-        return this.outputDocumentSize;
-    }
-
-    /**
-     * Gets the IndexHitDocumentCount
-     * @memberof QueryMetrics
-     * @instance
-     * @ignore
-     */
-    public getIndexHitDocumentCount() {
-        return this.indexHitDocumentCount;
+        public readonly retrievedDocumentCount: number,
+        public readonly retrievedDocumentSize: number,
+        public readonly outputDocumentCount: number,
+        public readonly outputDocumentSize: number,
+        public readonly indexHitDocumentCount: number,
+        public readonly totalQueryExecutionTime: TimeSpan,
+        public readonly queryPreparationTimes: QueryPreparationTimes,
+        public readonly indexLookupTime: TimeSpan,
+        public readonly documentLoadTime: TimeSpan,
+        public readonly vmExecutionTime: TimeSpan,
+        public readonly runtimeExecutionTimes: RuntimeExecutionTimes,
+        public readonly documentWriteTime: TimeSpan,
+        public readonly clientSideMetrics: ClientSideMetrics) {
     }
 
     /**
@@ -149,94 +28,12 @@ export class QueryMetrics {
      * @instance
      * @ignore
      */
-    public getIndexHitRatio() {
+    public get indexHitRatio() {
         return this.retrievedDocumentCount === 0 ? 1 : this.indexHitDocumentCount / this.retrievedDocumentCount;
     }
 
     /**
-     * Gets the TotalQueryExecutionTime
-     * @memberof QueryMetrics
-     * @instance
-     * @ignore
-     */
-    public getTotalQueryExecutionTime() {
-        return this.totalQueryExecutionTime;
-    }
-
-    /**
-     * Gets the QueryPreparationTimes
-     * @memberof QueryMetrics
-     * @instance
-     * @ignore
-     */
-    public getQueryPreparationTimes() {
-        return this.queryPreparationTimes;
-    }
-
-    /**
-     * Gets the IndexLookupTime
-     * @memberof QueryMetrics
-     * @instance
-     * @ignore
-     */
-    public getIndexLookupTime() {
-        return this.indexLookupTime;
-    }
-
-    /**
-     * Gets the DocumentLoadTime
-     * @memberof QueryMetrics
-     * @instance
-     * @ignore
-     */
-    public getDocumentLoadTime() {
-        return this.documentLoadTime;
-    }
-
-    /**
-     * Gets the VmExecutionTime
-     * @memberof QueryMetrics
-     * @instance
-     * @ignore
-     */
-    public getVMExecutionTime() {
-        return this.vmExecutionTime;
-    }
-
-    /**
-     * Gets the RuntimeExecutionTimes
-     * @memberof QueryMetrics
-     * @instance
-     * @ignore
-     */
-    public getRuntimeExecutionTimes() {
-        return this.runtimeExecutionTimes;
-    }
-
-    /**
-     * Gets the DocumentWriteTime
-     * @memberof QueryMetrics
-     * @instance
-     * @ignore
-     */
-    public getDocumentWriteTime() {
-        return this.documentWriteTime;
-    }
-
-    /**
-     * Gets the ClientSideMetrics
-     * @memberof QueryMetrics
-     * @instance
-     * @ignore
-     */
-    public getClientSideMetrics() {
-        return this.clientSideMetrics;
-    }
-
-    /**
      * returns a new QueryMetrics instance that is the addition of this and the arguments.
-     * @memberof QueryMetrics
-     * @instances
      */
     public add(queryMetricsArray: QueryMetrics[]) {
         if (arguments == null || arguments.length === 0) {
@@ -293,7 +90,7 @@ export class QueryMetrics {
             vmExecutionTime,
             RuntimeExecutionTimes.createFromArray(runtimeExecutionTimesArray),
             documentWriteTime,
-            ClientSideMetrics.createFromArray(clientSideQueryMetricsArray));
+            ClientSideMetrics.createFromArray(...clientSideQueryMetricsArray));
     }
 
     /**
@@ -307,7 +104,7 @@ export class QueryMetrics {
             + QueryMetricsConstants.RetrievedDocumentSize + "=" + this.retrievedDocumentSize + ";"
             + QueryMetricsConstants.OutputDocumentCount + "=" + this.outputDocumentCount + ";"
             + QueryMetricsConstants.OutputDocumentSize + "=" + this.outputDocumentSize + ";"
-            + QueryMetricsConstants.IndexHitRatio + "=" + this.getIndexHitRatio() + ";"
+            + QueryMetricsConstants.IndexHitRatio + "=" + this.indexHitRatio + ";"
             + QueryMetricsConstants.TotalQueryExecutionTimeInMs +
             "=" + this.totalQueryExecutionTime.totalMilliseconds() + ";"
             + this.queryPreparationTimes.toDelimitedString() + ";"

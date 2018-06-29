@@ -3,77 +3,22 @@ import { QueryMetricsUtils } from "./queryMetricsUtils";
 import { TimeSpan } from "./timeSpan";
 
 export class RuntimeExecutionTimes {
-    private queryEngineExecutionTime: TimeSpan;
-    private systemFunctionExecutionTime: TimeSpan;
-    private userDefinedFunctionExecutionTime: TimeSpan;
     constructor(
-        queryEngineExecutionTime: TimeSpan, systemFunctionExecutionTime: TimeSpan,
-        userDefinedFunctionExecutionTime: TimeSpan) {
-        // Constructor
-
-        if (queryEngineExecutionTime == null) {
-            throw new Error("queryEngineExecutionTime is null or undefined");
-        }
-
-        if (systemFunctionExecutionTime == null) {
-            throw new Error("systemFunctionExecutionTime is null or undefined");
-        }
-
-        if (userDefinedFunctionExecutionTime == null) {
-            throw new Error("userDefinedFunctionExecutionTime is null or undefined");
-        }
-
-        this.queryEngineExecutionTime = queryEngineExecutionTime;
-        this.systemFunctionExecutionTime = systemFunctionExecutionTime;
-        this.userDefinedFunctionExecutionTime = userDefinedFunctionExecutionTime;
-    }
-
-    /**
-     * Gets the QueryEngineExecutionTime
-     * @memberof RuntimeExecutionTimes
-     * @instance
-     * @ignore
-     */
-    public getQueryEngineExecutionTime() {
-        return this.queryEngineExecutionTime;
-    }
-
-    /**
-     * Gets the SystemFunctionExecutionTime
-     * @memberof RuntimeExecutionTimes
-     * @instance
-     * @ignore
-     */
-    public getSystemFunctionExecutionTime() {
-        return this.systemFunctionExecutionTime;
-    }
-
-    /**
-     * Gets the UserDefinedFunctionExecutionTime
-     * @memberof RuntimeExecutionTimes
-     * @instance
-     * @ignore
-     */
-    public getUserDefinedFunctionExecutionTime() {
-        return this.userDefinedFunctionExecutionTime;
-    }
+        public readonly queryEngineExecutionTime: TimeSpan,
+        public readonly systemFunctionExecutionTime: TimeSpan,
+        public readonly userDefinedFunctionExecutionTime: TimeSpan) { }
 
     /**
      * returns a new RuntimeExecutionTimes instance that is the addition of this and the arguments.
-     * @memberof RuntimeExecutionTimes
-     * @instance
-     * @ignore
      */
-    public add(runtimeExecutionTimesArray: RuntimeExecutionTimes[]) {
+    public add(...runtimeExecutionTimesArray: RuntimeExecutionTimes[]) {
         if (arguments == null || arguments.length === 0) {
             throw new Error("arguments was null or empty");
         }
 
-        runtimeExecutionTimesArray.push(this);
-
-        let queryEngineExecutionTime = TimeSpan.zero;
-        let systemFunctionExecutionTime = TimeSpan.zero;
-        let userDefinedFunctionExecutionTime = TimeSpan.zero;
+        let queryEngineExecutionTime = this.queryEngineExecutionTime;
+        let systemFunctionExecutionTime = this.systemFunctionExecutionTime;
+        let userDefinedFunctionExecutionTime = this.userDefinedFunctionExecutionTime;
 
         for (const runtimeExecutionTimes of runtimeExecutionTimesArray) {
 
@@ -96,9 +41,6 @@ export class RuntimeExecutionTimes {
 
     /**
      * Output the RuntimeExecutionTimes as a delimited string.
-     * @memberof RuntimeExecutionTimes
-     * @instance
-     * @ignore
      */
     public toDelimitedString() {
         // tslint:disable-next-line:max-line-length
@@ -112,21 +54,17 @@ export class RuntimeExecutionTimes {
     /**
      * Returns a new instance of the RuntimeExecutionTimes class that is
      *  the aggregation of an array of RuntimeExecutionTimes.
-     * @memberof RuntimeExecutionTimes
-     * @instance
      */
     public static createFromArray(runtimeExecutionTimesArray: RuntimeExecutionTimes[]) {
         if (runtimeExecutionTimesArray == null) {
             throw new Error("runtimeExecutionTimesArray is null or undefined item(s)");
         }
 
-        return RuntimeExecutionTimes.zero.add(runtimeExecutionTimesArray);
+        return RuntimeExecutionTimes.zero.add(...runtimeExecutionTimesArray);
     }
 
     /**
      * Returns a new instance of the RuntimeExecutionTimes class this is deserialized from a delimited string.
-     * @memberof RuntimeExecutionTimes
-     * @instance
      */
     public static createFromDelimitedString(delimitedString: string) {
         const metrics = QueryMetricsUtils.parseDelimitedString(delimitedString);
