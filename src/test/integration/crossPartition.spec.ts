@@ -55,7 +55,7 @@ describe("Cross Partition", function () {
                         path: "/",
                         indexes: [
                             {
-                                kind: IndexKind.Hash,
+                                kind: IndexKind.Range,
                                 dataType: DataType.Number,
                             },
                             {
