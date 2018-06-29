@@ -25,7 +25,7 @@ describe("NodeJS CRUD Tests", function () {
             const database = await TestHelpers.getTestDatabase(client, "Validate user CRUD");
 
             // list users
-            const { result: users } = await database.users.read().toArray();
+            const { result: users } = await database.users.readAll().toArray();
             assert.equal(users.constructor, Array, "Value should be an array");
             const beforeCreateCount = users.length;
 
@@ -36,7 +36,7 @@ describe("NodeJS CRUD Tests", function () {
             let user = database.users.getUser(userDef.id);
 
             // list users after creation
-            const { result: usersAfterCreation } = await database.users.read().toArray();
+            const { result: usersAfterCreation } = await database.users.readAll().toArray();
             assert.equal(usersAfterCreation.length, beforeCreateCount + 1);
 
             // query users

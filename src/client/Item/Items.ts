@@ -21,9 +21,9 @@ export class Items {
         return this.client.queryDocuments(this.container.url, query, options) as QueryIterator<T>;
     }
 
-    public read(options?: FeedOptions): QueryIterator<any>;
-    public read<T>(options?: FeedOptions): QueryIterator<T>;
-    public read<T>(options?: FeedOptions): QueryIterator<T> {
+    public readAll(options?: FeedOptions): QueryIterator<any>;
+    public readAll<T>(options?: FeedOptions): QueryIterator<T>;
+    public readAll<T>(options?: FeedOptions): QueryIterator<T> {
         return this.client.readDocuments(this.container.url, options) as QueryIterator<T>;
     }
 

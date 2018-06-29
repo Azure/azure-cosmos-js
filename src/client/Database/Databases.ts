@@ -32,7 +32,7 @@ export class Databases {
         return this.client.documentClient.createDatabase(body, options);
     }
 
-    public read(options?: FeedOptions): QueryIterator<DatabaseDefinition> {
+    public readAll(options?: FeedOptions): QueryIterator<DatabaseDefinition> {
         return this.client.documentClient.readDatabases(options);
     }
 }

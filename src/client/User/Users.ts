@@ -19,7 +19,7 @@ export class Users {
         return this.client.documentClient.queryUsers(this.database.url, query, options);
     }
 
-    public read(options?: FeedOptions): QueryIterator<UserDefinition> {
+    public readAll(options?: FeedOptions): QueryIterator<UserDefinition> {
         return this.client.documentClient.readUsers(this.database.url, options);
     }
 

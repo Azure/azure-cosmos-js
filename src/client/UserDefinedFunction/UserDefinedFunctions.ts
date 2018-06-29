@@ -20,7 +20,7 @@ export class UserDefinedFunctions {
         return this.client.documentClient.queryUserDefinedFunctions(this.container.url, query, options);
     }
 
-    public read(options?: FeedOptions): QueryIterator<UserDefinedFunctionDefinition> {
+    public readAll(options?: FeedOptions): QueryIterator<UserDefinedFunctionDefinition> {
         return this.client.documentClient.readUserDefinedFunctions(this.container.url, options);
     }
 

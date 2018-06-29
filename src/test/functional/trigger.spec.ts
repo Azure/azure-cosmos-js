@@ -50,7 +50,7 @@ describe("NodeJS CRUD Tests", function () {
     describe("Validate Trigger CRUD", function () {
         it("nativeApi Should do trigger CRUD operations successfully name based", async function () {
             // read triggers
-            const { result: triggers } = await container.triggers.read().toArray();
+            const { result: triggers } = await container.triggers.readAll().toArray();
             assert.equal(Array.isArray(triggers), true);
 
             // create a trigger
@@ -72,7 +72,7 @@ describe("NodeJS CRUD Tests", function () {
             assert.equal(trigger.body, "serverScript() { var x = 10; }");
 
             // read triggers after creation
-            const { result: triggersAfterCreation } = await container.triggers.read().toArray();
+            const { result: triggersAfterCreation } = await container.triggers.readAll().toArray();
             assert.equal(triggersAfterCreation.length, beforeCreateTriggersCount + 1,
                 "create should increase the number of triggers");
 
@@ -114,7 +114,7 @@ describe("NodeJS CRUD Tests", function () {
 
         it("nativeApi Should do trigger CRUD operations successfully name based with upsert", async function () {
             // read triggers
-            const { result: triggers } = await container.triggers.read().toArray();
+            const { result: triggers } = await container.triggers.readAll().toArray();
             assert.equal(Array.isArray(triggers), true);
 
             // create a trigger
@@ -136,7 +136,7 @@ describe("NodeJS CRUD Tests", function () {
             assert.equal(trigger.body, "serverScript() { var x = 10; }");
 
             // read triggers after creation
-            const { result: triggersAfterCreation } = await container.triggers.read().toArray();
+            const { result: triggersAfterCreation } = await container.triggers.readAll().toArray();
             assert.equal(triggersAfterCreation.length, beforeCreateTriggersCount + 1,
                 "create should increase the number of triggers");
 

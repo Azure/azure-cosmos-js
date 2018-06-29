@@ -18,8 +18,8 @@ const collectionId = config.names.collection
 let dbLink;
 let collLink;
 
-const host = config.connection.endpoint;
-const masterkey = config.connection.authKey;
+const endpoint = config.connection.endpoint;
+const masterKey = config.connection.authKey;
 
 const getDocumentDefinitions = function () {
     const data = fs.readFileSync('../Shared/Data/Families.json', 'utf8');   
@@ -27,7 +27,7 @@ const getDocumentDefinitions = function () {
 };
 
 // Establish a new instance of the DocumentDBClient to be used throughout this demo
-var client = new CosmosClient( {endpoint: host, auth: { masterkey }});
+var client = new CosmosClient( {endpoint, auth: { masterKey }});
 
 //NOTE: 
 //when using the new IDBased Routing URIs, instead of the _self, as we 're doing in this sample
@@ -68,7 +68,7 @@ async function run() {
 
     //2. 
     console.log('\n2. listDocuments in collection \'' + collLink + '\'');
-    const {result: docs} = await container.items.read().toArray();
+    const {result: docs} = await container.items.readAll().toArray();
     
     for (const doc of docs) {
         console.log(doc.id);

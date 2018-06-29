@@ -15,7 +15,7 @@ export class Conflicts {
         return this.client.documentClient.queryConflicts(this.container.url, query, options);
     }
 
-    public read(options?: FeedOptions): QueryIterator<ConflictDefinition> {
+    public readAll(options?: FeedOptions): QueryIterator<ConflictDefinition> {
         return this.client.documentClient.readConflicts(this.container.url, options);
     }
 }

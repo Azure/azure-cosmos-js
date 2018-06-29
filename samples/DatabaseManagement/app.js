@@ -14,11 +14,11 @@ const CosmosClient = cosmos.CosmosClient;
 const config = require('../Shared/config')
 const databaseId = config.names.database
   
-const host = config.connection.endpoint;
-const masterkey = config.connection.authKey;
+const endpoint = config.connection.endpoint;
+const masterKey = config.connection.authKey;
 
 // Establish a new instance of the DocumentDBClient to be used throughout this demo
-const client = new CosmosClient({endpoint: host, auth: { masterkey }});
+const client = new CosmosClient({endpoint, auth: { masterKey }});
 
 //---------------------------------------------------------------------------------------------------
 // This demo performs the following CRUD operations on a Database
@@ -55,7 +55,7 @@ async function run() {
     
         // 3.
         console.log('\n3. listDatabases');
-        for (const {db} of await client.databases.read().forEach()) {
+        for (const {db} of await client.databases.readAll().forEach()) {
             console.log(db.id);
         }
     

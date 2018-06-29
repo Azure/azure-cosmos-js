@@ -23,7 +23,7 @@ describe("NodeJS CRUD Tests", function () {
         const databaseCRUDTest = async function () {
             try {
                 // read databases
-                const { result: databases } = await client.databases.read().toArray();
+                const { result: databases } = await client.databases.readAll().toArray();
                 assert.equal(databases.constructor, Array, "Value should be an array");
 
                 // create a database
@@ -33,7 +33,7 @@ describe("NodeJS CRUD Tests", function () {
                 assert.equal(db.id, databaseDefinition.id);
 
                 // read databases after creation
-                const { result: databases2 } = await client.databases.read().toArray();
+                const { result: databases2 } = await client.databases.readAll().toArray();
                 assert.equal(databases2.length, beforeCreateDatabasesCount + 1,
                     "create should increase the number of databases");
                 // query databases

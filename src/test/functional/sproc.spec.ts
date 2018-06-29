@@ -37,7 +37,7 @@ describe("NodeJS CRUD Tests", function () {
 
         it("nativeApi Should do sproc CRUD operations successfully with create/replace", async function () {
             // read sprocs
-            const { result: sprocs } = await container.storedProcedures.read().toArray();
+            const { result: sprocs } = await container.storedProcedures.readAll().toArray();
             assert.equal(sprocs.constructor, Array, "Value should be an array");
 
             // create a sproc
@@ -53,7 +53,7 @@ describe("NodeJS CRUD Tests", function () {
             assert.equal(sproc.body, "function () { const x = 10; }");
 
             // read sprocs after creation
-            const { result: sprocsAfterCreation } = await container.storedProcedures.read().toArray();
+            const { result: sprocsAfterCreation } = await container.storedProcedures.readAll().toArray();
             assert.equal(sprocsAfterCreation.length, beforeCreateSprocsCount + 1, "create should increase the number of sprocs");
 
             // query sprocs
@@ -89,7 +89,7 @@ describe("NodeJS CRUD Tests", function () {
 
         it("nativeApi Should do sproc CRUD operations successfully name based with upsert", async function () {
                    // read sprocs
-            const { result: sprocs } = await container.storedProcedures.read().toArray();
+            const { result: sprocs } = await container.storedProcedures.readAll().toArray();
             assert.equal(sprocs.constructor, Array, "Value should be an array");
 
             // create a sproc
@@ -106,7 +106,7 @@ describe("NodeJS CRUD Tests", function () {
             assert.equal(sproc.body, "function () { const x = 10; }");
 
             // read sprocs after creation
-            const { result: sprocsAfterCreation } = await container.storedProcedures.read().toArray();
+            const { result: sprocsAfterCreation } = await container.storedProcedures.readAll().toArray();
             assert.equal(sprocsAfterCreation.length, beforeCreateSprocsCount + 1, "create should increase the number of sprocs");
 
             // query sprocs

@@ -14,11 +14,11 @@ const config = require('../Shared/config')
 const databaseId = config.names.database
 const collectionId = config.names.collection
 
-var host = config.connection.endpoint;
-var masterkey = config.connection.authKey;
+var endpoint = config.connection.endpoint;
+var masterKey = config.connection.authKey;
 
 // Establish a new instance of the DocumentDBClient to be used throughout this demo
-var client = new CosmosClient({ endpoint: host, auth: { masterkey } });
+var client = new CosmosClient({ endpoint, auth: { masterKey } });
 
 //---------------------------------------------------------------------------------
 // This demo performs a few steps
@@ -41,7 +41,7 @@ async function run() {
 
     //2.
     console.log('\n2. listCollections in database');
-    const iterator = database.containers.read();
+    const iterator = database.containers.readAll();
     for (const {result} of await iterator.forEach()) {
         console.log(result.id);
     }

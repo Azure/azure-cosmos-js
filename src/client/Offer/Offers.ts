@@ -11,7 +11,7 @@ export class Offers {
         return this.client.documentClient.queryOffers(query, options);
     }
 
-    public read(options?: FeedOptions): QueryIterator<OfferDefinition> {
+    public readAll(options?: FeedOptions): QueryIterator<OfferDefinition> {
         return this.client.documentClient.readOffers(options);
     }
 }

@@ -19,7 +19,7 @@ export class StoredProcedures {
         return this.client.documentClient.queryStoredProcedures(this.container.url, query, options);
     }
 
-    public read(options?: FeedOptions): QueryIterator<StoredProcedureDefinition> {
+    public readAll(options?: FeedOptions): QueryIterator<StoredProcedureDefinition> {
         return this.client.documentClient.readStoredProcedures(this.container.url, options);
     }
 

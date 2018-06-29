@@ -48,7 +48,7 @@ describe("NodeJS CRUD Tests", function() {
         it("nativeApi Should do UDF CRUD operations successfully", async function() {
             const {
                 result: udfs,
-            } = await container.userDefinedFunctions.read().toArray();
+            } = await container.userDefinedFunctions.readAll().toArray();
 
             // create a udf
             const beforeCreateUdfsCount = udfs.length;
@@ -68,7 +68,7 @@ describe("NodeJS CRUD Tests", function() {
             // read udfs after creation
             const {
                 result: udfsAfterCreate,
-            } = await container.userDefinedFunctions.read().toArray();
+            } = await container.userDefinedFunctions.readAll().toArray();
             assert.equal(
                 udfsAfterCreate.length,
                 beforeCreateUdfsCount + 1,
@@ -141,7 +141,7 @@ describe("NodeJS CRUD Tests", function() {
         it("nativeApi Should do UDF CRUD operations successfully", async function() {
             const {
                 result: udfs,
-            } = await container.userDefinedFunctions.read().toArray();
+            } = await container.userDefinedFunctions.readAll().toArray();
 
             // create a udf
             const beforeCreateUdfsCount = udfs.length;
@@ -160,7 +160,7 @@ describe("NodeJS CRUD Tests", function() {
             // read udfs after creation
             const {
                 result: udfsAfterCreate,
-            } = await container.userDefinedFunctions.read().toArray();
+            } = await container.userDefinedFunctions.readAll().toArray();
             assert.equal(
                 udfsAfterCreate.length,
                 beforeCreateUdfsCount + 1,

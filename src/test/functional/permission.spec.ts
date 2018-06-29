@@ -29,7 +29,7 @@ describe("NodeJS CRUD Tests", function () {
                 const { result: userDef } = await container.database.users.create({ id: "new user" });
                 const user = container.database.users.getUser(userDef.id);
                 // list permissions
-                const { result: permissions } = await user.permissions.read().toArray();
+                const { result: permissions } = await user.permissions.readAll().toArray();
                 assert.equal(permissions.constructor, Array, "Value should be an array");
                 const beforeCreateCount = permissions.length;
                 const permissionDef: PermissionDefinition = {
@@ -45,7 +45,7 @@ describe("NodeJS CRUD Tests", function () {
                 assert.equal(createdPermission.id, "new permission", "permission name error");
 
                 // list permissions after creation
-                const { result: permissionsAfterCreation } = await user.permissions.read().toArray();
+                const { result: permissionsAfterCreation } = await user.permissions.readAll().toArray();
                 assert.equal(permissionsAfterCreation.length, beforeCreateCount + 1);
 
                 // query permissions
@@ -113,7 +113,7 @@ describe("NodeJS CRUD Tests", function () {
                 const user = container.database.users.getUser(userDef.id);
 
                 // list permissions
-                const { result: permissions } = await user.permissions.read().toArray();
+                const { result: permissions } = await user.permissions.readAll().toArray();
                 assert(Array.isArray(permissions), "Value should be an array");
                 const beforeCreateCount = permissions.length;
                 const permissionDefinition = {
@@ -133,7 +133,7 @@ describe("NodeJS CRUD Tests", function () {
                     "permission resource partition key error");
 
                 // list permissions after creation
-                const { result: permissionsAfterCreation } = await user.permissions.read().toArray();
+                const { result: permissionsAfterCreation } = await user.permissions.readAll().toArray();
                 assert.equal(permissionsAfterCreation.length, beforeCreateCount + 1);
 
                 // query permissions

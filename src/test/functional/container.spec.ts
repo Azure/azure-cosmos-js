@@ -46,7 +46,7 @@ describe("NodeJS CRUD Tests", function () {
                 assert.equal(JSON.stringify(containerDef.partitionKey),
                     JSON.stringify(containerDefinition.partitionKey));
                 // read containers after creation
-                const { result: containers } = await database.containers.read().toArray();
+                const { result: containers } = await database.containers.readAll().toArray();
 
                 assert.equal(containers.length, 1, "create should increase the number of containers");
                 // query containers

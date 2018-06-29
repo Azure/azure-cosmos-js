@@ -9,7 +9,7 @@ import { ContainerDefinition, PermissionDefinition, User, UserDefinition } from 
 export class TestHelpers {
     public static async removeAllDatabases(client: CosmosClient) {
         try {
-            const { result: databases } = await client.databases.read().toArray();
+            const { result: databases } = await client.databases.readAll().toArray();
             const length = databases.length;
 
             if (length === 0) {

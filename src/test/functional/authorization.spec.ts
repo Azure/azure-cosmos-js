@@ -87,7 +87,7 @@ describe("NodeJS CRUD Tests", function () {
         const authorizationCRUDTest = async function (isUpsertTest: boolean) {
             try {
                 const badclient = new CosmosClient({ endpoint, auth: undefined });
-                const { result: databases } = await badclient.databases.read().toArray();
+                const { result: databases } = await badclient.databases.readAll().toArray();
                 assert.fail("Must fail");
             } catch (err) {
                 assert(err !== undefined, "error should not be undefined");
@@ -124,7 +124,7 @@ describe("NodeJS CRUD Tests", function () {
             // 3. Success-- Use Col1 Permission to Read All Docs
             const { result: successDocuments } = await col1Client.databases.getDatabase(entities.db.id)
                 .containers.getContainer(entities.coll1.id)
-                .items.read().toArray();
+                .items.readAll().toArray();
             assert(successDocuments !== undefined, "error reading documents");
             assert.equal(successDocuments.length, 2, "Expected 2 Documents to be succesfully read");
 

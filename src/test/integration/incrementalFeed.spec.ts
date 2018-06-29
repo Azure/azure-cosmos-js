@@ -31,7 +31,7 @@ describe("NodeJS Incremental Feed Tests using 'a_im' and 'IfNoneMatch' options",
 
         it("should fetch updated documents only", async function () {
             let options: FeedOptions = { a_im: "Incremental feed" };
-            const query = container.items.read(options);
+            const query = container.items.readAll(options);
 
             const { result: document, headers } = await query.current();
             assert(headers.etag, "listDocuments response should have etag header");
@@ -50,7 +50,7 @@ describe("NodeJS Incremental Feed Tests using 'a_im' and 'IfNoneMatch' options",
                     condition: headers.etag,
                 },
             };
-            const { result: docs } = await container.items.read(options).toArray();
+            const { result: docs } = await container.items.readAll(options).toArray();
             assert.equal(docs.length, 1, "initial number of documents should be equal 1");
             assert.equal(docs[0].name, "xyz", "fetched document should have 'name: xyz'");
             assert.equal(docs[0].id, document.id, "fetched document should be valid");
@@ -73,7 +73,7 @@ describe("NodeJS Incremental Feed Tests using 'a_im' and 'IfNoneMatch' options",
 
         it("should fetch new documents only", async function () {
             let options: FeedOptions = { a_im: "Incremental feed" };
-            let query = container.items.read(options);
+            let query = container.items.readAll(options);
 
             let { result, headers } = await query.current();
             assert(headers.etag, "listDocuments response should have etag header");
@@ -87,7 +87,7 @@ describe("NodeJS Incremental Feed Tests using 'a_im' and 'IfNoneMatch' options",
                     condition: headers.etag,
                 },
             };
-            query = await container.items.read(options);
+            query = await container.items.readAll(options);
             ({ result, headers } = await query.current());
 
             assert.notDeepEqual(result, document, "actual should not match with expected value.");
@@ -96,12 +96,12 @@ describe("NodeJS Incremental Feed Tests using 'a_im' and 'IfNoneMatch' options",
 
             options.accessCondition.condition = headers.etag;
 
-            const { result: results } = await container.items.read(options).toArray();
+            const { result: results } = await container.items.readAll(options).toArray();
             assert.equal(results.length, 0, "should be nothing new");
 
             await container.items.create({ id: "doc3" });
             await container.items.create({ id: "doc4" });
-            const { result: docs } = await container.items.read(options).toArray();
+            const { result: docs } = await container.items.readAll(options).toArray();
             assert.equal(docs.length, 2, "there should be 2 results");
         });
     });

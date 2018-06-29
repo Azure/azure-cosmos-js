@@ -36,7 +36,7 @@ describe("NodeJS CRUD Tests", function () {
                 const container: Container = db.containers.getContainer(containerdef.id);
 
                 // read items
-                const { result: items } = await container.items.read().toArray();
+                const { result: items } = await container.items.readAll().toArray();
                 assert(Array.isArray(items), "Value should be an array");
 
                 // create an item
@@ -59,7 +59,7 @@ describe("NodeJS CRUD Tests", function () {
                 assert.equal(document.name, itemDefinition.name);
                 assert(document.id !== undefined);
                 // read documents after creation
-                const { result: documents2 } = await container.items.read().toArray();
+                const { result: documents2 } = await container.items.readAll().toArray();
                 assert.equal(documents2.length, beforeCreateDocumentsCount + 1,
                     "create should increase the number of documents");
                 // query documents
@@ -140,7 +140,7 @@ describe("NodeJS CRUD Tests", function () {
                     return doc1.id.localeCompare(doc2.id);
                 });
                 await TestHelpers.bulkReadItems(container, returnedDocuments, partitionKey);
-                const { result: successDocuments } = await container.items.read().toArray();
+                const { result: successDocuments } = await container.items.readAll().toArray();
                 assert(successDocuments !== undefined, "error reading documents");
                 assert.equal(successDocuments.length, returnedDocuments.length,
                     "Expected " + returnedDocuments.length + " documents to be succesfully read");

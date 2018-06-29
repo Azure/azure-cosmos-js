@@ -36,7 +36,7 @@ describe("RU Per Minute", function () {
         };
 
         await database.containers.create(containerDefinition, options);
-        const { result: offers } = await client.offers.read().toArray();
+        const { result: offers } = await client.offers.readAll().toArray();
         assert.equal(offers.length, 1);
         const offer = offers[0];
 
@@ -56,7 +56,7 @@ describe("RU Per Minute", function () {
         };
 
         await database.containers.create(collectionDefinition, options);
-        const { result: offers } = await client.offers.read().toArray();
+        const { result: offers } = await client.offers.readAll().toArray();
         assert.equal(offers.length, 1);
         const offer = offers[0];
 
