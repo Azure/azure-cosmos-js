@@ -14,7 +14,6 @@ describe("ResourceLink Trimming of leading and trailing slashes", function () {
     const client = new CosmosClient({ endpoint, auth: { masterKey } });
     const containerId = "testcontainer";
 
-    afterEach(async function () { await TestHelpers.removeAllDatabases(client); });
     beforeEach(async function () { await TestHelpers.removeAllDatabases(client); });
 
     it("validate correct execution of query using named container link with leading and trailing slashes"

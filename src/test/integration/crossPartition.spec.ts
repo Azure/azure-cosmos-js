@@ -13,16 +13,6 @@ const endpoint = testConfig.host;
 const masterKey = testConfig.masterKey;
 const client = new CosmosClient({ endpoint, auth: { masterKey } });
 
-process.on("unhandledRejection", (error) => {
-    if (error.body) {
-        try {
-            error.body = JSON.parse(error.body);
-        } catch (err) { /* NO OP */ }
-    }
-    console.error(new Error("Unhandled exception found"));
-    console.error(JSON.stringify(error, null, " "));
-});
-
 describe("Cross Partition", function () {
     this.timeout(process.env.MOCHA_TIMEOUT || "30000");
     const generateDocuments = function (docSize: number) {

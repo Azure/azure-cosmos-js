@@ -28,7 +28,6 @@ describe("NodeJS CRUD Tests", function () {
     let container: Container;
 
     beforeEach(async function () {
-        this.timeout(10000);
         // remove all databases from the endpoint before each test
         await TestHelpers.removeAllDatabases(client);
 

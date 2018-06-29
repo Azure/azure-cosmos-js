@@ -12,7 +12,7 @@ const masterKey = testConfig.masterKey;
 // TODO: there is alot of leaky document client stuff here that will make removing document client hard
 
 describe("Session Token", function () {
-    this.timeout(10000);
+    this.timeout(process.env.MOCHA_TIMEOUT || 20000);
     const client = new CosmosClient({ endpoint, auth: { masterKey }, consistencyLevel: ConsistencyLevel.Session });
     const databaseId = "sessionTestDB";
     const containerId = "sessionTestColl";
@@ -166,8 +166,7 @@ describe("Session Token", function () {
         });
         const applySessionTokenStub = sinon.stub(client.documentClient, "applySessionToken").callsFake(callbackSpy);
         try {
-            const { result: document11 } =
-                await container.items.get("1").read({ partitionKey: "1" });
+            await container.items.get("1").read({ partitionKey: "1" });
             assert.fail("readDocument must throw");
         } catch (err) {
             assert.equal(err.substatus, 1002, "Substatus should indicate the LSN didn't catchup.");
