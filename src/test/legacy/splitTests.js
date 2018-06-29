@@ -23,12 +23,12 @@ SOFTWARE.
 
 "use strict";
 
-var lib = require("../..//"),
+var lib = require("../../../../../"),
     assert = require("assert"),
     testConfig = require("./_testConfig"),
     Stream = require("stream"),
     util = require("util"),
-    HeaderUtils = require("../..//queryExecutionContext/headerUtils"), // TODO: shouldn't be using the direct path, use lib.HeaderUtils
+    HeaderUtils = require("../../../../../queryExecutionContext/headerUtils"), // TODO: shouldn't be using the direct path, use lib.HeaderUtils
     spawn = require("child_process").spawnSync,
     exec = require("child_process").execFileSync,
     _ = require('underscore');

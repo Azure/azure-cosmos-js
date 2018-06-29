@@ -23,10 +23,10 @@ SOFTWARE.
 
 "use strict";
 
-var lib = require("../..//"),
+var lib = require("../../../../../"),
     assert = require("assert"),
     testConfig = require("./_testConfig"),
-    UriFactory = require("../..//").UriFactory, // TODO: Shouldn't be using direct path
+    UriFactory = require("../../../../../").UriFactory, // TODO: Shouldn't be using direct path
     DocumentDBClient = lib.DocumentClient;
 
 var host = testConfig.host;
