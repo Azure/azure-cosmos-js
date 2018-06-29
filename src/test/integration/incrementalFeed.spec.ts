@@ -17,7 +17,7 @@ describe("NodeJS Incremental Feed Tests using 'a_im' and 'IfNoneMatch' options",
     describe("Newly updated documents should be fetched incremetally", function () {
         let container: Container;
 
-        // create collection and two documents
+        // create container and two documents
         before(async function () {
             container = await TestHelpers.getTestContainer(
                 client, "Newly updated documents should be fetched incrementally");
@@ -60,7 +60,7 @@ describe("NodeJS Incremental Feed Tests using 'a_im' and 'IfNoneMatch' options",
     describe("Newly created documents should be fetched incrementally", async function () {
         let container: Container;
 
-        // create collection and one document
+        // create container and one document
         before(async function () {
             container = await TestHelpers.getTestContainer(
                 client, "Newly updated documents should be fetched incrementally");

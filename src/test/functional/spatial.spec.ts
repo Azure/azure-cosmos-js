@@ -25,7 +25,7 @@ describe("NodeJS CRUD Tests", function () {
                 // create database
                 const database: Database = await TestHelpers.getTestDatabase(client, "validate spatial index");
 
-                // create collection using an indexing policy with spatial index.
+                // create container using an indexing policy with spatial index.
                 const indexingPolicy = {
                     includedPaths: [
                         {

@@ -18,10 +18,10 @@ export class Databases {
     /**
      * Send a request for creating a database.
      * <p>
-     *  A database manages users, permissions and a set of collections.  <br>
+     *  A database manages users, permissions and a set of containers.  <br>
      *  Each Azure Cosmos DB Database Account is able to support multiple independent named databases,\
      *  with the database being the logical container for data. <br>
-     *  Each Database consists of one or more collections, each of which in turn contain one or more \
+     *  Each Database consists of one or more containers, each of which in turn contain one or more \
      *  documents. Since databases are an an administrative resource, the Service Master Key will be \
      * required in order to access and successfully complete any action using the User APIs. <br>
      * </p>

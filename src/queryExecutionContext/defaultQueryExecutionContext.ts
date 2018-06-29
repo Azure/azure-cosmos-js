@@ -1,8 +1,9 @@
 import { IExecutionContext } from ".";
 import { Constants } from "../common";
 import { DocumentClient } from "../documentclient";
-import { Response } from "../request/request";
-import { SqlQuerySpec } from "./SqlQuerySpec";
+import { ClientSideMetrics, QueryMetrics } from "../queryMetrics";
+import { Response } from "../request";
+import { SqlParameter, SqlQuerySpec } from "./SqlQuerySpec";
 
 export type FetchFunctionCallback = (options: any) => Promise<Response<any>>;
 
@@ -82,15 +83,15 @@ export class DefaultQueryExecutionContext implements IExecutionContext {
             if (this.resources.length === 0) {
                 if (!this.continuation && this.currentPartitionIndex >= this.fetchFunctions.length) {
                     this.state = DefaultQueryExecutionContext.STATES.ended;
-                    return {result: undefined, headers};
+                    return { result: undefined, headers };
                 } else {
                     return this.current();
                 }
             }
-            return {result: this.resources[this.currentIndex], headers};
+            return { result: this.resources[this.currentIndex], headers };
         } else {
             this.state = DefaultQueryExecutionContext.STATES.ended;
-            return {result: undefined, headers: undefined};
+            return { result: undefined, headers: undefined };
         }
     }
 
@@ -149,7 +150,37 @@ export class DefaultQueryExecutionContext implements IExecutionContext {
         this.state = DefaultQueryExecutionContext.STATES.inProgress;
         this.currentIndex = 0;
         this.options.continuation = originalContinuation;
-        return {result: resources, headers: responseHeaders};
+
+        // deserializing query metrics so that we aren't working with delimited strings in the rest of the code base
+        if (Constants.HttpHeaders.QueryMetrics in responseHeaders) {
+            const delimitedString = responseHeaders[Constants.HttpHeaders.QueryMetrics];
+            let queryMetrics = QueryMetrics.createFromDelimitedString(delimitedString);
+
+            // Add the request charge to the query metrics so that we can have per partition request charge.
+            if (Constants.HttpHeaders.RequestCharge in responseHeaders) {
+                queryMetrics = new QueryMetrics(
+                    queryMetrics.retrievedDocumentCount,
+                    queryMetrics.retrievedDocumentSize,
+                    queryMetrics.outputDocumentCount,
+                    queryMetrics.outputDocumentSize,
+                    queryMetrics.indexHitDocumentCount,
+                    queryMetrics.totalQueryExecutionTime,
+                    queryMetrics.queryPreparationTimes,
+                    queryMetrics.indexLookupTime,
+                    queryMetrics.documentLoadTime,
+                    queryMetrics.vmExecutionTime,
+                    queryMetrics.runtimeExecutionTimes,
+                    queryMetrics.documentWriteTime,
+                    new ClientSideMetrics(responseHeaders[Constants.HttpHeaders.RequestCharge]));
+            }
+
+            // Wraping query metrics in a object where the key is '0' just so single partition
+            // and partition queries have the same response schema
+            responseHeaders[Constants.HttpHeaders.QueryMetrics] = {};
+            responseHeaders[Constants.HttpHeaders.QueryMetrics]["0"] = queryMetrics;
+        }
+
+        return { result: resources, headers: responseHeaders };
     }
 
     private _canFetchMore() {

@@ -38,7 +38,7 @@ describe("Cross Partition", function () {
         const documentDefinitions = generateDocuments(20);
 
         const containerDefinition: ContainerDefinition = {
-            id: "sample collection",
+            id: "sample container",
             indexingPolicy: {
                 includedPaths: [
                     {
@@ -70,7 +70,7 @@ describe("Cross Partition", function () {
         // - removes all the databases,
         // - creates a new database,
         // - creates a new collecton,
-        // - bulk inserts documents to the collection
+        // - bulk inserts documents to the container
         before(async function () {
             await TestHelpers.removeAllDatabases(client);
             container = await TestHelpers.getTestContainer(
@@ -213,7 +213,7 @@ describe("Cross Partition", function () {
                     // I don't think this code is ever called, which means we're missing tests or should delete it.
                     throw new Error("Not yet implemented");
                     // return validateExecuteNextWithGivenContinuationToken(
-                    //     collectionLink, query, options, listOfResultPages, listOfHeaders);
+                    //     containerLink, query, options, listOfResultPages, listOfHeaders);
                 }
             } catch (err) {
                 throw err;
@@ -239,11 +239,27 @@ describe("Cross Partition", function () {
             validateResults(results, expectedOrderIds);
         };
 
+        const validateQueryMetrics = async function (queryIterator: QueryIterator<any>) {
+            try {
+                while (queryIterator.hasMoreResults()) {
+                    const { result: results, headers } = await queryIterator.executeNext();
+                    if (results === undefined) {
+                        break;
+                    }
+
+                    assert.notEqual(headers[Constants.HttpHeaders.QueryMetrics], null);
+                }
+            } catch (err) {
+                throw err;
+            }
+        };
+
         const executeQueryAndValidateResults =
             async function (
                 query: string | SqlQuerySpec, options: any,
                 expectedOrderIds: any[], validateExecuteNextWithContinuationToken?: boolean) {
 
+                options.populateQueryMetrics = true;
                 validateExecuteNextWithContinuationToken = validateExecuteNextWithContinuationToken || false;
                 const queryIterator = container.items.query(query, options);
 
@@ -254,6 +270,7 @@ describe("Cross Partition", function () {
                 queryIterator.reset();
                 await validateNextItemAndCurrentAndHasMoreResults(queryIterator, expectedOrderIds);
                 await validateForEach(queryIterator, expectedOrderIds);
+                await validateQueryMetrics(queryIterator);
             };
 
         const requestChargeValidator = async function (queryIterator: QueryIterator<any>) {
@@ -297,7 +314,10 @@ describe("Cross Partition", function () {
         it("Validate Parallel Query As String With maxDegreeOfParallelism: -1", async function () {
             // simple order by query in string format
             const query = "SELECT * FROM root r";
-            const options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: -1 };
+            const options = {
+                enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: -1,
+                populateQueryMetrics: true,
+            };
 
             // prepare expected results
             const getOrderByKey = function (r: any) {

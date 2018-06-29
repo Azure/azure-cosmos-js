@@ -29,7 +29,7 @@ describe("NodeJS CRUD Tests", function () {
         it.skip("CRUD operations", async function () {
             // TODO Figure out how/if we should expose partition resolver
 
-            // const getPartitionResolver = function (collectionLink1: any, collectionLink2: any) {
+            // const getPartitionResolver = function (containerLink1: any, collectionLink2: any) {
             //     return new HashPartitionResolver("id", [collectionLink1, collectionLink2]);
             // };
             // const querySpec = {

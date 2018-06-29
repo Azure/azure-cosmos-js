@@ -44,9 +44,9 @@ export class StoredProcedures {
      * Upsert a StoredProcedure.
      * <p>
      * Azure Cosmos DB allows stored procedures to be executed in the storage tier,
-     * directly against a document collection. The script <br>
+     * directly against a document container. The script <br>
      * gets executed under ACID transactions on the primary storage partition of the
-     *  specified collection. For additional details, <br>
+     *  specified container. For additional details, <br>
      * refer to the server-side JavaScript API documentation.
      * </p>
      */

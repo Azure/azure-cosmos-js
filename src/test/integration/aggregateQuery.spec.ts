@@ -57,7 +57,7 @@ describe.skip("NodeJS Aggregate Query Tests", async function () {
         // - removes all the databases,
         //  - creates a new database,
         //      - creates a new collecton,
-        //          - bulk inserts documents to the collection
+        //          - bulk inserts documents to the container
         before(async function () {
             await TestHelpers.removeAllDatabases(client);
             container = await TestHelpers.getTestContainer(

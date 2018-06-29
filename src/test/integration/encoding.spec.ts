@@ -27,21 +27,21 @@ describe("Create And Read Validation", function () {
         try {
             // Create Database
             const database = await TestHelpers.getTestDatabase(client, databaseId);
-            const collectionBody = {
+            const containerBody = {
                 id: "डेटाबेस پایگاه داده 数据库" + dateTime.getTime(),
                 indexingPolicy: { indexingMode: IndexingMode.Lazy }, // Modes : Lazy, Consistent
             };
 
-            // Create a collection inside the database
-            const { result: containerDef } = await database.containers.create(collectionBody);
+            // Create a container inside the database
+            const { result: containerDef } = await database.containers.create(containerBody);
             const container = database.containers.get(containerDef.id);
-            assert.equal(containerDef.id, collectionBody.id, "invalid collection Id");
+            assert.equal(containerDef.id, containerBody.id, "invalid container Id");
 
-            // Add the document in the collection
+            // Add the document in the container
             const { result: doc } = await container.items.create(testDoc);
             assert.equal(doc.id, testDoc.id, "invalid document Id");
 
-            // Read the collection and see if it matches to the initial document
+            // Read the container and see if it matches to the initial document
             const { result: resultDoc } = await container.items.get(doc.id)
                 .read<{ id: string, content: string }>();
             assert.equal(testDoc.content, resultDoc.content, "read document result is different from initial document");

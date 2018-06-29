@@ -5,7 +5,7 @@ import * as tunnel from "tunnel";
 import * as url from "url";
 import * as util from "util";
 import { Base, ResponseCallback } from "./base";
-import { Constants, Helper, Platform } from "./common";
+import { Constants, Helper, Platform, StatusCodes, SubStatusCodes } from "./common";
 import { DocumentClientBase } from "./DocumentClientBase";
 import {
     ConnectionPolicy, ConsistencyLevel, DatabaseAccount, Document, PartitionKey, QueryCompatibilityMode,
@@ -13,14 +13,10 @@ import {
 import { GlobalEndpointManager } from "./globalEndpointManager";
 import { FetchFunctionCallback, IHeaders, SqlQuerySpec } from "./queryExecutionContext";
 import { QueryIterator } from "./queryIterator";
-import { FeedOptions } from "./request/FeedOptions";
-import { MediaOptions } from "./request/MediaOptions";
-import { RequestHandler, Response } from "./request/request";
-import { RequestOptions } from "./request/RequestOptions";
+import { ErrorResponse, FeedOptions, MediaOptions, RequestHandler, RequestOptions, Response } from "./request";
 import { RetryOptions } from "./retry";
 import { SessionContainer } from "./sessionContainer";
 
-/** @hidden */
 export class DocumentClient extends DocumentClientBase {
     constructor(
         public urlConnection: string,
@@ -619,7 +615,7 @@ export class DocumentClient extends DocumentClientBase {
                 this.applySessionToken(path, reqHeaders);
 
                 const { result, headers: resHeaders } = await documentclient.get(readEndpoint, request, reqHeaders);
-                this.captureSessionToken(path, Constants.OperationTypes.Query, reqHeaders, resHeaders);
+                this.captureSessionToken(undefined, path, Constants.OperationTypes.Query, resHeaders);
                 return this.processQueryFeedResponse({ result, headers: resHeaders }, !!query, resultFn, createFn);
             } else {
                 initialHeaders[Constants.HttpHeaders.IsQuery] = "true";
@@ -644,7 +640,7 @@ export class DocumentClient extends DocumentClientBase {
                 const response =
                     await documentclient.post(readEndpoint, request, query, reqHeaders);
                 const { result, headers: resHeaders } = response;
-                this.captureSessionToken(path, Constants.OperationTypes.Query, reqHeaders, resHeaders);
+                this.captureSessionToken(undefined, path, Constants.OperationTypes.Query, resHeaders);
                 return this.processQueryFeedResponse({ result, headers: resHeaders }, !!query, resultFn, createFn);
             }
 
@@ -1556,9 +1552,10 @@ export class DocumentClient extends DocumentClientBase {
 
             const writeEndpoint = await this._globalEndpointManager.getWriteEndpoint();
             const { result, headers: resHeaders } = await this.post(writeEndpoint, path, body, requestHeaders);
-            this.captureSessionToken(path, Constants.OperationTypes.Create, requestHeaders, resHeaders);
+            this.captureSessionToken(undefined, path, Constants.OperationTypes.Create, resHeaders);
             return Base.ResponseOrCallback(callback, { result, headers: resHeaders });
         } catch (err) {
+            this.captureSessionToken(err, path, Constants.OperationTypes.Upsert, (err as ErrorResponse).headers);
             Base.ThrowOrCallback(callback, err);
         }
     }
@@ -1578,9 +1575,10 @@ export class DocumentClient extends DocumentClientBase {
             // upsert will use WriteEndpoint since it uses POST operation
             const writeEndpoint = await this._globalEndpointManager.getWriteEndpoint();
             const { result, headers: resHeaders } = await this.post(writeEndpoint, path, body, requestHeaders);
-            this.captureSessionToken(path, Constants.OperationTypes.Upsert, requestHeaders, resHeaders);
+            this.captureSessionToken(undefined, path, Constants.OperationTypes.Upsert, resHeaders);
             return Base.ResponseOrCallback(callback, { result, headers: resHeaders });
         } catch (err) {
+            this.captureSessionToken(err, path, Constants.OperationTypes.Upsert, (err as ErrorResponse).headers);
             Base.ThrowOrCallback(callback, err);
         }
     }
@@ -1603,9 +1601,10 @@ export class DocumentClient extends DocumentClientBase {
             // replace will use WriteEndpoint since it uses PUT operation
             const writeEndpoint = await this._globalEndpointManager.getWriteEndpoint();
             const result = await this.put(writeEndpoint, path, resource, reqHeaders);
-            this.captureSessionToken(path, Constants.OperationTypes.Replace, reqHeaders, result.headers);
+            this.captureSessionToken(undefined, path, Constants.OperationTypes.Replace, result.headers);
             return Base.ResponseOrCallback(callback, result);
         } catch (err) {
+            this.captureSessionToken(err, path, Constants.OperationTypes.Upsert, (err as ErrorResponse).headers);
             Base.ThrowOrCallback(callback, err);
         }
     }
@@ -1633,9 +1632,10 @@ export class DocumentClient extends DocumentClientBase {
             // read will use ReadEndpoint since it uses GET operation
             const readEndpoint = await this._globalEndpointManager.getReadEndpoint();
             const response = await this.get(readEndpoint, request, requestHeaders);
-            this.captureSessionToken(path, Constants.OperationTypes.Read, requestHeaders, response.headers);
+            this.captureSessionToken(undefined, path, Constants.OperationTypes.Read, response.headers);
             return response;
         } catch (err) {
+            this.captureSessionToken(err, path, Constants.OperationTypes.Upsert, (err as ErrorResponse).headers);
             throw err;
         }
     }
@@ -1658,13 +1658,14 @@ export class DocumentClient extends DocumentClientBase {
             const writeEndpoint = await this._globalEndpointManager.getWriteEndpoint();
             const response = await this.delete(writeEndpoint, path, reqHeaders);
             if (Base.parseLink(path).type !== "colls") {
-                this.captureSessionToken(path, Constants.OperationTypes.Delete, reqHeaders, response.headers);
+                this.captureSessionToken(undefined, path, Constants.OperationTypes.Delete, response.headers);
             } else {
                 this.clearSessionToken(path);
             }
             return Base.ResponseOrCallback(callback, response);
 
         } catch (err) {
+            this.captureSessionToken(err, path, Constants.OperationTypes.Upsert, (err as ErrorResponse).headers);
             Base.ThrowOrCallback(callback, err);
         }
     }
@@ -1837,7 +1838,7 @@ export class DocumentClient extends DocumentClientBase {
                 `The "headers" parameter must be an instance of "Object". Actual type is: "${typeof headers}".`);
         }
 
-        headers[Constants.HttpHeaders.IsUpsert] = true;
+        (headers as IHeaders)[Constants.HttpHeaders.IsUpsert] = true;
     }
 
     /**
@@ -1881,10 +1882,15 @@ export class DocumentClient extends DocumentClientBase {
         }
     }
 
-    public captureSessionToken(path: string, opType: string, reqHeaders: IHeaders, resHeaders: IHeaders) {
+    public captureSessionToken(err: ErrorResponse, path: string, opType: string, resHeaders: IHeaders) {
         const request: any = this.getSessionParams(path); // TODO: any request
         request.operationType = opType;
-        this.sessionContainer.setSessionToken(request, reqHeaders, resHeaders);
+        if (!err ||
+            ((!this.isMasterResource(request.resourceType)) &&
+                (err.code === StatusCodes.PreconditionFailed || err.code === StatusCodes.Conflict ||
+                    (err.code === StatusCodes.NotFound && err.substatus !== SubStatusCodes.ReadSessionNotAvailable)))) {
+            this.sessionContainer.setSessionToken(request, resHeaders);
+        }
     }
 
     public clearSessionToken(path: string) {
@@ -1910,6 +1916,21 @@ export class DocumentClient extends DocumentClientBase {
             resourceAddress,
             resourceType,
         };
+    }
+
+    public isMasterResource(resourceType: string): boolean {
+        if (resourceType === Constants.Path.OffersPathSegment ||
+            resourceType === Constants.Path.DatabasesPathSegment ||
+            resourceType === Constants.Path.UsersPathSegment ||
+            resourceType === Constants.Path.PermissionsPathSegment ||
+            resourceType === Constants.Path.TopologyPathSegment ||
+            resourceType === Constants.Path.DatabaseAccountPathSegment ||
+            resourceType === Constants.Path.PartitionKeyRangesPathSegment ||
+            resourceType === Constants.Path.CollectionsPathSegment) {
+            return true;
+        }
+
+        return false;
     }
 }
 

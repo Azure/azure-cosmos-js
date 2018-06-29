@@ -153,7 +153,7 @@ describe("NodeJS CRUD Tests", function () {
             }
         });
 
-        it("nativeApi Collection with bad partition key definition name based", async function () {
+        it("nativeApi container with bad partition key definition name based", async function () {
             try {
                 await badPartitionKeyDefinitionTest(true);
             } catch (err) {
@@ -161,7 +161,7 @@ describe("NodeJS CRUD Tests", function () {
             }
         });
 
-        it("nativeApi Collection with bad partition key definition name based", async function () {
+        it("nativeApi container with bad partition key definition name based", async function () {
             try {
                 await badPartitionKeyDefinitionTest(false);
             } catch (err) {
@@ -198,19 +198,19 @@ describe("NodeJS CRUD Tests", function () {
 
                 await lazyContainer.delete();
 
-                const consistentCollectionDefinition: ContainerDefinition = {
+                const consistentcontainerDefinition: ContainerDefinition = {
                     id: "lazy container",
                     indexingPolicy: { indexingMode: DocumentBase.IndexingMode.Consistent },
                 };
                 const { result: consistentContainerDef } =
-                    await database.containers.create(consistentCollectionDefinition);
+                    await database.containers.create(consistentcontainerDefinition);
                 const consistentContainer = database.containers.get(consistentContainerDef.id);
                 assert.equal(containerDef.indexingPolicy.indexingMode,
                     DocumentBase.IndexingMode.Consistent, "indexing mode should be consistent");
                 await consistentContainer.delete();
 
                 const containerDefinition: ContainerDefinition = {
-                    id: "CollectionWithIndexingPolicy",
+                    id: "containerWithIndexingPolicy",
                     indexingPolicy: {
                         automatic: true,
                         indexingMode: DocumentBase.IndexingMode.Consistent,
@@ -385,10 +385,10 @@ describe("NodeJS CRUD Tests", function () {
     });
 
     describe("Validate response headers", function () {
-        const createThenReadCollection = async function (database: Database, body: ContainerDefinition) {
+        const createThenReadcontainer = async function (database: Database, body: ContainerDefinition) {
             try {
-                const { result: createdCollection, headers } = await database.containers.create(body);
-                const response = await database.containers.get(createdCollection.id).read();
+                const { result: createdcontainer, headers } = await database.containers.create(body);
+                const response = await database.containers.get(createdcontainer.id).read();
                 return response;
             } catch (err) {
                 throw err;
@@ -398,7 +398,7 @@ describe("NodeJS CRUD Tests", function () {
         const indexProgressHeadersTest = async function () {
             try {
                 const database = await TestHelpers.getTestDatabase(client, "Validate response headers");
-                const { headers: headers1 } = await createThenReadCollection(database, { id: "consistent_coll" });
+                const { headers: headers1 } = await createThenReadcontainer(database, { id: "consistent_coll" });
                 assert.notEqual(headers1[Constants.HttpHeaders.IndexTransformationProgress], undefined);
                 assert.equal(headers1[Constants.HttpHeaders.LazyIndexingProgress], undefined);
 
@@ -406,7 +406,7 @@ describe("NodeJS CRUD Tests", function () {
                     id: "lazy_coll",
                     indexingPolicy: { indexingMode: DocumentBase.IndexingMode.Lazy },
                 };
-                const { headers: headers2 } = await createThenReadCollection(database, lazyContainerDefinition);
+                const { headers: headers2 } = await createThenReadcontainer(database, lazyContainerDefinition);
                 assert.notEqual(headers2[Constants.HttpHeaders.IndexTransformationProgress], undefined);
                 assert.notEqual(headers2[Constants.HttpHeaders.LazyIndexingProgress], undefined);
 
@@ -414,7 +414,7 @@ describe("NodeJS CRUD Tests", function () {
                     id: "none_coll",
                     indexingPolicy: { indexingMode: DocumentBase.IndexingMode.None, automatic: false },
                 };
-                const { headers: headers3 } = await createThenReadCollection(database, noneContainerDefinition);
+                const { headers: headers3 } = await createThenReadcontainer(database, noneContainerDefinition);
                 assert.notEqual(headers3[Constants.HttpHeaders.IndexTransformationProgress], undefined);
                 assert.equal(headers3[Constants.HttpHeaders.LazyIndexingProgress], undefined);
             } catch (err) {

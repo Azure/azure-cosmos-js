@@ -104,6 +104,14 @@ export class Base {
             headers[Constants.HttpHeaders.EnableCrossPartitionQuery] = opts.enableCrossPartitionQuery;
         }
 
+        if (opts.populateQuotaInfo) {
+            headers[Constants.HttpHeaders.PopulateQuotaInfo] = opts.populateQuotaInfo;
+        }
+
+        if (opts.populateQueryMetrics) {
+            headers[Constants.HttpHeaders.PopulateQueryMetrics] = opts.populateQueryMetrics;
+        }
+
         if (opts.maxDegreeOfParallelism !== undefined) {
             headers[Constants.HttpHeaders.ParallelizeCrossPartitionQuery] = true;
         }
@@ -112,7 +120,7 @@ export class Base {
             headers[Constants.HttpHeaders.PopulateQuotaInfo] = true;
         }
 
-        // If the user is not using partition resolver, we add options.partitonKey to the header for elastic collections
+        // If the user is not using partition resolver, we add options.partitonKey to the header for elastic containers
         if ((documentClient as any).partitionResolver === undefined // TODO: paritionResolver does not exist
             || (documentClient as any).partitionResolver === null) {
             if (opts.partitionKey !== undefined) {
