@@ -28,7 +28,7 @@ describe("NodeJS CRUD Tests", function () {
         const queriesCRUDTest = async function () {
             try {
                 // create a database
-                const databaseDefinition = { id: "sample database" };
+                const databaseDefinition = { id: "query test database" };
                 const { result: db } = await client.databases.create(databaseDefinition);
                 assert.equal(db.id, databaseDefinition.id);
                 // query databases

@@ -9,8 +9,8 @@ import { TestHelpers } from "./../common/TestHelpers";
 
 const endpoint = testConfig.host;
 const masterKey = testConfig.masterKey;
-const dbId = "sample databse";
-const containerId = "sample container";
+const dbId = "trigger databse";
+const containerId = "trigger container";
 const client = new CosmosClient({
     endpoint,
     auth: { masterKey },

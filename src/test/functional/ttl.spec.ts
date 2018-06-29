@@ -60,7 +60,7 @@ describe("NodeJS CRUD Tests", function () {
 
         it("nativeApi Validate container and Item TTL values.", async function () {
             try {
-                const { result: db } = await client.databases.create({ id: "sample database" });
+                const { result: db } = await client.databases.create({ id: "ttl test1 database" });
 
                 const containerDefinition = {
                     id: "sample container1",
@@ -150,7 +150,7 @@ describe("NodeJS CRUD Tests", function () {
         }
 
         it("nativeApi Validate Item TTL with positive defaultTtl.", async function () {
-            const { result: db } = await client.databases.create({ id: "sample database" });
+            const { result: db } = await client.databases.create({ id: "ttl test2 database" });
 
             const containerDefinition = {
                 id: "sample container",
@@ -185,7 +185,7 @@ describe("NodeJS CRUD Tests", function () {
         }
 
         it("nativeApi Validate Item TTL with -1 defaultTtl.", async function () {
-            const { result: db } = await client.databases.create({ id: "sample database" });
+            const { result: db } = await client.databases.create({ id: "ttl test2 database" });
 
             const containerDefinition = {
                 id: "sample container",
@@ -220,7 +220,7 @@ describe("NodeJS CRUD Tests", function () {
         });
 
         it("nativeApi Validate Item TTL with no defaultTtl.", async function () {
-            const { result: db } = await client.databases.create({ id: "sample database" });
+            const { result: db } = await client.databases.create({ id: "ttl test3 database" });
 
             const containerDefinition = { id: "sample container" };
 
@@ -289,7 +289,7 @@ describe("NodeJS CRUD Tests", function () {
         }
 
         it("nativeApi Validate Item TTL Misc cases.", async function () {
-            const { result: db } = await client.databases.create({ id: "sample database" });
+            const { result: db } = await client.databases.create({ id: "ttl test4 database" });
 
             const containerDefinition = {
                 id: "sample container",

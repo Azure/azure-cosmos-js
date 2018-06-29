@@ -18,10 +18,10 @@ describe("NodeJS CRUD Tests", function () {
     describe("Validate Authorization", function () {
         const setupEntities = async function (isUpsertTest: boolean, client: CosmosClient) {
             // create database
-            const { result: db } = await client.databases.create({ id: "sample database" });
+            const { result: db } = await client.databases.create({ id: "Validate Authorization database" });
             // create collection1
             const { result: collection1 } = await client.databases.getDatabase(db.id)
-                .containers.create({ id: "sample collection" });
+                .containers.create({ id: "Validate Authorization container" });
             // create document1
             const { result: document1 } = await client.databases.getDatabase(db.id)
                 .containers.getContainer(collection1.id)

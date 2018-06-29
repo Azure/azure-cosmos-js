@@ -6,7 +6,7 @@ import { TestHelpers } from "./../common/TestHelpers";
 
 const endpoint = testConfig.host;
 const masterKey = testConfig.masterKey;
-const dbId = "sample database";
+const dbId = "udf test database";
 const containerId = "sample container";
 
 describe("NodeJS CRUD Tests", function() {

@@ -31,7 +31,7 @@ describe("NodeJS CRUD Tests", function () {
             const failFailClient = new CosmosClient({endpoint, auth: { masterKey }, connectionPolicy});
             // create database
             try {
-                await failFailClient.databases.create({ id: "sample database" });
+                await failFailClient.databases.create({ id: "client test database" });
                 assert.fail("Must throw when trying to connect to database");
             } catch (err) {
                 assert.equal(err.code, "ECONNRESET", "client should throw exception");

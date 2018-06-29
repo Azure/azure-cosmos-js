@@ -249,7 +249,7 @@ describe("NodeJS CRUD Tests", function () {
     });
 
     it("nativeApi Should execute stored procedure with partition key successfully name based", async function () {
-        const { result: db } = await client.databases.create({ id: "sample database" });
+        const { result: db } = await client.databases.create({ id: "sproc test database" });
         // create container
         const partitionKey = "key";
 
@@ -315,7 +315,7 @@ describe("NodeJS CRUD Tests", function () {
 
     it("nativeApi Should enable/disable script logging while executing stored procedure", async function () {
         // create database
-        const { result: db } = await client.databases.create({ id: "sample database" });
+        const { result: db } = await client.databases.create({ id: "sproc test database" });
         // create container
         const { result: containerResult } = await client.databases.getDatabase(db.id).containers.create({ id: "sample container" });
 
