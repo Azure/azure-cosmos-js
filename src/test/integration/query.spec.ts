@@ -13,27 +13,27 @@ describe("ResourceLink Trimming of leading and trailing slashes", function () {
     this.timeout(10000);
     const client = new CosmosClient({ endpoint: host, auth: { masterKey } });
     const databaseId = "testDatabase";
-    const collectionId = "testCollection";
+    const containerId = "testcontainer";
 
     afterEach(async function () { await TestHelpers.removeAllDatabases(client); });
     beforeEach(async function () { await TestHelpers.removeAllDatabases(client); });
 
-    it("validate correct execution of query using named collection link with leading and trailing slashes"
+    it("validate correct execution of query using named container link with leading and trailing slashes"
         , async function () {
             const containerDefinition = {
-                id: collectionId,
+                id: containerId,
                 partitionKey: {
                     paths: ["/pk"],
                     kind: PartitionKind.Hash,
                 },
             };
-            const collectionOptions = { offerThroughput: 10100 };
+            const containerOptions = { offerThroughput: 10100 };
 
             const container = await TestHelpers.getTestContainer(
-                client, "validate correct execution of query", containerDefinition, collectionOptions);
+                client, "validate correct execution of query", containerDefinition, containerOptions);
 
             await container.items.create(doc);
-            const query = "SELECT * from " + collectionId;
+            const query = "SELECT * from " + containerId;
             const queryOptions = { partitionKey: "pk" };
             const queryIterator = container.items.query(query, queryOptions);
 

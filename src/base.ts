@@ -112,7 +112,7 @@ export class Base {
             headers[Constants.HttpHeaders.PopulateQuotaInfo] = true;
         }
 
-        // If the user is not using partition resolver, we add options.partitonKey to the header for elastic collections
+        // If the user is not using partition resolver, we add options.partitonKey to the header for elastic containers
         if ((documentClient as any).partitionResolver === undefined // TODO: paritionResolver does not exist
             || (documentClient as any).partitionResolver === null) {
             if (opts.partitionKey !== undefined) {

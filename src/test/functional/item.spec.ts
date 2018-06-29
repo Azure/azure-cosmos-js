@@ -113,14 +113,14 @@ describe("NodeJS CRUD Tests", function () {
                 const db = client.databases.get(dbdef.id);
                 const partitionKey = "key";
 
-                // create collection
-                const collectionDefinition = {
+                // create container
+                const containerDefinition = {
                     id: "coll1",
                     partitionKey: { paths: ["/" + partitionKey], kind: DocumentBase.PartitionKind.Hash },
                 };
 
                 const { result: containerdef } =
-                    await db.containers.create(collectionDefinition, { offerThroughput: 12000 });
+                    await db.containers.create(containerDefinition, { offerThroughput: 12000 });
                 const container = db.containers.get(containerdef.id);
 
                 const documents = [

@@ -45,8 +45,8 @@ describe("RU Per Minute", function () {
         assert.equal(offer.content.offerIsRUPerMinuteThroughputEnabled, true);
     });
 
-    xit("Create Collection without RU Per Minute Offer", async function () {
-        const collectionDefinition = {
+    xit("Create container without RU Per Minute Offer", async function () {
+        const containerDefinition = {
             id: "sample col",
         };
 
@@ -55,7 +55,7 @@ describe("RU Per Minute", function () {
             offerThroughput: 400,
         };
 
-        await database.containers.create(collectionDefinition, options);
+        await database.containers.create(containerDefinition, options);
         const { result: offers } = await client.offers.readAll().toArray();
         assert.equal(offers.length, 1);
         const offer = offers[0];
@@ -65,9 +65,9 @@ describe("RU Per Minute", function () {
         assert.equal(offer.content.offerIsRUPerMinuteThroughputEnabled, false);
     });
 
-    xit("Create Collection with RU Per Minute Offer and insert Document with disableRUPerMinuteUsage options",
+    xit("Create container with RU Per Minute Offer and insert Document with disableRUPerMinuteUsage options",
         async function () {
-            const collectionDefinition = {
+            const containerDefinition = {
                 id: "sample col",
             };
 
@@ -77,8 +77,8 @@ describe("RU Per Minute", function () {
                 offerThroughput: 400,
             };
 
-            await database.containers.create(collectionDefinition, options);
-            const container = database.containers.get(collectionDefinition.id);
+            await database.containers.create(containerDefinition, options);
+            const container = database.containers.get(containerDefinition.id);
             const options2: any = {
                 disableRUPerMinuteUsage: true,
             };

@@ -4,7 +4,7 @@ console.log();
 console.log('Azure Cosmos DB Node.js Samples');
 console.log('================================');
 console.log();
-console.log('DOCUMENT MANAGEMENT');
+console.log('ITEM MANAGEMENT');
 console.log('===================');
 console.log();
 
@@ -14,19 +14,19 @@ const config = require('../Shared/config')
 const fs = require('fs')
 const async = require('async')
 const databaseId = config.names.database
-const collectionId = config.names.collection
+const containerId = config.names.container
 let dbLink;
 let collLink;
 
 const endpoint = config.connection.endpoint;
 const masterKey = config.connection.authKey;
 
-const getDocumentDefinitions = function () {
+const getItemDefinitions = function () {
     const data = fs.readFileSync('../Shared/Data/Families.json', 'utf8');   
     return JSON.parse(data).Families;
 };
 
-// Establish a new instance of the DocumentDBClient to be used throughout this demo
+// Establish a new instance of the CosmosClient to be used throughout this demo
 var client = new CosmosClient( {endpoint, auth: { masterKey }});
 
 //NOTE: 
@@ -36,29 +36,29 @@ var client = new CosmosClient( {endpoint, auth: { masterKey }});
 
 //-------------------------------------------------------------------------------------------------------
 // This demo performs a few steps
-// 1. createDocuments   - Insert some documents in to collection
-// 2. listDocuments     - Read the document feed for a collection
-// 3. readDocument      
-// 3.1                  - Read a single document by its id
-// 3.2                  - Use ETag and AccessCondition to only return a document if ETag does not match
-// 4. queryDocuments    - Query for documents by some property
-// 5. replaceDocument   
-// 5.1                  - Update some properties and replace the document
-// 5.2                  - Use ETag and AccessCondition to only replace document if it has not changed
-// 6. upsertDocument    - Update a document if it exists, else create new document
-// 7. deleteDocument    - Given a document id, delete it
+// 1. create items   - Insert some items in to container
+// 2. list items     - Read the item feed for a container
+// 3. read item      
+// 3.1                  - Read a single item by its id
+// 3.2                  - Use ETag and AccessCondition to only return a item if ETag does not match
+// 4. query items    - Query for items by some property
+// 5. replace item   
+// 5.1                  - Update some properties and replace the item
+// 5.2                  - Use ETag and AccessCondition to only replace item if it has not changed
+// 6. upsert item    - Update a item if it exists, else create new item
+// 7. delete item    - Given a item id, delete it
 //-------------------------------------------------------------------------------------------------------
 
 async function run() {
-//ensuring a database & collection exists for us to work with
+//ensuring a database & container exists for us to work with
     await init();
     
     const database = client.databases.get(databaseId);
-    const container = database.containers.get(collectionId);
+    const container = database.containers.get(containerId);
 
     //1.
-    console.log('\n1. insertDocuments in to database \'' + databaseId + '\' and collection \'' + collectionId + '\'');
-    const docDefs = getDocumentDefinitions();
+    console.log('\n1. insert items in to database \'' + databaseId + '\' and container \'' + containerId + '\'');
+    const docDefs = getItemDefinitions();
     const p = [];
     for(const docDef of docDefs) {
         p.push(container.items.create(docDef));
@@ -67,7 +67,7 @@ async function run() {
     console.log(docDefs.length + ' docs created');
 
     //2. 
-    console.log('\n2. listDocuments in collection \'' + collLink + '\'');
+    console.log('\n2. list items in container \'' + collLink + '\'');
     const {result: docs} = await container.items.readAll().toArray();
     
     for (const doc of docs) {
@@ -76,26 +76,26 @@ async function run() {
 
     //3.1
     const item = container.items.get(docs[0].id);
-    console.log('\n3.1 readDocument \'' + item.id + '\'');
+    console.log('\n3.1 read item \'' + item.id + '\'');
     const {result: readDoc} = await item.read();
-    console.log('Document with id \'' + item.id + '\' found');
+    console.log('item with id \'' + item.id + '\' found');
 
     //3.2                 
-    console.log('\n3.2 readDocument with AccessCondition and no change to _etag');
+    console.log('\n3.2 read item with AccessCondition and no change to _etag');
     const {result: item2, headers} = await item.read({ accessCondition : { type: 'IfNoneMatch', condition: readDoc._etag } });                        
     if (!item2 && headers["content-length"] == 0) {
-        console.log('As expected, no document returned. This is because the etag sent matched the etag on the server. i.e. you have the latest version of the doc already');
+        console.log('As expected, no item returned. This is because the etag sent matched the etag on the server. i.e. you have the latest version of the doc already');
     }
 
     //if we someone else updates this doc, its etag on the server would change.
-    //repeating the above read with the old etag would then get a document in the response                        
+    //repeating the above read with the old etag would then get a item in the response                        
     readDoc.foo = 'bar';
     await item.replace(readDoc);
     const {result: item3} = await item.read({ accessCondition : { type: 'IfNoneMatch', condition: readDoc._etag } }); 
     if (!item3 && headers["content-length"] == 0) {
-        throw ('Expected document this time. Something is wrong!');
+        throw ('Expected item this time. Something is wrong!');
     } else {
-        console.log('This time the read request returned the document because the etag values did not match');
+        console.log('This time the read request returned the item because the etag values did not match');
     }
 
     //4.
@@ -109,13 +109,13 @@ async function run() {
         ]
     };
 
-    console.log('\n4. queryDocuments in collection \'' + collLink + '\'');
+    console.log('\n4. query items in container \'' + collLink + '\'');
     const {result: results} = await container.items.query(querySpec).toArray();
 
     if (results.length == 0) {
-        throw ("No documents found matching");
+        throw ("No items found matching");
     } else if (results.length > 1) {
-        throw ("More than 1 document found matching");
+        throw ("More than 1 item found matching");
     }
 
     const person = results[0];
@@ -134,18 +134,18 @@ async function run() {
     person.lastName = "Updated Family";
 
     //5.1
-    console.log('\n5.1 replaceDocument with id \'' + item.id + '\'');
+    console.log('\n5.1 replace item with id \'' + item.id + '\'');
     const {result: updated} = await item.replace(person);
 
     console.log('The \'' + person.id + '\' family has lastName \'' + person.lastName + '\'');
     console.log('The \'' + person.id + '\' family has ' + person.children.length + ' children \'');
 
     // 5.2
-    console.log('\n5.2 trying to replaceDocument when document has changed in the database');
-    // The replaceDocument above will work even if there's a new version of doc on the server from what you originally read
+    console.log('\n5.2 trying to replace item when item has changed in the database');
+    // The replace item above will work even if there's a new version of doc on the server from what you originally read
     // If you want to prevent this from happening you can opt-in to a conditional update
     // Using accessCondition and etag you can specify that the replace only occurs if the etag you are sending matches the etag on the server
-    // i.e. Only replace if the document hasn't changed
+    // i.e. Only replace if the item hasn't changed
 
     // let's go update doc
     person.foo = 'bar';
@@ -158,23 +158,23 @@ async function run() {
         throw new Error("This should have failed!");
     } catch (err) {
         if (err.code == 412) {
-            console.log('As expected, the replace document failed with a pre-condition failure');
+            console.log('As expected, the replace item failed with a pre-condition failure');
         } else {
             throw err;
         }
     }
 
     //6.
-    console.log('\n6. deleteDocument \'' + item.id + '\'');
+    console.log('\n6. delete item \'' + item.id + '\'');
     await item.delete();
 }
 
 async function init() {
     await getOrCreateDatabase(databaseId);
-    await getOrCreateCollection(databaseId, collectionId);
+    await getOrCreateContainer(databaseId, containerId);
 }
 
-async function getOrCreateCollection(databaseId, id, callback) {
+async function getOrCreateContainer(databaseId, id, callback) {
     const database = client.databases.get(databaseId);
     try {
         try {

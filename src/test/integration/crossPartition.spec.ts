@@ -48,7 +48,7 @@ describe("Cross Partition", function () {
         const documentDefinitions = generateDocuments(20);
 
         const containerDefinition: ContainerDefinition = {
-            id: "sample collection",
+            id: "sample container",
             indexingPolicy: {
                 includedPaths: [
                     {
@@ -80,7 +80,7 @@ describe("Cross Partition", function () {
         // - removes all the databases,
         // - creates a new database,
         // - creates a new collecton,
-        // - bulk inserts documents to the collection
+        // - bulk inserts documents to the container
         before(async function () {
             await TestHelpers.removeAllDatabases(client);
             container = await TestHelpers.getTestContainer(
@@ -223,7 +223,7 @@ describe("Cross Partition", function () {
                     // I don't think this code is ever called, which means we're missing tests or should delete it.
                     throw new Error("Not yet implemented");
                     // return validateExecuteNextWithGivenContinuationToken(
-                    //     collectionLink, query, options, listOfResultPages, listOfHeaders);
+                    //     containerLink, query, options, listOfResultPages, listOfHeaders);
                 }
             } catch (err) {
                 throw err;

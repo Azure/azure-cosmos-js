@@ -271,7 +271,7 @@ describe("NodeJS CRUD Tests", function () {
             id: "querySproc",
             body: function () {
                 var context = getContext();
-                var container = context.getCollection();
+                var container = context.getcontainer();
                 var response = context.getResponse();
 
                 // query for players

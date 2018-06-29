@@ -65,7 +65,7 @@ describe("NodeJS CRUD Tests", function () {
         });
     });
 
-    describe("Validate QueryIterator Functionality For Multiple Partition Collection", function () {
+    describe("Validate QueryIterator Functionality For Multiple Partition container", function () {
 
         const documentDefinitions = [
             { id: "document1" },
@@ -78,10 +78,10 @@ describe("NodeJS CRUD Tests", function () {
 
         let container: Container;
 
-        // creates a new database, creates a new collecton, bulk inserts documents to the collection
+        // creates a new database, creates a new collecton, bulk inserts documents to the container
         beforeEach(async function () {
             const partitionKey = "key";
-            const collectionDefinition = {
+            const containerDefinition = {
                 id: "coll1",
                 partitionKey: {
                     paths: ["/" + partitionKey],
@@ -89,9 +89,9 @@ describe("NodeJS CRUD Tests", function () {
                 },
             };
 
-            const collectionOptions = { offerThroughput: 12000 };
+            const containerOptions = { offerThroughput: 12000 };
             container = await TestHelpers.getTestContainer(
-                client, "query CRUD database 中文", collectionDefinition, collectionOptions);
+                client, "query CRUD database 中文", containerDefinition, containerOptions);
             await TestHelpers.bulkInsertItems(container, documentDefinitions);
         });
 

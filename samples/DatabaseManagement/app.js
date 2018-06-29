@@ -17,17 +17,17 @@ const databaseId = config.names.database
 const endpoint = config.connection.endpoint;
 const masterKey = config.connection.authKey;
 
-// Establish a new instance of the DocumentDBClient to be used throughout this demo
+// Establish a new instance of the CosmosClient to be used throughout this demo
 const client = new CosmosClient({endpoint, auth: { masterKey }});
 
 //---------------------------------------------------------------------------------------------------
 // This demo performs the following CRUD operations on a Database
 //
-// 1. findDatabaseById  - Attempt to find a database by Id, if found then just complete the sample
-// 2. createDatabase    - If the database was not found, try create it
-// 3. listDatabases     - Once the database was created, list all the databases on the account
-// 4. readDatabase      - Read a database by its id (using new ID Based Routing)
-// 5. deleteDatabase    - Delete a database given its id
+// 1. find Database  - Attempt to find a database by Id, if found then just complete the sample
+// 2. create Database    - If the database was not found, try create it
+// 3. read all Databases     - Once the database was created, list all the databases on the account
+// 4. read Database      - Read a database by its id (using new ID Based Routing)
+// 5. delete Database    - Delete a database given its id
 //
 //---------------------------------------------------------------------------------------------------
 

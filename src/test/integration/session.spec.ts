@@ -15,12 +15,12 @@ describe("Session Token", function () {
     this.timeout(10000);
     const client = new CosmosClient({ endpoint, auth: { masterKey }, consistencyLevel: ConsistencyLevel.Session });
     const databaseId = "sessionTestDB";
-    const collectionId = "sessionTestColl";
-    const collectionLink = "dbs/" + databaseId + "/colls/" + collectionId;
+    const containerId = "sessionTestColl";
+    const containerLink = "dbs/" + databaseId + "/colls/" + containerId;
 
     const databaseBody = { id: databaseId };
-    const containerDefinition = { id: collectionId, partitionKey: { paths: ["/id"], kind: PartitionKind.Hash } };
-    const collectionOptions = { offerThroughput: 10100 };
+    const containerDefinition = { id: containerId, partitionKey: { paths: ["/id"], kind: PartitionKind.Hash } };
+    const containerOptions = { offerThroughput: 10100 };
 
     const getSpy = sinon.spy(client.documentClient, "get");
     const postSpy = sinon.spy(client.documentClient, "post");
@@ -61,10 +61,10 @@ describe("Session Token", function () {
         const database = client.databases.get(databaseDef.id);
 
         const { result: createdContainerDef } =
-            await database.containers.create(containerDefinition, collectionOptions);
+            await database.containers.create(containerDefinition, containerOptions);
         const container = database.containers.get(createdContainerDef.id);
         assert.equal(postSpy.lastCall.args[3][Constants.HttpHeaders.SessionToken], undefined);
-        // TODO: testing implementation detail by looking at collectionResourceIdToSesssionTokens
+        // TODO: testing implementation detail by looking at containerResourceIdToSesssionTokens
         assert.deepEqual(client.documentClient.sessionContainer.collectionResourceIdToSessionTokens, {});
 
         const { result: document1 } = await container.items.create({ id: "1" });
@@ -119,7 +119,7 @@ describe("Session Token", function () {
         assert.equal(tokens[index2], secondPartitionLSN);
         firstPartitionLSN = tokens[index1];
 
-        const query = "SELECT * from " + collectionId;
+        const query = "SELECT * from " + containerId;
         const queryOptions = { partitionKey: "1" };
         const queryIterator = container.items.query(query, queryOptions);
 
@@ -157,7 +157,7 @@ describe("Session Token", function () {
             }
         };
 
-        await database.containers.create(containerDefinition, collectionOptions);
+        await database.containers.create(containerDefinition, containerOptions);
         const container = database.containers.get(containerDefinition.id);
         await container.items.create({ id: "1" });
         const callbackSpy = sinon.spy(function (pat: string, reqHeaders: IHeaders) {
@@ -172,7 +172,7 @@ describe("Session Token", function () {
         } catch (err) {
             assert.equal(err.substatus, 1002, "Substatus should indicate the LSN didn't catchup.");
             assert.equal(callbackSpy.callCount, 1);
-            assert.equal(Base._trimSlashes(callbackSpy.lastCall.args[0]), collectionLink + "/docs/1");
+            assert.equal(Base._trimSlashes(callbackSpy.lastCall.args[0]), containerLink + "/docs/1");
             applySessionTokenStub.restore();
         }
         await container.items.get("1").read({ partitionKey: "1" });
@@ -181,12 +181,12 @@ describe("Session Token", function () {
     // TODO: chrande - looks like this might be broken by going name based?
     // We never had a name based version of this test. Looks like we fail to set the session token
     // because OwnerId is missing on the header. This only happens for name based.
-    it.skip("client should not have session token of a collection created by another client", async function () {
+    it.skip("client should not have session token of a container created by another client", async function () {
         const client2 = new CosmosClient({ endpoint, auth: { masterKey }, consistencyLevel: ConsistencyLevel.Session });
 
         const { result: databaseDef } = await client.databases.create(databaseBody);
         const database = client.databases.get(databaseDef.id);
-        await database.containers.create(containerDefinition, collectionOptions);
+        await database.containers.create(containerDefinition, containerOptions);
         const container = database.containers.get(containerDefinition.id);
         await container.read();
         await client2.databases.get(databaseDef.id)
@@ -195,7 +195,7 @@ describe("Session Token", function () {
 
         const { result: createdCollection2 } =
             await client2.databases.get(databaseDef.id)
-                .containers.create(containerDefinition, collectionOptions);
+                .containers.create(containerDefinition, containerOptions);
 
         const { result: collection2 } = await client2.databases.get(databaseDef.id)
             .containers.get(containerDefinition.id)

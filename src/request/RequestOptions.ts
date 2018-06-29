@@ -21,17 +21,17 @@ import { PartitionKey } from "../documents";
  * @property {string} [indexingDirective]                    -         \
  * Specifies indexing directives (index, do not index .. etc).
  * @property {boolean} [offerEnableRUPerMinuteThroughput]    -         \
- * Represents Request Units(RU)/Minute throughput is enabled/disabled for a collection \
+ * Represents Request Units(RU)/Minute throughput is enabled/disabled for a container \
  * in the Azure Cosmos DB database service.
  * @property {number} [offerThroughput]                      -         \
- * The offer throughput provisioned for a collection in measurement of Requests-per-Unit \
+ * The offer throughput provisioned for a container in measurement of Requests-per-Unit \
  * in the Azure Cosmos DB database service.
- * @property {string} [offerType]                            -         Offer type when creating document collections.
- * <p>This option is only valid when creating a document collection.</p>
+ * @property {string} [offerType]                            -         Offer type when creating document containers.
+ * <p>This option is only valid when creating a document container.</p>
  * @property {string} [partitionKey]                         -         \
  * Specifies a partition key definition for a particular path in the Azure Cosmos DB database service.
  * @property {boolean} [populateQuotaInfo]                   -         \
- * Enables/disables getting document collection quota related stats for document collection read requests.
+ * Enables/disables getting document container quota related stats for document container read requests.
  * @property {string} [postTriggerInclude]                   -         \
  * Indicates what is the post trigger to be invoked after the operation.
  * @property {string} [preTriggerInclude]                    -         \
