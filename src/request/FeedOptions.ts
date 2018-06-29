@@ -36,4 +36,5 @@ export interface FeedOptions {
     initialHeaders?: IHeaders;
     a_im?: string;
     accessCondition?: any; // TODO: any
+    populateQueryMetrics?: boolean;
 }

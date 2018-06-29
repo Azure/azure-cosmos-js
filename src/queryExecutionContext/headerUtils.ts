@@ -1,7 +1,11 @@
-﻿import { Constants } from "../common";
+﻿import * as assert from "assert";
+import * as util from "util";
+import { Constants } from "../common";
+import { QueryMetrics } from "../queryMetrics";
 
-import { IHeaders } from "./IHeaders";
-export { IHeaders };
+export interface IHeaders {
+    [key: string]: any;
+}
 
 // TODO: docs
 export class HeaderUtils {
@@ -27,6 +31,7 @@ export class HeaderUtils {
     public static getInitialHeader(): IHeaders {
         const headers: IHeaders = {};
         headers[Constants.HttpHeaders.RequestCharge] = 0;
+        headers[Constants.HttpHeaders.QueryMetrics] = {};
         return headers;
     }
 
@@ -35,14 +40,35 @@ export class HeaderUtils {
         if (headers[Constants.HttpHeaders.RequestCharge] === undefined) {
             headers[Constants.HttpHeaders.RequestCharge] = 0;
         }
+
+        if (headers[Constants.HttpHeaders.QueryMetrics] === undefined) {
+            headers[Constants.HttpHeaders.QueryMetrics] = QueryMetrics.zero;
+        }
+
         if (!toBeMergedHeaders) {
             return;
         }
+
         (headers[Constants.HttpHeaders.RequestCharge] as number) +=
             HeaderUtils.getRequestChargeIfAny(toBeMergedHeaders);
         if (toBeMergedHeaders[Constants.HttpHeaders.IsRUPerMinuteUsed]) {
             headers[Constants.HttpHeaders.IsRUPerMinuteUsed] =
                 toBeMergedHeaders[Constants.HttpHeaders.IsRUPerMinuteUsed];
+        }
+
+        if (Constants.HttpHeaders.QueryMetrics in toBeMergedHeaders) {
+            const headerQueryMetrics = headers[Constants.HttpHeaders.QueryMetrics];
+            const toBeMergedHeaderQueryMetrics = toBeMergedHeaders[Constants.HttpHeaders.QueryMetrics];
+
+            for (const partitionId in toBeMergedHeaderQueryMetrics) {
+                if (partitionId in headerQueryMetrics) {
+                    const combinedQueryMetrics =
+                        headerQueryMetrics[partitionId].add(toBeMergedHeaderQueryMetrics[partitionId]);
+                    headerQueryMetrics[partitionId] = combinedQueryMetrics;
+                } else {
+                    headerQueryMetrics[partitionId] = toBeMergedHeaderQueryMetrics[partitionId];
+                }
+            }
         }
     }
 }
