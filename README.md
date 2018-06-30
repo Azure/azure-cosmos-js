@@ -79,25 +79,31 @@ npm run test    # runs all tests
 ```ts
 import { CosmosClient } from "@azure/cosmos"
 
-const host = "[hostendpoint]";                     // Add your endpoint
+const endpoint = "[hostendpoint]";                     // Add your endpoint
 const masterKey = "[database account masterkey]";  // Add the masterkey of the endpoint
-const client = new CosmosClient(host, { masterKey });
+const client = new CosmosClient({endpoint, { masterKey }});
 
 var databaseDefinition = { id: "sample database" };
-var collectionDefinition = { id: "sample collection" };
-var documentDefinition = { id: "hello world doc", content: "Hello World!" };
+var containerDefinition = { id: "sample container" };
+var itemDefinition = { id: "hello world doc", content: "Hello World!" };
 
 async function helloCosmos() {
-    await client.createDatabase(databaseDefinition);
+    await client.databases.create(databaseDefinition);
     console.log('created db');
+    const database = client.databases.get(databaseDefinition.id);
 
-    await client.createCollection(database._self, collectionDefinition);
-    console.log('created collection');
+    await database.containers.create(containerDefinition);
+    console.log('created container');
+    const container = database.containers.get(containerDefinition.id);
 
-    await client.createDocument(collection._self, documentDefinition);
-    console.log('Created Document with content: ', document.content);
+    const {result: createdItem} = await container.items.create(itemDefinition);
+    console.log('Created item with content: ', createdItem.content);
+    const item = container.items.get(createdItem.id);
 
-    await client.deleteDatabase(database._self);
+    const {result} = item.read();
+    console.log('Read item with content: ', result.content);
+
+    await database.delete();
     console.log("Deleted database");
 });
 

@@ -166,7 +166,7 @@ export const Constants = {
     CurrentVersion: "2017-11-15",
 
     SDKName: "azure-cosmos-js",
-    SDKVersion: "2.0.0-0", // TODO: should pull this from package.json
+    SDKVersion: "2.0.0-1", // TODO: should pull this from package.json
 
     DefaultPrecisions: {
         DefaultNumberHashPrecision: 3,
