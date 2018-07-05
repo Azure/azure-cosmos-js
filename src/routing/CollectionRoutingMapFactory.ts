@@ -25,8 +25,7 @@ export class CollectionRoutingMapFactory {
         const orderedPartitionInfo = sortedRanges.map((r) => r[1]);
 
         if (!this._isCompleteSetOfRange(partitionKeyOrderedRange)) { return undefined; }
-        return new InMemoryCollectionRoutingMap(
-            rangeById, rangeByInfo, partitionKeyOrderedRange, orderedPartitionInfo, collectionUniqueId);
+        return new InMemoryCollectionRoutingMap(partitionKeyOrderedRange, orderedPartitionInfo);
     }
 
     private static _isCompleteSetOfRange(partitionKeyOrderedRange: any) { // TODO: any

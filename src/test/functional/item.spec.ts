@@ -87,14 +87,14 @@ describe("NodeJS CRUD Tests", function () {
                 assert.equal(replacedDocument.foo, "not bar", "property should have changed");
                 assert.equal(document.id, replacedDocument.id, "document id should stay the same");
                 // read document
-                const { result: document2 } = await container.items.get(replacedDocument.id).read();
+                await container.items.get(replacedDocument.id).read();
                 assert.equal(replacedDocument.id, document.id);
                 // delete document
-                const { result: res } = await container.items.get(replacedDocument.id).delete();
+                await container.items.get(replacedDocument.id).delete();
 
                 // read documents after deletion
                 try {
-                    const { result: document3 } = await container.items.get(replacedDocument.id).read();
+                    await container.items.get(replacedDocument.id).read();
                     assert.fail("must throw if document doesn't exist");
                 } catch (err) {
                     const notFoundErrorCode = 404;
@@ -159,7 +159,7 @@ describe("NodeJS CRUD Tests", function () {
                     query: "SELECT * FROM Root",
                 };
                 try {
-                    const { result: badUpdate } = await container.items.query(
+                    await container.items.query(
                         querySpec, { enableScanInQuery: true }).toArray();
                     assert.fail("Must fail");
                 } catch (err) {

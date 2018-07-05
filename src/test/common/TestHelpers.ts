@@ -1,7 +1,7 @@
 import * as assert from "assert";
 import {
     Container, CosmosClient,
-    Database, DatabaseDefinition, Item, RequestOptions, Response,
+    Database, DatabaseDefinition, RequestOptions, Response,
 } from "../../";
 import { ContainerDefinition, PermissionDefinition, User, UserDefinition } from "../../client";
 
@@ -16,7 +16,6 @@ export class TestHelpers {
                 return;
             }
 
-            const count = 0;
             await Promise.all(databases.map<Promise<Response<DatabaseDefinition>>>(
                 async (database: DatabaseDefinition) => client.databases.get(database.id).delete()));
         } catch (err) {
@@ -103,7 +102,7 @@ export class TestHelpers {
                     ? { partitionKey: document[partitionKeyPropertyName] }
                     : { partitionKey: {} };
 
-                const { result } = await container.items.get(document.id).delete(options);
+                await container.items.get(document.id).delete(options);
             } catch (err) {
                 throw err;
             }

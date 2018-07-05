@@ -1,7 +1,7 @@
 ﻿import * as assert from "assert";
 import * as util from "util";
 import { QueryIterator } from "../../";
-import { Container, ContainerDefinition, Database } from "../../client";
+import { Container, ContainerDefinition } from "../../client";
 import { CosmosClient } from "../../CosmosClient";
 import { DataType, IndexKind, PartitionKind } from "../../documents";
 import { SqlQuerySpec } from "../../queryExecutionContext";
@@ -20,7 +20,6 @@ describe.skip("NodeJS Aggregate Query Tests", async function () {
     const uniquePartitionKey = "uniquePartitionKey";
     const testdata = new TestData(partitionKey, uniquePartitionKey);
     const documentDefinitions = testdata.docs;
-    let db: Database;
     let container: Container;
 
     const containerDefinition: ContainerDefinition = {
@@ -50,8 +49,6 @@ describe.skip("NodeJS Aggregate Query Tests", async function () {
         },
     };
 
-    const containerOptions = { offerThroughput: 10100 };
-
     describe("Validate Aggregate Document Query", function () {
 
         // - removes all the databases,
@@ -62,7 +59,6 @@ describe.skip("NodeJS Aggregate Query Tests", async function () {
             await TestHelpers.removeAllDatabases(client);
             container = await TestHelpers.getTestContainer(
                 client, "Validate Aggregate Document Query", containerDefinition);
-            db = container.database;
             await TestHelpers.bulkInsertItems(container, documentDefinitions);
         });
 
@@ -75,28 +71,6 @@ describe.skip("NodeJS Aggregate Query Tests", async function () {
                 const { result: results } = await queryIterator.toArray();
                 assert.equal(results.length, expectedResults.length, "invalid number of results");
                 assert.equal(queryIterator.hasMoreResults(), false, "hasMoreResults: no more results is left");
-            } catch (err) {
-                throw err;
-            }
-        };
-
-        const validateNextItem = async function (queryIterator: QueryIterator<any>, expectedResults: any) {
-            let results: any = [];
-
-            try {
-                while (results.length < expectedResults.length) {
-                    const { result: item } = await queryIterator.nextItem();
-                    if (item === undefined) {
-                        assert(!queryIterator.hasMoreResults(), "hasMoreResults must signal results exhausted");
-                        validateResult(results, expectedResults);
-                        return;
-                    }
-                    results = results.concat(item);
-
-                    if (results.length < expectedResults.length) {
-                        assert(queryIterator.hasMoreResults(), "hasMoreResults must indicate more results");
-                    }
-                }
             } catch (err) {
                 throw err;
             }

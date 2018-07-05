@@ -2,7 +2,7 @@ import * as assert from "assert";
 import {
     Constants, CosmosClient, DocumentBase,
 } from "../../";
-import { Container, ContainerDefinition, Database } from "../../client";
+import { ContainerDefinition, Database } from "../../client";
 import { DataType, Index, IndexedPath, IndexingMode, IndexingPolicy, IndexKind } from "../../documents";
 import testConfig from "./../common/_testConfig";
 import { TestHelpers } from "./../common/TestHelpers";
@@ -387,7 +387,7 @@ describe("NodeJS CRUD Tests", function () {
     describe("Validate response headers", function () {
         const createThenReadcontainer = async function (database: Database, body: ContainerDefinition) {
             try {
-                const { result: createdcontainer, headers } = await database.containers.create(body);
+                const { result: createdcontainer } = await database.containers.create(body);
                 const response = await database.containers.get(createdcontainer.id).read();
                 return response;
             } catch (err) {

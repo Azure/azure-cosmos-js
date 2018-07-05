@@ -1,17 +1,13 @@
 import * as assert from "assert";
 import * as bs from "binary-search-bounds"; // TODO: missing types
 import { Constants } from "../common";
-import { Range } from "../range";
 import { QueryRange } from "./QueryRange";
 
 export class InMemoryCollectionRoutingMap {
-    private rangeById: Range[];
-    private rangeByInfo: string;
     private orderedPartitionKeyRanges: any[];
     private orderedRanges: QueryRange[];
     // TODO: chrande made this public, even though it is implementation detail for a test
     public orderedPartitionInfo: any;
-    private collectionUniqueId: any;
 
     /**
      * Represents a InMemoryCollectionRoutingMap Object,
@@ -19,13 +15,8 @@ export class InMemoryCollectionRoutingMap {
      * convenience methods for working with set of ranges.
      */
     constructor(
-        rangeById: Range[],
-        rangeByInfo: string,
         orderedPartitionKeyRanges: any[],
-        orderedPartitionInfo: any,
-        collectionUniqueId: string) {
-        this.rangeById = rangeById;
-        this.rangeByInfo = rangeByInfo;
+        orderedPartitionInfo: any) {
         this.orderedPartitionKeyRanges = orderedPartitionKeyRanges;
         this.orderedRanges = orderedPartitionKeyRanges.map(
             (pkr) => {
@@ -34,7 +25,6 @@ export class InMemoryCollectionRoutingMap {
                     pkr[Constants.PartitionKeyRange.MaxExclusive], true, false);
             });
         this.orderedPartitionInfo = orderedPartitionInfo;
-        this.collectionUniqueId = collectionUniqueId;
     }
     public getOrderedParitionKeyRanges() {
         return this.orderedPartitionKeyRanges;

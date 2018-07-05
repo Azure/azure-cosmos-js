@@ -19,14 +19,9 @@ const millisPerSecond = 1000;
 const millisPerMinute = millisPerSecond * 60; //     60,000
 const millisPerHour = millisPerMinute * 60;   //  3,600,000
 const millisPerDay = millisPerHour * 24;      // 86,400,000
-
-const maxSeconds = Number.MAX_SAFE_INTEGER / ticksPerSecond;
-const minSeconds = Number.MIN_SAFE_INTEGER / ticksPerSecond;
-
 const maxMilliSeconds = Number.MAX_SAFE_INTEGER / ticksPerMillisecond;
 const minMilliSeconds = Number.MIN_SAFE_INTEGER / ticksPerMillisecond;
 
-const ticksPerTenthSecond = ticksPerMillisecond * 100;
 /**
  * Represents a time interval.
  *

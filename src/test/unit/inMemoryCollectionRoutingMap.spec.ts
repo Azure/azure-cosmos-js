@@ -1,6 +1,6 @@
 ﻿import * as assert from "assert";
 import * as _ from "underscore";
-import { CollectionRoutingMapFactory, InMemoryCollectionRoutingMap, QueryRange } from "../../routing";
+import { CollectionRoutingMapFactory, QueryRange } from "../../routing";
 
 describe("InMemoryCollectionRoutingMap Tests", function () {
 
@@ -154,9 +154,8 @@ describe("InMemoryCollectionRoutingMap Tests", function () {
                         [{ id: "1", minInclusive: "0000000020", maxExclusive: "0000000030" }, 2],
                         [{ id: "2", minInclusive: "0000000025", maxExclusive: "0000000035" }, 2],
                     ];
-                const collectionUniqueId = "";
                 try {
-                    const collectionRoutingMap = CollectionRoutingMapFactory
+                    CollectionRoutingMapFactory
                         .createCompleteRoutingMap(partitionRangeWithInfo, "sample collection id");
                     assert.fail("must throw exception");
                 } catch (e) {

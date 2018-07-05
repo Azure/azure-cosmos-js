@@ -140,7 +140,6 @@ export class SessionContainer {
             if (newTokenParts.length === 2) {
                 const range = newTokenParts[0];
                 const newLSN = BigInt(newTokenParts[1]);
-                const success = false;
 
                 const oldLSN = BigInt(oldTokens[range]);
                 if (!oldLSN || oldLSN.lesser(newLSN)) {

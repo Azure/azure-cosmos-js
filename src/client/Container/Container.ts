@@ -1,4 +1,4 @@
-import { Constants, UriFactory } from "../../common";
+import { UriFactory } from "../../common";
 import { RequestOptions, Response } from "../../request";
 import { Database } from "../Database";
 import { Items } from "../Item";

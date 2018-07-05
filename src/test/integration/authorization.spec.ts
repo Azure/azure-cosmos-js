@@ -1,5 +1,5 @@
-﻿import * as assert from "assert";
-import { Base, Container, CosmosClient, DocumentBase, UriFactory } from "../../";
+import * as assert from "assert";
+import { Container, CosmosClient, DocumentBase } from "../../";
 import { Database } from "../../client";
 import testConfig from "./../common/_testConfig";
 import { TestHelpers } from "./../common/TestHelpers";

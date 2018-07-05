@@ -3,7 +3,6 @@ import {
     DefaultQueryExecutionContext,
     FetchFunctionCallback,
     IExecutionContext,
-    IHeaders,
     PartitionedQueryExecutionContextInfo,
     PipelinedQueryExecutionContext,
     SqlQuerySpec,
@@ -39,7 +38,7 @@ export class ProxyQueryExecutionContext implements IExecutionContext {
         this.options = JSON.parse(JSON.stringify(options || {}));
         this.resourceLink = resourceLink;
         this.queryExecutionContext =
-            new DefaultQueryExecutionContext(this.documentclient, this.query, this.options, this.fetchFunctions);
+            new DefaultQueryExecutionContext(this.options, this.fetchFunctions);
     }
     /**
      * Execute a provided function on the next element in the ProxyQueryExecutionContext.

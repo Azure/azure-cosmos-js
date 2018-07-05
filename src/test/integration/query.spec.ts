@@ -1,5 +1,5 @@
-﻿import * as assert from "assert";
-import { Constants, CosmosClient, FeedOptions, UriFactory } from "../../";
+import * as assert from "assert";
+import { Constants, CosmosClient, FeedOptions } from "../../";
 import { PartitionKind } from "../../documents";
 import testConfig from "./../common/_testConfig";
 import { TestHelpers } from "./../common/TestHelpers";
@@ -60,7 +60,6 @@ describe("Test Query Metrics On Single Partition Collection", function () {
             const createdContainer = database.containers.get(createdCollectionDef.id);
 
             await createdContainer.items.create(document);
-            const collectionLink = "/dbs/" + databaseId + "/colls/" + collectionId + "/";
             const query = "SELECT * from " + collectionId;
             const queryOptions: FeedOptions = { populateQueryMetrics: true };
             const queryIterator = createdContainer.items.query(query, queryOptions);

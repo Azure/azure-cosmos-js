@@ -6,7 +6,7 @@ describe("Range Tests", function () {
         const invalidOptionsTest = function (options: any, expectedError: any) {
             assert.throws(
                 function () {
-                    const r = new Range(options);
+                    return new Range(options);
                 },
                 expectedError);
         };
@@ -17,11 +17,6 @@ describe("Range Tests", function () {
 
         const optionsIsNotAnObjectTest = function (options: any) {
             invalidOptionsTest(options, /Invalid argument: 'options' is not an object/);
-        };
-
-        const invalidRangeTest = function (options: any) {
-            invalidOptionsTest(options,
-                /Invalid argument: 'options.low' must be less than or equal than 'options.high'/);
         };
 
         it("options - undefined (ommited argument)", function () {

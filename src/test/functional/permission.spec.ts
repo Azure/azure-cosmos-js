@@ -81,7 +81,7 @@ describe("NodeJS CRUD Tests", function () {
                 assert.equal(permissionAfterReplace.id, permissionDef.id);
 
                 // delete permission
-                const { result: res } = await permission.delete();
+                await permission.delete();
 
                 // read permission after deletion
                 try {
@@ -172,7 +172,7 @@ describe("NodeJS CRUD Tests", function () {
                 assert.equal(permissionAfterReplace.id, replacedPermission2.id);
 
                 // delete permission
-                const { result: res } = await permission.delete();
+                await permission.delete();
 
                 // read permission after deletion
                 try {

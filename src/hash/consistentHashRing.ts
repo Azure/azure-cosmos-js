@@ -1,4 +1,3 @@
-import { Base } from "../base";
 import { Key, MurmurHash } from "./murmurHash";
 
 export { Key } from "./murmurHash";

@@ -1,4 +1,4 @@
-import { Constants, UriFactory } from "../../common";
+import { Constants } from "../../common";
 import { CosmosClient } from "../../CosmosClient";
 import { RequestOptions, Response } from "../../request";
 import { OfferDefinition } from "./OfferDefinition";

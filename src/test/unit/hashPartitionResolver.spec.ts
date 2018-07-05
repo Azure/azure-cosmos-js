@@ -1,13 +1,12 @@
 ﻿import * as assert from "assert";
 import { HashPartitionResolver } from "../../hash";
-import { PartitionKeyExtractor } from "../../range";
 
 describe("HashPartitionResolver", function () {
     describe("new()", function () {
         it(" does not throw", function () {
             assert.doesNotThrow(
                 function () {
-                    const resolver = new HashPartitionResolver("foo", ["dbs/foo/colls/A"]);
+                    return new HashPartitionResolver("foo", ["dbs/foo/colls/A"]);
                 },
             );
         });
@@ -15,7 +14,7 @@ describe("HashPartitionResolver", function () {
         it("invalid partitionKeyResolver", function () {
             assert.throws(
                 function () {
-                    const resolver = new HashPartitionResolver(undefined, undefined);
+                    return new HashPartitionResolver(undefined, undefined);
                 },
                 /partitionKeyExtractor cannot be null or undefined/,
             );
@@ -24,7 +23,7 @@ describe("HashPartitionResolver", function () {
         it("invalid collectionLinks", function () {
             assert.throws(
                 function () {
-                    const resolver = new HashPartitionResolver("foo", undefined);
+                    return new HashPartitionResolver("foo", undefined);
                 },
                 /collectionLinks must be an array./,
             );

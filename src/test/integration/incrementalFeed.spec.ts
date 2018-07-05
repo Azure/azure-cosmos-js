@@ -1,5 +1,5 @@
 import * as assert from "assert";
-import { CosmosClient, Database, FeedOptions } from "../../";
+import { CosmosClient, FeedOptions } from "../../";
 import { Container } from "../../client";
 import testConfig from "./../common/_testConfig";
 import { TestHelpers } from "./../common/TestHelpers";

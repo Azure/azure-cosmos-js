@@ -11,7 +11,7 @@ describe("ConsistentHashRing", function () {
         it("invalid nodes throws", function () {
             assert.throws(
                 function () {
-                    const ring = new ConsistentHashRing(undefined);
+                    return new ConsistentHashRing(undefined);
                 },
                 /Invalid argument: 'nodes' has to be an array./,
             );

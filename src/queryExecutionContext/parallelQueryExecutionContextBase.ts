@@ -1,4 +1,4 @@
-﻿import * as assert from "assert";
+import * as assert from "assert";
 import * as bs from "binary-search-bounds";
 import * as PriorityQueue from "priorityqueuejs";
 import * as semaphore from "semaphore";
@@ -10,12 +10,11 @@ import {
     IHeaders,
     PartitionedQueryExecutionContextInfo,
     PartitionedQueryExecutionContextInfoParser,
-    SqlQuerySpec,
 } from ".";
-import { Constants, StatusCodes, SubStatusCodes } from "../common";
+import { StatusCodes, SubStatusCodes } from "../common";
 import { DocumentClient } from "../documentclient";
 import { Response } from "../request/request";
-import { InMemoryCollectionRoutingMap, PARITIONKEYRANGE, QueryRange, SmartRoutingMapProvider } from "../routing";
+import { PARITIONKEYRANGE, QueryRange, SmartRoutingMapProvider } from "../routing";
 
 export enum ParallelQueryExecutionContextBaseStates {
     started = "started",
@@ -232,7 +231,6 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
      * @instance
      */
     private async _getReplacementPartitionKeyRanges(documentProducer: DocumentProducer) {
-        const routingMapProvider = this.documentclient.partitionKeyDefinitionCache;
         const partitionKeyRange = documentProducer.targetPartitionKeyRange;
         // Download the new routing map
         this.routingProvider = new SmartRoutingMapProvider(this.documentclient);
@@ -269,7 +267,7 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
             const checkAndEnqueueDocumentProducer =
                 async (documentProducerToCheck: DocumentProducer, checkNextDocumentProducerCallback: any) => {
                     try {
-                        const {result: afterItem, headers} = await documentProducerToCheck.current();
+                        const {result: afterItem} = await documentProducerToCheck.current();
                         if (afterItem === undefined) {
                             // no more results left in this document producer, so we don't enqueue it
                         } else {
@@ -320,7 +318,7 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
         const documentProducer = this.orderByPQ.peek();
         // Check if split happened
         try {
-            const {result: element, headers} = await documentProducer.current();
+            await documentProducer.current();
             elseCallback();
         } catch (err) {
             if (ParallelQueryExecutionContextBase._needPartitionKeyRangeCacheRefresh(err)) {
@@ -422,7 +420,7 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
                     // we need to put back the document producer to the queue if it has more elements.
                     // the lock will be released after we know document producer must be put back in the queue or not
                     try {
-                        const {result: afterItem, headers: currentHeaders} = await documentProducer.current();
+                        const {result: afterItem} = await documentProducer.current();
                         if (afterItem === undefined) {
                             // no more results is left in this document producer
                         } else {

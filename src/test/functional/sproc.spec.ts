@@ -1,9 +1,7 @@
 import * as assert from "assert";
-import * as Stream from "stream";
 import {
-    AzureDocuments, Base, Constants, CosmosClient,
-    DocumentBase, HashPartitionResolver, Range,
-    RangePartitionResolver, Response, RetryOptions,
+    Constants, CosmosClient,
+    DocumentBase,
 } from "../../";
 import { Container, StoredProcedureDefinition } from "../../client";
 import testConfig from "./../common/_testConfig";
@@ -64,6 +62,7 @@ describe("NodeJS CRUD Tests", function () {
             assert(queriedSprocs.length > 0, "number of sprocs for the query should be > 0");
 
             // replace sproc
+            // @ts-ignore
             sproc.body = function () { const x = 20; };
             const { result: replacedSproc } = await container.storedProcedures.get(sproc.id).replace(sproc);
 
@@ -97,7 +96,8 @@ describe("NodeJS CRUD Tests", function () {
             const sprocDefinition: StoredProcedureDefinition = {
                 id: "sample sproc",
                 // tslint:disable-next-line:object-literal-shorthand
-                body: function() { const x = 10; },
+                // @ts-ignore
+                body: function() { const x = 10; }, // tslint:disable-line:object-literal-shorthand
             };
 
             const { result: sproc } = await container.storedProcedures.upsert(sprocDefinition);
@@ -117,6 +117,7 @@ describe("NodeJS CRUD Tests", function () {
             assert(queriedSprocs.length > 0, "number of sprocs for the query should be > 0");
 
             // replace sproc
+            // @ts-ignore
             sproc.body = function () { const x = 20; };
             const { result: replacedSproc } = await container.storedProcedures.upsert(sproc);
 
@@ -300,7 +301,7 @@ describe("NodeJS CRUD Tests", function () {
             { id: "document6", key: "A", prop: 1 },
         ];
 
-        const returnedDocuments = await TestHelpers.bulkInsertItems(container, documents);
+        await TestHelpers.bulkInsertItems(container, documents);
         const { result: sproc } = await container.storedProcedures.create(querySproc);
         const { result: result } = await container.storedProcedures.get(sproc.id).execute([], { partitionKey: null });
         assert(result !== undefined);

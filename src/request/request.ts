@@ -1,4 +1,4 @@
-import { Agent, ClientRequest, ClientResponse, OutgoingHttpHeaders, ServerResponse } from "http"; // TYPES ONLY
+import { Agent, ClientRequest, ClientResponse, OutgoingHttpHeaders } from "http"; // TYPES ONLY
 import { RequestOptions } from "https"; // TYPES ONLY
 import { Socket } from "net";
 import * as querystring from "querystring";

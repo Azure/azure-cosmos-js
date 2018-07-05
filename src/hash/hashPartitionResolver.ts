@@ -1,6 +1,6 @@
 import { Base } from "../base";
 import { Document, PartitionKey } from "../documents";
-import { PartitionKeyExtractor, PartitionKeyExtractorFunction } from "../range";
+import { PartitionKeyExtractor } from "../range";
 import { ConsistentHashRing } from "./consistentHashRing";
 
 export class HashPartitionResolver {

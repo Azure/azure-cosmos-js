@@ -4,6 +4,7 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "noImplicitAny": true,
+    "noUnusedLocals": true,
     "outDir": "./lib",
     "preserveConstEnums": true,
     "removeComments": true,

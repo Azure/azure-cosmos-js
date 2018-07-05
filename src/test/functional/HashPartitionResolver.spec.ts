@@ -1,7 +1,5 @@
-import * as assert from "assert";
-import * as Stream from "stream";
 import {
-    CosmosClient, HashPartitionResolver,
+    CosmosClient,
 } from "../../";
 import testConfig from "./../common/_testConfig";
 import { TestHelpers } from "./../common/TestHelpers";

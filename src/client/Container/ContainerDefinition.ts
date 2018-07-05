@@ -1,4 +1,4 @@
-import { IndexingPolicy, PartitionKey, PartitionKeyDefinition } from "../../documents";
+import { IndexingPolicy, PartitionKeyDefinition } from "../../documents";
 
 export interface ContainerDefinition {
     /** The id of the container. */

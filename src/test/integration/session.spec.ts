@@ -85,7 +85,7 @@ describe("Session Token", function () {
         assert.notEqual(tokens[index2], undefined);
         let secondPartitionLSN = tokens[index2];
 
-        const { result: document12 } = await container.items.get(document1.id, "1").read();
+        await container.items.get(document1.id, "1").read();
         assert.equal(getSpy.lastCall.args[2][Constants.HttpHeaders.SessionToken],
             client.documentClient.sessionContainer.getCombinedSessionToken(tokens));
         tokens = getToken(client.documentClient.sessionContainer.collectionResourceIdToSessionTokens);
@@ -101,7 +101,7 @@ describe("Session Token", function () {
         assert.equal(tokens[index2], secondPartitionLSN);
         firstPartitionLSN = tokens[index1];
 
-        const { result: document22 } = await container.items.get(document2.id, "2").delete();
+        await container.items.get(document2.id, "2").delete();
         assert.equal(deleteSpy.lastCall.args[2][Constants.HttpHeaders.SessionToken],
             client.documentClient.sessionContainer.getCombinedSessionToken(tokens));
         tokens = getToken(client.documentClient.sessionContainer.collectionResourceIdToSessionTokens);
@@ -109,9 +109,8 @@ describe("Session Token", function () {
         assert.equal(tokens[index2], (Number(secondPartitionLSN) + 1).toString());
         secondPartitionLSN = tokens[index2];
 
-        const { result: document14 } =
-            await container.items.get(document13.id)
-                .replace({ id: "1", operation: "replace" }, { partitionKey: "1" });
+        await container.items.get(document13.id)
+            .replace({ id: "1", operation: "replace" }, { partitionKey: "1" });
         assert.equal(putSpy.lastCall.args[3][Constants.HttpHeaders.SessionToken],
             client.documentClient.sessionContainer.getCombinedSessionToken(tokens));
         tokens = getToken(client.documentClient.sessionContainer.collectionResourceIdToSessionTokens);
@@ -123,7 +122,7 @@ describe("Session Token", function () {
         const queryOptions = { partitionKey: "1" };
         const queryIterator = container.items.query(query, queryOptions);
 
-        const { result } = await queryIterator.toArray();
+        await queryIterator.toArray();
         assert.equal(postSpy.lastCall.args[3][Constants.HttpHeaders.SessionToken],
             client.documentClient.sessionContainer.getCombinedSessionToken(tokens));
         tokens = getToken(client.documentClient.sessionContainer.collectionResourceIdToSessionTokens);
@@ -192,11 +191,10 @@ describe("Session Token", function () {
             .containers.get(containerDefinition.id)
             .delete();
 
-        const { result: createdCollection2 } =
-            await client2.databases.get(databaseDef.id)
+        await client2.databases.get(databaseDef.id)
                 .containers.create(containerDefinition, containerOptions);
 
-        const { result: collection2 } = await client2.databases.get(databaseDef.id)
+        await client2.databases.get(databaseDef.id)
             .containers.get(containerDefinition.id)
             .read();
         assert.equal(client.documentClient.getSessionToken(container.url), ""); // TODO: _self

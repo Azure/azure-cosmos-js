@@ -1,5 +1,4 @@
 import * as assert from "assert";
-import { Constants } from "../../common";
 import {
     ClientSideMetrics,
     QueryMetrics,

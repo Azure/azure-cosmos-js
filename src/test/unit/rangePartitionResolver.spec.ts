@@ -10,21 +10,21 @@ describe("RangePartitionResolver", function () {
 
             assert.throws(
                 function () {
-                    const r = new RangePartitionResolver(undefined, undefined);
+                    return new RangePartitionResolver(undefined, undefined);
                 },
                 expetcedError,
             );
 
             assert.throws(
                 function () {
-                    const r = new RangePartitionResolver(undefined, undefined);
+                    return new RangePartitionResolver(undefined, undefined);
                 },
                 expetcedError,
             );
 
             assert.throws(
                 function () {
-                    const r = new RangePartitionResolver(null, undefined);
+                    return new RangePartitionResolver(null, undefined);
                 },
                 expetcedError,
             );
@@ -35,35 +35,35 @@ describe("RangePartitionResolver", function () {
 
             assert.throws(
                 function () {
-                    const r = new RangePartitionResolver(0 as any, undefined);
+                    return new RangePartitionResolver(0 as any, undefined);
                 },
                 expetcedError,
             );
 
             assert.throws(
                 function () {
-                    const r = new RangePartitionResolver(true as any, undefined);
+                    return new RangePartitionResolver(true as any, undefined);
                 },
                 expetcedError,
             );
 
             assert.throws(
                 function () {
-                    const r = new RangePartitionResolver(NaN as any, undefined);
+                    return new RangePartitionResolver(NaN as any, undefined);
                 },
                 expetcedError,
             );
 
             assert.throws(
                 function () {
-                    const r = new RangePartitionResolver([] as any, undefined);
+                    return new RangePartitionResolver([] as any, undefined);
                 },
                 expetcedError,
             );
 
             assert.throws(
                 function () {
-                    const r = new RangePartitionResolver({} as any, undefined);
+                    return new RangePartitionResolver({} as any, undefined);
                 },
                 expetcedError,
             );
@@ -74,21 +74,21 @@ describe("RangePartitionResolver", function () {
 
             assert.throws(
                 function () {
-                    const r = new RangePartitionResolver("", undefined);
+                    return new RangePartitionResolver("", undefined);
                 },
                 expectedError,
             );
 
             assert.throws(
                 function () {
-                    const r = new RangePartitionResolver(function () { /* no op */ } as any, undefined);
+                    return new RangePartitionResolver(function () { /* no op */ } as any, undefined);
                 },
                 expectedError,
             );
 
             assert.throws(
                 function () {
-                    const r = new RangePartitionResolver("", null);
+                    return new RangePartitionResolver("", null);
                 },
                 expectedError,
             );
@@ -99,40 +99,38 @@ describe("RangePartitionResolver", function () {
 
             assert.throws(
                 function () {
-                    const r = new RangePartitionResolver("", 0 as any);
+                    return new RangePartitionResolver("", 0 as any);
                 },
                 expectedError,
             );
 
             assert.throws(
                 function () {
-                    const r = new RangePartitionResolver("", "" as any);
+                    return new RangePartitionResolver("", "" as any);
                 },
                 expectedError,
             );
 
             assert.throws(
                 function () {
-                    const r = new RangePartitionResolver("", true as any);
+                    return new RangePartitionResolver("", true as any);
                 },
                 expectedError,
             );
 
             assert.throws(
                 function () {
-                    const r = new RangePartitionResolver("", NaN as any);
+                    return new RangePartitionResolver("", NaN as any);
                 },
                 expectedError,
             );
 
             assert.throws(
                 function () {
-                    const r = new RangePartitionResolver("", {} as any);
+                    return new RangePartitionResolver("", {} as any);
                 },
                 expectedError,
             );
-
-            const rpr = new RangePartitionResolver("", new Array());
         });
 
         it("valid RangePartitionResolver", function (done) {
@@ -211,7 +209,7 @@ describe("RangePartitionResolver", function () {
 
             assert.throws(
                 function () {
-                    const result = resolver.resolveForCreate("X");
+                    return resolver.resolveForCreate("X");
                 },
                 /Error: Invalid operation: A containing range for 'X,X' doesn't exist in the partition map./,
             );
@@ -344,7 +342,7 @@ describe("RangePartitionResolver", function () {
         const invalidCompareFunctionTest = function (compareFunction: any) {
             assert.throws(
                 function () {
-                    const resolver = new RangePartitionResolver(
+                    return new RangePartitionResolver(
                         "key",
                         [{ range: new Range({ low: "A" }), link: "link1" }],
                         compareFunction,
@@ -382,12 +380,12 @@ describe("RangePartitionResolver", function () {
             const resolver = new RangePartitionResolver(
                 "key",
                 [{ range: new Range({ low: "A" }), link: "link1" }],
-                function (a, b) { throw new Error("Compare error"); },
+                function () { throw new Error("Compare error"); },
             );
 
             assert.throws(
                 function () {
-                    const result = (resolver as any).resolveForRead("A", ["link1"]); // TODO: any
+                    return (resolver as any).resolveForRead("A", ["link1"]); // TODO: any
                 },
                 /Error: Compare error/);
         });

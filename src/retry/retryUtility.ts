@@ -1,4 +1,3 @@
-﻿import { WriteStream } from "fs";
 import { RequestOptions } from "https";
 import { Stream } from "stream";
 import * as url from "url";
@@ -6,8 +5,7 @@ import { EndpointDiscoveryRetryPolicy, ResourceThrottleRetryPolicy, SessionReadR
 import { Constants, StatusCodes, SubStatusCodes } from "../common";
 import { ConnectionPolicy } from "../documents";
 import { GlobalEndpointManager } from "../globalEndpointManager";
-import { IHeaders } from "../queryExecutionContext";
-import { ErrorResponse, Response } from "../request";
+import { Response } from "../request";
 import { DefaultRetryPolicy } from "./defaultRetryPolicy";
 
 export interface Body {

@@ -1,24 +1,24 @@
-import * as assert from "assert";
-import { AzureDocuments, Constants, CosmosClient, RetryOptions } from "../..";
-import * as request from "../../request";
-import testConfig from "../common/_testConfig";
+// import * as assert from "assert";
+// import { AzureDocuments } from "../..";
+// import * as request from "../../request";
+// import testConfig from "../common/_testConfig";
 
-const endpoint = testConfig.host;
-const masterKey = testConfig.masterKey;
+// const endpoint = testConfig.host;
+// const masterKey = testConfig.masterKey;
 
 describe("retry policy tests", function () {
     this.timeout(300000);
-    const collectionDefinition = {
-        id: "sample collection",
-    };
+    // const collectionDefinition = {
+    //     id: "sample collection",
+    // };
 
-    const documentDefinition = {
-        id: "doc",
-        name: "sample document",
-        key: "value",
-    };
+    // const documentDefinition = {
+    //     id: "doc",
+    //     name: "sample document",
+    //     key: "value",
+    // };
 
-    const connectionPolicy = new AzureDocuments.ConnectionPolicy();
+    // const connectionPolicy = new AzureDocuments.ConnectionPolicy();
 
     // mocked database account to return the WritableLocations and ReadableLocations
     // set with the default endpoint
@@ -27,7 +27,7 @@ describe("retry policy tests", function () {
     //     callback(undefined, databaseAccount);
     // };
 
-    const retryAfterInMilliseconds = 1000;
+    // const retryAfterInMilliseconds = 1000;
     // // mocked request object stub that calls the callback with 429 throttling error
     // const mockCreateRequestObjectStub = function (connectionPolicy, requestOptions, callback) {
     //     callback({ code: 429, body: "Request rate is too large",

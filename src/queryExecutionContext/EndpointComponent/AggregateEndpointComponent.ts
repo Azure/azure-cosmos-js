@@ -126,7 +126,7 @@ export class AggregateEndpointComponent implements IEndpointComponent {
      */
     public async current(): Promise<Response<any>> {
         if (this.aggregateValues === undefined) {
-            const {result: resouces, headers} = await this._getAggregateResult();
+            const {headers} = await this._getAggregateResult();
             return {result: this.aggregateValues[this.aggregateValuesIndex], headers};
         } else {
             return {result: this.aggregateValues[this.aggregateValuesIndex], headers: undefined};

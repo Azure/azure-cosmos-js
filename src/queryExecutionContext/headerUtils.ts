@@ -1,6 +1,4 @@
-﻿import * as assert from "assert";
-import * as util from "util";
-import { Constants } from "../common";
+﻿import { Constants } from "../common";
 import { QueryMetrics } from "../queryMetrics";
 
 export interface IHeaders {

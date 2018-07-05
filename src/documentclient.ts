@@ -1,21 +1,13 @@
-import { resolvePtr } from "dns";
-import { basename } from "path";
 import { Readable } from "stream";
-import * as tunnel from "tunnel";
-import * as url from "url";
-import * as util from "util";
 import { Base, ResponseCallback } from "./base";
-import { Constants, Helper, Platform, StatusCodes, SubStatusCodes } from "./common";
+import { Constants, StatusCodes, SubStatusCodes } from "./common";
 import { DocumentClientBase } from "./DocumentClientBase";
 import {
-    ConnectionPolicy, ConsistencyLevel, DatabaseAccount, Document, PartitionKey, QueryCompatibilityMode,
+    ConnectionPolicy, ConsistencyLevel, Document, PartitionKey, QueryCompatibilityMode,
 } from "./documents";
-import { GlobalEndpointManager } from "./globalEndpointManager";
 import { FetchFunctionCallback, IHeaders, SqlQuerySpec } from "./queryExecutionContext";
 import { QueryIterator } from "./queryIterator";
-import { ErrorResponse, FeedOptions, MediaOptions, RequestHandler, RequestOptions, Response } from "./request";
-import { RetryOptions } from "./retry";
-import { SessionContainer } from "./sessionContainer";
+import { ErrorResponse, FeedOptions, MediaOptions, RequestOptions, Response } from "./request";
 
 export class DocumentClient extends DocumentClientBase {
     constructor(
@@ -454,8 +446,6 @@ export class DocumentClient extends DocumentClientBase {
         const optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
         options = optionsCallbackTuple.options;
         callback = optionsCallbackTuple.callback;
-
-        const resourceInfo = Base.parseLink(triggerLink);
 
         const isNameBased = Base.isLinkNameBased(triggerLink);
         const path = this.getPathFromLink(triggerLink, "", isNameBased);
@@ -1686,7 +1676,7 @@ export class DocumentClient extends DocumentClientBase {
         }
 
         try {
-            const { result: collection, headers } = await this.readCollection(collectionLink);
+            const { headers } = await this.readCollection(collectionLink);
             return Base.ResponseOrCallback(callback,
                 { result: this.partitionKeyDefinitionCache[collectionLink], headers });
         } catch (err) {

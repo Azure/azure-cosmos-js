@@ -87,7 +87,7 @@ describe("NodeJS CRUD Tests", function () {
         const authorizationCRUDTest = async function (isUpsertTest: boolean) {
             try {
                 const badclient = new CosmosClient({ endpoint, auth: undefined });
-                const { result: databases } = await badclient.databases.readAll().toArray();
+                await badclient.databases.readAll().toArray();
                 assert.fail("Must fail");
             } catch (err) {
                 assert(err !== undefined, "error should not be undefined");

@@ -89,6 +89,7 @@ describe("NodeJS CRUD Tests", function () {
             assert(results.length > 0, "number of results for the query should be > 0");
 
             // replace trigger
+            // @ts-ignore Typescript warns on unused const decleration
             trigger.body = function () { const x = 20; };
             const { result: replacedTrigger } = await container.triggers.get(trigger.id).replace(trigger);
 
@@ -153,6 +154,7 @@ describe("NodeJS CRUD Tests", function () {
             assert(results.length > 0, "number of results for the query should be > 0");
 
             // replace trigger
+            // @ts-ignore Typescript warns on unused const decleration
             trigger.body = function () { const x = 20; };
             const { result: replacedTrigger } = await container.triggers.upsert(trigger);
 
@@ -246,7 +248,7 @@ describe("NodeJS CRUD Tests", function () {
             assert.equal(document3.id, "doc3t3");
             const { result: document4 } = await container.items.create({ id: "testing post trigger" }, { postTriggerInclude: "response1", preTriggerInclude: "t1" });
             assert.equal(document4.id, "TESTING POST TRIGGERt1");
-            const { result: document5, headers } = await container.items.create({ id: "responseheaders" }, { preTriggerInclude: "t1" });
+            const { result: document5 } = await container.items.create({ id: "responseheaders" }, { preTriggerInclude: "t1" });
             assert.equal(document5.id, "RESPONSEHEADERSt1");
             try {
                 await container.items.create({ id: "Docoptype" }, { postTriggerInclude: "triggerOpType" });
@@ -269,7 +271,7 @@ describe("NodeJS CRUD Tests", function () {
             assert.equal(document3.id, "doc3t3");
             const { result: document4 } = await container.items.upsert({ id: "testing post trigger" }, { postTriggerInclude: "response1", preTriggerInclude: "t1" });
             assert.equal(document4.id, "TESTING POST TRIGGERt1");
-            const { result: document5, headers } = await container.items.upsert({ id: "responseheaders" }, { preTriggerInclude: "t1" });
+            const { result: document5 } = await container.items.upsert({ id: "responseheaders" }, { preTriggerInclude: "t1" });
             assert.equal(document5.id, "RESPONSEHEADERSt1");
             try {
                 await container.items.upsert({ id: "Docoptype" }, { postTriggerInclude: "triggerOpType" });

@@ -8,24 +8,13 @@ import { DefaultQueryExecutionContext } from "./defaultQueryExecutionContext";
 import { FetchResult, FetchResultType } from "./FetchResult";
 import { HeaderUtils, IHeaders } from "./headerUtils";
 
-const HttpHeaders = Constants;
-
-enum DocumentProducerStates {
-    started = "started",
-    inProgress = "inProgress",
-    ended = "ended",
-}
-
 export class DocumentProducer {
     // // Static Members
-    // STATES: Object.freeze({ started: "started", inProgress: "inProgress", ended: "ended" })
-    private static readonly STATES = DocumentProducerStates;
     private documentclient: DocumentClient; // TODO: any documentclient
     private collectionLink: string;
     private query: string | SqlQuerySpec;
     public targetPartitionKeyRange: any; // TODO: any partitionkeyrange
     public fetchResults: FetchResult[];
-    private state: DocumentProducerStates;
     public allFetched: boolean;
     private err: Error;
     public previousContinuationToken: string;
@@ -54,7 +43,6 @@ export class DocumentProducer {
         this.targetPartitionKeyRange = targetPartitionKeyRange;
         this.fetchResults = [];
 
-        this.state = DocumentProducer.STATES.started;
         this.allFetched = false;
         this.err = undefined;
 
@@ -64,8 +52,7 @@ export class DocumentProducer {
 
         // tslint:disable-next-line:no-shadowed-variable
         this.internalExecutionContext =
-            new DefaultQueryExecutionContext(documentclient, query, options, this.fetchFunction);
-        this.state = DocumentProducer.STATES.inProgress;
+            new DefaultQueryExecutionContext(options, this.fetchFunction);
     }
     /**
      * Synchronously gives the contiguous buffered results (stops at the first non result) if any
@@ -131,15 +118,11 @@ export class DocumentProducer {
 
     private _updateStates(err: any, allFetched: boolean) { // TODO: any Error
         if (err) {
-            this.state = DocumentProducer.STATES.ended;
             this.err = err;
             return;
         }
         if (allFetched) {
             this.allFetched = true;
-        }
-        if (this.allFetched && this.peekBufferedItems().length === 0) {
-            this.state = DocumentProducer.STATES.ended;
         }
         if (this.internalExecutionContext.continuation === this.continuationToken) {
             // nothing changed

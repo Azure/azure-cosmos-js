@@ -1,9 +1,7 @@
 import { IExecutionContext } from ".";
 import { Constants } from "../common";
-import { DocumentClient } from "../documentclient";
 import { ClientSideMetrics, QueryMetrics } from "../queryMetrics";
 import { Response } from "../request";
-import { SqlParameter, SqlQuerySpec } from "./SqlQuerySpec";
 
 export type FetchFunctionCallback = (options: any) => Promise<Response<any>>;
 
@@ -15,8 +13,6 @@ enum STATES {
 
 export class DefaultQueryExecutionContext implements IExecutionContext {
     private static readonly STATES = STATES;
-    private documentclient: DocumentClient;
-    private query: string | SqlQuerySpec;
     private resources: any; // TODO: any resources
     private currentIndex: number;
     private currentPartitionIndex: number;
@@ -36,12 +32,8 @@ export class DefaultQueryExecutionContext implements IExecutionContext {
      * @ignore
      */
     constructor(
-        documentclient: DocumentClient,
-        query: string | SqlQuerySpec,
         options: any,
         fetchFunctions: FetchFunctionCallback | FetchFunctionCallback[]) { // TODO: any options
-        this.documentclient = documentclient;
-        this.query = query;
         this.resources = [];
         this.currentIndex = 0;
         this.currentPartitionIndex = 0;

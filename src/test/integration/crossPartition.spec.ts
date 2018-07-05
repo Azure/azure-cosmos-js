@@ -108,30 +108,6 @@ describe("Cross Partition", function () {
             }
         };
 
-        const validateNextItem = async function (
-            queryIterator: QueryIterator<any>, expectedOrderIds: string[]) {
-
-            ////////////////////////////////
-            // validate nextItem()
-            ////////////////////////////////
-            const results: any[] = [];
-            try {
-                while (results.length < expectedOrderIds.length) {
-                    assert(queryIterator.hasMoreResults(), "hasMoreResults must indicate more results");
-                    const { result: item } = await queryIterator.nextItem();
-                    if (item === undefined) {
-                        break;
-                    }
-                    results.push(item);
-                }
-
-                assert(!queryIterator.hasMoreResults(), "hasMoreResults must signal results exhausted");
-                validateResults(results, expectedOrderIds);
-            } catch (err) {
-                throw err;
-            }
-        };
-
         const validateNextItemAndCurrentAndHasMoreResults =
             async function (queryIterator: QueryIterator<any>, expectedOrderIds: string[]) {
                 // curent and nextItem recursively invoke each other till queryIterator is exhausted
@@ -301,10 +277,6 @@ describe("Cross Partition", function () {
             const query = "SELECT * FROM root r";
             const options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 0 };
 
-            // prepare expected results
-            const getOrderByKey = function (r: any) {
-                return r["spam"];
-            };
             const expectedOrderedIds = [1, 10, 18, 2, 3, 13, 14, 16, 17, 0, 11, 12, 5, 9, 19, 4, 6, 7, 8, 15];
 
             // validates the results size and order
@@ -319,10 +291,6 @@ describe("Cross Partition", function () {
                 populateQueryMetrics: true,
             };
 
-            // prepare expected results
-            const getOrderByKey = function (r: any) {
-                return r["spam"];
-            };
             const expectedOrderedIds = [1, 10, 18, 2, 3, 13, 14, 16, 17, 0, 11, 12, 5, 9, 19, 4, 6, 7, 8, 15];
 
             // validates the results size and order
@@ -334,10 +302,6 @@ describe("Cross Partition", function () {
             const query = "SELECT * FROM root r";
             const options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 1 };
 
-            // prepare expected results
-            const getOrderByKey = function (r: any) {
-                return r["spam"];
-            };
             const expectedOrderedIds = [1, 10, 18, 2, 3, 13, 14, 16, 17, 0, 11, 12, 5, 9, 19, 4, 6, 7, 8, 15];
 
             // validates the results size and order
@@ -349,10 +313,6 @@ describe("Cross Partition", function () {
             const query = "SELECT * FROM root r";
             const options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 3 };
 
-            // prepare expected results
-            const getOrderByKey = function (r: any) {
-                return r["spam"];
-            };
             const expectedOrderedIds = [1, 10, 18, 2, 3, 13, 14, 16, 17, 0, 11, 12, 5, 9, 19, 4, 6, 7, 8, 15];
 
             // validates the results size and order
@@ -835,29 +795,30 @@ describe("Cross Partition", function () {
             }
         });
 
-        it("Validate Failure", async function () {
-            // simple order by query in string format
-            const query = "SELECT * FROM root r order by r.spam";
+        // TODO after enabling no-unused compiler checks it appears this test may do nothing.
+        // it("Validate Failure", async function () {
+        //     // simple order by query in string format
+        //     const query = "SELECT * FROM root r order by r.spam";
 
-            const options = { enableCrossPartitionQuery: true, maxItemCount: 2 };
+        //     const options = { enableCrossPartitionQuery: true, maxItemCount: 2 };
 
-            // prepare expected results
-            const getOrderByKey = function (r: any) {
-                return r["spam"];
-            };
-            const expectedOrderedIds = (_.sortBy(documentDefinitions, getOrderByKey).map(function (r) {
-                return r["id"];
-            }));
+        //     // prepare expected results
+        //     const getOrderByKey = function (r: any) {
+        //         return r["spam"];
+        //     };
+        //     const expectedOrderedIds = (_.sortBy(documentDefinitions, getOrderByKey).map(function (r) {
+        //         return r["id"];
+        //     }));
 
-            const queryIterator = container.items.query(query, options);
+        //     const queryIterator = container.items.query(query, options);
 
-            let firstTime = true;
+        //     let firstTime = true;
 
-            const { result } = await queryIterator.current();
+        //     const { result } = await queryIterator.current();
 
-            if (firstTime) {
-                firstTime = false;
-            }
-        });
+        //     if (firstTime) {
+        //         firstTime = false;
+        //     }
+        // });
     });
 });

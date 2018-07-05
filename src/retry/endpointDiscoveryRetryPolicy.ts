@@ -1,5 +1,4 @@
-﻿import { Constants, StatusCodes } from "../common";
-import { GlobalEndpointManager } from "../globalEndpointManager";
+﻿import { GlobalEndpointManager } from "../globalEndpointManager";
 import { ErrorResponse } from "../request/request";
 
 /**

@@ -1,6 +1,6 @@
-﻿import * as url from "url";
+import * as url from "url";
 import { Base } from "../base";
-import { Constants, StatusCodes, SubStatusCodes } from "../common";
+import { Constants } from "../common";
 import { GlobalEndpointManager } from "../globalEndpointManager";
 import { ErrorResponse } from "../request/request";
 

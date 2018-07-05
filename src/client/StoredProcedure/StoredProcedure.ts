@@ -1,4 +1,4 @@
-import { Constants, UriFactory } from "../../common";
+import { UriFactory } from "../../common";
 import { DocumentClient } from "../../documentclient";
 import { RequestOptions, Response } from "../../request";
 import { Container } from "../Container";

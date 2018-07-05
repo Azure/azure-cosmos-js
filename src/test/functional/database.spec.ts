@@ -78,7 +78,7 @@ describe("NodeJS CRUD Tests", function () {
         it("nativeApi Should fail on ends with a space", async function () {
             // Id shoudn't end with a space.
             try {
-                const { result: db } = await client.databases.create({ id: "id_ends_with_space " });
+                await client.databases.create({ id: "id_ends_with_space " });
                 assert.fail("Must throw if id ends with a space");
             } catch (err) {
                 assert.equal("Id ends with a space.", err.message);
@@ -88,7 +88,7 @@ describe("NodeJS CRUD Tests", function () {
         it("nativeAPI Should fail on contains '/'", async function() {
             // Id shoudn't contain "/".
             try {
-                const { result: db } = await client.databases.create({ id: "id_with_illegal/_char" });
+                await client.databases.create({ id: "id_with_illegal/_char" });
                 assert.fail("Must throw if id has illegal characters");
             } catch (err) {
                 assert.equal("Id contains illegal chars.", err.message);
@@ -98,7 +98,7 @@ describe("NodeJS CRUD Tests", function () {
         it("nativeAPI Should fail on contains '\\'", async function() {
             // Id shoudn't contain "\\".
             try {
-                const { result: db } = await client.databases.create({ id: "id_with_illegal\\_char" });
+                await client.databases.create({ id: "id_with_illegal\\_char" });
                 assert.fail("Must throw if id contains illegal characters");
             } catch (err) {
                 assert.equal("Id contains illegal chars.", err.message);
@@ -108,7 +108,7 @@ describe("NodeJS CRUD Tests", function () {
         it("nativeAPI Should fail on contains '?'", async function() {
             // Id shoudn't contain "?".
             try {
-                const { result: db } = await client.databases.create({ id: "id_with_illegal?_?char" });
+                await client.databases.create({ id: "id_with_illegal?_?char" });
                 assert.fail("Must throw if id contains illegal characters");
             } catch (err) {
                 assert.equal("Id contains illegal chars.", err.message);
@@ -119,7 +119,7 @@ describe("NodeJS CRUD Tests", function () {
 
             // Id shoudn't contain "#".
             try {
-                const { result: db } = await client.databases.create({ id: "id_with_illegal#_char" });
+                await client.databases.create({ id: "id_with_illegal#_char" });
                 assert.fail("Must throw if id contains illegal characters");
             } catch (err) {
                 assert.equal("Id contains illegal chars.", err.message);

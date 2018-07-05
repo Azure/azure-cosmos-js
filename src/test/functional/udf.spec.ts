@@ -114,17 +114,13 @@ describe("NodeJS CRUD Tests", function() {
             assert.equal(replacedUdf.id, udfAfterReplace.id);
 
             // delete udf
-            const {
-                result: res,
-            } = await container.userDefinedFunctions
+            await container.userDefinedFunctions
                 .get(replacedUdf.id)
                 .delete();
 
             // read udfs after deletion
             try {
-                const {
-                    result: badudf,
-                } = await container.userDefinedFunctions
+                await container.userDefinedFunctions
                     .get(replacedUdf.id)
                     .read();
                 assert.fail("Must fail to read after delete");
@@ -204,17 +200,13 @@ describe("NodeJS CRUD Tests", function() {
             assert.equal(replacedUdf.id, udfAfterReplace.id);
 
             // delete udf
-            const {
-                result: res,
-            } = await container.userDefinedFunctions
+            await container.userDefinedFunctions
                 .get(replacedUdf.id)
                 .delete();
 
             // read udfs after deletion
             try {
-                const {
-                    result: badudf,
-                } = await container.userDefinedFunctions
+                await container.userDefinedFunctions
                     .get(replacedUdf.id)
                     .read();
                 assert.fail("Must fail to read after delete");
