@@ -4,6 +4,7 @@ import { QueryIterator } from "../../queryIterator";
 import { FeedOptions, RequestOptions, Response } from "../../request";
 import { Database } from "./Database";
 import { DatabaseDefinition } from "./DatabaseDefinition";
+import { DatabaseResponse } from "./DatabaseResponse";
 
 export class Databases {
     constructor(private readonly client: CosmosClient) {}
@@ -11,6 +12,7 @@ export class Databases {
         return new Database(this.client, id);
     }
 
+    // TODO: DatabaseResponse for QueryIterator?
     public query(query: string | SqlQuerySpec, options?: FeedOptions): QueryIterator<DatabaseDefinition> {
         return this.client.documentClient.queryDatabases(query, options);
     }
@@ -28,10 +30,13 @@ export class Databases {
      *
      * @param body              - A json object that represents The database to be created.
      */
-    public create(body: DatabaseDefinition, options?: RequestOptions): Promise<Response<DatabaseDefinition>> {
-        return this.client.documentClient.createDatabase(body, options);
+    public async create(body: DatabaseDefinition, options?: RequestOptions): Promise<DatabaseResponse> {
+        const response = await this.client.documentClient.createDatabase(body, options);
+        const ref = new Database(this.client, body.id);
+        return { body: response.result, headers: response.headers, ref, database: ref };
     }
 
+    // TODO: DatabaseResponse for QueryIterator?
     public readAll(options?: FeedOptions): QueryIterator<DatabaseDefinition> {
         return this.client.documentClient.readDatabases(options);
     }

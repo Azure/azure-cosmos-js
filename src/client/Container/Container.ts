@@ -6,6 +6,7 @@ import { StoredProcedures } from "../StoredProcedure";
 import { Triggers } from "../Trigger";
 import { UserDefinedFunctions } from "../UserDefinedFunction";
 import { ContainerDefinition } from "./ContainerDefinition";
+import { ContainerResponse } from "./ContainerResponse";
 
 export class Container {
     public readonly items: Items;
@@ -24,15 +25,18 @@ export class Container {
         this.userDefinedFunctions = new UserDefinedFunctions(this);
     }
 
-    public read(options?: RequestOptions): Promise<Response<ContainerDefinition>> {
-        return this.database.client.documentClient.readCollection(this.url, options);
+    public async read(options?: RequestOptions): Promise<ContainerResponse> {
+        const response = await this.database.client.documentClient.readCollection(this.url, options);
+        return {body: response.result, headers: response.headers, ref: this, container: this};
     }
 
-    public replace(body: ContainerDefinition, options?: RequestOptions): Promise<Response<ContainerDefinition>> {
-        return this.database.client.documentClient.replaceCollection(this.url, body, options);
+    public async replace(body: ContainerDefinition, options?: RequestOptions): Promise<ContainerResponse> {
+        const response = await this.database.client.documentClient.replaceCollection(this.url, body, options);
+        return {body: response.result, headers: response.headers, ref: this, container: this};
     }
 
-    public delete(options?: RequestOptions): Promise<Response<ContainerDefinition>> {
-        return this.database.client.documentClient.deleteCollection(this.url, options);
+    public async delete(options?: RequestOptions): Promise<ContainerResponse> {
+        const response = await this.database.client.documentClient.deleteCollection(this.url, options);
+        return {body: response.result, headers: response.headers, ref: this, container: this};
     }
 }
