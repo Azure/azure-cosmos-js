@@ -9,10 +9,6 @@ import { ContainerResponse } from "./ContainerResponse";
 export class Containers {
     constructor(public readonly database: Database) { }
 
-    public get(id: string): Container {
-        return new Container(this.database, id);
-    }
-
     public query(query: SqlQuerySpec, options?: FeedOptions): QueryIterator<ContainerDefinition> {
         return this.database.client.documentClient.queryCollections(this.database.url, query, options);
     }

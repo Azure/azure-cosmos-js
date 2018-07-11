@@ -8,9 +8,6 @@ import { DatabaseResponse } from "./DatabaseResponse";
 
 export class Databases {
     constructor(private readonly client: CosmosClient) {}
-    public get(id: string): Database {
-        return new Database(this.client, id);
-    }
 
     // TODO: DatabaseResponse for QueryIterator?
     public query(query: string | SqlQuerySpec, options?: FeedOptions): QueryIterator<DatabaseDefinition> {
