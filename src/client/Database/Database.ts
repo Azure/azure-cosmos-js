@@ -1,9 +1,9 @@
-import { Constants, UriFactory } from "../../common";
+import { UriFactory } from "../../common";
 import { CosmosClient } from "../../CosmosClient";
-import { RequestOptions, Response } from "../../request";
+import { RequestOptions } from "../../request";
 import { Containers } from "../Container";
 import { Users } from "../User";
-import { DatabaseDefinition } from "./DatabaseDefinition";
+import { DatabaseResponse } from "./DatabaseResponse";
 
 export class Database {
     public readonly containers: Containers;
@@ -18,11 +18,13 @@ export class Database {
         this.users = new Users(this);
     }
 
-    public read(options?: RequestOptions): Promise<Response<DatabaseDefinition>> {
-        return this.client.documentClient.readDatabase(this.url, options);
+    public async read(options?: RequestOptions): Promise<DatabaseResponse> {
+        const response = await this.client.documentClient.readDatabase(this.url, options);
+        return { body: response.result, headers: response.headers, ref: this, database: this };
     }
 
-    public delete(options?: RequestOptions): Promise<Response<DatabaseDefinition>> {
-        return this.client.documentClient.deleteDatabase(this.url, options);
+    public async delete(options?: RequestOptions): Promise<DatabaseResponse> {
+        const response = await this.client.documentClient.deleteDatabase(this.url, options);
+        return { body: response.result, headers: response.headers, ref: this, database: this };
     }
 }
