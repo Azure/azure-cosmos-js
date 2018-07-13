@@ -6,7 +6,7 @@ import testConfig from "./../common/_testConfig";
 const endpoint = testConfig.host;
 const masterKey = testConfig.masterKey;
 
-const defaultCleint = new CosmosClient({ endpoint, auth: { masterKey } })
+const defaultCleint = new CosmosClient({ endpoint, auth: { masterKey } });
 
 export async function removeAllDatabases(client: CosmosClient = defaultCleint) {
   try {

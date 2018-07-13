@@ -64,7 +64,7 @@ describe("Session Token", function() {
     let index1;
     let index2;
 
-    const { id: databaseId  } = await getTestDatabase(client, "session test")
+    const { id: databaseId } = await getTestDatabase(client, "session test");
     const database = client.database(databaseId);
 
     const { body: createdContainerDef } = await database.containers.create(containerDefinition, containerOptions);
@@ -161,7 +161,7 @@ describe("Session Token", function() {
   });
 
   it("validate 'lsn not caught up' error for higher lsn and clearing session token", async function() {
-    const { id: databaseId } = await getTestDatabase(client, "session test")
+    const { id: databaseId } = await getTestDatabase(client, "session test");
 
     const containerLink = "dbs/" + databaseId + "/colls/" + containerId;
     const database = client.database(databaseId);
@@ -207,10 +207,8 @@ describe("Session Token", function() {
     //   auth: { masterKey },
     //   consistencyLevel: ConsistencyLevel.Session
     // });
-
     // const { body: databaseDef } = await client.databases.create(databaseBody);
     // const database = client.database(databaseDef.id);
-
     // await database.containers.create(containerDefinition, containerOptions);
     // const container = database.container(containerDefinition.id);
     // await container.read();
@@ -218,9 +216,7 @@ describe("Session Token", function() {
     //   .database(databaseDef.id)
     //   .container(containerDefinition.id)
     //   .delete();
-
     // await client2.database(databaseDef.id).containers.create(containerDefinition, containerOptions);
-
     // await client2
     //   .database(databaseDef.id)
     //   .container(containerDefinition.id)
@@ -236,7 +232,7 @@ describe("Session Token", function() {
       consistencyLevel: ConsistencyLevel.Session
     });
 
-    const db = await getTestDatabase(client, "session test")
+    const db = await getTestDatabase(client, "session test");
 
     const { body: createdContainerDef } = await db.containers.create(containerDefinition, containerOptions);
     const createdContainer = db.container(createdContainerDef.id);
@@ -245,7 +241,8 @@ describe("Session Token", function() {
       id: "1"
     });
     const requestOptions = { partitionKey: "1" };
-    await client2.database(db.id)
+    await client2
+      .database(db.id)
       .container(createdContainerDef.id)
       .item(createdDocument.id)
       .delete(requestOptions);
