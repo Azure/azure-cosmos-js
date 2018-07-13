@@ -1,8 +1,14 @@
 import * as assert from "assert";
 import { Container, CosmosClient, Database, DatabaseDefinition, Item, RequestOptions, Response } from "../../";
 import { ContainerDefinition, ItemResponse, PermissionDefinition, User, UserDefinition } from "../../client";
+import testConfig from "./../common/_testConfig";
 
-export async function removeAllDatabases(client: CosmosClient) {
+const endpoint = testConfig.host;
+const masterKey = testConfig.masterKey;
+
+const defaultCleint = new CosmosClient({ endpoint, auth: { masterKey } })
+
+export async function removeAllDatabases(client: CosmosClient = defaultCleint) {
   try {
     const { result: databases } = await client.databases.readAll().toArray();
     const length = databases.length;
