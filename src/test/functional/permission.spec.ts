@@ -2,7 +2,12 @@ import * as assert from "assert";
 import { CosmosClient, DocumentBase } from "../../";
 import { PermissionDefinition } from "../../client";
 import testConfig from "./../common/_testConfig";
-import { TestHelpers } from "./../common/TestHelpers";
+import {
+  createOrUpsertPermission,
+  getTestContainer,
+  removeAllDatabases,
+  replaceOrUpsertPermission
+} from "./../common/TestHelpers";
 
 const endpoint = testConfig.host;
 const masterKey = testConfig.masterKey;
@@ -13,17 +18,13 @@ describe("NodeJS CRUD Tests", function() {
   // remove all databases from the endpoint before each test
   beforeEach(async function() {
     this.timeout(10000);
-    try {
-      await TestHelpers.removeAllDatabases(client);
-    } catch (err) {
-      throw err;
-    }
+    await removeAllDatabases(client);
   });
   describe("Validate Permission CRUD", function() {
     const permissionCRUDTest = async function(isUpsertTest: boolean) {
       try {
         // create container & database
-        const container = await TestHelpers.getTestContainer(client, "Validate Permission Crud");
+        const container = await getTestContainer(client, "Validate Permission Crud");
 
         // create user
         const { result: userDef } = await container.database.users.create({ id: "new user" });
@@ -39,7 +40,7 @@ describe("NodeJS CRUD Tests", function() {
         };
 
         // create permission
-        const { result: createdPermission } = await TestHelpers.createOrUpsertPermission(
+        const { result: createdPermission } = await createOrUpsertPermission(
           user,
           permissionDef,
           undefined,
@@ -66,7 +67,7 @@ describe("NodeJS CRUD Tests", function() {
         assert(results.length > 0, "number of results for the query should be > 0");
 
         permissionDef.permissionMode = DocumentBase.PermissionMode.All;
-        const { result: replacedPermission } = await TestHelpers.replaceOrUpsertPermission(
+        const { result: replacedPermission } = await replaceOrUpsertPermission(
           user,
           permissionDef,
           undefined,
@@ -115,7 +116,7 @@ describe("NodeJS CRUD Tests", function() {
           id: "coll1",
           partitionKey: { paths: ["/" + partitionKey], kind: DocumentBase.PartitionKind.Hash }
         };
-        const container = await TestHelpers.getTestContainer(
+        const container = await getTestContainer(
           client,
           "permission CRUD over multiple partitions",
           containerDefinition
@@ -137,7 +138,7 @@ describe("NodeJS CRUD Tests", function() {
         };
 
         // create permission
-        const { result: permissionDef } = await TestHelpers.createOrUpsertPermission(
+        const { result: permissionDef } = await createOrUpsertPermission(
           user,
           permissionDefinition,
           undefined,
@@ -170,7 +171,7 @@ describe("NodeJS CRUD Tests", function() {
 
         // Replace permission
         permissionDef.permissionMode = DocumentBase.PermissionMode.All;
-        const { result: replacedPermission } = await TestHelpers.replaceOrUpsertPermission(
+        const { result: replacedPermission } = await replaceOrUpsertPermission(
           user,
           permissionDef,
           undefined,

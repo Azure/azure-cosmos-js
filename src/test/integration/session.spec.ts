@@ -3,7 +3,7 @@ import * as sinon from "sinon";
 import { Base, Constants, CosmosClient, IHeaders } from "../../";
 import { ConsistencyLevel, PartitionKind } from "../../documents";
 import testConfig from "./../common/_testConfig";
-import { TestHelpers } from "./../common/TestHelpers";
+import { removeAllDatabases } from "./../common/TestHelpers";
 
 const endpoint = testConfig.host;
 const masterKey = testConfig.masterKey;
@@ -58,7 +58,7 @@ describe("Session Token", function() {
   };
 
   beforeEach(async function() {
-    await TestHelpers.removeAllDatabases(client);
+    await removeAllDatabases(client);
   });
 
   it("validate session tokens for sequence of opearations", async function() {
