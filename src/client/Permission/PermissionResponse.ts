@@ -3,5 +3,5 @@ import { PermissionDefinition } from "./PermissionDefinition";
 import { Permission } from "./Permission";
 
 export interface PermissionResponse extends CosmosResponse<PermissionDefinition, Permission> {
-    permission: Permission;
+  permission: Permission;
 }

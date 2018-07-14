@@ -16,16 +16,16 @@ export class Permission {
   }
   public async read(options?: RequestOptions): Promise<PermissionResponse> {
     const response = await this.client.documentClient.readPermission(this.url, options);
-    return {body: response.result, headers: response.headers, ref: this, permission: this};
+    return { body: response.result, headers: response.headers, ref: this, permission: this };
   }
 
   public async replace(body: PermissionDefinition, options?: RequestOptions): Promise<PermissionResponse> {
     const response = await this.client.documentClient.replacePermission(this.url, body, options);
-    return {body: response.result, headers: response.headers, ref: this, permission: this};
+    return { body: response.result, headers: response.headers, ref: this, permission: this };
   }
 
   public async delete(options?: RequestOptions): Promise<PermissionResponse> {
     const response = await this.client.documentClient.deletePermission(this.url, options);
-    return {body: response.result, headers: response.headers, ref: this, permission: this};
+    return { body: response.result, headers: response.headers, ref: this, permission: this };
   }
 }
