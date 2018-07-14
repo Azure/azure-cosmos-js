@@ -257,7 +257,7 @@ describe.skip("NodeJS Aggregate Query Tests", async function() {
       const aggregateSinglePartitionQueryFormat = "SELECT VALUE %s(r.%s) FROM r WHERE r.%s = '%s'";
       const aggregateSinglePartitionQueryFormatSelect = "SELECT %s(r.%s) FROM r WHERE r.%s = '%s'";
       const samePartitionSum =
-        testdata.numberOfDocsWithSamePartitionKey * (testdata.numberOfDocsWithSamePartitionKey + 1) / 2.0;
+        (testdata.numberOfDocsWithSamePartitionKey * (testdata.numberOfDocsWithSamePartitionKey + 1)) / 2.0;
       const aggregateSinglePartitionConfigs = [
         {
           operator: "AVG",
