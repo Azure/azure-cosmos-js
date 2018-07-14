@@ -1,6 +1,6 @@
-import { Constants, UriFactory } from "../../common";
+import { UriFactory } from "../../common";
 import { DocumentClient } from "../../documentclient";
-import { RequestOptions, CosmosResponse } from "../../request";
+import { CosmosResponse, RequestOptions } from "../../request";
 import { Container } from "../Container";
 import { StoredProcedureDefinition } from "./StoredProcedureDefinition";
 import { StoredProcedureResponse } from "./StoredProcedureResponse";
