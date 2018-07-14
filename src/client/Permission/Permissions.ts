@@ -48,7 +48,7 @@ export class Permissions {
    * specific resource e.g. Item or Cotnainer.  </p>
    */
   public async upsert(body: PermissionDefinition, options?: RequestOptions): Promise<PermissionResponse> {
-    const response = await  this.client.documentClient.upsertPermission(this.user.url, body, options);
+    const response = await this.client.documentClient.upsertPermission(this.user.url, body, options);
     const ref = new Permission(this.user, response.result.id);
     return { body: response.result, headers: response.headers, ref, permission: ref };
   }
