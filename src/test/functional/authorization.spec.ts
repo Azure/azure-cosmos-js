@@ -39,7 +39,7 @@ describe("NodeJS CRUD Tests", function() {
       const { body: container2 } = await client.database(db.id).containers.create({ id: "sample container2" });
 
       // create user1
-      const { result: user1 } = await client.database(db.id).users.create({ id: "user1" });
+      const { body: user1 } = await client.database(db.id).users.create({ id: "user1" });
       let permission = {
         id: "permission On Coll1",
         permissionMode: DocumentBase.PermissionMode.Read,
@@ -68,7 +68,7 @@ describe("NodeJS CRUD Tests", function() {
       assert((permissionOnDoc2 as any)._token !== undefined, "permission token is invalid"); // TODO: any rid
 
       // create user 2
-      const { result: user2 } = await client.database(db.id).users.create({ id: "user2" });
+      const { body: user2 } = await client.database(db.id).users.create({ id: "user2" });
       permission = {
         id: "permission On coll2",
         permissionMode: DocumentBase.PermissionMode.All,
@@ -188,7 +188,7 @@ describe("NodeJS CRUD Tests", function() {
         containerDefinition
       );
       // create user
-      const { result: userDef } = await container.database.users.create({ id: "user1" });
+      const { body: userDef } = await container.database.users.create({ id: "user1" });
       const user = container.database.user(userDef.id);
 
       const key = 1;
@@ -200,7 +200,7 @@ describe("NodeJS CRUD Tests", function() {
       };
 
       // create permission
-      const { result: permission } = await user.permissions.create(permissionDefinition);
+      const { body: permission } = await user.permissions.create(permissionDefinition);
       assert((permission as any)._token !== undefined, "permission token is invalid");
       const resourceTokens: any = {};
       resourceTokens[container.id] = (permission as any)._token;
