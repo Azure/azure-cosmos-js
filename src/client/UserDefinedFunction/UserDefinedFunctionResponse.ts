@@ -1,6 +1,6 @@
 import { CosmosResponse } from "../../request";
-import { UserDefinedFunctionDefinition } from "./UserDefinedFunctionDefinition";
 import { UserDefinedFunction } from "./UserDefinedFunction";
+import { UserDefinedFunctionDefinition } from "./UserDefinedFunctionDefinition";
 
 export interface UserDefinedFunctionResponse
   extends CosmosResponse<UserDefinedFunctionDefinition, UserDefinedFunction> {

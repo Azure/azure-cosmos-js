@@ -1,6 +1,6 @@
 import { CosmosResponse } from "../../request";
-import { PermissionDefinition } from "./PermissionDefinition";
 import { Permission } from "./Permission";
+import { PermissionDefinition } from "./PermissionDefinition";
 
 export interface PermissionResponse extends CosmosResponse<PermissionDefinition, Permission> {
   permission: Permission;

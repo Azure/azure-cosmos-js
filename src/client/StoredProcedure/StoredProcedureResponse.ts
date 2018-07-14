@@ -1,6 +1,6 @@
 import { CosmosResponse } from "../../request";
-import { StoredProcedureDefinition } from "./StoredProcedureDefinition";
 import { StoredProcedure } from "./StoredProcedure";
+import { StoredProcedureDefinition } from "./StoredProcedureDefinition";
 
 export interface StoredProcedureResponse extends CosmosResponse<StoredProcedureDefinition, StoredProcedure> {
   storedProcedure: StoredProcedure;
