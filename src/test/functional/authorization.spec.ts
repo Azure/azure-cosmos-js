@@ -46,7 +46,7 @@ describe("NodeJS CRUD Tests", function() {
         resource: (container1 as any)._self
       }; // TODO: any rid stuff
       // create permission for container1
-      const { result: permissionOnColl1 } = await TestHelpers.createOrUpsertPermission(
+      const { body: permissionOnColl1 } = await TestHelpers.createOrUpsertPermission(
         client.database(db.id).user(user1.id),
         permission,
         undefined,
@@ -59,7 +59,7 @@ describe("NodeJS CRUD Tests", function() {
         resource: (document2 as any)._self // TODO: any rid
       };
       // create permission for document 2
-      const { result: permissionOnDoc2 } = await TestHelpers.createOrUpsertPermission(
+      const { body: permissionOnDoc2 } = await TestHelpers.createOrUpsertPermission(
         client.database(db.id).user(user1.id),
         permission,
         undefined,
@@ -75,7 +75,7 @@ describe("NodeJS CRUD Tests", function() {
         resource: (container2 as any)._self // TODO: any rid
       };
       // create permission on container 2
-      const { result: permissionOnColl2 } = await TestHelpers.createOrUpsertPermission(
+      const { body: permissionOnColl2 } = await TestHelpers.createOrUpsertPermission(
         client.database(db.id).user(user2.id),
         permission,
         undefined,

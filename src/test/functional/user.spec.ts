@@ -30,7 +30,7 @@ describe("NodeJS CRUD Tests", function() {
       const beforeCreateCount = users.length;
 
       // create user
-      const { result: userDef } = await TestHelpers.createOrUpsertUser(
+      const { body: userDef } = await TestHelpers.createOrUpsertUser(
         database,
         { id: "new user" },
         undefined,

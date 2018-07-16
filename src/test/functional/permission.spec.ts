@@ -39,7 +39,7 @@ describe("NodeJS CRUD Tests", function() {
         };
 
         // create permission
-        const { result: createdPermission } = await TestHelpers.createOrUpsertPermission(
+        const { body: createdPermission } = await TestHelpers.createOrUpsertPermission(
           user,
           permissionDef,
           undefined,
@@ -66,7 +66,7 @@ describe("NodeJS CRUD Tests", function() {
         assert(results.length > 0, "number of results for the query should be > 0");
 
         permissionDef.permissionMode = DocumentBase.PermissionMode.All;
-        const { result: replacedPermission } = await TestHelpers.replaceOrUpsertPermission(
+        const { body: replacedPermission } = await TestHelpers.replaceOrUpsertPermission(
           user,
           permissionDef,
           undefined,
@@ -137,12 +137,13 @@ describe("NodeJS CRUD Tests", function() {
         };
 
         // create permission
-        const { result: permissionDef } = await TestHelpers.createOrUpsertPermission(
+        const response = await TestHelpers.createOrUpsertPermission(
           user,
           permissionDefinition,
           undefined,
           isUpsertTest
         );
+        const permissionDef = response.body;
         let permission = user.permission(permissionDef.id);
         assert.equal(permissionDef.id, permissionDefinition.id, "permission name error");
         assert.equal(
@@ -170,7 +171,7 @@ describe("NodeJS CRUD Tests", function() {
 
         // Replace permission
         permissionDef.permissionMode = DocumentBase.PermissionMode.All;
-        const { result: replacedPermission } = await TestHelpers.replaceOrUpsertPermission(
+        const { body: replacedPermission } = await TestHelpers.replaceOrUpsertPermission(
           user,
           permissionDef,
           undefined,
