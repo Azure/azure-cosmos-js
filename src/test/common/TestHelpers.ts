@@ -9,29 +9,33 @@ const masterKey = testConfig.masterKey;
 const defaultCleint = new CosmosClient({ endpoint, auth: { masterKey } });
 
 export async function removeAllDatabases(client: CosmosClient = defaultCleint) {
-  try {
-    const { result: databases } = await client.databases.readAll().toArray();
-    const length = databases.length;
+  // try {
+  //   const { result: databases } = await client.databases.readAll().toArray();
+  //   const length = databases.length;
 
-    if (length === 0) {
-      return;
-    }
+  //   if (length === 0) {
+  //     return;
+  //   }
 
-    const count = 0;
-    await Promise.all(
-      databases.map<Promise<Response<DatabaseDefinition>>>(async (database: DatabaseDefinition) =>
-        client.database(database.id).delete()
-      )
-    );
-  } catch (err) {
-    // TODO: remove console logging for errors and add ts-lint flag back
-    console.log("An error occured", err);
-    assert.fail(err);
-    throw err;
-  }
+  //   const count = 0;
+  //   await Promise.all(
+  //     databases.map<Promise<Response<DatabaseDefinition>>>(async (database: DatabaseDefinition) =>
+  //       client.database(database.id).delete()
+  //     )
+  //   );
+  // } catch (err) {
+  //   // TODO: remove console logging for errors and add ts-lint flag back
+  //   console.log("An error occured", err);
+  //   assert.fail(err);
+  //   throw err;
+  // }
 }
 
-export async function getTestDatabase(client: CosmosClient, testName: string) {
+export async function getTestDatabase(client: CosmosClient, testName?: string) {
+  if (!this.test && !this.fullTitle){
+    console.log(this)
+  }
+  testName = testName || (this.test ? this.test.fullTitle() : this.fullTitle())
   const entropy = Math.floor(Math.random() * 10000);
   const id = `${testName.replace(" ", "").substring(0, 30)}${entropy}`;
   await client.databases.create({ id });

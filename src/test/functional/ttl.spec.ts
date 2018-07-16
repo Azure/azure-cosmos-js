@@ -3,7 +3,7 @@ import * as Stream from "stream";
 import { CosmosClient } from "../../";
 import { Container, ContainerDefinition, Database } from "../../client";
 import testConfig from "./../common/_testConfig";
-import { removeAllDatabases } from "./../common/TestHelpers";
+import { getTestDatabase, removeAllDatabases } from "./../common/TestHelpers";
 
 // TODO: should fix long lines
 // tslint:disable:max-line-length
@@ -60,7 +60,7 @@ describe("NodeJS CRUD Tests", function() {
 
     it("nativeApi Validate container and Item TTL values.", async function() {
       try {
-        const { body: db } = await client.databases.create({ id: "ttl test1 database" });
+        const db = await getTestDatabase(client)
 
         const containerDefinition = {
           id: "sample container1",
@@ -149,7 +149,7 @@ describe("NodeJS CRUD Tests", function() {
     }
 
     it("nativeApi Validate Item TTL with positive defaultTtl.", async function() {
-      const { body: db } = await client.databases.create({ id: "ttl test2 database" });
+      const db = await getTestDatabase(client)
 
       const containerDefinition = {
         id: "sample container",
@@ -189,7 +189,7 @@ describe("NodeJS CRUD Tests", function() {
     }
 
     it("nativeApi Validate Item TTL with -1 defaultTtl.", async function() {
-      const { body: db } = await client.databases.create({ id: "ttl test2 database" });
+      const db = await getTestDatabase(client)
 
       const containerDefinition = {
         id: "sample container",
@@ -224,7 +224,7 @@ describe("NodeJS CRUD Tests", function() {
     });
 
     it("nativeApi Validate Item TTL with no defaultTtl.", async function() {
-      const { body: db } = await client.databases.create({ id: "ttl test3 database" });
+      const db = await getTestDatabase(client)
 
       const containerDefinition = { id: "sample container" };
 
@@ -292,7 +292,7 @@ describe("NodeJS CRUD Tests", function() {
     }
 
     it("nativeApi Validate Item TTL Misc cases.", async function() {
-      const { body: db } = await client.databases.create({ id: "ttl test4 database" });
+      const db = await getTestDatabase(client)
 
       const containerDefinition = {
         id: "sample container",
