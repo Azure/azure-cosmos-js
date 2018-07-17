@@ -1,4 +1,4 @@
-# Microsoft Azure Cosmos JavaScript SDK
+# Microsoft Azure Cosmos JavaScript SDK - TEST FOR BUILD
 
 This project provides JavaScript & Node.js SDK library for [SQL API](https://docs.microsoft.com/en-us/azure/cosmos-db/sql-api-sql-query) of [Azure Cosmos
 Database Service](https://azure.microsoft.com/en-us/services/cosmos-db/). This project also includes samples, tools, and utilities.
