@@ -29,11 +29,7 @@ export async function removeAllDatabases(client: CosmosClient = defaultCleint) {
     }
 
     const count = 0;
-    await Promise.all(
-      databases.map<Promise<Response<DatabaseDefinition>>>(async (database: DatabaseDefinition) =>
-        client.database(database.id).delete()
-      )
-    );
+    await Promise.all(databases.map(async (database: DatabaseDefinition) => client.database(database.id).delete()));
   } catch (err) {
     // TODO: remove console logging for errors and add ts-lint flag back
     console.log("An error occured", err);
