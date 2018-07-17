@@ -72,7 +72,7 @@ describe("Authorization", function() {
       auth: { resourceTokens: rTokens }
     });
 
-    const { body: coll } = await clientReadPermission
+    const coll = await clientReadPermission
       .database(database.id)
       .container(container.id)
       .read();
@@ -86,7 +86,7 @@ describe("Authorization", function() {
     });
 
     // self link must be used to access a resource using permissionFeed
-    const { body: coll } = await clientReadPermission
+    const coll = await clientReadPermission
       .database(database.id)
       .container(container.id)
       .read();

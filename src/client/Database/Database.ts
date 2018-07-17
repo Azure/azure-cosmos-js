@@ -2,7 +2,7 @@ import { UriFactory } from "../../common";
 import { CosmosClient } from "../../CosmosClient";
 import { IHeaders } from "../../queryExecutionContext";
 import { RequestOptions } from "../../request";
-import { bodyKey, headersKey } from "../../symbols";
+import { headersKey, refKey } from "../../symbols";
 import { Container, Containers } from "../Container";
 import { User, Users } from "../User";
 import { DatabaseDefinition } from "./DatabaseDefinition";
@@ -32,12 +32,14 @@ export class Database {
   public async read(options?: RequestOptions): Promise<DatabaseDefinition> {
     const { result, headers } = await this.client.documentClient.readDatabase(this.url, options);
     result[headersKey] = headers;
+    result[refKey] = this;
     return result;
   }
 
   public async delete(options?: RequestOptions): Promise<DatabaseDefinition> {
     const { result, headers } = await this.client.documentClient.deleteDatabase(this.url, options);
     result[headersKey] = headers;
+    result[refKey] = this;
     return result;
   }
 }

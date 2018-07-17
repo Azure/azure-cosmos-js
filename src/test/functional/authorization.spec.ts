@@ -21,22 +21,20 @@ describe("NodeJS CRUD Tests", function() {
       const db = await client.databases.create({ id: "Validate Authorization database" });
       // create container1
 
-      const { body: container1 } = await client
-        .database(db.id)
-        .containers.create({ id: "Validate Authorization container" });
+      const container1 = await client.database(db.id).containers.create({ id: "Validate Authorization container" });
       // create document1
-      const { body: document1 } = await client
+      const document1 = await client
         .database(db.id)
         .container(container1.id)
         .items.create({ id: "coll1doc1", foo: "bar", key: "value" });
       // create document 2
-      const { body: document2 } = await client
+      const document2 = await client
         .database(db.id)
         .container(container1.id)
         .items.create({ id: "coll1doc2", foo: "bar2", key: "value2" });
 
       // create container 2
-      const { body: container2 } = await client.database(db.id).containers.create({ id: "sample container2" });
+      const container2 = await client.database(db.id).containers.create({ id: "sample container2" });
 
       // create user1
       const { body: user1 } = await client.database(db.id).users.create({ id: "user1" });
@@ -120,7 +118,7 @@ describe("NodeJS CRUD Tests", function() {
       const col1Client = new CosmosClient({ endpoint, auth: { resourceTokens } });
 
       // 1. Success-- Use Col1 Permission to Read
-      const { body: successColl1 } = await col1Client
+      const successColl1 = await col1Client
         .database(entities.db.id)
         .container(entities.coll1.id)
         .read();
@@ -148,7 +146,7 @@ describe("NodeJS CRUD Tests", function() {
       assert.equal(successDocuments.length, 2, "Expected 2 Documents to be succesfully read");
 
       // 4. Success-- Use Col1 Permission to Read Col1Doc1
-      const { body: successDoc } = await col1Client
+      const successDoc = await col1Client
         .database(entities.db.id)
         .container(entities.coll1.id)
         .item(entities.doc1.id)

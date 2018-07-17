@@ -1,5 +1,6 @@
 import { Constants, UriFactory } from "../../common";
 import { RequestOptions, Response } from "../../request";
+import { headersKey, refKey } from "../../symbols";
 import { Conflict } from "../Conflict";
 import { Database } from "../Database";
 import { Item, Items } from "../Item";
@@ -46,33 +47,28 @@ export class Container {
     return new Trigger(this, id);
   }
 
-  public async read(options?: RequestOptions): Promise<ContainerResponse> {
-    const response = await this.database.client.documentClient.readCollection(this.url, options);
-    return {
-      body: response.result,
-      headers: response.headers,
-      ref: this,
-      container: this
-    };
+  public async read(options?: RequestOptions): Promise<ContainerDefinition> {
+    const { result, headers } = await this.database.client.documentClient.readCollection(this.url, options);
+
+    result[headersKey] = headers;
+    result[refKey] = this;
+
+    return result;
   }
 
-  public async replace(body: ContainerDefinition, options?: RequestOptions): Promise<ContainerResponse> {
-    const response = await this.database.client.documentClient.replaceCollection(this.url, body, options);
-    return {
-      body: response.result,
-      headers: response.headers,
-      ref: this,
-      container: this
-    };
+  public async replace(body: ContainerDefinition, options?: RequestOptions): Promise<ContainerDefinition> {
+    const { result, headers } = await this.database.client.documentClient.replaceCollection(this.url, body, options);
+    result[headersKey] = headers;
+    result[refKey] = this;
+
+    return result;
   }
 
-  public async delete(options?: RequestOptions): Promise<ContainerResponse> {
-    const response = await this.database.client.documentClient.deleteCollection(this.url, options);
-    return {
-      body: response.result,
-      headers: response.headers,
-      ref: this,
-      container: this
-    };
+  public async delete(options?: RequestOptions): Promise<ContainerDefinition> {
+    const { result, headers } = await this.database.client.documentClient.deleteCollection(this.url, options);
+    result[headersKey] = headers;
+    result[refKey] = this;
+
+    return result;
   }
 }

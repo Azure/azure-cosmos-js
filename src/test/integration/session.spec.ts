@@ -67,7 +67,7 @@ describe("Session Token", function() {
     const { id: databaseId } = await getTestDatabase(client, "session test");
     const database = client.database(databaseId);
 
-    const { body: createdContainerDef } = await database.containers.create(containerDefinition, containerOptions);
+    const createdContainerDef = await database.containers.create(containerDefinition, containerOptions);
     const container = database.container(createdContainerDef.id);
     assert.equal(postSpy.lastCall.args[3][Constants.HttpHeaders.SessionToken], undefined);
     // TODO: testing implementation detail by looking at containerResourceIdToSesssionTokens
@@ -234,7 +234,7 @@ describe("Session Token", function() {
 
     const db = await getTestDatabase(client, "session test");
 
-    const { body: createdContainerDef } = await db.containers.create(containerDefinition, containerOptions);
+    const createdContainerDef = await db.containers.create(containerDefinition, containerOptions);
     const createdContainer = db.container(createdContainerDef.id);
 
     const { body: createdDocument } = await createdContainer.items.create({

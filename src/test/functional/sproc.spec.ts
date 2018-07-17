@@ -293,7 +293,7 @@ describe("NodeJS CRUD Tests", function() {
       partitionKey: { paths: ["/" + partitionKey], kind: DocumentBase.PartitionKind.Hash }
     };
 
-    const { body: containerResult } = await client
+    const containerResult = await client
       .database(db.id)
       .containers.create(containerDefinition, { offerThroughput: 12000 });
     const container = await client.database(db.id).container(containerResult.id);
@@ -358,7 +358,7 @@ describe("NodeJS CRUD Tests", function() {
     // create database
     const db = await client.databases.create({ id: "sproc test database" });
     // create container
-    const { body: containerResult } = await client.database(db.id).containers.create({ id: "sample container" });
+    const containerResult = await client.database(db.id).containers.create({ id: "sample container" });
 
     const container = await client.database(db.id).container(containerResult.id);
 

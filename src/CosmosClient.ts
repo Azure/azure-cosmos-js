@@ -5,7 +5,7 @@ import { DocumentClient } from "./documentclient";
 import { DatabaseAccount } from "./documents";
 import { IHeaders } from "./queryExecutionContext/IHeaders";
 import { CosmosResponse, Response } from "./request";
-import { bodyKey, headersKey } from "./symbols";
+import { headersKey } from "./symbols";
 
 /**
  * Provides a client-side logical representation of the Azure Cosmos DB database account.
@@ -41,9 +41,5 @@ export class CosmosClient {
 
   public getHeaders(obj: any): IHeaders {
     return obj[headersKey];
-  }
-
-  public getBody(obj: any): any {
-    return obj[bodyKey];
   }
 }

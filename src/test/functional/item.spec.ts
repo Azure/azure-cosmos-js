@@ -31,7 +31,7 @@ describe("NodeJS CRUD Tests", function() {
       const db = await client.database(dbDef.id);
 
       // create container
-      const { body: containerdef } = await db.containers.create({ id: "sample container" });
+      const containerdef = await db.containers.create({ id: "sample container" });
       const container: Container = db.container(containerdef.id);
 
       // read items
@@ -84,7 +84,7 @@ describe("NodeJS CRUD Tests", function() {
       const { body: document2 } = await container.item(replacedDocument.id).read();
       assert.equal(replacedDocument.id, document.id);
       // delete document
-      const { body: res } = await container.item(replacedDocument.id).delete();
+      await container.item(replacedDocument.id).delete();
 
       // read documents after deletion
       try {
@@ -109,7 +109,7 @@ describe("NodeJS CRUD Tests", function() {
         partitionKey: { paths: ["/" + partitionKey], kind: DocumentBase.PartitionKind.Hash }
       };
 
-      const { body: containerdef } = await db.containers.create(containerDefinition, { offerThroughput: 12000 });
+      const containerdef = await db.containers.create(containerDefinition, { offerThroughput: 12000 });
       const container = db.container(containerdef.id);
 
       const documents = [

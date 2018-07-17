@@ -67,7 +67,7 @@ describe("NodeJS CRUD Tests", function() {
           defaultTtl: 5
         };
         const database = await client.database(db.id);
-        const { body: containerResult } = await database.containers.create(containerDefinition);
+        const containerResult = await database.containers.create(containerDefinition);
 
         assert.equal(containerDefinition.defaultTtl, containerResult.defaultTtl);
         const container = database.container(containerResult.id);
@@ -104,7 +104,7 @@ describe("NodeJS CRUD Tests", function() {
     }
 
     async function checkItemExists(container: Container, createdItem: any) {
-      const { body: readItem } = await container.item(createdItem.id).read();
+      const readItem = await container.item(createdItem.id).read();
       assert.equal(readItem.ttl, createdItem.ttl);
     }
 
@@ -156,7 +156,7 @@ describe("NodeJS CRUD Tests", function() {
         defaultTtl: 5
       };
 
-      const { body: containerResult } = await client.database(db.id).containers.create(containerDefinition);
+      const containerResult = await client.database(db.id).containers.create(containerDefinition);
 
       const container = await client.database(db.id).container(containerResult.id);
 
@@ -166,7 +166,7 @@ describe("NodeJS CRUD Tests", function() {
         key: "value"
       };
 
-      const { body: createdItem } = await container.items.create(itemDefinition);
+      const createdItem = await container.items.create(itemDefinition);
       await sleep(7000);
       await positiveDefaultTtlStep1(container, createdItem, itemDefinition);
     });
@@ -181,10 +181,10 @@ describe("NodeJS CRUD Tests", function() {
       await checkItemGone(container, createdItem3);
 
       // The Items with id doc1 and doc2 will never expire
-      const { body: readItem1 } = await container.item(createdItem1.id).read();
+      const readItem1 = await container.item(createdItem1.id).read();
       assert.equal(readItem1.id, createdItem1.id);
 
-      const { body: readItem2 } = await container.item(createdItem2.id).read();
+      const readItem2 = await container.item(createdItem2.id).read();
       assert.equal(readItem2.id, createdItem2.id);
     }
 
@@ -196,7 +196,7 @@ describe("NodeJS CRUD Tests", function() {
         defaultTtl: -1
       };
 
-      const { body: createdContainer } = await client.database(db.id).containers.create(containerDefinition);
+      const createdContainer = await client.database(db.id).containers.create(containerDefinition);
 
       const container = await client.database(db.id).container(createdContainer.id);
 
@@ -228,7 +228,7 @@ describe("NodeJS CRUD Tests", function() {
 
       const containerDefinition = { id: "sample container" };
 
-      const { body: createdContainer } = await client.database(db.id).containers.create(containerDefinition);
+      const createdContainer = await client.database(db.id).containers.create(containerDefinition);
 
       const container = await client.database(db.id).container(createdContainer.id);
 
@@ -299,7 +299,7 @@ describe("NodeJS CRUD Tests", function() {
         defaultTtl: 8
       };
 
-      const { body: containerResult } = await client.database(db.id).containers.create(containerDefinition);
+      const containerResult = await client.database(db.id).containers.create(containerDefinition);
 
       const container = await client.database(db.id).container(containerResult.id);
 

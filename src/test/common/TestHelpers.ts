@@ -80,7 +80,7 @@ export async function bulkReadItems(container: Container, documents: any[], part
           : { partitionKey: {} };
 
       // TODO: should we block or do all requests in parallel?
-      const { body: doc } = await container.item(document.id).read(options);
+      const doc = await container.item(document.id).read(options);
 
       assert.equal(JSON.stringify(doc), JSON.stringify(document));
     } catch (err) {
@@ -93,7 +93,7 @@ export async function bulkReplaceItems(container: Container, documents: any[]): 
   const returnedDocuments: any[] = [];
   for (const document of documents) {
     try {
-      const { body: doc } = await container.item(document.id).replace(document);
+      const doc = await container.item(document.id).replace(document);
       const expectedModifiedDocument = JSON.parse(JSON.stringify(document));
       delete expectedModifiedDocument._etag;
       delete expectedModifiedDocument._ts;
@@ -164,7 +164,7 @@ export async function createOrUpsertItem(
   body: any,
   options: RequestOptions,
   isUpsertTest: boolean
-): Promise<ItemResponse<any>> {
+): Promise<any> {
   if (isUpsertTest) {
     return container.items.upsert(body, options);
   } else {
@@ -177,7 +177,7 @@ export async function replaceOrUpsertItem(
   body: any,
   options: RequestOptions,
   isUpsertTest: boolean
-): Promise<ItemResponse<any>> {
+): Promise<any> {
   if (isUpsertTest) {
     return container.items.upsert(body, options);
   } else {

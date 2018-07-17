@@ -1,8 +1,8 @@
 import { UriFactory } from "../../common";
 import { CosmosClient } from "../../CosmosClient";
 import { RequestOptions, Response } from "../../request";
+import { headersKey, refKey } from "../../symbols";
 import { Container } from "../Container";
-import { ItemResponse } from "./ItemResponse";
 
 export class Item {
   private client: CosmosClient;
@@ -14,53 +14,52 @@ export class Item {
     this.client = this.container.database.client;
   }
 
-  public read(options?: RequestOptions): Promise<ItemResponse<any>>;
-  public read<T>(options?: RequestOptions): Promise<ItemResponse<T>>;
-  public async read<T>(options?: RequestOptions): Promise<ItemResponse<T>> {
+  public read(options?: RequestOptions): Promise<any>;
+  public read<T>(options?: RequestOptions): Promise<T>;
+  public async read<T>(options?: RequestOptions): Promise<T> {
     options = options || {};
     if ((!options || !options.partitionKey) && this.primaryKey) {
       options.partitionKey = this.primaryKey;
     }
-    const response = await (this.client.documentClient.readDocument(this.url, options) as Promise<Response<T>>);
-    return {
-      body: response.result,
-      headers: response.headers,
-      ref: this,
-      item: this
-    };
+    const { result, headers } = await (this.client.documentClient.readDocument(this.url, options) as Promise<any>);
+    result[headersKey] = headers;
+    result[refKey] = this;
+    return result;
   }
 
-  public replace(body: any, options?: RequestOptions): Promise<ItemResponse<any>>;
-  public replace<T>(body: T, options?: RequestOptions): Promise<ItemResponse<T>>;
-  public async replace<T>(body: T, options?: RequestOptions): Promise<ItemResponse<T>> {
+  public replace(body: any, options?: RequestOptions): Promise<Response<any>>;
+  public replace<T>(body: T, options?: RequestOptions): Promise<Response<T>>;
+  public async replace<T>(body: T, options?: RequestOptions): Promise<Response<T>> {
     options = options || {};
     if ((!options || !options.partitionKey) && this.primaryKey) {
       options.partitionKey = this.primaryKey;
     }
-    const response = await (this.client.documentClient.replaceDocument(this.url, body, options) as Promise<
-      Response<T>
+    const { result, headers } = await (this.client.documentClient.replaceDocument(this.url, body, options) as Promise<
+      ItemDef
     >);
-    return {
-      body: response.result,
-      headers: response.headers,
-      ref: this,
-      item: this
-    };
+    result[headersKey] = headers;
+    result[refKey] = this;
+    return result;
   }
 
-  public delete(options?: RequestOptions): Promise<ItemResponse<any>>;
-  public delete<T>(options?: RequestOptions): Promise<ItemResponse<T>>;
-  public async delete<T>(options?: RequestOptions): Promise<ItemResponse<T>> {
+  public delete(options?: RequestOptions): Promise<Response<any>>;
+  public delete<T>(options?: RequestOptions): Promise<Response<T>>;
+  public async delete<T>(options?: RequestOptions): Promise<Response<T>> {
     options = options || {};
     if ((!options || !options.partitionKey) && this.primaryKey) {
       options.partitionKey = this.primaryKey;
     }
-    const response = await (this.client.documentClient.deleteDocument(this.url, options) as Promise<Response<T>>);
-    return {
-      body: response.result,
-      headers: response.headers,
-      ref: this,
-      item: this
-    };
+    const { result, headers } = await (this.client.documentClient.deleteDocument(this.url, options) as Promise<
+      ItemDef
+    >);
+    result[headersKey] = headers;
+    result[refKey] = this;
+    return result;
   }
+}
+
+interface ItemDef {
+  id?: string;
+  ttl?: string;
+  [key: string]: any;
 }
