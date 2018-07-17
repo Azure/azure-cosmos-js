@@ -1,6 +1,17 @@
 import * as assert from "assert";
 import { Container, CosmosClient, Database, DatabaseDefinition, Item, RequestOptions, Response } from "../../";
-import { ContainerDefinition, ItemResponse, PermissionDefinition, User, UserDefinition } from "../../client";
+import {
+  ContainerDefinition,
+  ItemResponse,
+  PermissionDefinition,
+  PermissionResponse,
+  TriggerResponse,
+  User,
+  UserDefinedFunctionResponse,
+  UserDefinition
+} from "../../client";
+import { StoredProcedureResponse } from "../../client/StoredProcedure/StoredProcedureResponse";
+import { UserResponse } from "../../client/User/UserResponse";
 import testConfig from "./../common/_testConfig";
 
 const endpoint = testConfig.host;
@@ -178,13 +189,14 @@ export async function replaceOrUpsertItem(
   }
 }
 
+
 // User
 export function createOrUpsertUser(
   database: Database,
   body: any,
   options: any,
   isUpsertTest: boolean
-): Promise<Response<UserDefinition>> {
+): Promise<UserResponse> {
   if (isUpsertTest) {
     return database.users.upsert(body, options);
   } else {
@@ -196,7 +208,7 @@ export function replaceOrUpsertUser(
   body: any,
   options: any,
   isUpsertTest: boolean
-): Promise<Response<UserDefinition>> {
+): Promise<UserResponse> {
   if (isUpsertTest) {
     return database.users.upsert(body, options);
   } else {
@@ -204,13 +216,13 @@ export function replaceOrUpsertUser(
   }
 }
 
-// Permission
+
 export function createOrUpsertPermission(
   user: User,
   body: any,
   options: any,
   isUpsertTest: boolean
-): Promise<Response<PermissionDefinition>> {
+): Promise<PermissionResponse> {
   if (isUpsertTest) {
     return user.permissions.upsert(body, options);
   } else {
@@ -223,7 +235,7 @@ export function replaceOrUpsertPermission(
   body: any,
   options: any,
   isUpsertTest: boolean
-): Promise<Response<PermissionDefinition>> {
+): Promise<PermissionResponse> {
   if (isUpsertTest) {
     return user.permissions.upsert(body, options);
   } else {
@@ -237,7 +249,7 @@ export function createOrUpsertTrigger(
   body: any,
   options: any,
   isUpsertTest: boolean
-): Promise<Response<any>> {
+): Promise<TriggerResponse> {
   if (isUpsertTest) {
     return container.triggers.upsert(body, options);
   } else {
@@ -249,7 +261,7 @@ export function replaceOrUpsertTrigger(
   body: any,
   options: any,
   isUpsertTest: boolean
-): Promise<Response<any>> {
+): Promise<TriggerResponse> {
   if (isUpsertTest) {
     return container.triggers.upsert(body, options);
   } else {
@@ -263,7 +275,7 @@ export function createOrUpsertUserDefinedFunction(
   body: any,
   options: any,
   isUpsertTest: boolean
-): Promise<Response<any>> {
+): Promise<UserDefinedFunctionResponse> {
   if (isUpsertTest) {
     return container.userDefinedFunctions.upsert(body, options);
   } else {
@@ -275,7 +287,7 @@ export function replaceOrUpsertUserDefinedFunction(
   body: any,
   options: any,
   isUpsertTest: boolean
-): Promise<Response<any>> {
+): Promise<UserDefinedFunctionResponse> {
   if (isUpsertTest) {
     return container.userDefinedFunctions.upsert(body, options);
   } else {
@@ -289,7 +301,7 @@ export function createOrUpsertStoredProcedure(
   body: any,
   options: any,
   isUpsertTest: boolean
-): Promise<Response<any>> {
+): Promise<StoredProcedureResponse> {
   if (isUpsertTest) {
     return container.storedProcedures.upsert(body, options);
   } else {
@@ -301,7 +313,7 @@ export function replaceOrUpsertStoredProcedure(
   body: any,
   options: any,
   isUpsertTest: boolean
-): Promise<Response<any>> {
+): Promise<StoredProcedureResponse> {
   if (isUpsertTest) {
     return container.storedProcedures.upsert(body, options);
   } else {
