@@ -9,16 +9,16 @@ const masterKey = testConfig.masterKey;
 const dbId = "udf test database";
 const containerId = "sample container";
 
-const client = new CosmosClient({
-  endpoint,
-  auth: { masterKey }
-});
-
 describe("NodeJS CRUD Tests", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 10000);
 
-  after(async function() {
+  beforeEach(async function() {
+    this.timeout(10000);
     // remove all databases from the endpoint before each test
+    const client = new CosmosClient({
+      endpoint,
+      auth: { masterKey }
+    });
     await removeAllDatabases(client);
   });
 
@@ -26,6 +26,11 @@ describe("NodeJS CRUD Tests", function() {
     let container: Container;
 
     beforeEach(async function() {
+      const client = new CosmosClient({
+        endpoint,
+        auth: { masterKey }
+      });
+
       // create database
       await client.databases.create({
         id: dbId

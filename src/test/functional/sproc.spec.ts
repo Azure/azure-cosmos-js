@@ -14,7 +14,7 @@ import {
 } from "../../";
 import { Container, StoredProcedureDefinition } from "../../client";
 import testConfig from "./../common/_testConfig";
-import { bulkInsertItems, getTestContainer, getTestDatabase, removeAllDatabases } from "./../common/TestHelpers";
+import { bulkInsertItems, getTestContainer, removeAllDatabases } from "./../common/TestHelpers";
 
 // Used for sproc
 declare var getContext: any;
@@ -284,7 +284,7 @@ describe("NodeJS CRUD Tests", function() {
   });
 
   it("nativeApi Should execute stored procedure with partition key successfully name based", async function() {
-    const db = await getTestDatabase(client);
+    const { body: db } = await client.databases.create({ id: "sproc test database" });
     // create container
     const partitionKey = "key";
 
@@ -293,7 +293,9 @@ describe("NodeJS CRUD Tests", function() {
       partitionKey: { paths: ["/" + partitionKey], kind: DocumentBase.PartitionKind.Hash }
     };
 
-    const { body: containerResult } = await db.containers.create(containerDefinition, { offerThroughput: 12000 });
+    const { body: containerResult } = await client
+      .database(db.id)
+      .containers.create(containerDefinition, { offerThroughput: 12000 });
     const container = await client.database(db.id).container(containerResult.id);
 
     // tslint:disable:no-var-keyword

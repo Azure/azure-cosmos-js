@@ -8,7 +8,6 @@ import {
   bulkReadItems,
   bulkReplaceItems,
   createOrUpsertItem,
-  getTestDatabase,
   removeAllDatabases,
   replaceOrUpsertItem
 } from "./../common/TestHelpers";
@@ -28,7 +27,8 @@ describe("NodeJS CRUD Tests", function() {
     const documentCRUDTest = async function(isUpsertTest: boolean) {
       const client = new CosmosClient({ endpoint, auth: { masterKey } });
       // create database
-      const db = await getTestDatabase(client, "sample 中文 database");
+      const { body: dbdef } = await client.databases.create({ id: "sample 中文 database" });
+      const db: Database = client.database(dbdef.id);
       // create container
       const { body: containerdef } = await db.containers.create({ id: "sample container" });
       const container: Container = db.container(containerdef.id);
@@ -98,7 +98,8 @@ describe("NodeJS CRUD Tests", function() {
     const documentCRUDMultiplePartitionsTest = async function() {
       const client = new CosmosClient({ endpoint, auth: { masterKey } });
       // create database
-      const db = await getTestDatabase(client);
+      const { body: dbdef } = await client.databases.create({ id: "db1" });
+      const db = client.database(dbdef.id);
       const partitionKey = "key";
 
       // create container
