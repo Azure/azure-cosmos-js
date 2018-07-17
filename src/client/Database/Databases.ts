@@ -2,6 +2,7 @@ import { CosmosClient } from "../../CosmosClient";
 import { SqlQuerySpec } from "../../queryExecutionContext";
 import { QueryIterator } from "../../queryIterator";
 import { CosmosResponse, FeedOptions, RequestOptions, Response } from "../../request";
+import { headersKey } from "../../symbols";
 import { Database } from "./Database";
 import { DatabaseDefinition } from "./DatabaseDefinition";
 import { DatabaseResponse } from "./DatabaseResponse";
@@ -27,11 +28,10 @@ export class Databases {
    *
    * @param body              - A json object that represents The database to be created.
    */
-  public async create(body: DatabaseDefinition, options?: RequestOptions): Promise<Database> {
-    const response = await this.client.documentClient.createDatabase(body, options);
-    const ref = new Database(this.client, body.id, response.result, response.headers);
-
-    return ref;
+  public async create(body: DatabaseDefinition, options?: RequestOptions): Promise<DatabaseDefinition> {
+    const { result, headers } = await this.client.documentClient.createDatabase(body, options);
+    result[headersKey] = headers;
+    return result;
   }
 
   // TODO: DatabaseResponse for QueryIterator?
