@@ -26,7 +26,7 @@ describe("NodeJS CRUD Tests", function() {
     const queriesCRUDTest = async function() {
       try {
         // create a database
-        const db = await getTestDatabase(client)
+        const db = await getTestDatabase(client);
         // query databases
         const querySpec0 = {
           query: "SELECT * FROM root r WHERE r.id=@id",

@@ -60,7 +60,7 @@ describe("NodeJS CRUD Tests", function() {
 
     it("nativeApi Validate container and Item TTL values.", async function() {
       try {
-        const db = await getTestDatabase(client)
+        const db = await getTestDatabase(client);
 
         const containerDefinition = {
           id: "sample container1",
@@ -149,7 +149,7 @@ describe("NodeJS CRUD Tests", function() {
     }
 
     it("nativeApi Validate Item TTL with positive defaultTtl.", async function() {
-      const db = await getTestDatabase(client)
+      const db = await getTestDatabase(client);
 
       const containerDefinition = {
         id: "sample container",
@@ -189,7 +189,7 @@ describe("NodeJS CRUD Tests", function() {
     }
 
     it("nativeApi Validate Item TTL with -1 defaultTtl.", async function() {
-      const db = await getTestDatabase(client)
+      const db = await getTestDatabase(client);
 
       const containerDefinition = {
         id: "sample container",
@@ -224,7 +224,7 @@ describe("NodeJS CRUD Tests", function() {
     });
 
     it("nativeApi Validate Item TTL with no defaultTtl.", async function() {
-      const db = await getTestDatabase(client)
+      const db = await getTestDatabase(client);
 
       const containerDefinition = { id: "sample container" };
 
@@ -292,7 +292,7 @@ describe("NodeJS CRUD Tests", function() {
     }
 
     it("nativeApi Validate Item TTL Misc cases.", async function() {
-      const db = await getTestDatabase(client)
+      const db = await getTestDatabase(client);
 
       const containerDefinition = {
         id: "sample container",

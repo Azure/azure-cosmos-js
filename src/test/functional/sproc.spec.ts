@@ -284,7 +284,7 @@ describe("NodeJS CRUD Tests", function() {
   });
 
   it("nativeApi Should execute stored procedure with partition key successfully name based", async function() {
-    const db = await getTestDatabase(client)
+    const db = await getTestDatabase(client);
     // create container
     const partitionKey = "key";
 
@@ -293,8 +293,7 @@ describe("NodeJS CRUD Tests", function() {
       partitionKey: { paths: ["/" + partitionKey], kind: DocumentBase.PartitionKind.Hash }
     };
 
-    const { body: containerResult } = await db
-      .containers.create(containerDefinition, { offerThroughput: 12000 });
+    const { body: containerResult } = await db.containers.create(containerDefinition, { offerThroughput: 12000 });
     const container = await client.database(db.id).container(containerResult.id);
 
     // tslint:disable:no-var-keyword

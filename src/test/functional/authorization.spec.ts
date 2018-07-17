@@ -2,7 +2,12 @@ import * as assert from "assert";
 import { CosmosClient, DocumentBase } from "../../";
 import { PermissionDefinition } from "../../client";
 import testConfig from "./../common/_testConfig";
-import { createOrUpsertPermission, getTestContainer, getTestDatabase, removeAllDatabases } from "./../common/TestHelpers";
+import {
+  createOrUpsertPermission,
+  getTestContainer,
+  getTestDatabase,
+  removeAllDatabases
+} from "./../common/TestHelpers";
 
 const endpoint = testConfig.host;
 const masterKey = testConfig.masterKey;
@@ -18,11 +23,10 @@ describe("NodeJS CRUD Tests", function() {
   describe("Validate Authorization", function() {
     const setupEntities = async function(isUpsertTest: boolean, client: CosmosClient) {
       // create database
-      const db = await getTestDatabase(client)
+      const db = await getTestDatabase(client);
       // create container1
 
-      const { body: container1 } = await db
-        .containers.create({ id: "Validate Authorization container" });
+      const { body: container1 } = await db.containers.create({ id: "Validate Authorization container" });
       // create document1
       const { body: document1 } = await client
         .database(db.id)

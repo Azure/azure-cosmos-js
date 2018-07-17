@@ -26,7 +26,6 @@ describe("NodeJS CRUD Tests", function() {
     let container: Container;
 
     beforeEach(async function() {
-
       // create database
       await client.databases.create({
         id: dbId
