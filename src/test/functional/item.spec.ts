@@ -52,7 +52,7 @@ describe("NodeJS CRUD Tests", function() {
       } catch (err) {
         assert(err !== undefined, "should throw an error because automatic id generation is disabled");
       }
-      const { body: document } = await createOrUpsertItem(container, itemDefinition, undefined, isUpsertTest);
+      const document = await createOrUpsertItem(container, itemDefinition, undefined, isUpsertTest);
       assert.equal(document.name, itemDefinition.name);
       assert(document.id !== undefined);
       // read documents after creation
@@ -76,19 +76,19 @@ describe("NodeJS CRUD Tests", function() {
       // replace document
       document.name = "replaced document";
       document.foo = "not bar";
-      const { body: replacedDocument } = await replaceOrUpsertItem(container, document, undefined, isUpsertTest);
+      const replacedDocument = await replaceOrUpsertItem(container, document, undefined, isUpsertTest);
       assert.equal(replacedDocument.name, "replaced document", "document name property should change");
       assert.equal(replacedDocument.foo, "not bar", "property should have changed");
       assert.equal(document.id, replacedDocument.id, "document id should stay the same");
       // read document
-      const { body: document2 } = await container.item(replacedDocument.id).read();
+      const document2 = await container.item(replacedDocument.id).read();
       assert.equal(replacedDocument.id, document.id);
       // delete document
       await container.item(replacedDocument.id).delete();
 
       // read documents after deletion
       try {
-        const { body: document3 } = await container.item(replacedDocument.id).read();
+        const document3 = await container.item(replacedDocument.id).read();
         assert.fail("must throw if document doesn't exist");
       } catch (err) {
         const notFoundErrorCode = 404;

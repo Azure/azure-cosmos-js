@@ -14,7 +14,7 @@ export class Item {
     this.client = this.container.database.client;
   }
 
-  public read(options?: RequestOptions): Promise<any>;
+  public read(options?: RequestOptions): Promise<ItemDef>;
   public read<T>(options?: RequestOptions): Promise<T>;
   public async read<T>(options?: RequestOptions): Promise<T> {
     options = options || {};
@@ -27,7 +27,7 @@ export class Item {
     return result;
   }
 
-  public replace(body: any, options?: RequestOptions): Promise<Response<any>>;
+  public replace(body: any, options?: RequestOptions): Promise<Response<ItemDef>>;
   public replace<T>(body: T, options?: RequestOptions): Promise<Response<T>>;
   public async replace<T>(body: T, options?: RequestOptions): Promise<Response<T>> {
     options = options || {};
@@ -35,31 +35,30 @@ export class Item {
       options.partitionKey = this.primaryKey;
     }
     const { result, headers } = await (this.client.documentClient.replaceDocument(this.url, body, options) as Promise<
-      ItemDef
+      any
     >);
     result[headersKey] = headers;
     result[refKey] = this;
     return result;
   }
 
-  public delete(options?: RequestOptions): Promise<Response<any>>;
+  public delete(options?: RequestOptions): Promise<Response<ItemDef>>;
   public delete<T>(options?: RequestOptions): Promise<Response<T>>;
   public async delete<T>(options?: RequestOptions): Promise<Response<T>> {
     options = options || {};
     if ((!options || !options.partitionKey) && this.primaryKey) {
       options.partitionKey = this.primaryKey;
     }
-    const { result, headers } = await (this.client.documentClient.deleteDocument(this.url, options) as Promise<
-      ItemDef
-    >);
+    const response = await (this.client.documentClient.deleteDocument(this.url, options) as Promise<any>);
+    const { result = {}, headers } = response;
     result[headersKey] = headers;
     result[refKey] = this;
     return result;
   }
 }
 
-interface ItemDef {
-  id?: string;
+export interface ItemDef {
+  id: string;
   ttl?: string;
   [key: string]: any;
 }

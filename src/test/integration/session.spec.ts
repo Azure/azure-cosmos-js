@@ -73,7 +73,7 @@ describe("Session Token", function() {
     // TODO: testing implementation detail by looking at containerResourceIdToSesssionTokens
     assert.deepEqual(client.documentClient.sessionContainer.collectionResourceIdToSessionTokens, {});
 
-    const { body: document1 } = await container.items.create({ id: "1" });
+    const document1 = await container.items.create({ id: "1" });
     assert.equal(postSpy.lastCall.args[3][Constants.HttpHeaders.SessionToken], undefined);
 
     let tokens = getToken(client.documentClient.sessionContainer.collectionResourceIdToSessionTokens);
@@ -81,7 +81,7 @@ describe("Session Token", function() {
     assert.notEqual(tokens[index1], undefined);
     let firstPartitionLSN = tokens[index1];
 
-    const { body: document2 } = await container.items.create({ id: "2" });
+    const document2 = await container.items.create({ id: "2" });
     assert.equal(
       postSpy.lastCall.args[3][Constants.HttpHeaders.SessionToken],
       client.documentClient.sessionContainer.getCombinedSessionToken(tokens)
@@ -103,7 +103,7 @@ describe("Session Token", function() {
     assert.equal(tokens[index1], firstPartitionLSN);
     assert.equal(tokens[index2], secondPartitionLSN);
 
-    const { body: document13 } = await container.items.upsert({ id: "1", operation: "upsert" }, { partitionKey: "1" });
+    const document13 = await container.items.upsert({ id: "1", operation: "upsert" }, { partitionKey: "1" });
     assert.equal(
       postSpy.lastCall.args[3][Constants.HttpHeaders.SessionToken],
       client.documentClient.sessionContainer.getCombinedSessionToken(tokens)
@@ -207,7 +207,7 @@ describe("Session Token", function() {
     //   auth: { masterKey },
     //   consistencyLevel: ConsistencyLevel.Session
     // });
-    // const { body: databaseDef } = await client.databases.create(databaseBody);
+    // const databaseDef } = await client.databases.create(databaseBody);
     // const database = client.database(databaseDef.id);
     // await database.containers.create(containerDefinition, containerOptions);
     // const container = database.container(containerDefinition.id);
@@ -237,7 +237,7 @@ describe("Session Token", function() {
     const createdContainerDef = await db.containers.create(containerDefinition, containerOptions);
     const createdContainer = db.container(createdContainerDef.id);
 
-    const { body: createdDocument } = await createdContainer.items.create({
+    const createdDocument = await createdContainer.items.create({
       id: "1"
     });
     const requestOptions = { partitionKey: "1" };

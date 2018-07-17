@@ -4,7 +4,7 @@ import { QueryIterator } from "../../queryIterator";
 import { FeedOptions, RequestOptions, Response } from "../../request";
 import { headersKey, refKey } from "../../symbols";
 import { Container } from "../Container";
-import { Item } from "./Item";
+import { Item, ItemDef } from "./Item";
 import { ItemResponse } from "./ItemResponse";
 
 export class Items {
@@ -34,7 +34,7 @@ export class Items {
    * </p>
    * @param body  - Represents the body of the item. Can contain any number of user defined properties.
    */
-  public async create(body: any, options?: RequestOptions): Promise<any>;
+  public async create(body: any, options?: RequestOptions): Promise<ItemDef>;
   public async create<T>(body: T, options?: RequestOptions): Promise<T>;
   public async create<T>(body: T, options?: RequestOptions): Promise<T> {
     const { result, headers } = await (this.client.createDocument(this.container.url, body, options) as Promise<any>);
@@ -51,7 +51,7 @@ export class Items {
    * An Item is an application resource and can be authorized using the master key or resource keys
    * </p>
    */
-  public async upsert(body: any, options?: RequestOptions): Promise<any>;
+  public async upsert(body: any, options?: RequestOptions): Promise<ItemDef>;
   public async upsert<T>(body: T, options?: RequestOptions): Promise<T>;
   public async upsert<T>(body: T, options?: RequestOptions): Promise<T> {
     const { result, headers } = await this.client.upsertDocument(this.container.url, body, options);

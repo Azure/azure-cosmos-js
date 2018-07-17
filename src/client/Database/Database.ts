@@ -37,7 +37,8 @@ export class Database {
   }
 
   public async delete(options?: RequestOptions): Promise<DatabaseDefinition> {
-    const { result, headers } = await this.client.documentClient.deleteDatabase(this.url, options);
+    const response = await this.client.documentClient.deleteDatabase(this.url, options);
+    const { result = {}, headers } = response;
     result[headersKey] = headers;
     result[refKey] = this;
     return result;

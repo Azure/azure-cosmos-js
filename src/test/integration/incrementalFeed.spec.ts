@@ -77,7 +77,7 @@ describe("NodeJS Incremental Feed Tests using 'a_im' and 'IfNoneMatch' options",
       let { result, headers } = await query.current();
       assert(headers.etag, "listDocuments response should have etag header");
 
-      const { body: document } = await container.items.create({
+      const document = await container.items.create({
         id: "doc2",
         prop: 1
       });

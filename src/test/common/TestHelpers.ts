@@ -62,7 +62,7 @@ export async function bulkInsertItems(container: Container, documents: any[]) {
   const returnedDocuments = [];
   for (const doc of documents) {
     try {
-      const { body: document } = await container.items.create(doc);
+      const document = await container.items.create(doc);
       returnedDocuments.push(document);
     } catch (err) {
       throw err;

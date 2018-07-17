@@ -65,7 +65,8 @@ export class Container {
   }
 
   public async delete(options?: RequestOptions): Promise<ContainerDefinition> {
-    const { result, headers } = await this.database.client.documentClient.deleteCollection(this.url, options);
+    const response = await this.database.client.documentClient.deleteCollection(this.url, options);
+    const { result = {}, headers } = response;
     result[headersKey] = headers;
     result[refKey] = this;
 
