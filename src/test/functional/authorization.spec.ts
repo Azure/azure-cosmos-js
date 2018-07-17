@@ -18,7 +18,7 @@ describe("NodeJS CRUD Tests", function() {
   describe("Validate Authorization", function() {
     const setupEntities = async function(isUpsertTest: boolean, client: CosmosClient) {
       // create database
-      const { body: db } = await client.databases.create({ id: "Validate Authorization database" });
+      const db = await client.databases.create({ id: "Validate Authorization database" });
       // create container1
 
       const { body: container1 } = await client

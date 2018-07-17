@@ -170,8 +170,7 @@ describe("NodeJS CRUD Tests", function() {
     const indexPolicyTest = async function() {
       try {
         // create database
-        const { body: dbdef } = await client.databases.create({ id: "container test database" });
-        const database = client.database(dbdef.id);
+        const database = await client.databases.create({ id: "container test database" });
 
         // create container
         const { body: containerDef } = await database.containers.create({ id: "container test container" });
@@ -312,8 +311,7 @@ describe("NodeJS CRUD Tests", function() {
     const defaultIndexingPolicyTest = async function() {
       try {
         // create database
-        const { body: dbdef } = await client.databases.create({ id: "container test database" });
-        const database = client.database(dbdef.id);
+        const database = await client.databases.create({ id: "container test database" });
 
         // create container with no indexing policy specified.
         const containerDefinition01: ContainerDefinition = { id: "TestCreateDefaultPolicy01" };

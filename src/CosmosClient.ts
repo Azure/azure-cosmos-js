@@ -3,7 +3,9 @@ import { Offer, Offers } from "./client/Offer/";
 import { CosmosClientOptions } from "./CosmosClientOptions";
 import { DocumentClient } from "./documentclient";
 import { DatabaseAccount } from "./documents";
-import { Response } from "./request";
+import { IHeaders } from "./queryExecutionContext/IHeaders";
+import { CosmosResponse, Response } from "./request";
+import { bodyKey, headersKey } from "./symbols";
 
 /**
  * Provides a client-side logical representation of the Azure Cosmos DB database account.
@@ -35,5 +37,13 @@ export class CosmosClient {
 
   public offer(id: string) {
     return new Offer(this, id);
+  }
+
+  public getHeaders(obj: any): IHeaders {
+    return obj[headersKey];
+  }
+
+  public getBody(obj: any): any {
+    return obj[bodyKey];
   }
 }
