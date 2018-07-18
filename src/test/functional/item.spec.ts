@@ -124,7 +124,7 @@ describe("NodeJS CRUD Tests", function() {
       let returnedDocuments = await bulkInsertItems(container, documents);
 
       assert.equal(returnedDocuments.length, documents.length);
-      returnedDocuments.sort(function(doc1, doc2) {
+      returnedDocuments.sort(function(doc1: any, doc2: any) {
         return doc1.id.localeCompare(doc2.id);
       });
       await bulkReadItems(container, returnedDocuments, partitionKey);
@@ -144,7 +144,7 @@ describe("NodeJS CRUD Tests", function() {
         "Unexpected documents are returned"
       );
 
-      returnedDocuments.forEach(function(document) {
+      returnedDocuments.forEach(function(document: any) {
         ++document.prop;
       });
       const newReturnedDocuments = await bulkReplaceItems(container, returnedDocuments);

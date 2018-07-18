@@ -58,7 +58,7 @@ export async function getTestContainer(
   return db.container(id);
 }
 
-export async function bulkInsertItems(container: Container, documents: any[]) {
+export async function bulkInsertItems(container: Container, documents: any[]): Promise<any> {
   const returnedDocuments = [];
   for (const doc of documents) {
     try {
