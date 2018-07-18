@@ -1,8 +1,11 @@
 import { UriFactory } from "../../common";
 import { CosmosClient } from "../../CosmosClient";
+import { IHeaders } from "../../queryExecutionContext";
 import { RequestOptions } from "../../request";
+import { headersKey, refKey } from "../../symbols";
 import { Container, Containers } from "../Container";
 import { User, Users } from "../User";
+import { DatabaseDefinition } from "./DatabaseDefinition";
 import { DatabaseResponse } from "./DatabaseResponse";
 
 export class Database {
@@ -26,23 +29,18 @@ export class Database {
     return new User(this, id);
   }
 
-  public async read(options?: RequestOptions): Promise<DatabaseResponse> {
-    const response = await this.client.documentClient.readDatabase(this.url, options);
-    return {
-      body: response.result,
-      headers: response.headers,
-      ref: this,
-      database: this
-    };
+  public async read(options?: RequestOptions): Promise<DatabaseDefinition> {
+    const { result, headers } = await this.client.documentClient.readDatabase(this.url, options);
+    result[headersKey] = headers;
+    result[refKey] = this;
+    return result;
   }
 
-  public async delete(options?: RequestOptions): Promise<DatabaseResponse> {
+  public async delete(options?: RequestOptions): Promise<DatabaseDefinition> {
     const response = await this.client.documentClient.deleteDatabase(this.url, options);
-    return {
-      body: response.result,
-      headers: response.headers,
-      ref: this,
-      database: this
-    };
+    const { result = {}, headers } = response;
+    result[headersKey] = headers;
+    result[refKey] = this;
+    return result;
   }
 }

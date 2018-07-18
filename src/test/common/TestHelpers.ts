@@ -29,11 +29,7 @@ export async function removeAllDatabases(client: CosmosClient = defaultCleint) {
     }
 
     const count = 0;
-    await Promise.all(
-      databases.map<Promise<Response<DatabaseDefinition>>>(async (database: DatabaseDefinition) =>
-        client.database(database.id).delete()
-      )
-    );
+    await Promise.all(databases.map(async (database: DatabaseDefinition) => client.database(database.id).delete()));
   } catch (err) {
     // TODO: remove console logging for errors and add ts-lint flag back
     console.log("An error occured", err);
@@ -62,11 +58,11 @@ export async function getTestContainer(
   return db.container(id);
 }
 
-export async function bulkInsertItems(container: Container, documents: any[]) {
+export async function bulkInsertItems(container: Container, documents: any[]): Promise<any> {
   const returnedDocuments = [];
   for (const doc of documents) {
     try {
-      const { body: document } = await container.items.create(doc);
+      const document = await container.items.create(doc);
       returnedDocuments.push(document);
     } catch (err) {
       throw err;
@@ -84,7 +80,7 @@ export async function bulkReadItems(container: Container, documents: any[], part
           : { partitionKey: {} };
 
       // TODO: should we block or do all requests in parallel?
-      const { body: doc } = await container.item(document.id).read(options);
+      const doc = await container.item(document.id).read(options);
 
       assert.equal(JSON.stringify(doc), JSON.stringify(document));
     } catch (err) {
@@ -97,7 +93,7 @@ export async function bulkReplaceItems(container: Container, documents: any[]): 
   const returnedDocuments: any[] = [];
   for (const document of documents) {
     try {
-      const { body: doc } = await container.item(document.id).replace(document);
+      const doc = await container.item(document.id).replace(document);
       const expectedModifiedDocument = JSON.parse(JSON.stringify(document));
       delete expectedModifiedDocument._etag;
       delete expectedModifiedDocument._ts;
@@ -168,7 +164,7 @@ export async function createOrUpsertItem(
   body: any,
   options: RequestOptions,
   isUpsertTest: boolean
-): Promise<ItemResponse<any>> {
+): Promise<any> {
   if (isUpsertTest) {
     return container.items.upsert(body, options);
   } else {
@@ -181,7 +177,7 @@ export async function replaceOrUpsertItem(
   body: any,
   options: RequestOptions,
   isUpsertTest: boolean
-): Promise<ItemResponse<any>> {
+): Promise<any> {
   if (isUpsertTest) {
     return container.items.upsert(body, options);
   } else {

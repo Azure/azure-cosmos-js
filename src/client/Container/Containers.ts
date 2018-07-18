@@ -1,6 +1,7 @@
 import { SqlQuerySpec } from "../../queryExecutionContext";
 import { QueryIterator } from "../../queryIterator";
 import { FeedOptions, RequestOptions, Response } from "../../request";
+import { headersKey, refKey } from "../../symbols";
 import { Database } from "../Database";
 import { Container } from "./Container";
 import { ContainerDefinition } from "./ContainerDefinition";
@@ -25,15 +26,18 @@ export class Containers {
    * </p>
    * @param body                          - Represents the body of the container.
    */
-  public async create(body: ContainerDefinition, options?: RequestOptions): Promise<ContainerResponse> {
-    const response = await this.database.client.documentClient.createCollection(this.database.url, body, options);
-    const ref = new Container(this.database, response.result.id);
-    return {
-      body: response.result,
-      headers: response.headers,
-      ref,
-      container: ref
-    };
+  public async create(body: ContainerDefinition, options?: RequestOptions): Promise<ContainerDefinition> {
+    const { result, headers } = await this.database.client.documentClient.createCollection(
+      this.database.url,
+      body,
+      options
+    );
+    const ref = new Container(this.database, result.id);
+
+    result[headersKey] = headers;
+    result[refKey] = ref;
+
+    return result;
   }
 
   public readAll(options?: FeedOptions): QueryIterator<ContainerDefinition> {

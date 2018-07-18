@@ -72,7 +72,7 @@ describe("Authorization", function() {
       auth: { resourceTokens: rTokens }
     });
 
-    const { body: coll } = await clientReadPermission
+    const coll = await clientReadPermission
       .database(database.id)
       .container(container.id)
       .read();
@@ -86,7 +86,7 @@ describe("Authorization", function() {
     });
 
     // self link must be used to access a resource using permissionFeed
-    const { body: coll } = await clientReadPermission
+    const coll = await clientReadPermission
       .database(database.id)
       .container(container.id)
       .read();
@@ -108,7 +108,7 @@ describe("Authorization", function() {
   });
 
   it("Accessing document by permissionFeed of parent container", async function() {
-    const { body: createdDoc } = await container.items.create({
+    const createdDoc = await container.items.create({
       id: "document1"
     });
     const clientReadPermission = new CosmosClient({
@@ -117,7 +117,7 @@ describe("Authorization", function() {
     });
     assert.equal("document1", createdDoc.id, "invalid documnet create");
 
-    const { body: readDoc } = await clientReadPermission
+    const readDoc = await clientReadPermission
       .database(database.id)
       .container(container.id)
       .item(createdDoc.id)

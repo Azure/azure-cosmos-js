@@ -27,10 +27,11 @@ describe("NodeJS CRUD Tests", function() {
     const documentCRUDTest = async function(isUpsertTest: boolean) {
       const client = new CosmosClient({ endpoint, auth: { masterKey } });
       // create database
-      const { body: dbdef } = await client.databases.create({ id: "sample 中文 database" });
-      const db: Database = client.database(dbdef.id);
+      const dbDef = await client.databases.create({ id: "sample 中文 database" });
+      const db = await client.database(dbDef.id);
+
       // create container
-      const { body: containerdef } = await db.containers.create({ id: "sample container" });
+      const containerdef = await db.containers.create({ id: "sample container" });
       const container: Container = db.container(containerdef.id);
 
       // read items
@@ -51,7 +52,7 @@ describe("NodeJS CRUD Tests", function() {
       } catch (err) {
         assert(err !== undefined, "should throw an error because automatic id generation is disabled");
       }
-      const { body: document } = await createOrUpsertItem(container, itemDefinition, undefined, isUpsertTest);
+      const document = await createOrUpsertItem(container, itemDefinition, undefined, isUpsertTest);
       assert.equal(document.name, itemDefinition.name);
       assert(document.id !== undefined);
       // read documents after creation
@@ -75,19 +76,19 @@ describe("NodeJS CRUD Tests", function() {
       // replace document
       document.name = "replaced document";
       document.foo = "not bar";
-      const { body: replacedDocument } = await replaceOrUpsertItem(container, document, undefined, isUpsertTest);
+      const replacedDocument = await replaceOrUpsertItem(container, document, undefined, isUpsertTest);
       assert.equal(replacedDocument.name, "replaced document", "document name property should change");
       assert.equal(replacedDocument.foo, "not bar", "property should have changed");
       assert.equal(document.id, replacedDocument.id, "document id should stay the same");
       // read document
-      const { body: document2 } = await container.item(replacedDocument.id).read();
+      const document2 = await container.item(replacedDocument.id).read();
       assert.equal(replacedDocument.id, document.id);
       // delete document
-      const { body: res } = await container.item(replacedDocument.id).delete();
+      await container.item(replacedDocument.id).delete();
 
       // read documents after deletion
       try {
-        const { body: document3 } = await container.item(replacedDocument.id).read();
+        const document3 = await container.item(replacedDocument.id).read();
         assert.fail("must throw if document doesn't exist");
       } catch (err) {
         const notFoundErrorCode = 404;
@@ -98,8 +99,8 @@ describe("NodeJS CRUD Tests", function() {
     const documentCRUDMultiplePartitionsTest = async function() {
       const client = new CosmosClient({ endpoint, auth: { masterKey } });
       // create database
-      const { body: dbdef } = await client.databases.create({ id: "db1" });
-      const db = client.database(dbdef.id);
+      const dbDef = await client.databases.create({ id: "db1" });
+      const db = await client.database(dbDef.id);
       const partitionKey = "key";
 
       // create container
@@ -108,7 +109,7 @@ describe("NodeJS CRUD Tests", function() {
         partitionKey: { paths: ["/" + partitionKey], kind: DocumentBase.PartitionKind.Hash }
       };
 
-      const { body: containerdef } = await db.containers.create(containerDefinition, { offerThroughput: 12000 });
+      const containerdef = await db.containers.create(containerDefinition, { offerThroughput: 12000 });
       const container = db.container(containerdef.id);
 
       const documents = [
@@ -123,7 +124,7 @@ describe("NodeJS CRUD Tests", function() {
       let returnedDocuments = await bulkInsertItems(container, documents);
 
       assert.equal(returnedDocuments.length, documents.length);
-      returnedDocuments.sort(function(doc1, doc2) {
+      returnedDocuments.sort(function(doc1: any, doc2: any) {
         return doc1.id.localeCompare(doc2.id);
       });
       await bulkReadItems(container, returnedDocuments, partitionKey);
@@ -143,7 +144,7 @@ describe("NodeJS CRUD Tests", function() {
         "Unexpected documents are returned"
       );
 
-      returnedDocuments.forEach(function(document) {
+      returnedDocuments.forEach(function(document: any) {
         ++document.prop;
       });
       const newReturnedDocuments = await bulkReplaceItems(container, returnedDocuments);
