@@ -76,6 +76,7 @@ export class Container {
    * Use `.items` for creating new items, or querying/reading all items.
    *
    * @param id The id of the {@link Item}.
+   * @param partitionKey The partition key of the {@link Item}. (Required for partitioned containers).
    * @example Replace an item
    * const {body: replacedItem} = await container.item("<item id>").replace({id: "<item id>", newProp: {}});
    */
