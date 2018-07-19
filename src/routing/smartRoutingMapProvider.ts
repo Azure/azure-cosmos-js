@@ -2,6 +2,7 @@ import * as assert from "assert";
 import { Constants } from "../common";
 import { PartitionKeyRangeCache, QueryRange } from "./";
 
+/** @hidden */
 export const PARITIONKEYRANGE = Constants.PartitionKeyRange;
 
 export class SmartRoutingMapProvider {

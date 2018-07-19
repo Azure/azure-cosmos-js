@@ -6,15 +6,35 @@ import { Container } from "../Container";
 import { Item } from "./Item";
 import { ItemResponse } from "./ItemResponse";
 
+/**
+ * Operations for creating new containers, and reading/querying all containers
+ *
+ * For reading, replacing, or deleting an existing container, use `.container(id)`.
+ */
 export class Items {
   private client: DocumentClient;
   constructor(public readonly container: Container) {
     this.client = this.container.database.client.documentClient;
   }
 
+  /**
+   * Queries all items.
+   * @param query Query configuration for the operation. See {@link SqlQuerySpec} for more info on how to configure a query.
+   * @param options Use to set options like response page size, continuation tokens, etc.
+   * @example Read all items to array.
+   * ```typescript
+   * const querySpec: SqlQuerySpec = {
+   *   query: "SELECT * FROM Families f WHERE f.lastName = @lastName",
+   *   parameters: [
+   *     {name: "@lastName", value: "Hendricks"}
+   *   ]
+   * };
+   * const {body: containerList} = await items.query.toArray();
+   * ```
+   */
   public query(query: string | SqlQuerySpec, options?: FeedOptions): QueryIterator<any>;
-  public query<T>(query: SqlQuerySpec, options?: FeedOptions): QueryIterator<T>;
-  public query<T>(query: SqlQuerySpec, options?: FeedOptions): QueryIterator<T> {
+  public query<T>(query: string | SqlQuerySpec, options?: FeedOptions): QueryIterator<T>;
+  public query<T>(query: string | SqlQuerySpec, options?: FeedOptions): QueryIterator<T> {
     return this.client.queryDocuments(this.container.url, query, options) as QueryIterator<T>;
   }
 
