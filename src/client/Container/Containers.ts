@@ -9,7 +9,7 @@ import { ContainerResponse } from "./ContainerResponse";
 /**
  * Operations for creating new containers, and reading/querying all containers
  *
- * For reading, replacing, or deleting an existing container, use `.container(id)`.
+ * @see {@link Container} for reading, replacing, or deleting an existing container; use `.container(id)`.
  *
  * Note: all these operations make calls against a fixed budget.
  * You should design your system such that these calls scale sublinearly with your application.
@@ -21,6 +21,7 @@ export class Containers {
 
   /**
    * Queries all containers.
+   * @param query Query configuration for the operation. See {@link SqlQuerySpec} for more info on how to configure a query.
    * @param options Use to set options like response page size, continuation tokens, etc.
    * @returns {@link QueryIterator} Allows you to return specific contaienrs in an array or iterate over them one at a time.
    * @example Read all containers to array.

@@ -8,7 +8,7 @@ import { DatabaseResponse } from "./DatabaseResponse";
 /**
  * Operations for reading or deleting an existing database.
  *
- * For creating new databases, and reading/querying all databases, use `client.databases`.
+ * @see {@link Databases} for creating new databases, and reading/querying all databases; use `client.databases`.
  *
  * Note: all these operations make calls against a fixed budget.
  * You should design your system such that these calls scale sublinearly with your application.

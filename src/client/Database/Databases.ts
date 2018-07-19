@@ -9,7 +9,7 @@ import { DatabaseResponse } from "./DatabaseResponse";
 /**
  * Operations for creating new databases, and reading/querying all databases
  *
- * For reading or deleting an existing database, use `client.database(id)`.
+ * @see {@link Database} for reading or deleting an existing database; use `client.database(id)`.
  *
  * Note: all these operations make calls against a fixed budget.
  * You should design your system such that these calls scale sublinearly with your application.
@@ -22,6 +22,7 @@ export class Databases {
   // TODO: DatabaseResponse for QueryIterator?
   /**
    * Queries all databases.
+   * @param query Query configuration for the operation. See {@link SqlQuerySpec} for more info on how to configure a query.
    * @param options Use to set options like response page size, continuation tokens, etc.
    * @returns {@link QueryIterator} Allows you to return all databases in an array or iterate over them one at a time.
    * @example Read all databases to array.

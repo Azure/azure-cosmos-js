@@ -7,7 +7,7 @@ import { ItemResponse } from "./ItemResponse";
 /**
  * Used to perform operations on a specific item.
  *
- * For operations on all items, see `container.items`.
+ * @see {@link Items} for operations on all items; see `container.items`.
  */
 export class Item {
   private client: CosmosClient;

@@ -34,13 +34,16 @@ export class DatabaseAccount {
   /** Gets the UserConsistencyPolicy settings. */
   public ConsistencyPolicy: ConsistencyLevel;
   /** The list of writable locations for a geo-replicated database account. */
-  get WritableLocations(): Array<{ [key: string]: string }> {
+  get WritableLocations(): LocationsType {
     return this._writableLocations;
   }
   /** The list of readable locations for a geo-replicated database account. */
-  get ReadableLocations(): Array<{ [key: string]: string }> {
+  get ReadableLocations(): LocationsType {
     return this._readableLocations;
   }
 }
 
-export type LocationsType = Array<{ [key: string]: string }>; // TODO: any (kind of) code smell at best
+/**
+ * Used to specify the locations that are available, read is index 1 and write is index 0.
+ */
+export type LocationsType = Array<{ [key: string]: string }>;

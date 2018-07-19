@@ -9,7 +9,7 @@ import { ItemResponse } from "./ItemResponse";
 /**
  * Operations for creating new containers, and reading/querying all containers
  *
- * For reading, replacing, or deleting an existing container, use `.container(id)`.
+ * @see {@link Item} for reading, replacing, or deleting an existing container; use `.container(id)`.
  */
 export class Items {
   private client: DocumentClient;

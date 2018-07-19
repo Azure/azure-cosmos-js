@@ -5,6 +5,7 @@ import { PartitionKeyRangeCache, QueryRange } from "./";
 /** @hidden */
 export const PARITIONKEYRANGE = Constants.PartitionKeyRange;
 
+/** @hidden */
 export class SmartRoutingMapProvider {
   private partitionKeyRangeCache: PartitionKeyRangeCache;
   /**

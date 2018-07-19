@@ -12,7 +12,7 @@ import { ContainerResponse } from "./ContainerResponse";
 /**
  * Operations for reading, replacing, or deleting a specific, existing container by id.
  *
- * For creating new containers, and reading/querying all containers, use `.containers`.
+ * @see {@link Containers} for creating new containers, and reading/querying all containers; use `.containers`.
  *
  * Note: all these operations make calls against a fixed budget.
  * You should design your system such that these calls scale sublinearly with your application.
