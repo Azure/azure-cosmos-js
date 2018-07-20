@@ -1,8 +1,11 @@
 /**
- * <p>Represents the consistency levels supported for Azure Cosmos DB client operations.<br>
+ * Represents the consistency levels supported for Azure Cosmos DB client operations.<br>
  * The requested ConsistencyLevel must match or be weaker than that provisioned for the database account.
- * Consistency levels.<br>
- * Consistency levels by order of strength are Strong, BoundedStaleness, Session, Consistent Prefix, and Eventual.</p>
+ * Consistency levels.
+ *
+ * Consistency levels by order of strength are Strong, BoundedStaleness, Session, Consistent Prefix, and Eventual.
+ *
+ * See https://aka.ms/cosmos-consistency for more detailed documentation on Consistency Levels.
  */
 export enum ConsistencyLevel {
   /**

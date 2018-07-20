@@ -79,7 +79,7 @@ export class CosmosClient {
    * @param id The id of the database.
    * @example Create a new container off of an existing database
    * ```typescript
-   * const container = client.database("<database id>").container("<container id>");
+   * const container = client.database("<database id>").containers.create("<container id>");
    * ```
    *
    * @example Delete an existing database

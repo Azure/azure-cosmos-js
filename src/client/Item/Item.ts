@@ -34,7 +34,7 @@ export class Item {
    * There is no set schema for JSON items. They may contain any number of custom properties.
    *
    * @param options Additional options for the request, such as the partition key.
-   * Note, if you provide a partition key here, it will override the primary key on this object.
+   * Note, if you provide a partition key on the options object, it will override the primary key on `this.primaryKey`.
    */
   public read(options?: RequestOptions): Promise<ItemResponse<any>>;
   /**
@@ -46,7 +46,7 @@ export class Item {
    * There is no set schema for JSON items. They may contain any number of custom properties.
    *
    * @param options Additional options for the request, such as the partition key.
-   * Note, if you provide a partition key here, it will override the primary key on this object.
+   * Note, if you provide a partition key on the options object, it will override the primary key on `this.primaryKey`.
    */
   public read<T>(options?: RequestOptions): Promise<ItemResponse<T>>;
   public async read<T>(options?: RequestOptions): Promise<ItemResponse<T>> {

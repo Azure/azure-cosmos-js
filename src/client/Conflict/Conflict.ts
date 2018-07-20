@@ -19,7 +19,7 @@ export class Conflict {
   private client: CosmosClient;
   /**
    * @hidden
-   * @param container The parent {@link CosmosClient} for the Database Account.
+   * @param container The parent {@link Container}.
    * @param id The id of the given {@link Conflict}.
    */
   constructor(public readonly container: Container, public readonly id: string) {
