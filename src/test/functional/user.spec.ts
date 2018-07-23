@@ -1,12 +1,6 @@
 import * as assert from "assert";
-import { CosmosClient } from "../../";
 import { UserDefinition } from "../../client";
-import testConfig from "./../common/_testConfig";
 import { createOrUpsertUser, getTestDatabase, removeAllDatabases } from "./../common/TestHelpers";
-
-const endpoint = testConfig.host;
-const masterKey = testConfig.masterKey;
-const client = new CosmosClient({ endpoint, auth: { masterKey } });
 
 describe("NodeJS CRUD Tests", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 10000);

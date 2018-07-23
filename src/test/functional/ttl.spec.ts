@@ -1,12 +1,6 @@
 import * as assert from "assert";
-import * as Stream from "stream";
-import { CosmosClient } from "../../";
 import { Container, ContainerDefinition, Database } from "../../client";
-import testConfig from "./../common/_testConfig";
 import { getTestDatabase, removeAllDatabases } from "./../common/TestHelpers";
-
-const endpoint = testConfig.host;
-const masterKey = testConfig.masterKey;
 
 async function sleep(time: number) {
   return new Promise(resolve => {

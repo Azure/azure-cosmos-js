@@ -1,26 +1,11 @@
 import * as assert from "assert";
-import * as Stream from "stream";
-import {
-  AzureDocuments,
-  Base,
-  Constants,
-  CosmosClient,
-  DocumentBase,
-  HashPartitionResolver,
-  Range,
-  RangePartitionResolver,
-  Response,
-  RetryOptions
-} from "../../";
+import { Constants, CosmosClient, DocumentBase } from "../../";
 import { Container, StoredProcedureDefinition } from "../../client";
 import testConfig from "./../common/_testConfig";
 import { bulkInsertItems, getTestContainer, getTestDatabase, removeAllDatabases } from "./../common/TestHelpers";
 
 // Used for sproc
 declare var getContext: any;
-
-// TODO: should fix long lines
-// tslint:disable:max-line-length
 
 const endpoint = testConfig.host;
 const masterKey = testConfig.masterKey;

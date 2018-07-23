@@ -2,7 +2,7 @@ import * as assert from "assert";
 import { CosmosClient, DocumentBase } from "../../";
 import { Container, TriggerDefinition } from "../../client";
 import testConfig from "./../common/_testConfig";
-import { getTestDatabase, removeAllDatabases, getTestContainer } from "./../common/TestHelpers";
+import { getTestContainer, removeAllDatabases } from "./../common/TestHelpers";
 
 const endpoint = testConfig.host;
 const masterKey = testConfig.masterKey;
@@ -12,9 +12,6 @@ const client = new CosmosClient({
   auth: { masterKey }
 });
 const notFoundErrorCode = 404;
-
-// TODO: should fix long lines
-// tslint:disable:max-line-length
 
 // Mock for trigger function bodies
 declare var getContext: any;

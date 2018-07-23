@@ -1,11 +1,6 @@
 import * as assert from "assert";
-import { CosmosClient, Database, DocumentBase } from "../../";
-import testConfig from "./../common/_testConfig";
+import { Database, DocumentBase } from "../../";
 import { createOrUpsertItem, getTestDatabase, removeAllDatabases } from "./../common/TestHelpers";
-
-const endpoint = testConfig.host;
-const masterKey = testConfig.masterKey;
-const client = new CosmosClient({ endpoint, auth: { masterKey } });
 
 describe("NodeJS CRUD Tests", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 10000);
@@ -59,7 +54,6 @@ describe("NodeJS CRUD Tests", function() {
           }
         };
         await createOrUpsertItem(container, location2, undefined, isUpsertTest);
-        // tslint:disable-next-line:max-line-length
         const query =
           "SELECT * FROM root WHERE (ST_DISTANCE(root.Location, {type: 'Point', coordinates: [20.1, 20]}) < 20000) ";
         const { result: results } = await container.items.query(query).toArray();
