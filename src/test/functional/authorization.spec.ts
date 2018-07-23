@@ -1,18 +1,13 @@
 import * as assert from "assert";
 import { CosmosClient, DocumentBase } from "../../";
 import { PermissionDefinition } from "../../client";
-import testConfig from "./../common/_testConfig";
+import { endpoint } from "./../common/_testConfig";
 import {
   createOrUpsertPermission,
   getTestContainer,
   getTestDatabase,
   removeAllDatabases
 } from "./../common/TestHelpers";
-
-const endpoint = testConfig.host;
-const masterKey = testConfig.masterKey;
-
-const client = new CosmosClient({ endpoint, auth: { masterKey } });
 
 describe("NodeJS CRUD Tests", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 10000);
@@ -180,7 +175,7 @@ describe("NodeJS CRUD Tests", function() {
         id: "coll1",
         partitionKey: { paths: ["/" + partitionKey], kind: DocumentBase.PartitionKind.Hash }
       };
-      const container = await getTestContainer(client, "authorization CRUD multiple partitons", containerDefinition);
+      const container = await getTestContainer("authorization CRUD multiple partitons", undefined, containerDefinition);
       // create user
       const { body: userDef } = await container.database.users.create({ id: "user1" });
       const user = container.database.user(userDef.id);

@@ -12,10 +12,7 @@ import {
 } from "../../client";
 import { StoredProcedureResponse } from "../../client/StoredProcedure/StoredProcedureResponse";
 import { UserResponse } from "../../client/User/UserResponse";
-import testConfig from "./../common/_testConfig";
-
-const endpoint = testConfig.host;
-const masterKey = testConfig.masterKey;
+import { endpoint, masterKey } from "./../common/_testConfig";
 
 const defaultClient = new CosmosClient({ endpoint, auth: { masterKey } });
 

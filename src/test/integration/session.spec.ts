@@ -2,11 +2,8 @@ import * as assert from "assert";
 import * as sinon from "sinon";
 import { Base, Constants, CosmosClient, IHeaders } from "../../";
 import { ConsistencyLevel, PartitionKind } from "../../documents";
-import testConfig from "./../common/_testConfig";
+import { endpoint, masterKey } from "./../common/_testConfig";
 import { getTestDatabase, removeAllDatabases } from "./../common/TestHelpers";
-
-const endpoint = testConfig.host;
-const masterKey = testConfig.masterKey;
 
 // TODO: there is alot of "any" types for tokens here
 // TODO: there is alot of leaky document client stuff here that will make removing document client hard

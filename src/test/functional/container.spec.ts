@@ -1,8 +1,7 @@
 import * as assert from "assert";
 import { Constants, DocumentBase } from "../../";
-import { Container, ContainerDefinition, Database } from "../../client";
+import { ContainerDefinition, Database } from "../../client";
 import { DataType, Index, IndexedPath, IndexingMode, IndexingPolicy, IndexKind } from "../../documents";
-import testConfig from "./../common/_testConfig";
 import { getTestDatabase, removeAllDatabases } from "./../common/TestHelpers";
 
 describe("NodeJS CRUD Tests", function() {

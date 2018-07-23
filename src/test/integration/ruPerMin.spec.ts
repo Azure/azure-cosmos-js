@@ -1,10 +1,8 @@
 import * as assert from "assert";
 import { Constants, CosmosClient, Database } from "../../";
-import testConfig from "./../common/_testConfig";
+import { endpoint, masterKey } from "./../common/_testConfig";
 import { getTestDatabase, removeAllDatabases } from "./../common/TestHelpers";
 
-const endpoint = testConfig.host;
-const masterKey = testConfig.masterKey;
 const client = new CosmosClient({ endpoint, auth: { masterKey } });
 
 // TODO: these tests are all disabled

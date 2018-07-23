@@ -1,13 +1,7 @@
 import * as assert from "assert";
-import { Constants, CosmosClient, FeedOptions, UriFactory } from "../../";
+import { Constants, FeedOptions } from "../../";
 import { PartitionKind } from "../../documents";
-import testConfig from "./../common/_testConfig";
 import { getTestContainer, getTestDatabase, removeAllDatabases } from "./../common/TestHelpers";
-
-const endpoint = testConfig.host;
-const masterKey = testConfig.masterKey;
-
-const client = new CosmosClient({ endpoint, auth: { masterKey } });
 
 const doc = { id: "myId", pk: "pk" };
 
@@ -30,8 +24,8 @@ describe("ResourceLink Trimming of leading and trailing slashes", function() {
     const containerOptions = { offerThroughput: 10100 };
 
     const container = await getTestContainer(
-      client,
       "validate correct execution of query",
+      undefined,
       containerDefinition,
       containerOptions
     );

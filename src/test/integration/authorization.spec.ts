@@ -1,11 +1,8 @@
 import * as assert from "assert";
 import { Base, Container, CosmosClient, DocumentBase, UriFactory } from "../../";
 import { Database } from "../../client";
-import testConfig from "./../common/_testConfig";
+import { endpoint } from "./../common/_testConfig";
 import { getTestContainer, removeAllDatabases } from "./../common/TestHelpers";
-
-const endpoint = testConfig.host;
-const masterKey = testConfig.masterKey;
 
 describe("Authorization", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 10000);

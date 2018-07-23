@@ -1,11 +1,9 @@
 import * as assert from "assert";
 import { Constants, CosmosClient, DocumentBase } from "../../";
 import { Container } from "../../client";
-import testConfig from "./../common/_testConfig";
+import { endpoint, masterKey } from "./../common/_testConfig";
 import { bulkInsertItems, getTestContainer, getTestDatabase, removeAllDatabases } from "./../common/TestHelpers";
 
-const endpoint = testConfig.host;
-const masterKey = testConfig.masterKey;
 const client = new CosmosClient({ endpoint, auth: { masterKey } });
 
 // TODO: This is required for Node 6 and above, so just putting it in here.
@@ -85,7 +83,7 @@ describe("NodeJS CRUD Tests", function() {
       };
 
       const containerOptions = { offerThroughput: 12000 };
-      container = await getTestContainer(client, "query CRUD database 中文", containerDefinition, containerOptions);
+      container = await getTestContainer("query CRUD database 中文", client, containerDefinition, containerOptions);
       await bulkInsertItems(container, documentDefinitions);
     });
 
@@ -105,7 +103,7 @@ describe("NodeJS CRUD Tests", function() {
     this.timeout(30000);
     let resources: { container: Container; doc1: any; doc2: any; doc3: any };
     beforeEach(async function() {
-      const container = await getTestContainer(client, "Validate QueryIterator Functionality");
+      const container = await getTestContainer("Validate QueryIterator Functionality", client);
       const { body: doc1 } = await container.items.create({ id: "doc1", prop1: "value1" });
       const { body: doc2 } = await container.items.create({ id: "doc2", prop1: "value2" });
       const { body: doc3 } = await container.items.create({ id: "doc3", prop1: "value3" });

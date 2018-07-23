@@ -1,16 +1,8 @@
 import * as assert from "assert";
-import { CosmosClient, DocumentBase } from "../../";
+import { DocumentBase } from "../../";
 import { Container, TriggerDefinition } from "../../client";
-import testConfig from "./../common/_testConfig";
 import { getTestContainer, removeAllDatabases } from "./../common/TestHelpers";
 
-const endpoint = testConfig.host;
-const masterKey = testConfig.masterKey;
-const containerId = "trigger container";
-const client = new CosmosClient({
-  endpoint,
-  auth: { masterKey }
-});
 const notFoundErrorCode = 404;
 
 // Mock for trigger function bodies
@@ -22,7 +14,7 @@ describe("NodeJS CRUD Tests", function() {
 
   beforeEach(async function() {
     await removeAllDatabases();
-    container = await getTestContainer(client, "trigger container");
+    container = await getTestContainer("trigger container");
   });
 
   describe("Validate Trigger CRUD", function() {

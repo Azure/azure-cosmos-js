@@ -1,18 +1,10 @@
 import * as assert from "assert";
 import { Constants, CosmosClient, DocumentBase } from "../../";
 import { Container, StoredProcedureDefinition } from "../../client";
-import testConfig from "./../common/_testConfig";
 import { bulkInsertItems, getTestContainer, getTestDatabase, removeAllDatabases } from "./../common/TestHelpers";
 
 // Used for sproc
 declare var getContext: any;
-
-const endpoint = testConfig.host;
-const masterKey = testConfig.masterKey;
-const client = new CosmosClient({
-  endpoint,
-  auth: { masterKey }
-});
 
 describe("NodeJS CRUD Tests", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 10000);
@@ -22,7 +14,7 @@ describe("NodeJS CRUD Tests", function() {
   describe("Validate sproc CRUD", function() {
     let container: Container;
     beforeEach(async function() {
-      container = await getTestContainer(client, this.test.fullTitle());
+      container = await getTestContainer(this.test.fullTitle());
     });
 
     it("nativeApi Should do sproc CRUD operations successfully with create/replace", async function() {
@@ -144,7 +136,7 @@ describe("NodeJS CRUD Tests", function() {
   describe("Validate stored procedure functionality", function() {
     let container: Container;
     beforeEach(async function() {
-      container = await getTestContainer(client, this.test.fullTitle());
+      container = await getTestContainer(this.test.fullTitle());
     });
 
     it("nativeApi should do stored procedure operations successfully with create/replace", async function() {
