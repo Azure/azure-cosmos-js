@@ -10,7 +10,6 @@ import { TestData } from "./../common/TestData";
 import { bulkInsertItems, getTestContainer, removeAllDatabases } from "./../common/TestHelpers";
 
 // process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-const client = new CosmosClient({ endpoint, auth: { masterKey } });
 
 describe.skip("NodeJS Aggregate Query Tests", async function() {
   const partitionKey = "key";
@@ -54,7 +53,7 @@ describe.skip("NodeJS Aggregate Query Tests", async function() {
     //          - bulk inserts documents to the container
     before(async function() {
       await removeAllDatabases();
-      container = await getTestContainer("Validate Aggregate Document Query", client, containerDefinition);
+      container = await getTestContainer("Validate Aggregate Document Query", undefined, containerDefinition);
       db = container.database;
       await bulkInsertItems(container, documentDefinitions);
     });
