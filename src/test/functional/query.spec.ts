@@ -22,27 +22,25 @@ describe("NodeJS CRUD Tests", function() {
     const queriesCRUDTest = async function() {
       try {
         // create a database
-        const databaseId = "query test database";
-        const database = await getTestDatabase(databaseId);
-        assert.equal(database.id, databaseId);
+        const database = await getTestDatabase("query test database");
         // query databases
         const querySpec0 = {
           query: "SELECT * FROM root r WHERE r.id=@id",
           parameters: [
             {
               name: "@id",
-              value: databaseId
+              value: database.id
             }
           ]
         };
         const { result: results } = await client.databases.query(querySpec0).toArray();
         assert(results.length > 0, "number of results for the query should be > 0");
         const querySpec1 = {
-          query: "SELECT * FROM root r WHERE r.id='" + databaseId + "'"
+          query: "SELECT * FROM root r WHERE r.id='" + database.id + "'"
         };
         const { result: results2 } = await client.databases.query(querySpec1).toArray();
         assert(results2.length > 0, "number of results for the query should be > 0");
-        const querySpec2 = "SELECT * FROM root r WHERE r.id='" + databaseId + "'";
+        const querySpec2 = "SELECT * FROM root r WHERE r.id='" + database.id + "'";
         const { result: results3 } = await client.databases.query(querySpec2).toArray();
         assert(results3.length > 0, "number of results for the query should be > 0");
       } catch (err) {
