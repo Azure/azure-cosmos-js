@@ -7,14 +7,8 @@ import { getTestDatabase, removeAllDatabases } from "./../common/TestHelpers";
 
 describe("NodeJS CRUD Tests", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 10000);
-  // remove all databases from the endpoint before each test
   beforeEach(async function() {
-    this.timeout(10000);
-    try {
-      await removeAllDatabases();
-    } catch (err) {
-      throw err;
-    }
+    await removeAllDatabases();
   });
 
   describe("Validate Container CRUD", function() {

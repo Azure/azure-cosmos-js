@@ -1,6 +1,5 @@
 import * as assert from "assert";
-import { Container, CosmosClient, Database, DocumentBase } from "../../";
-import testConfig from "./../common/_testConfig";
+import { Container, DocumentBase } from "../../";
 import {
   bulkDeleteItems,
   bulkInsertItems,
@@ -13,17 +12,10 @@ import {
   replaceOrUpsertItem
 } from "./../common/TestHelpers";
 
-const endpoint = testConfig.host;
-const masterKey = testConfig.masterKey;
-
-const client = new CosmosClient({ endpoint, auth: { masterKey } });
-
 describe("NodeJS CRUD Tests", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 10000);
-  // remove all databases from the endpoint before each test
   beforeEach(async function() {
-    this.timeout(10000);
-    await removeAllDatabases(new CosmosClient({ endpoint, auth: { masterKey } }));
+    await removeAllDatabases();
   });
 
   describe("Validate Document CRUD", function() {

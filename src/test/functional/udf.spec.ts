@@ -9,8 +9,6 @@ describe("NodeJS CRUD Tests", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 10000);
 
   beforeEach(async function() {
-    this.timeout(10000);
-    // remove all databases from the endpoint before each test
     await removeAllDatabases();
   });
 

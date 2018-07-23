@@ -10,14 +10,8 @@ const client = new CosmosClient({ endpoint, auth: { masterKey } });
 
 describe("NodeJS CRUD Tests", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 10000);
-  // remove all databases from the endpoint before each test
   beforeEach(async function() {
-    this.timeout(10000);
-    try {
-      await removeAllDatabases();
-    } catch (err) {
-      throw err;
-    }
+    await removeAllDatabases();
   });
   describe("Validate User CRUD", function() {
     const userCRUDTest = async function(isUpsertTest: boolean) {

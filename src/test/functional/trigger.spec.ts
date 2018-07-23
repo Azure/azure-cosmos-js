@@ -2,7 +2,7 @@ import * as assert from "assert";
 import { CosmosClient, DocumentBase } from "../../";
 import { Container, TriggerDefinition } from "../../client";
 import testConfig from "./../common/_testConfig";
-import { getTestDatabase, removeAllDatabases } from "./../common/TestHelpers";
+import { getTestDatabase, removeAllDatabases, getTestContainer } from "./../common/TestHelpers";
 
 const endpoint = testConfig.host;
 const masterKey = testConfig.masterKey;
@@ -24,16 +24,8 @@ describe("NodeJS CRUD Tests", function() {
   let container: Container;
 
   beforeEach(async function() {
-    // remove all databases from the endpoint before each test
     await removeAllDatabases();
-
-    // create database
-    const database = await getTestDatabase("trigger databse");
-
-    // create container
-    await database.containers.create({ id: containerId });
-
-    container = await database.container(containerId);
+    container = await getTestContainer(client, "trigger container");
   });
 
   describe("Validate Trigger CRUD", function() {

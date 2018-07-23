@@ -16,7 +16,6 @@ async function sleep(time: number) {
 
 describe("NodeJS CRUD Tests", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 600000);
-  // remove all databases from the endpoint before each test
   beforeEach(async function() {
     await removeAllDatabases();
   });
