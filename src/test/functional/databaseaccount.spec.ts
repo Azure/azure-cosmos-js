@@ -13,7 +13,7 @@ describe("NodeJS CRUD Tests", function() {
   beforeEach(async function() {
     this.timeout(10000);
     try {
-      await removeAllDatabases(client);
+      await removeAllDatabases();
     } catch (err) {
       throw err;
     }

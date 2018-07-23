@@ -57,15 +57,14 @@ describe("Session Token", function() {
   };
 
   beforeEach(async function() {
-    await removeAllDatabases(client);
+    await removeAllDatabases();
   });
 
   it("validate session tokens for sequence of opearations", async function() {
     let index1;
     let index2;
 
-    const { id: databaseId } = await getTestDatabase(client, "session test");
-    const database = client.database(databaseId);
+    const database = await getTestDatabase("session test", client);
 
     const { body: createdContainerDef } = await database.containers.create(containerDefinition, containerOptions);
     const container = database.container(createdContainerDef.id);
@@ -161,10 +160,9 @@ describe("Session Token", function() {
   });
 
   it("validate 'lsn not caught up' error for higher lsn and clearing session token", async function() {
-    const { id: databaseId } = await getTestDatabase(client, "session test");
+    const database = await getTestDatabase("session test", client);
 
-    const containerLink = "dbs/" + databaseId + "/colls/" + containerId;
-    const database = client.database(databaseId);
+    const containerLink = "dbs/" + database.id + "/colls/" + containerId;
     const increaseLSN = function(oldTokens: any) {
       for (const coll in oldTokens) {
         if (oldTokens.hasOwnProperty(coll)) {
@@ -232,7 +230,7 @@ describe("Session Token", function() {
       consistencyLevel: ConsistencyLevel.Session
     });
 
-    const db = await getTestDatabase(client, "session test");
+    const db = await getTestDatabase("session test", client);
 
     const { body: createdContainerDef } = await db.containers.create(containerDefinition, containerOptions);
     const createdContainer = db.container(createdContainerDef.id);

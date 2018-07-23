@@ -18,7 +18,7 @@ describe("NodeJS CRUD Tests", function() {
   // remove all databases from the endpoint before each test
   beforeEach(async function() {
     this.timeout(10000);
-    await removeAllDatabases(client);
+    await removeAllDatabases();
   });
   describe("Validate Permission CRUD", function() {
     const permissionCRUDTest = async function(isUpsertTest: boolean) {

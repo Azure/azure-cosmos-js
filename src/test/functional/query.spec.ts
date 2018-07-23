@@ -2,7 +2,7 @@ import * as assert from "assert";
 import { Constants, CosmosClient, DocumentBase } from "../../";
 import { Container } from "../../client";
 import testConfig from "./../common/_testConfig";
-import { bulkInsertItems, getTestContainer, removeAllDatabases } from "./../common/TestHelpers";
+import { bulkInsertItems, getTestContainer, getTestDatabase, removeAllDatabases } from "./../common/TestHelpers";
 
 const endpoint = testConfig.host;
 const masterKey = testConfig.masterKey;
@@ -19,34 +19,34 @@ describe("NodeJS CRUD Tests", function() {
   // remove all databases from the endpoint before each test
   before(async function() {
     this.timeout(10000);
-    await removeAllDatabases(client);
+    await removeAllDatabases();
   });
 
   describe("Validate Queries CRUD", function() {
     const queriesCRUDTest = async function() {
       try {
         // create a database
-        const databaseDefinition = { id: "query test database" };
-        const { body: db } = await client.databases.create(databaseDefinition);
-        assert.equal(db.id, databaseDefinition.id);
+        const databaseId = "query test database";
+        const database = await getTestDatabase(databaseId);
+        assert.equal(database.id, databaseId);
         // query databases
         const querySpec0 = {
           query: "SELECT * FROM root r WHERE r.id=@id",
           parameters: [
             {
               name: "@id",
-              value: databaseDefinition.id
+              value: databaseId
             }
           ]
         };
         const { result: results } = await client.databases.query(querySpec0).toArray();
         assert(results.length > 0, "number of results for the query should be > 0");
         const querySpec1 = {
-          query: "SELECT * FROM root r WHERE r.id='" + databaseDefinition.id + "'"
+          query: "SELECT * FROM root r WHERE r.id='" + databaseId + "'"
         };
         const { result: results2 } = await client.databases.query(querySpec1).toArray();
         assert(results2.length > 0, "number of results for the query should be > 0");
-        const querySpec2 = "SELECT * FROM root r WHERE r.id='" + databaseDefinition.id + "'";
+        const querySpec2 = "SELECT * FROM root r WHERE r.id='" + databaseId + "'";
         const { result: results3 } = await client.databases.query(querySpec2).toArray();
         assert(results3.length > 0, "number of results for the query should be > 0");
       } catch (err) {

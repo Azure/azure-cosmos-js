@@ -14,7 +14,7 @@ describe("NodeJS CRUD Tests", function() {
   beforeEach(async function() {
     this.timeout(10000);
     try {
-      await removeAllDatabases(client);
+      await removeAllDatabases();
     } catch (err) {
       throw err;
     }
@@ -22,7 +22,7 @@ describe("NodeJS CRUD Tests", function() {
   describe("Validate User CRUD", function() {
     const userCRUDTest = async function(isUpsertTest: boolean) {
       // create database
-      const database = await getTestDatabase(client, "Validate user CRUD");
+      const database = await getTestDatabase("Validate user CRUD");
 
       // list users
       const { result: users } = await database.users.readAll().toArray();

@@ -1,13 +1,9 @@
 import * as assert from "assert";
-import { Constants, CosmosClient, DocumentBase } from "../../";
+import { Constants, DocumentBase } from "../../";
 import { Container, ContainerDefinition, Database } from "../../client";
 import { DataType, Index, IndexedPath, IndexingMode, IndexingPolicy, IndexKind } from "../../documents";
 import testConfig from "./../common/_testConfig";
 import { getTestDatabase, removeAllDatabases } from "./../common/TestHelpers";
-
-const endpoint = testConfig.host;
-const masterKey = testConfig.masterKey;
-const client = new CosmosClient({ endpoint, auth: { masterKey } });
 
 describe("NodeJS CRUD Tests", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 10000);
@@ -15,7 +11,7 @@ describe("NodeJS CRUD Tests", function() {
   beforeEach(async function() {
     this.timeout(10000);
     try {
-      await removeAllDatabases(client);
+      await removeAllDatabases();
     } catch (err) {
       throw err;
     }
@@ -25,7 +21,7 @@ describe("NodeJS CRUD Tests", function() {
     const containerCRUDTest = async function(hasPartitionKey: boolean) {
       try {
         // create database
-        const database = await getTestDatabase(client, "Validate Container CRUD");
+        const database = await getTestDatabase("Validate Container CRUD");
 
         // create a container
         const containerDefinition: ContainerDefinition = {
@@ -109,7 +105,7 @@ describe("NodeJS CRUD Tests", function() {
     const badPartitionKeyDefinitionTest = async function(isNameBased: boolean) {
       try {
         // create database
-        const database = await getTestDatabase(client, "container CRUD bad partition key");
+        const database = await getTestDatabase("container CRUD bad partition key");
 
         // create a container
         const badPartitionKeyDefinition: any = {
@@ -170,8 +166,7 @@ describe("NodeJS CRUD Tests", function() {
     const indexPolicyTest = async function() {
       try {
         // create database
-        const { body: dbdef } = await client.databases.create({ id: "container test database" });
-        const database = client.database(dbdef.id);
+        const database = await getTestDatabase("container test database");
 
         // create container
         const { body: containerDef } = await database.containers.create({ id: "container test container" });
@@ -312,8 +307,7 @@ describe("NodeJS CRUD Tests", function() {
     const defaultIndexingPolicyTest = async function() {
       try {
         // create database
-        const { body: dbdef } = await client.databases.create({ id: "container test database" });
-        const database = client.database(dbdef.id);
+        const database = await getTestDatabase("container test database");
 
         // create container with no indexing policy specified.
         const containerDefinition01: ContainerDefinition = { id: "TestCreateDefaultPolicy01" };
@@ -404,7 +398,7 @@ describe("NodeJS CRUD Tests", function() {
 
     const indexProgressHeadersTest = async function() {
       try {
-        const database = await getTestDatabase(client, "Validate response headers");
+        const database = await getTestDatabase("Validate response headers");
         const { headers: headers1 } = await createThenReadcontainer(database, { id: "consistent_coll" });
         assert.notEqual(headers1[Constants.HttpHeaders.IndexTransformationProgress], undefined);
         assert.equal(headers1[Constants.HttpHeaders.LazyIndexingProgress], undefined);

@@ -11,7 +11,7 @@ const client = new CosmosClient({ endpoint, auth: { masterKey } });
 describe("NodeJS Incremental Feed Tests using 'a_im' and 'IfNoneMatch' options", function() {
   // delete all databases and create sample database
   before(async function() {
-    await removeAllDatabases(client);
+    await removeAllDatabases();
   });
 
   describe("Newly updated documents should be fetched incremetally", function() {

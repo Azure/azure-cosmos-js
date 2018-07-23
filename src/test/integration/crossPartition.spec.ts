@@ -69,7 +69,7 @@ describe("Cross Partition", function() {
     // - creates a new collecton,
     // - bulk inserts documents to the container
     before(async function() {
-      await removeAllDatabases(client);
+      await removeAllDatabases();
       container = await getTestContainer(client, "Validate 中文 Query", containerDefinition, containerOptions);
       await bulkInsertItems(container, documentDefinitions);
     });

@@ -19,7 +19,7 @@ describe("NodeJS CRUD Tests", function() {
   beforeEach(async function() {
     this.timeout(10000);
     // remove all databases from the endpoint before each test
-    await removeAllDatabases(client);
+    await removeAllDatabases();
   });
 
   describe("HashPartitionResolver", function() {

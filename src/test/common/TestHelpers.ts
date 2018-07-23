@@ -17,9 +17,9 @@ import testConfig from "./../common/_testConfig";
 const endpoint = testConfig.host;
 const masterKey = testConfig.masterKey;
 
-const defaultCleint = new CosmosClient({ endpoint, auth: { masterKey } });
+const defaultClient = new CosmosClient({ endpoint, auth: { masterKey } });
 
-export async function removeAllDatabases(client: CosmosClient = defaultCleint) {
+export async function removeAllDatabases(client: CosmosClient = defaultClient) {
   try {
     const { result: databases } = await client.databases.readAll().toArray();
     const length = databases.length;
@@ -42,7 +42,7 @@ export async function removeAllDatabases(client: CosmosClient = defaultCleint) {
   }
 }
 
-export async function getTestDatabase(client: CosmosClient, testName: string) {
+export async function getTestDatabase(testName: string, client: CosmosClient = defaultClient) {
   const entropy = Math.floor(Math.random() * 10000);
   const id = `${testName.replace(" ", "").substring(0, 30)}${entropy}`;
   await client.databases.create({ id });
@@ -50,12 +50,12 @@ export async function getTestDatabase(client: CosmosClient, testName: string) {
 }
 
 export async function getTestContainer(
-  client: CosmosClient,
+  client: CosmosClient = defaultClient,
   testName: string,
   containerDef?: ContainerDefinition,
   options?: RequestOptions
 ) {
-  const db = await getTestDatabase(client, testName);
+  const db = await getTestDatabase(testName, client);
   const entropy = Math.floor(Math.random() * 10000);
   const id = `${testName.replace(" ", "").substring(0, 30)}${entropy}`;
   await db.containers.create({ ...containerDef, ...{ id } }, options);

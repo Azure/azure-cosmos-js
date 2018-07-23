@@ -8,12 +8,15 @@ import {
   bulkReadItems,
   bulkReplaceItems,
   createOrUpsertItem,
+  getTestDatabase,
   removeAllDatabases,
   replaceOrUpsertItem
 } from "./../common/TestHelpers";
 
 const endpoint = testConfig.host;
 const masterKey = testConfig.masterKey;
+
+const client = new CosmosClient({ endpoint, auth: { masterKey } });
 
 describe("NodeJS CRUD Tests", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 10000);
@@ -25,13 +28,11 @@ describe("NodeJS CRUD Tests", function() {
 
   describe("Validate Document CRUD", function() {
     const documentCRUDTest = async function(isUpsertTest: boolean) {
-      const client = new CosmosClient({ endpoint, auth: { masterKey } });
       // create database
-      const { body: dbdef } = await client.databases.create({ id: "sample 中文 database" });
-      const db: Database = client.database(dbdef.id);
+      const database = await getTestDatabase("sample 中文 database");
       // create container
-      const { body: containerdef } = await db.containers.create({ id: "sample container" });
-      const container: Container = db.container(containerdef.id);
+      const { body: containerdef } = await database.containers.create({ id: "sample container" });
+      const container: Container = database.container(containerdef.id);
 
       // read items
       const { result: items } = await container.items.readAll().toArray();
@@ -96,10 +97,8 @@ describe("NodeJS CRUD Tests", function() {
     };
 
     const documentCRUDMultiplePartitionsTest = async function() {
-      const client = new CosmosClient({ endpoint, auth: { masterKey } });
       // create database
-      const { body: dbdef } = await client.databases.create({ id: "db1" });
-      const db = client.database(dbdef.id);
+      const database = await getTestDatabase("db1");
       const partitionKey = "key";
 
       // create container
@@ -108,8 +107,8 @@ describe("NodeJS CRUD Tests", function() {
         partitionKey: { paths: ["/" + partitionKey], kind: DocumentBase.PartitionKind.Hash }
       };
 
-      const { body: containerdef } = await db.containers.create(containerDefinition, { offerThroughput: 12000 });
-      const container = db.container(containerdef.id);
+      const { body: containerdef } = await database.containers.create(containerDefinition, { offerThroughput: 12000 });
+      const container = database.container(containerdef.id);
 
       const documents = [
         { id: "document1" },

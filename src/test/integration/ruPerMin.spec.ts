@@ -15,13 +15,13 @@ describe("RU Per Minute", function() {
   // - removes all the databases,
   //  - creates a new database,
   beforeEach(async () => {
-    await removeAllDatabases(client);
-    database = await getTestDatabase(client, "RU Per minute");
+    await removeAllDatabases();
+    database = await getTestDatabase("RU Per minute");
   });
 
   // - removes all the databases,
   afterEach(async () => {
-    await removeAllDatabases(client);
+    await removeAllDatabases();
   });
 
   xit("Create container with RU Per Minute Offer", async function() {

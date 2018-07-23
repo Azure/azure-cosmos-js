@@ -28,7 +28,7 @@ describe("Authorization", function() {
   /************** TEST **************/
 
   beforeEach(async function() {
-    await removeAllDatabases(client);
+    await removeAllDatabases();
 
     // create a database & container
     container = await getTestContainer(client, "Authorization tests");
@@ -60,7 +60,7 @@ describe("Authorization", function() {
   });
 
   afterEach(async function() {
-    await removeAllDatabases(client);
+    await removeAllDatabases();
   });
 
   it("Accessing container by resourceTokens", async function() {

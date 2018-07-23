@@ -12,14 +12,14 @@ describe("NodeJS CRUD Tests", function() {
   // remove all databases from the endpoint before each test
   beforeEach(async function() {
     this.timeout(10000);
-    await removeAllDatabases(client);
+    await removeAllDatabases();
   });
 
   describe("Validate spatial index", function() {
     const spatialIndexTest = async function(isUpsertTest: boolean) {
       try {
         // create database
-        const database: Database = await getTestDatabase(client, "validate spatial index");
+        const database: Database = await getTestDatabase("validate spatial index");
 
         // create container using an indexing policy with spatial index.
         const indexingPolicy = {

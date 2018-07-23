@@ -1,12 +1,7 @@
 import * as assert from "assert";
 import { CosmosClient } from "../../";
 import { IndexingMode } from "../../documents";
-import testConfig from "./../common/_testConfig";
 import { getTestDatabase, removeAllDatabases } from "./../common/TestHelpers";
-
-const endpoint = testConfig.host;
-const masterKey = testConfig.masterKey;
-const client = new CosmosClient({ endpoint, auth: { masterKey } });
 
 const testDoc = {
   id: "ABC",
@@ -22,16 +17,16 @@ describe("Create And Read Validation", function() {
   const databaseId = "encodingTestDB";
 
   afterEach(async function() {
-    await removeAllDatabases(client);
+    await removeAllDatabases();
   });
   beforeEach(async function() {
-    await removeAllDatabases(client);
+    await removeAllDatabases();
   });
 
   it("check if the document from db matches the actual document", async function() {
     try {
       // Create Database
-      const database = await getTestDatabase(client, databaseId);
+      const database = await getTestDatabase(databaseId);
       const containerBody = {
         id: "डेटाबेस پایگاه داده 数据库" + dateTime.getTime(),
         indexingPolicy: { indexingMode: IndexingMode.Lazy } // Modes : Lazy, Consistent
