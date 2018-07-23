@@ -1,5 +1,3 @@
 import { removeAllDatabases } from "./TestHelpers";
 
-(async function() {
-  await removeAllDatabases();
-})();
+removeAllDatabases().then((count) => console.log(`Cleaned ${count} databases`)).catch((e) => throw e);
