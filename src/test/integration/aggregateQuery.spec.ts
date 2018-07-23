@@ -53,7 +53,6 @@ describe.skip("NodeJS Aggregate Query Tests", async function() {
     //      - creates a new collecton,
     //          - bulk inserts documents to the container
     before(async function() {
-      await removeAllDatabases();
       container = await getTestContainer("Validate Aggregate Document Query", client, containerDefinition);
       db = container.database;
       await bulkInsertItems(container, documentDefinitions);

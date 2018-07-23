@@ -5,9 +5,6 @@ import { getTestContainer, removeAllDatabases } from "./../common/TestHelpers";
 
 describe("NodeJS Incremental Feed Tests using 'a_im' and 'IfNoneMatch' options", function() {
   // delete all databases and create sample database
-  before(async function() {
-    await removeAllDatabases();
-  });
 
   describe("Newly updated documents should be fetched incremetally", function() {
     let container: Container;

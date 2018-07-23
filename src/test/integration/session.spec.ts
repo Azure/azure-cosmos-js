@@ -53,10 +53,6 @@ describe("Session Token", function() {
     }
   };
 
-  beforeEach(async function() {
-    await removeAllDatabases();
-  });
-
   it("validate session tokens for sequence of opearations", async function() {
     let index1;
     let index2;

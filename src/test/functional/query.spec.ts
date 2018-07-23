@@ -14,9 +14,6 @@ if (!Symbol || !Symbol.asyncIterator) {
 
 describe("NodeJS CRUD Tests", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 10000);
-  before(async function() {
-    await removeAllDatabases();
-  });
 
   describe("Validate Queries CRUD", function() {
     const queriesCRUDTest = async function() {

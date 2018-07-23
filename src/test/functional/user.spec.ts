@@ -4,9 +4,6 @@ import { createOrUpsertUser, getTestDatabase, removeAllDatabases } from "./../co
 
 describe("NodeJS CRUD Tests", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 10000);
-  beforeEach(async function() {
-    await removeAllDatabases();
-  });
   describe("Validate User CRUD", function() {
     const userCRUDTest = async function(isUpsertTest: boolean) {
       // create database

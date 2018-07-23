@@ -9,10 +9,6 @@ describe("ResourceLink Trimming of leading and trailing slashes", function() {
   this.timeout(10000);
   const containerId = "testcontainer";
 
-  beforeEach(async function() {
-    await removeAllDatabases();
-  });
-
   it("validate correct execution of query using named container link with leading and trailing slashes", async function() {
     const containerDefinition = {
       id: containerId,
@@ -73,15 +69,6 @@ describe("Test Query Metrics On Single Partition Collection", function() {
       throw err;
     }
   };
-
-  afterEach(async function() {
-    await removeAllDatabases();
-  });
-
-  beforeEach(async function() {
-    await removeAllDatabases();
-  });
-
   it("validate that query metrics are correct for a single partition query", async function() {
     await testQueryMetricsOnSinglePartition(doc);
   });

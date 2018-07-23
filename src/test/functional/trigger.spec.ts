@@ -13,7 +13,6 @@ describe("NodeJS CRUD Tests", function() {
   let container: Container;
 
   beforeEach(async function() {
-    await removeAllDatabases();
     container = await getTestContainer("trigger container");
   });
 

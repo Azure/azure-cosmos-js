@@ -6,9 +6,6 @@ import { getTestDatabase, removeAllDatabases } from "./../common/TestHelpers";
 
 describe("NodeJS CRUD Tests", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 10000);
-  beforeEach(async function() {
-    await removeAllDatabases();
-  });
 
   describe("Validate Container CRUD", function() {
     const containerCRUDTest = async function(hasPartitionKey: boolean) {

@@ -14,13 +14,6 @@ describe("Create And Read Validation", function() {
   const dateTime = new Date();
   const databaseId = "encodingTestDB";
 
-  afterEach(async function() {
-    await removeAllDatabases();
-  });
-  beforeEach(async function() {
-    await removeAllDatabases();
-  });
-
   it("check if the document from db matches the actual document", async function() {
     try {
       // Create Database

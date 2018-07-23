@@ -24,8 +24,6 @@ describe("Authorization", function() {
   /************** TEST **************/
 
   beforeEach(async function() {
-    await removeAllDatabases();
-
     // create a database & container
     container = await getTestContainer("Authorization tests");
     database = container.database;
@@ -53,10 +51,6 @@ describe("Authorization", function() {
     const { body: allPermission } = await userAll.permissions.create(collAllPermission);
     assert.equal(collAllPermission.id, allPermission.id, "permission to read coll2 is not created properly");
     collAllPermission = allPermission;
-  });
-
-  afterEach(async function() {
-    await removeAllDatabases();
   });
 
   it("Accessing container by resourceTokens", async function() {

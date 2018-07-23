@@ -7,11 +7,6 @@ const containerId = "sample container";
 
 describe("NodeJS CRUD Tests", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 10000);
-
-  beforeEach(async function() {
-    await removeAllDatabases();
-  });
-
   describe("User Defined Function", function() {
     let container: Container;
 
