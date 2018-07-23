@@ -9,7 +9,6 @@ const masterKey = testConfig.masterKey;
 
 describe("Authorization", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 10000);
-  const client = new CosmosClient({ endpoint, auth: { masterKey } });
 
   // TODO: should have types for all these things
   let database: Database;
@@ -31,7 +30,7 @@ describe("Authorization", function() {
     await removeAllDatabases();
 
     // create a database & container
-    container = await getTestContainer(client, "Authorization tests");
+    container = await getTestContainer("Authorization tests");
     database = container.database;
 
     // create userReadPermission

@@ -70,7 +70,7 @@ describe("Cross Partition", function() {
     // - bulk inserts documents to the container
     before(async function() {
       await removeAllDatabases();
-      container = await getTestContainer(client, "Validate 中文 Query", containerDefinition, containerOptions);
+      container = await getTestContainer("Validate 中文 Query", client, containerDefinition, containerOptions);
       await bulkInsertItems(container, documentDefinitions);
     });
 

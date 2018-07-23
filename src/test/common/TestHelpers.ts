@@ -50,8 +50,8 @@ export async function getTestDatabase(testName: string, client: CosmosClient = d
 }
 
 export async function getTestContainer(
-  client: CosmosClient = defaultClient,
   testName: string,
+  client: CosmosClient = defaultClient,
   containerDef?: ContainerDefinition,
   options?: RequestOptions
 ) {
