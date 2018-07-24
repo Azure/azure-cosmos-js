@@ -430,7 +430,7 @@ describe("container.createIfNotExists", function() {
   let database: Database;
   before(async function() {
     // create database
-    database = await getTestDatabase(client, "container.createIfNotExists");
+    database = await getTestDatabase("container.createIfNotExists");
   });
 
   it("should handle container does not exist", async function() {
