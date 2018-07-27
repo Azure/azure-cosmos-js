@@ -6,8 +6,5 @@
   "author": {
     "name": "hemantk"
   },
-  "dependencies": {
-    "async": "^1.5.2",
-    "documentdb": "^1.12.2"
-  }
+  "dependencies": {}
 }

@@ -1,9 +1,8 @@
 {
-  "name": "DocumentDB.Samples.ServerSideScripts",
+  "name": "cosmos-serversidescripts-sample",
+  "private": true,
   "version": "0.0.0",
-  "description": "DocumentDB.Samples.ServerSideScripts",
+  "description": "A sample showing server side scripts with Azure Cosmos DB",
   "main": "app.js",
-  "dependencies": {
-    "documentdb": "^1.5.5"
-  }
+  "dependencies": {}
 }
