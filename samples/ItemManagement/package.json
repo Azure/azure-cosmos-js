@@ -1,8 +1,8 @@
 {
   "name": "cosmos-item-management",
   "version": "0.0.0",
+  "private": true,
   "description": "Sample showing how to do item management in Cosmos",
-  "main": "app.js",
   "dependencies": {},
   "scripts": {
     "start": "node app.js"

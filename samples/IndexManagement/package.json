@@ -3,10 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "description": "A Sample to explain the many ways to set indexes on Azure Cosmos DB",
-  "main": "app.js",
-  "author": {
-    "name": "ryancraw",
-    "email": ""
+  "scripts": {
+    "start": "node app.js"
   },
   "dependencies": {}
 }
