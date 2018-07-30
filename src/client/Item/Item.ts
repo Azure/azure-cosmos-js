@@ -2,6 +2,7 @@ import { UriFactory } from "../../common";
 import { CosmosClient } from "../../CosmosClient";
 import { RequestOptions, Response } from "../../request";
 import { Container } from "../Container";
+import { ItemBody } from "./ItemBody";
 import { ItemResponse } from "./ItemResponse";
 
 /**
@@ -68,7 +69,9 @@ export class Item {
     if ((!options || !options.partitionKey) && this.primaryKey) {
       options.partitionKey = this.primaryKey;
     }
-    const response = await (this.client.documentClient.readDocument(this.url, options) as Promise<Response<T>>);
+    const response = await (this.client.documentClient.readDocument(this.url, options) as Promise<
+      Response<T & ItemBody>
+    >);
     return {
       body: response.result,
       headers: response.headers,
@@ -104,7 +107,7 @@ export class Item {
       options.partitionKey = this.primaryKey;
     }
     const response = await (this.client.documentClient.replaceDocument(this.url, body, options) as Promise<
-      Response<T>
+      Response<T & ItemBody>
     >);
     return {
       body: response.result,
@@ -133,7 +136,9 @@ export class Item {
     if ((!options || !options.partitionKey) && this.primaryKey) {
       options.partitionKey = this.primaryKey;
     }
-    const response = await (this.client.documentClient.deleteDocument(this.url, options) as Promise<Response<T>>);
+    const response = await (this.client.documentClient.deleteDocument(this.url, options) as Promise<
+      Response<T & ItemBody>
+    >);
     return {
       body: response.result,
       headers: response.headers,

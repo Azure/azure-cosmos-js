@@ -4,6 +4,7 @@ import { QueryIterator } from "../../queryIterator";
 import { FeedOptions, RequestOptions, Response } from "../../request";
 import { Container } from "../Container";
 import { Item } from "./Item";
+import { ItemBody } from "./ItemBody";
 import { ItemResponse } from "./ItemResponse";
 
 /**
@@ -111,7 +112,9 @@ export class Items {
    */
   public async create<T>(body: T, options?: RequestOptions): Promise<ItemResponse<T>>;
   public async create<T>(body: T, options?: RequestOptions): Promise<ItemResponse<T>> {
-    const response = await (this.client.createDocument(this.container.url, body, options) as Promise<Response<T>>);
+    const response = await (this.client.createDocument(this.container.url, body, options) as Promise<
+      Response<T & ItemBody>
+    >);
     const ref = new Item(this.container, (response.result as any).id, (options && options.partitionKey) as string);
     return {
       body: response.result,
