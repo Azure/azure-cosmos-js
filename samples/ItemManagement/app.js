@@ -43,31 +43,28 @@ const client = new CosmosClient({ endpoint, auth: { masterKey } });
 
 async function run() {
   //ensuring a database & container exists for us to work with
-  await init();
-
-  const database = client.database(databaseId);
-  const container = database.container(containerId);
+  const { container, database } = await init();
 
   //1.
   console.log("\n1. insert items in to database '" + databaseId + "' and container '" + containerId + "'");
-  const docDefs = getItemDefinitions();
+  const itemDefs = getItemDefinitions();
   const p = [];
-  for (const docDef of docDefs) {
-    p.push(container.items.create(docDef));
+  for (const itemDef of itemDefs) {
+    p.push(container.items.create(itemDef));
   }
   await Promise.all(p);
-  console.log(docDefs.length + " docs created");
+  console.log(itemDefs.length + " items created");
 
   //2.
   console.log("\n2. list items in container '" + container.id + "'");
-  const { result: docs } = await container.items.readAll().toArray();
+  const { result: itemDefList } = await container.items.readAll().toArray();
 
-  for (const doc of docs) {
-    console.log(doc.id);
+  for (const itemDef of itemDefList) {
+    console.log(itemDef.id);
   }
 
   //3.1
-  const item = container.item(docs[0].id);
+  const item = container.item(itemDefList[0].id);
   console.log("\n3.1 read item '" + item.id + "'");
   const { body: readDoc } = await item.read();
   console.log("item with id '" + item.id + "' found");
@@ -79,11 +76,11 @@ async function run() {
   });
   if (!item2 && headers["content-length"] == 0) {
     console.log(
-      "As expected, no item returned. This is because the etag sent matched the etag on the server. i.e. you have the latest version of the doc already"
+      "As expected, no item returned. This is because the etag sent matched the etag on the server. i.e. you have the latest version of the item already"
     );
   }
 
-  //if we someone else updates this doc, its etag on the server would change.
+  //if we someone else updates this item, its etag on the server would change.
   //repeating the above read with the old etag would then get a item in the response
   readDoc.foo = "bar";
   await item.replace(readDoc);
@@ -140,16 +137,16 @@ async function run() {
 
   // 5.2
   console.log("\n5.2 trying to replace item when item has changed in the database");
-  // The replace item above will work even if there's a new version of doc on the server from what you originally read
+  // The replace item above will work even if there's a new version of item on the server from what you originally read
   // If you want to prevent this from happening you can opt-in to a conditional update
   // Using accessCondition and etag you can specify that the replace only occurs if the etag you are sending matches the etag on the server
   // i.e. Only replace if the item hasn't changed
 
-  // let's go update doc
+  // let's go update item
   person.foo = "bar";
   await item.replace(person);
 
-  // now let's try another update to doc with accessCondition and etag set
+  // now let's try another update to item with accessCondition and etag set
   person.foo = "should never get set";
   try {
     await item.replace(person, { accessCondition: { type: "IfMatch", condition: person._etag } });
@@ -165,43 +162,19 @@ async function run() {
   //6.
   console.log("\n6. delete item '" + item.id + "'");
   await item.delete();
+
+  await finish();
 }
 
 async function init() {
-  await getOrCreateDatabase(databaseId);
-  await getOrCreateContainer(databaseId, containerId);
-}
-
-async function getOrCreateContainer(databaseId, id) {
-  const database = client.database(databaseId);
-  try {
-    await database.container(id).read();
-  } catch (err) {
-    // if it doesn't exist, create it
-    if (err.code === 404) {
-      await database.containers.create({ id });
-    } else {
-      throw err;
-    }
-  }
-}
-
-async function getOrCreateDatabase(id) {
-  try {
-    await client.database(id).read();
-  } catch (err) {
-    // if it doesn't exist, create it
-    if (err.code === 404) {
-      await client.databases.create({ id });
-    } else {
-      throw err;
-    }
-  }
+  const { database } = await client.databases.createIfNotExists({ id: databaseId });
+  const { container } = await database.containers.createIfNotExists({ id: containerId });
+  return { database, container };
 }
 
 async function handleError(error) {
   console.log("\nAn error with code '" + error.code + "' has occurred:");
-  console.log("\t" + JSON.parse(error.body).message);
+  console.log("\t" + error.body || error);
 
   await finish();
 }
@@ -211,6 +184,4 @@ async function finish() {
   console.log("\nEnd of demo.");
 }
 
-run()
-  .then(finish)
-  .catch(handleError);
+run().catch(handleError);

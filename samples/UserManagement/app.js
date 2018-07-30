@@ -10,24 +10,22 @@ console.log();
 const cosmos = require("../../lib/");
 const CosmosClient = cosmos.CosmosClient;
 const config = require("../Shared/config");
-const fs = require("fs");
 const databaseId = config.names.database;
 const containerId = config.names.container;
 
 const endpoint = config.connection.endpoint;
 const masterKey = config.connection.authKey;
 
-var databaseLink = "dbs/" + databaseId;
-var col1Name = "COL1";
-var col2Name = "COL2";
-var user1Name = "Thomas Andersen";
-var user2Name = "Robin Wakefield";
-var doc1Name = "doc1";
-var doc2Name = "doc2";
-var doc3Name = "doc3";
+const container1Name = "COL1";
+const container2Name = "COL2";
+const user1Name = "Thomas Andersen";
+const user2Name = "Robin Wakefield";
+const item1Name = "item1";
+const item2Name = "item2";
+const item3Name = "item3";
 
 // Establish a new instance of the DocumentDBClient to be used throughout this demo
-var client = new CosmosClient({ endpoint, auth: { masterKey } });
+const client = new CosmosClient({ endpoint, auth: { masterKey } });
 
 async function run() {
   const resources = await init();
@@ -38,37 +36,38 @@ async function run() {
     resources.container2,
     resources.user1,
     resources.permission1,
-    resources.permission2
+    resources.permission3
   );
+  await finish();
 }
 
 async function init() {
   //--------------------------------------------------------------------------------------------------
-  // We need a Database, Two Collections, Two Users, and some permissions for this sample,
+  // We need a database, two containers, two users, and some permissions for this sample,
   // So let's go ahead and set these up initially
   //--------------------------------------------------------------------------------------------------
-  const { database } = await client.databases.create({ id: databaseId });
-  const { container: container1 } = await database.containers.create({ id: col1Name });
-  const { container: container2 } = await database.containers.create({ id: col2Name });
+  const { database } = await client.databases.createIfNotExists({ id: databaseId });
+  const { container: container1 } = await database.containers.createIfNotExists({ id: container1Name });
+  const { container: container2 } = await database.containers.createIfNotExists({ id: container2Name });
 
-  var docDef = { id: doc1Name };
+  let itemSpec = { id: item1Name };
 
-  var userDef = { id: user1Name };
+  let userDef = { id: user1Name };
 
-  var permissionDef;
+  let permissionDef;
 
-  const { item: item1 } = await container1.items.create(docDef);
-  console.log(doc1Name + "Created in " + col1Name + " !");
+  const { body: itemDef, item: item1 } = await container1.items.create(itemSpec);
+  console.log(item1Name + "Created in " + container1Name + " !");
 
-  docDef = { id: doc2Name };
+  itemSpec = { id: item2Name };
 
-  const { item: item2 } = await container1.items.create(docDef);
-  console.log(doc2Name + "Created in " + col1Name + " !");
+  const { item: item2 } = await container1.items.create(itemSpec);
+  console.log(item2Name + "Created in " + container1Name + " !");
 
-  docDef = { id: doc3Name };
+  itemSpec = { id: item3Name };
 
-  const { item: item3 } = await container2.items.create(docDef);
-  console.log(doc3Name + " Created in " + col2Name + " !");
+  const { item: item3 } = await container2.items.create(itemSpec);
+  console.log(item3Name + " Created in " + container2Name + " !");
 
   const { user: user1 } = await database.users.create(userDef);
   console.log(user1Name + " created!");
@@ -78,28 +77,28 @@ async function init() {
   const { user: user2 } = await database.users.create(userDef);
   console.log(user2Name + " created!");
 
-  // Read Permission on col1 for user1
+  // Read Permission on container 1 for user1
   permissionDef = { id: "p1", permissionMode: cosmos.DocumentBase.PermissionMode.Read, resource: container1.url };
 
   const { ref: permission1 } = await user1.permissions.create(permissionDef);
-  console.log("Read only permission assigned to Thomas Andersen on col1!");
+  console.log("Read only permission assigned to Thomas Andersen on container 1!");
 
   permissionDef = { id: "p2", permissionMode: cosmos.DocumentBase.PermissionMode.All, resource: item1.url };
 
   // All Permissions on Doc1 for user1
   const { ref: permission2 } = await user1.permissions.create(permissionDef);
-  console.log("All permission assigned to Thomas Andersen on doc1!");
+  console.log("All permission assigned to Thomas Andersen on item 1!");
 
   permissionDef = { id: "p3", permissionMode: cosmos.DocumentBase.PermissionMode.Read, resource: container2.url };
 
   // Read Permissions on Col2 for user1
   const { ref: permission3 } = await user1.permissions.create(permissionDef);
-  console.log("Read permission assigned to Thomas Andersen on col2!");
+  console.log("Read permission assigned to Thomas Andersen on container 2!");
 
   permissionDef = { id: "p4", permissionMode: cosmos.DocumentBase.PermissionMode.All, resource: container2.url };
 
   const { ref: permission4 } = await user2.permissions.create(permissionDef);
-  console.log("All permission assigned to Robin Wakefield on col2!");
+  console.log("All permission assigned to Robin Wakefield on container 2!");
 
   const { result: permissions } = await user1.permissions.readAll().toArray();
   console.log("Fetched permission for Thomas Andersen. Count is : " + permissions.length);
@@ -108,16 +107,23 @@ async function init() {
 }
 
 //handle error
-function handleError(error) {
+async function handleError(error) {
   console.log();
   console.log("An error with code '" + error.code + "' has occurred:");
-  console.log("\t" + JSON.parse(error.body).message);
+  console.log("\t" + error.body || error);
+  if (error.headers) {
+    console.log("\t" + JSON.stringify(error.headers));
+  }
   console.log();
-
-  finish();
+  try {
+    await finish();
+  } catch (err) {
+    console.log("Database might not have cleaned itself up properly...");
+  }
 }
 
-function finish() {
+async function finish() {
+  await client.database(databaseId).delete();
   console.log();
   console.log("End of demo.");
 }
@@ -134,7 +140,7 @@ async function getResourceToken(container, permission) {
 }
 
 /**
- * Attempt to do admin operations when user only has Read on a collection
+ * Attempt to do admin operations when user only has Read on a container
  * @param {cosmos.Container} container
  * @param {cosmos.User} user
  * @param {cosmos.Permission} permission
@@ -150,10 +156,10 @@ async function attemptAdminOperations(container, user, permission) {
 
   await client
     .database(databaseId)
-    .container(containerId)
+    .container(container.id)
     .items.readAll()
     .toArray();
-  console.log(user.id + " able to perform read operation on collection 1");
+  console.log(user.id + " able to perform read operation on container 1");
 
   try {
     await client.databases.readAll().toArray();
@@ -168,7 +174,7 @@ async function attemptAdminOperations(container, user, permission) {
 }
 
 /**
- * attempts to write in collection 1 with user 1 permission. It fails as the user1 has read only permission on col1
+ * attempts to write in container 1 with user 1 permission. It fails as the user1 has read only permission on container 1
  * @param {cosmos.Container} container
  * @param {cosmos.User} user
  * @param {cosmos.Permission} permission
@@ -182,23 +188,23 @@ async function attemptWriteWithReadPermissionAsync(container, user, permission) 
     }
   });
 
-  const docDef = { id: "not allowed" };
+  const itemDef = { id: "not allowed" };
   try {
     await client
       .database(databaseId)
-      .container(containerId)
-      .items.upsert(docDef);
+      .container(container.id)
+      .items.upsert(itemDef);
   } catch (err) {
     console.log(
       "Expected error occurred as " +
         user.id +
-        " does not have access to insert a document in COL1. Error code : " +
+        " does not have access to insert an item in the first container. Error code : " +
         err.code
     );
   }
 }
 
-//attempts to read from both the collections as the user has read permission
+//attempts to read from both the containers as the user has read permission
 /**
  *
  * @param {cosmos.Container} container1
@@ -219,34 +225,36 @@ async function attemptReadFromTwoCollections(container1, container2, user1, perm
     }
   });
 
-  const { result: documents1 } = await client
+  const { result: items1 } = await client
     .database(databaseId)
     .container(container1.id)
     .items.readAll()
     .toArray();
-  console.log(user1.id + " able to read documents from COL1. Document count is " + documents1.length);
+  console.log(user1.id + " able to read items from container 1. Document count is " + items1.length);
 
-  const { result: documents2 } = await client
+  const { result: items2 } = await client
     .database(databaseId)
     .container(container2.id)
     .items.readAll()
     .toArray();
 
-  console.log(user1.id + " able to read documents from COL2. Document count is " + documents2.length);
+  console.log(user1.id + " able to read items from container 2. Document count is " + items2.length);
 
-  var docDef = { id: "not allowed" };
+  const itemDef = { id: "not allowed" };
 
   try {
     await client
       .database(databaseId)
       .container(container2.id)
-      .items.upsert(docDef);
+      .items.upsert(itemDef);
   } catch (err) {
     console.log(
       "Expected error occurred as " +
         user1.id +
-        " does not have access to insert a document in COL2. Error code : " +
+        " does not have access to insert an item in container 2. Error code : " +
         err.code
     );
   }
 }
+
+run().catch(handleError);

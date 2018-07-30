@@ -57,6 +57,9 @@ async function run() {
     console.log(results);
   }
   console.log("//////////////////////////////////");
+
+  await database.delete();
+  console.log("Demo finished");
 }
 
 run().catch(console.error);

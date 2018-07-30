@@ -8,6 +8,7 @@ console.log("DATABASE MANAGEMENT");
 console.log("===================");
 console.log();
 
+const assert = require("assert");
 const cosmos = require("../../lib/");
 const CosmosClient = cosmos.CosmosClient;
 const config = require("../Shared/config");
@@ -24,7 +25,7 @@ const client = new CosmosClient({ endpoint, auth: { masterKey } });
 //
 // 1. create Database    - If the database was not found, try create it
 // 2. read all Databases     - Once the database was created, list all the databases on the account
-// 3. read Database      - Read a database by its id (using new ID Based Routing)
+// 3. read Database      - Read a database by its id
 // 4. delete Database    - Delete a database given its id
 //
 //---------------------------------------------------------------------------------------------------
@@ -36,25 +37,33 @@ async function run() {
   console.log("Database with id " + databaseId + " created.");
 
   // 2.
-  console.log("\n2. listDatabases");
-  for (const { db } of await client.databases.readAll().forEach()) {
-    console.log(db.id);
-  }
+  console.log("\n2. Read all databases");
+  const { result: dbDefList } = await client.databases.readAll().toArray();
+  console.log(dbDefList);
 
   // 3.
   console.log("\n3. readDatabase - with id '" + databaseId + "'");
-  const { body: db } = await client.database(databaseId).read();
-  console.log("Database with uri of 'dbs/" + db.id + "' was found");
+  const { body: dbDef } = await client.database(databaseId).read();
+  // This uses Object deconstruction to just grab the body of the response,
+  // but you can also grab the whole response object to use
+  const databaseResponse = await client.database(databaseId).read();
+  const alsoDbDef = databaseResponse.body;
+  assert.equal(dbDef.id, alsoDbDef.id); // The bodies will also almost be equal, _ts will defer based on the read time
+  // This applies for all response types, not just DatabaseResponse.
+
+  console.log("Database with id of " + dbDef.id + "' was found");
 
   // 4.
-  console.log("\n4. deleteDatabase with id '" + databaseId + "'");
+  console.log("\n4. delete database with id '" + databaseId + "'");
   await client.database(databaseId).delete();
+
+  await finish();
 }
 
 function handleError(error) {
   console.log();
   console.log("An error with code '" + error.code + "' has occurred:");
-  console.log("\t" + JSON.parse(error.body).message);
+  console.log("\t" + error.body || error);
   console.log();
 
   finish();
@@ -65,6 +74,4 @@ function finish() {
   console.log("End of demo.");
 }
 
-run()
-  .catch(handleError)
-  .then(finish);
+run().catch(handleError);
