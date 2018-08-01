@@ -14,12 +14,15 @@ export class ClientContext {
   private requestHandler: RequestHandler;
   public constructor(
     private cosmosClientOptions: CosmosClientOptions,
-    private globalEndpointManager: GlobalEndpointManager,
-    private agent: Agent
+    private globalEndpointManager: GlobalEndpointManager
   ) {
     this.connectionPolicy = cosmosClientOptions.connectionPolicy || new ConnectionPolicy();
     this.sessionContainer = new SessionContainer(cosmosClientOptions.endpoint);
-    this.requestHandler = new RequestHandler(globalEndpointManager, this.connectionPolicy, this.agent);
+    this.requestHandler = new RequestHandler(
+      globalEndpointManager,
+      this.connectionPolicy,
+      this.cosmosClientOptions.agent
+    );
   }
   /** @ignore */
   public async read<T>(

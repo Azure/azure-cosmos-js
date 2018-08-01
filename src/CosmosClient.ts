@@ -1,8 +1,10 @@
 import { Database, Databases } from "./client/Database/";
 import { Offer, Offers } from "./client/Offer/";
+import { ClientContext } from "./ClientContext";
 import { CosmosClientOptions } from "./CosmosClientOptions";
 import { DocumentClient } from "./documentclient";
 import { ConsistencyLevel, DatabaseAccount } from "./documents";
+import { GlobalEndpointManager } from "./globalEndpointManager";
 import { CosmosResponse } from "./request";
 
 /**
@@ -51,6 +53,8 @@ export class CosmosClient {
    * Creates a new {@link CosmosClient} object. See {@link CosmosClientOptions} for more details on what options you can use.
    * @param options bag of options - require at least endpoint and auth to be configured
    */
+
+  private clientContext: ClientContext;
   constructor(private options: CosmosClientOptions) {
     this.databases = new Databases(this);
     this.offers = new Offers(this);
@@ -61,6 +65,8 @@ export class CosmosClient {
       options.connectionPolicy,
       ConsistencyLevel[options.consistencyLevel]
     );
+    const globalEndpointManager = new GlobalEndpointManager(this.documentClient);
+    this.clientContext = new ClientContext(options, globalEndpointManager);
   }
 
   /**
@@ -88,7 +94,7 @@ export class CosmosClient {
    * ```
    */
   public database(id: string): Database {
-    return new Database(this, id);
+    return new Database(this, id, this.clientContext);
   }
 
   /**

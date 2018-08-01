@@ -1,10 +1,38 @@
 ﻿import { Constants } from ".";
+import { Base } from "../base";
 
 /** @hidden */
 const Regexes = Constants.RegularExpressions;
 
 /** @hidden */
 export class Helper {
+  /** @ignore */
+  public static getIdFromLink(resourceLink: string, isNameBased: boolean = true) {
+    if (isNameBased) {
+      resourceLink = Base.trimSlashes(resourceLink);
+      return resourceLink;
+    } else {
+      return Base.parseLink(resourceLink).objectBody.id.toLowerCase();
+    }
+  }
+
+  /** @ignore */
+  public static getPathFromLink(resourceLink: string, resourceType: string, isNameBased: boolean = true) {
+    if (isNameBased) {
+      resourceLink = Base.trimSlashes(resourceLink);
+      if (resourceType) {
+        return "/" + encodeURI(resourceLink) + "/" + resourceType;
+      } else {
+        return "/" + encodeURI(resourceLink);
+      }
+    } else {
+      if (resourceType) {
+        return "/" + resourceLink + resourceType + "/";
+      } else {
+        return "/" + resourceLink;
+      }
+    }
+  }
   public static isStringNullOrEmpty(inputString: string) {
     // checks whether string is null, undefined, empty or only contains space
     return !inputString || /^\s*$/.test(inputString);
