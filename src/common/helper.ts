@@ -6,6 +6,31 @@ const Regexes = Constants.RegularExpressions;
 
 /** @hidden */
 export class Helper {
+  public static isResourceValid(resource: any, err: any) {
+    // TODO: any TODO: code smell
+    if (resource.id) {
+      if (typeof resource.id !== "string") {
+        err.message = "Id must be a string.";
+        return false;
+      }
+
+      if (
+        resource.id.indexOf("/") !== -1 ||
+        resource.id.indexOf("\\") !== -1 ||
+        resource.id.indexOf("?") !== -1 ||
+        resource.id.indexOf("#") !== -1
+      ) {
+        err.message = "Id contains illegal chars.";
+        return false;
+      }
+      if (resource.id[resource.id.length - 1] === " ") {
+        err.message = "Id ends with a space.";
+        return false;
+      }
+    }
+    return true;
+  }
+
   /** @ignore */
   public static getIdFromLink(resourceLink: string, isNameBased: boolean = true) {
     if (isNameBased) {

@@ -89,7 +89,9 @@ export class Database {
 
   /** Delete the given Database. */
   public async delete(options?: RequestOptions): Promise<DatabaseResponse> {
-    const response = await this.client.documentClient.deleteDatabase(this.url, options);
+    const path = Helper.getPathFromLink(this.url);
+    const id = Helper.getIdFromLink(this.url);
+    const response = await this.clientContext.delete(path, "dbs", id, undefined, options);
     return {
       body: response.result,
       headers: response.headers,

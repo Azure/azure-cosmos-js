@@ -8,6 +8,10 @@ import { FeedOptions, RequestHandler } from "./request";
 import { ErrorResponse, getHeaders } from "./request/request";
 import { SessionContainer } from "./sessionContainer";
 
+/**
+ * @hidden
+ * @ignore
+ */
 export class ClientContext {
   private readonly sessionContainer: SessionContainer;
   private connectionPolicy: ConnectionPolicy;
@@ -147,14 +151,13 @@ export class ClientContext {
     return new QueryIterator(this, query, options, cb);
   }
 
-  /** @ignore */
-  public async deleteResource(
+  public async delete<T>(
     path: string,
     type: string,
     id: string,
     initialHeaders: IHeaders,
     options?: RequestOptions
-  ): Promise<Response<any>> {
+  ): Promise<Response<T>> {
     try {
       const reqHeaders = await getHeaders(
         this.cosmosClientOptions.auth,
@@ -175,6 +178,38 @@ export class ClientContext {
       } else {
         this.clearSessionToken(path);
       }
+      return response;
+    } catch (err) {
+      this.captureSessionToken(err, path, Constants.OperationTypes.Upsert, (err as ErrorResponse).headers);
+      throw err;
+    }
+  }
+
+  public async create<T>(
+    body: T,
+    path: string,
+    type: string,
+    id: string,
+    initialHeaders: IHeaders,
+    options?: RequestOptions
+  ): Promise<Response<T>> {
+    try {
+      const requestHeaders = await getHeaders(
+        this.cosmosClientOptions.auth,
+        { ...initialHeaders, ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
+        "post",
+        path,
+        id,
+        type,
+        options
+      );
+
+      // create will use WriteEndpoint since it uses POST operation
+      this.applySessionToken(path, requestHeaders);
+
+      const writeEndpoint = await this.globalEndpointManager.getWriteEndpoint();
+      const response = await this.requestHandler.post(writeEndpoint, path, body, requestHeaders);
+      this.captureSessionToken(undefined, path, Constants.OperationTypes.Create, response.headers);
       return response;
     } catch (err) {
       this.captureSessionToken(err, path, Constants.OperationTypes.Upsert, (err as ErrorResponse).headers);

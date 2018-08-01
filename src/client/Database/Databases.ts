@@ -1,5 +1,5 @@
 import { ClientContext } from "../../ClientContext";
-import { StatusCodes } from "../../common";
+import { Helper, StatusCodes } from "../../common";
 import { CosmosClient } from "../../CosmosClient";
 import { FetchFunctionCallback, HeaderUtils, SqlQuerySpec } from "../../queryExecutionContext";
 import { QueryIterator } from "../../queryIterator";
@@ -60,7 +60,13 @@ export class Databases {
    * @param options Use to set options like response page size, continuation tokens, etc.
    */
   public async create(body: DatabaseDefinition, options?: RequestOptions): Promise<DatabaseResponse> {
-    const response = await this.client.documentClient.createDatabase(body, options);
+    const err = {};
+    if (!Helper.isResourceValid(body, err)) {
+      throw err;
+    }
+
+    const path = "/dbs"; // TODO: constant
+    const response = await this.clientContext.create(body, path, "dbs", undefined, undefined, options);
     const ref = new Database(this.client, body.id, this.clientContext);
     return {
       body: response.result,
