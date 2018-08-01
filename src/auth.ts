@@ -19,14 +19,14 @@ export interface ITokenProvider {
 
 export interface AuthOptions {
   /** The authorization master key to use to create the client. */
-  masterKey: string;
+  masterKey?: string;
   /** An object that contains resources tokens.
    * Keys for the object are resource Ids and values are the resource tokens.
    */
-  resourceTokens: { [resourcePath: string]: string };
-  tokenProvider: any; // TODO: any
+  resourceTokens?: { [resourcePath: string]: string };
+  tokenProvider?: any; // TODO: any
   /** An array of {@link Permission} objects. */
-  permissionFeed: PermissionDefinition[]; // TODO: any
+  permissionFeed?: PermissionDefinition[]; // TODO: any
 }
 
 /** @hidden */

@@ -1,12 +1,9 @@
 import { MockedQueryIterator } from "./MockQueryIterator";
 
 /** @hidden */
-export class MockedDocumentClient {
+export class MockedClientContext {
   constructor(private partitionKeyRanges: any, private collectionId: any) {}
   public readPartitionKeyRanges(collectionLink: any) {
     return new MockedQueryIterator(this.partitionKeyRanges);
-  }
-  public getIdFromLink() {
-    return this.collectionId;
   }
 }

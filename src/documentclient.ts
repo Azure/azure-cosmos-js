@@ -1,6 +1,8 @@
 import { Readable } from "stream";
 import { Base, ResponseCallback } from "./base";
+import { ClientContext } from "./ClientContext";
 import { Constants, StatusCodes, SubStatusCodes } from "./common";
+import { CosmosClientOptions } from "./CosmosClientOptions";
 import { DocumentClientBase } from "./DocumentClientBase";
 import { ConnectionPolicy, ConsistencyLevel, Document, PartitionKey, QueryCompatibilityMode } from "./documents";
 import { FetchFunctionCallback, IHeaders, SqlQuerySpec } from "./queryExecutionContext";
@@ -10,14 +12,17 @@ import { ErrorResponse, FeedOptions, MediaOptions, RequestOptions, Response } fr
 // TODO: This needs to eventually be refactored away
 /** @hidden */
 export class DocumentClient extends DocumentClientBase {
+  private clientContext: ClientContext;
   constructor(
     public urlConnection: string,
     auth: any,
     connectionPolicy?: ConnectionPolicy,
-    consistencyLevel?: ConsistencyLevel
+    consistencyLevel?: ConsistencyLevel,
+    cosmosClientOptions?: CosmosClientOptions
   ) {
     // TODO: any auth options
     super(urlConnection, auth, connectionPolicy, consistencyLevel);
+    this.clientContext = new ClientContext(cosmosClientOptions, this._globalEndpointManager);
   }
 
   // NOT USED IN NEW OM
@@ -704,7 +709,7 @@ export class DocumentClient extends DocumentClientBase {
         innerOptions
       );
     };
-    return new QueryIterator(this, query, options, cb);
+    return new QueryIterator(this.clientContext, query, options, cb);
   }
 
   public queryCollections(databaseLink: string, query: string | SqlQuerySpec, options?: FeedOptions) {
@@ -712,7 +717,7 @@ export class DocumentClient extends DocumentClientBase {
     const path = this.getPathFromLink(databaseLink, "colls", isNameBased);
     const id = this.getIdFromLink(databaseLink, isNameBased);
 
-    return new QueryIterator(this, query, options, innerOptions => {
+    return new QueryIterator(this.clientContext, query, options, innerOptions => {
       return this.queryFeed(
         this,
         path,
@@ -740,7 +745,7 @@ export class DocumentClient extends DocumentClientBase {
     const path = this.getPathFromLink(collectionLink, "pkranges", isNameBased);
     const id = this.getIdFromLink(collectionLink, isNameBased);
 
-    return new QueryIterator(this, query, options, innerOptions => {
+    return new QueryIterator(this.clientContext, query, options, innerOptions => {
       return this.queryFeed(
         this,
         path,
@@ -760,7 +765,7 @@ export class DocumentClient extends DocumentClientBase {
     const path = this.getPathFromLink(documentLink, "attachments", isNameBased);
     const id = this.getIdFromLink(documentLink, isNameBased);
 
-    return new QueryIterator(this, query, options, innerOptions => {
+    return new QueryIterator(this.clientContext, query, options, innerOptions => {
       return this.queryFeed(
         this,
         path,
@@ -779,7 +784,7 @@ export class DocumentClient extends DocumentClientBase {
     const path = this.getPathFromLink(databaseLink, "users", isNameBased);
     const id = this.getIdFromLink(databaseLink, isNameBased);
 
-    return new QueryIterator(this, query, options, innerOptions => {
+    return new QueryIterator(this.clientContext, query, options, innerOptions => {
       return this.queryFeed(
         this,
         path,
@@ -798,7 +803,7 @@ export class DocumentClient extends DocumentClientBase {
     const path = this.getPathFromLink(userLink, "permissions", isNameBased);
     const id = this.getIdFromLink(userLink, isNameBased);
 
-    return new QueryIterator(this, query, options, innerOptions => {
+    return new QueryIterator(this.clientContext, query, options, innerOptions => {
       return this.queryFeed(
         this,
         path,
@@ -817,7 +822,7 @@ export class DocumentClient extends DocumentClientBase {
     const path = this.getPathFromLink(collectionLink, "triggers", isNameBased);
     const id = this.getIdFromLink(collectionLink, isNameBased);
 
-    return new QueryIterator(this, query, options, innerOptions => {
+    return new QueryIterator(this.clientContext, query, options, innerOptions => {
       return this.queryFeed(
         this,
         path,
@@ -836,7 +841,7 @@ export class DocumentClient extends DocumentClientBase {
     const path = this.getPathFromLink(collectionLink, "udfs", isNameBased);
     const id = this.getIdFromLink(collectionLink, isNameBased);
 
-    return new QueryIterator(this, query, options, innerOptions => {
+    return new QueryIterator(this.clientContext, query, options, innerOptions => {
       return this.queryFeed(
         this,
         path,
@@ -855,7 +860,7 @@ export class DocumentClient extends DocumentClientBase {
     const path = this.getPathFromLink(collectionLink, "sprocs", isNameBased);
     const id = this.getIdFromLink(collectionLink, isNameBased);
 
-    return new QueryIterator(this, query, options, innerOptions => {
+    return new QueryIterator(this.clientContext, query, options, innerOptions => {
       return this.queryFeed(
         this,
         path,
@@ -874,7 +879,7 @@ export class DocumentClient extends DocumentClientBase {
     const path = this.getPathFromLink(collectionLink, "conflicts", isNameBased);
     const id = this.getIdFromLink(collectionLink, isNameBased);
 
-    return new QueryIterator(this, query, options, innerOptions => {
+    return new QueryIterator(this.clientContext, query, options, innerOptions => {
       return this.queryFeed(
         this,
         path,
@@ -1527,7 +1532,7 @@ export class DocumentClient extends DocumentClientBase {
   }
 
   public queryOffers(query: string | SqlQuerySpec, options?: FeedOptions) {
-    return new QueryIterator(this, query, options, innerOptions => {
+    return new QueryIterator(this.clientContext, query, options, innerOptions => {
       return this.queryFeed(
         this,
         "/offers",
@@ -1638,7 +1643,7 @@ export class DocumentClient extends DocumentClientBase {
       };
     });
 
-    return new QueryIterator(this, query, options, fetchFunctions, collectionLinks);
+    return new QueryIterator(this.clientContext, query, options, fetchFunctions, collectionLinks);
   }
 
   /** @ignore */
