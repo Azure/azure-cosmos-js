@@ -26,10 +26,10 @@ describe("Session Token", function() {
   };
   const containerOptions = { offerThroughput: 10100 };
 
-  const getSpy = sinon.spy(client.documentClient, "get");
-  const postSpy = sinon.spy(client.documentClient, "post");
-  const putSpy = sinon.spy(client.documentClient, "put");
-  const deleteSpy = sinon.spy(client.documentClient, "delete");
+  const getSpy = sinon.spy(client.documentClient.requestHandler, "get");
+  const postSpy = sinon.spy(client.documentClient.requestHandler, "post");
+  const putSpy = sinon.spy(client.documentClient.requestHandler, "put");
+  const deleteSpy = sinon.spy(client.documentClient.requestHandler, "delete");
 
   const getToken = function(tokens: any) {
     const newToken: any = {};
@@ -188,7 +188,7 @@ describe("Session Token", function() {
     } catch (err) {
       assert.equal(err.substatus, 1002, "Substatus should indicate the LSN didn't catchup.");
       assert.equal(callbackSpy.callCount, 1);
-      assert.equal(Base._trimSlashes(callbackSpy.lastCall.args[0]), containerLink + "/docs/1");
+      assert.equal(Base.trimSlashes(callbackSpy.lastCall.args[0]), containerLink + "/docs/1");
       applySessionTokenStub.restore();
     }
     await container.item("1").read({ partitionKey: "1" });

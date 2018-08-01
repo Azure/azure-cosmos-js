@@ -1,26 +1,11 @@
-import { resolvePtr } from "dns";
-import { basename } from "path";
 import { Readable } from "stream";
-import * as tunnel from "tunnel";
-import * as url from "url";
-import * as util from "util";
 import { Base, ResponseCallback } from "./base";
-import { Constants, Helper, Platform, StatusCodes, SubStatusCodes } from "./common";
+import { Constants, StatusCodes, SubStatusCodes } from "./common";
 import { DocumentClientBase } from "./DocumentClientBase";
-import {
-  ConnectionPolicy,
-  ConsistencyLevel,
-  DatabaseAccount,
-  Document,
-  PartitionKey,
-  QueryCompatibilityMode
-} from "./documents";
-import { GlobalEndpointManager } from "./globalEndpointManager";
+import { ConnectionPolicy, ConsistencyLevel, Document, PartitionKey, QueryCompatibilityMode } from "./documents";
 import { FetchFunctionCallback, IHeaders, SqlQuerySpec } from "./queryExecutionContext";
 import { QueryIterator } from "./queryIterator";
-import { ErrorResponse, FeedOptions, MediaOptions, RequestHandler, RequestOptions, Response } from "./request";
-import { RetryOptions } from "./retry";
-import { SessionContainer } from "./sessionContainer";
+import { ErrorResponse, FeedOptions, MediaOptions, RequestOptions, Response } from "./request";
 
 // TODO: This needs to eventually be refactored away
 /** @hidden */
@@ -332,8 +317,8 @@ export class DocumentClient extends DocumentClientBase {
     options = optionsCallbackTuple.options;
     callback = optionsCallbackTuple.callback;
 
-    let initialHeaders = Base.extend({}, this.defaultHeaders);
-    initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
+    let initialHeaders = { ...this.defaultHeaders };
+    initialHeaders = { ...initialHeaders, ...(options && options.initialHeaders) };
 
     // Add required headers slug and content-type.
     if (options.slug) {
@@ -610,12 +595,17 @@ export class DocumentClient extends DocumentClientBase {
     return this.queryConflicts(collectionLink, undefined, options);
   }
 
-  private processQueryFeedResponse(res: Response<any>, isQuery: boolean, result: any, create: any): Response<any> {
+  private processQueryFeedResponse(
+    res: Response<any>,
+    isQuery: boolean,
+    resultFn: (result: { [key: string]: any }) => any[],
+    createFn: any
+  ): Response<any> {
     if (isQuery) {
-      return { result: result(res.result), headers: res.headers };
+      return { result: resultFn(res.result), headers: res.headers };
     } else {
-      const newResult = Base.map(result(res.result), (body: any) => {
-        return create(this, body);
+      const newResult = resultFn(res.result).map((body: any) => {
+        return createFn(this, body);
       });
       return { result: newResult, headers: res.headers };
     }
@@ -626,7 +616,7 @@ export class DocumentClient extends DocumentClientBase {
     path: string,
     type: string, // TODO: code smell: enum?
     id: string,
-    resultFn: (result: any) => any, // TODO: any
+    resultFn: (result: { [key: string]: any }) => any[], // TODO: any
     createFn: (parent: DocumentClient, body: any) => any, // TODO: any
     query: SqlQuerySpec | string,
     options: FeedOptions,
@@ -645,8 +635,8 @@ export class DocumentClient extends DocumentClientBase {
         endpointOverride: null
       };
 
-      let initialHeaders = Base.extend({}, documentclient.defaultHeaders);
-      initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
+      let initialHeaders = { ...documentclient.defaultHeaders };
+      initialHeaders = { ...initialHeaders, ...(options && options.initialHeaders) };
       if (query === undefined) {
         const reqHeaders = await Base.getHeaders(
           documentclient,
@@ -660,7 +650,7 @@ export class DocumentClient extends DocumentClientBase {
         );
         this.applySessionToken(path, reqHeaders);
 
-        const { result, headers: resHeaders } = await documentclient.get(readEndpoint, request, reqHeaders);
+        const { result, headers: resHeaders } = await this.requestHandler.get(readEndpoint, request, reqHeaders);
         this.captureSessionToken(undefined, path, Constants.OperationTypes.Query, resHeaders);
         return this.processQueryFeedResponse({ result, headers: resHeaders }, !!query, resultFn, createFn);
       } else {
@@ -691,7 +681,7 @@ export class DocumentClient extends DocumentClientBase {
         );
         this.applySessionToken(path, reqHeaders);
 
-        const response = await documentclient.post(readEndpoint, request, query, reqHeaders);
+        const response = await this.requestHandler.post(readEndpoint, request, query, reqHeaders);
         const { result, headers: resHeaders } = response;
         this.captureSessionToken(undefined, path, Constants.OperationTypes.Query, resHeaders);
         return this.processQueryFeedResponse({ result, headers: resHeaders }, !!query, resultFn, createFn);
@@ -1057,7 +1047,7 @@ export class DocumentClient extends DocumentClientBase {
     try {
       if (options.partitionKey === undefined && options.skipGetPartitionKeyDefinition !== true) {
         const { result: partitionKeyDefinition } = await this.getPartitionKeyDefinition(
-          Base.getCollectionLink(documentLink)
+          Base.getContainerLink(documentLink)
         );
         options.partitionKey = this.extractPartitionKey(newDocument, partitionKeyDefinition);
       }
@@ -1398,8 +1388,8 @@ export class DocumentClient extends DocumentClientBase {
     options = optionsCallbackTuple.options;
     callback = optionsCallbackTuple.callback;
 
-    let initialHeaders = Base.extend({}, this.defaultHeaders);
-    initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
+    let initialHeaders = { ...this.defaultHeaders };
+    initialHeaders = { ...initialHeaders, ...(options && options.initialHeaders) };
 
     // Add required headers slug and content-type.
     if (options.slug) {
@@ -1419,7 +1409,7 @@ export class DocumentClient extends DocumentClientBase {
   public async readMedia(mediaLink: string, callback?: ResponseCallback<any>) {
     const resourceInfo = Base.parseLink(mediaLink);
     const path = mediaLink;
-    const initialHeaders = Base.extend({}, this.defaultHeaders);
+    const initialHeaders = { ...this.defaultHeaders };
     initialHeaders[Constants.HttpHeaders.Accept] = Constants.MediaTypes.Any;
     const attachmentId = Base.getAttachmentIdFromMediaId(resourceInfo.objectBody.id).toLowerCase();
 
@@ -1427,7 +1417,7 @@ export class DocumentClient extends DocumentClientBase {
       const reqHeaders = await Base.getHeaders(this, initialHeaders, "get", path, attachmentId, "media", {});
       // readMedia will always use WriteEndpoint since it's not replicated in readable Geo regions
       const writeEndpoint = await this._globalEndpointManager.getWriteEndpoint();
-      const results = await this.get(writeEndpoint, path, reqHeaders);
+      const results = await this.requestHandler.get(writeEndpoint, path, reqHeaders);
       return Base.ResponseOrCallback(callback, results);
     } catch (err) {
       Base.ThrowOrCallback(callback, err);
@@ -1445,9 +1435,7 @@ export class DocumentClient extends DocumentClientBase {
     options = optionsCallbackTuple.options;
     callback = optionsCallbackTuple.callback;
 
-    const defaultHeaders = this.defaultHeaders;
-    let initialHeaders = Base.extend({}, defaultHeaders);
-    initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
+    const initialHeaders = { ...this.defaultHeaders, ...(options && options.initialHeaders) };
 
     // Add required headers slug and content-type in case the body is a stream
     if (options.slug) {
@@ -1467,7 +1455,7 @@ export class DocumentClient extends DocumentClientBase {
     try {
       const headers = await Base.getHeaders(this, initialHeaders, "put", path, attachmentId, "media", options);
       const writeEndpoint = await this._globalEndpointManager.getWriteEndpoint();
-      const results = await this.put(writeEndpoint, path, readableStream, headers);
+      const results = await this.requestHandler.put(writeEndpoint, path, readableStream, headers);
       return Base.ResponseOrCallback(callback, results);
     } catch (err) {
       Base.ThrowOrCallback(callback, err);
@@ -1494,9 +1482,7 @@ export class DocumentClient extends DocumentClientBase {
     }
 
     const defaultHeaders = this.defaultHeaders;
-    let initialHeaders = {};
-    initialHeaders = Base.extend(initialHeaders, defaultHeaders);
-    initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
+    const initialHeaders = { ...defaultHeaders, ...(options && options.initialHeaders) };
 
     // Accept a single parameter or an array of parameters.
     // Didn't add type annotation for this because we should legacy this behavior
@@ -1511,7 +1497,7 @@ export class DocumentClient extends DocumentClientBase {
       const headers = await Base.getHeaders(this, initialHeaders, "post", path, id, "sprocs", options);
       // executeStoredProcedure will use WriteEndpoint since it uses POST operation
       const writeEndpoint = await this._globalEndpointManager.getWriteEndpoint();
-      const results = await this.post(writeEndpoint, path, params, headers);
+      const results = await this.requestHandler.post(writeEndpoint, path, params, headers);
       return Base.ResponseOrCallback(callback, results);
     } catch (err) {
       Base.ThrowOrCallback(callback, err);
@@ -1666,15 +1652,21 @@ export class DocumentClient extends DocumentClientBase {
     callback?: ResponseCallback<T>
   ): Promise<Response<T>> {
     try {
-      initialHeaders = initialHeaders || Base.extend({}, this.defaultHeaders);
-      initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
-      const requestHeaders = await Base.getHeaders(this, initialHeaders, "post", path, id, type, options);
+      const requestHeaders = await Base.getHeaders(
+        this,
+        { ...initialHeaders, ...this.defaultHeaders, ...(options && options.initialHeaders) },
+        "post",
+        path,
+        id,
+        type,
+        options
+      );
 
       // create will use WriteEndpoint since it uses POST operation
       this.applySessionToken(path, requestHeaders);
 
       const writeEndpoint = await this._globalEndpointManager.getWriteEndpoint();
-      const { result, headers: resHeaders } = await this.post(writeEndpoint, path, body, requestHeaders);
+      const { result, headers: resHeaders } = await this.requestHandler.post(writeEndpoint, path, body, requestHeaders);
       this.captureSessionToken(undefined, path, Constants.OperationTypes.Create, resHeaders);
       return Base.ResponseOrCallback(callback, {
         result,
@@ -1697,16 +1689,22 @@ export class DocumentClient extends DocumentClientBase {
     callback?: ResponseCallback<T>
   ): Promise<Response<T>> {
     try {
-      initialHeaders = initialHeaders || Base.extend({}, this.defaultHeaders);
-      initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
-      const requestHeaders = await Base.getHeaders(this, initialHeaders, "post", path, id, type, options);
+      const requestHeaders = await Base.getHeaders(
+        this,
+        { ...initialHeaders, ...this.defaultHeaders, ...(options && options.initialHeaders) },
+        "post",
+        path,
+        id,
+        type,
+        options
+      );
 
       this.setIsUpsertHeader(requestHeaders);
       this.applySessionToken(path, requestHeaders);
 
       // upsert will use WriteEndpoint since it uses POST operation
       const writeEndpoint = await this._globalEndpointManager.getWriteEndpoint();
-      const { result, headers: resHeaders } = await this.post(writeEndpoint, path, body, requestHeaders);
+      const { result, headers: resHeaders } = await this.requestHandler.post(writeEndpoint, path, body, requestHeaders);
       this.captureSessionToken(undefined, path, Constants.OperationTypes.Upsert, resHeaders);
       return Base.ResponseOrCallback(callback, {
         result,
@@ -1729,14 +1727,20 @@ export class DocumentClient extends DocumentClientBase {
     callback?: ResponseCallback<T>
   ): Promise<Response<T>> {
     try {
-      initialHeaders = initialHeaders || Base.extend({}, this.defaultHeaders);
-      initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
-      const reqHeaders = await Base.getHeaders(this, initialHeaders, "put", path, id, type, options);
+      const reqHeaders = await Base.getHeaders(
+        this,
+        { ...initialHeaders, ...this.defaultHeaders, ...(options && options.initialHeaders) },
+        "put",
+        path,
+        id,
+        type,
+        options
+      );
       this.applySessionToken(path, reqHeaders);
 
       // replace will use WriteEndpoint since it uses PUT operation
       const writeEndpoint = await this._globalEndpointManager.getWriteEndpoint();
-      const result = await this.put(writeEndpoint, path, resource, reqHeaders);
+      const result = await this.requestHandler.put(writeEndpoint, path, resource, reqHeaders);
       this.captureSessionToken(undefined, path, Constants.OperationTypes.Replace, result.headers);
       return Base.ResponseOrCallback(callback, result);
     } catch (err) {
@@ -1753,11 +1757,16 @@ export class DocumentClient extends DocumentClientBase {
     initialHeaders: IHeaders,
     options?: RequestOptions
   ): Promise<Response<T>> {
-    initialHeaders = initialHeaders || Base.extend({}, this.defaultHeaders);
-    initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
-
     try {
-      const requestHeaders = await Base.getHeaders(this, initialHeaders, "get", path, id, type, options);
+      const requestHeaders = await Base.getHeaders(
+        this,
+        { ...initialHeaders, ...this.defaultHeaders, ...(options && options.initialHeaders) },
+        "get",
+        path,
+        id,
+        type,
+        options
+      );
       this.applySessionToken(path, requestHeaders);
 
       const request: any = {
@@ -1769,7 +1778,7 @@ export class DocumentClient extends DocumentClientBase {
       };
       // read will use ReadEndpoint since it uses GET operation
       const readEndpoint = await this._globalEndpointManager.getReadEndpoint();
-      const response = await this.get(readEndpoint, request, requestHeaders);
+      const response = await this.requestHandler.get(readEndpoint, request, requestHeaders);
       this.captureSessionToken(undefined, path, Constants.OperationTypes.Read, response.headers);
       return response;
     } catch (err) {
@@ -1788,14 +1797,20 @@ export class DocumentClient extends DocumentClientBase {
     callback?: ResponseCallback<any>
   ): Promise<Response<any>> {
     try {
-      initialHeaders = initialHeaders || Base.extend({}, this.defaultHeaders);
-      initialHeaders = Base.extend(initialHeaders, options && options.initialHeaders);
-      const reqHeaders = await Base.getHeaders(this, initialHeaders, "delete", path, id, type, options);
+      const reqHeaders = await Base.getHeaders(
+        this,
+        { ...initialHeaders, ...this.defaultHeaders, ...(options && options.initialHeaders) },
+        "delete",
+        path,
+        id,
+        type,
+        options
+      );
 
       this.applySessionToken(path, reqHeaders);
       // deleteResource will use WriteEndpoint since it uses DELETE operation
       const writeEndpoint = await this._globalEndpointManager.getWriteEndpoint();
-      const response = await this.delete(writeEndpoint, path, reqHeaders);
+      const response = await this.requestHandler.delete(writeEndpoint, path, reqHeaders);
       if (Base.parseLink(path).type !== "colls") {
         this.captureSessionToken(undefined, path, Constants.OperationTypes.Delete, response.headers);
       } else {
@@ -1954,7 +1969,7 @@ export class DocumentClient extends DocumentClientBase {
   /** @ignore */
   public getIdFromLink(resourceLink: string, isNameBased: boolean) {
     if (isNameBased) {
-      resourceLink = Base._trimSlashes(resourceLink);
+      resourceLink = Base.trimSlashes(resourceLink);
       return resourceLink;
     } else {
       return Base.parseLink(resourceLink).objectBody.id.toLowerCase();
@@ -1964,7 +1979,7 @@ export class DocumentClient extends DocumentClientBase {
   /** @ignore */
   public getPathFromLink(resourceLink: string, resourceType: string, isNameBased: boolean) {
     if (isNameBased) {
-      resourceLink = Base._trimSlashes(resourceLink);
+      resourceLink = Base.trimSlashes(resourceLink);
       if (resourceType) {
         return "/" + encodeURI(resourceLink) + "/" + resourceType;
       } else {

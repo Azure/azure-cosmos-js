@@ -41,8 +41,8 @@ export class SessionContainer {
         }
       }
     } else {
-      resourceAddress = Base._trimSlashes(resourceAddress);
-      const collectionName = Base.getCollectionLink(resourceAddress);
+      resourceAddress = Base.trimSlashes(resourceAddress);
+      const collectionName = Base.getContainerLink(resourceAddress);
       if (collectionName && collectionName in this.collectionNameToCollectionResourceId) {
         rangeIdToTokenMap = this.collectionResourceIdToSessionTokens[
           this.collectionNameToCollectionResourceId[collectionName]
@@ -87,8 +87,8 @@ export class SessionContainer {
         }
       }
     } else {
-      const resourceAddress = Base._trimSlashes(request["resourceAddress"]);
-      const collectionName = Base.getCollectionLink(resourceAddress);
+      const resourceAddress = Base.trimSlashes(request["resourceAddress"]);
+      const collectionName = Base.getContainerLink(resourceAddress);
       if (collectionName) {
         collectionResourceId = this.collectionNameToCollectionResourceId[collectionName];
         delete this.collectionNameToCollectionResourceId[collectionName];
@@ -106,10 +106,10 @@ export class SessionContainer {
       if (sessionToken) {
         let ownerFullName = resHeaders[Constants.HttpHeaders.OwnerFullName];
         if (!ownerFullName) {
-          ownerFullName = Base._trimSlashes(request["resourceAddress"]);
+          ownerFullName = Base.trimSlashes(request["resourceAddress"]);
         }
 
-        const collectionName = Base.getCollectionLink(ownerFullName as string);
+        const collectionName = Base.getContainerLink(ownerFullName as string);
 
         const ownerId = !request["isNameBased"]
           ? request["resourceId"]

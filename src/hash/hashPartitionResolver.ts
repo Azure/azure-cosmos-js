@@ -97,7 +97,7 @@ export class HashPartitionResolver {
       throw new Error("collectionLinks must be an array.");
     }
 
-    if (collectionLinks.some(collectionLink => !Base._isValidCollectionLink(collectionLink))) {
+    if (collectionLinks.some(collectionLink => !Base.isValidContainerLink(collectionLink))) {
       throw new Error("All elements of collectionLinks must be collection links.");
     }
   }

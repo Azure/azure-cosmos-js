@@ -10,14 +10,6 @@ import { RequestOptions } from "./request/RequestOptions";
 // TODO: This is a publically exported type, but it's not really necessary for anything nominal to customers. We should refactor this away.
 /** @hidden */
 export class Base {
-  public static extend(arg0: any, arg1: any): any {
-    // tslint:disable-next-line:prefer-object-spread
-    return Object.assign(arg0, arg1);
-  }
-  public static map(arg0: any[], arg1: any): any[] {
-    return arg0.map(arg1);
-  }
-
   /** @ignore */
   public static jsonStringifyAndEscapeNonASCII(arg: any) {
     // TODO: better way for this? Not sure.
@@ -304,7 +296,7 @@ export class Base {
       .join("/");
   }
 
-  public static getCollectionLink(link: string) {
+  public static getContainerLink(link: string) {
     return link
       .split("/")
       .slice(0, 4)
@@ -325,7 +317,7 @@ export class Base {
     return Math.floor(Math.random() * 16).toString(16);
   }
 
-  // TODO: repalce with well known library?
+  // TODO: replace with well known library?
   public static generateGuidId() {
     let id = "";
 
@@ -392,18 +384,18 @@ export class Base {
     return false;
   }
 
-  public static _trimSlashes(source: string) {
+  public static trimSlashes(source: string) {
     return source
       .replace(Constants.RegularExpressions.TrimLeftSlashes, "")
       .replace(Constants.RegularExpressions.TrimRightSlashes, "");
   }
 
-  public static _isValidCollectionLink(link: string) {
+  public static isValidContainerLink(link: string) {
     if (typeof link !== "string") {
       return false;
     }
 
-    const parts = Base._trimSlashes(link).split("/");
+    const parts = Base.trimSlashes(link).split("/");
 
     if (parts && parts.length !== 4) {
       return false;

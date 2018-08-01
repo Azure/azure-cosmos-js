@@ -7,7 +7,7 @@ import content from "./../common/BaselineTest.PathParser";
 describe("Base", function() {
   describe("#._trimSlashes", function() {
     const test = (input: string, expected: string) => {
-      assert.strictEqual(Base._trimSlashes(input), expected);
+      assert.strictEqual(Base.trimSlashes(input), expected);
     };
 
     it("/a/ => a", function() {
@@ -53,7 +53,7 @@ describe("Base", function() {
 
   describe("#._isValidCollectionLink", function() {
     const test = (input: any, expected: boolean) => {
-      assert.strictEqual(Base._isValidCollectionLink(input), expected);
+      assert.strictEqual(Base.isValidContainerLink(input), expected);
     };
 
     it("not string => false", function() {

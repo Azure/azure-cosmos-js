@@ -7,7 +7,8 @@ import { Constants, Helper, Platform } from "./common";
 import { ConnectionPolicy, ConsistencyLevel, DatabaseAccount, QueryCompatibilityMode } from "./documents";
 import { GlobalEndpointManager } from "./globalEndpointManager";
 import { IHeaders } from "./queryExecutionContext";
-import { RequestHandler, Response } from "./request/request";
+import { Response } from "./request/request";
+import { RequestHandler } from "./request/RequestHandler";
 import { RequestOptions } from "./request/RequestOptions";
 import { SessionContainer } from "./sessionContainer";
 
@@ -28,6 +29,7 @@ export abstract class DocumentClientBase {
   protected _globalEndpointManager: GlobalEndpointManager; // TODO: code smell naming
   public sessionContainer: SessionContainer;
   public requestAgent: Agent | http.Agent; // tunnel uses the http Agent, not https Agent, so we accept both types
+  public requestHandler: RequestHandler;
   constructor(
     public urlConnection: string,
     auth: any, // TODO: any auth
@@ -109,6 +111,7 @@ export abstract class DocumentClientBase {
     } else {
       this.requestAgent = new Agent(requestAgentOptions); // TODO: Move to request?
     }
+    this.requestHandler = new RequestHandler(this._globalEndpointManager, this.connectionPolicy, this.requestAgent);
   }
 
   /**
@@ -133,7 +136,7 @@ export abstract class DocumentClientBase {
     const requestHeaders = await Base.getHeaders(this, this.defaultHeaders, "get", "", "", "", {});
 
     try {
-      const { result, headers } = await this.get(urlConnection, "", requestHeaders);
+      const { result, headers } = await this.requestHandler.get(urlConnection, "", requestHeaders);
 
       const databaseAccount = new DatabaseAccount();
       databaseAccount.DatabasesLink = "/dbs/";
@@ -193,84 +196,5 @@ export abstract class DocumentClientBase {
     }
 
     return { options, callback };
-  }
-
-  /** @ignore */
-  public get(urlString: string, request: any, headers: IHeaders) {
-    // TODO: any
-    return RequestHandler.request(
-      this._globalEndpointManager,
-      this.connectionPolicy,
-      this.requestAgent,
-      "GET",
-      urlString,
-      request,
-      undefined,
-      this.defaultUrlParams,
-      headers
-    );
-  }
-
-  /** @ignore */
-  public post(urlString: string, request: any, body: any, headers: IHeaders) {
-    // TODO: any
-    return RequestHandler.request(
-      this._globalEndpointManager,
-      this.connectionPolicy,
-      this.requestAgent,
-      "POST",
-      urlString,
-      request,
-      body,
-      this.defaultUrlParams,
-      headers
-    );
-  }
-
-  /** @ignore */
-  public put(urlString: string, request: any, body: any, headers: IHeaders) {
-    // TODO: any
-    return RequestHandler.request(
-      this._globalEndpointManager,
-      this.connectionPolicy,
-      this.requestAgent,
-      "PUT",
-      urlString,
-      request,
-      body,
-      this.defaultUrlParams,
-      headers
-    );
-  }
-
-  /** @ignore */
-  public head(urlString: string, request: any, headers: IHeaders) {
-    // TODO: any
-    return RequestHandler.request(
-      this._globalEndpointManager,
-      this.connectionPolicy,
-      this.requestAgent,
-      "HEAD",
-      urlString,
-      request,
-      undefined,
-      this.defaultUrlParams,
-      headers
-    );
-  }
-
-  /** @ignore */
-  public delete(urlString: string, request: any, headers: IHeaders) {
-    return RequestHandler.request(
-      this._globalEndpointManager,
-      this.connectionPolicy,
-      this.requestAgent,
-      "DELETE",
-      urlString,
-      request,
-      undefined,
-      this.defaultUrlParams,
-      headers
-    );
   }
 }
