@@ -56,7 +56,7 @@ export class CosmosClient {
 
   private clientContext: ClientContext;
   constructor(private options: CosmosClientOptions) {
-    this.databases = new Databases(this);
+    this.databases = new Databases(this, this.clientContext);
     this.offers = new Offers(this);
 
     this.documentClient = new DocumentClient(

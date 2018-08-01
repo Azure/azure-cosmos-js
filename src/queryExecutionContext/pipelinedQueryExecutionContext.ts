@@ -1,4 +1,3 @@
-import * as assert from "assert";
 import {
   HeaderUtils,
   IExecutionContext,
@@ -8,7 +7,7 @@ import {
   PartitionedQueryExecutionContextInfo,
   PartitionedQueryExecutionContextInfoParser
 } from ".";
-import { DocumentClient } from "../documentclient";
+import { ClientContext } from "../ClientContext";
 import { Response } from "../request/request";
 import {
   AggregateEndpointComponent,
@@ -36,7 +35,7 @@ export class PipelinedQueryExecutionContext implements IExecutionContext {
    * @ignore
    */
   constructor(
-    private documentclient: DocumentClient,
+    private clientContext: ClientContext,
     private collectionLink: string,
     private query: any, // TODO: any query
     private options: any, // TODO: any options
@@ -55,7 +54,7 @@ export class PipelinedQueryExecutionContext implements IExecutionContext {
       //      "payload" property.
       this.endpoint = new OrderByEndpointComponent(
         new OrderByQueryExecutionContext(
-          this.documentclient,
+          this.clientContext,
           this.collectionLink,
           this.query,
           this.options,
@@ -64,7 +63,7 @@ export class PipelinedQueryExecutionContext implements IExecutionContext {
       );
     } else {
       this.endpoint = new ParallelQueryExecutionContext(
-        this.documentclient,
+        this.clientContext,
         this.collectionLink,
         this.query,
         this.options,

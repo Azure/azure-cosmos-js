@@ -1,10 +1,10 @@
-import { Agent } from "http";
-import { Constants, CosmosClientOptions, IHeaders, RequestOptions, Response } from ".";
+import { Constants, CosmosClientOptions, IHeaders, QueryIterator, RequestOptions, Response, SqlQuerySpec } from ".";
 import { Base } from "./base";
-import { StatusCodes, SubStatusCodes } from "./common";
-import { ConnectionPolicy } from "./documents";
+import { Helper, StatusCodes, SubStatusCodes } from "./common";
+import { ConnectionPolicy, QueryCompatibilityMode } from "./documents";
 import { GlobalEndpointManager } from "./globalEndpointManager";
-import { RequestHandler } from "./request";
+import { FetchFunctionCallback } from "./queryExecutionContext";
+import { FeedOptions, RequestHandler } from "./request";
 import { ErrorResponse, getHeaders } from "./request/request";
 import { SessionContainer } from "./sessionContainer";
 
@@ -12,6 +12,8 @@ export class ClientContext {
   private readonly sessionContainer: SessionContainer;
   private connectionPolicy: ConnectionPolicy;
   private requestHandler: RequestHandler;
+
+  public partitionKeyDefinitionCache: any; // TODO: ParitionKeyDefinitionCache
   public constructor(
     private cosmosClientOptions: CosmosClientOptions,
     private globalEndpointManager: GlobalEndpointManager
@@ -59,6 +61,137 @@ export class ClientContext {
     } catch (err) {
       this.captureSessionToken(err, path, Constants.OperationTypes.Upsert, (err as ErrorResponse).headers);
       throw err;
+    }
+  }
+
+  public async queryFeed(
+    path: string,
+    type: string, // TODO: code smell: enum?
+    id: string,
+    resultFn: (result: { [key: string]: any }) => any[], // TODO: any
+    query: SqlQuerySpec | string,
+    options: FeedOptions,
+    partitionKeyRangeId?: string
+  ): Promise<Response<any>> {
+    // Query operations will use ReadEndpoint even though it uses
+    // GET(for queryFeed) and POST(for regular query operations)
+    const readEndpoint = await this.globalEndpointManager.getReadEndpoint();
+
+    const request: any = {
+      // TODO: any request
+      path,
+      operationType: Constants.OperationTypes.Query,
+      client: this,
+      endpointOverride: null
+    };
+
+    const initialHeaders = { ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) };
+    if (query === undefined) {
+      const reqHeaders = await getHeaders(
+        this.cosmosClientOptions.auth,
+        initialHeaders,
+        "get",
+        path,
+        id,
+        type,
+        options,
+        partitionKeyRangeId
+      );
+      this.applySessionToken(path, reqHeaders);
+
+      const { result, headers: resHeaders } = await this.requestHandler.get(readEndpoint, request, reqHeaders);
+      this.captureSessionToken(undefined, path, Constants.OperationTypes.Query, resHeaders);
+      return this.processQueryFeedResponse({ result, headers: resHeaders }, !!query, resultFn);
+    } else {
+      initialHeaders[Constants.HttpHeaders.IsQuery] = "true";
+      switch (this.cosmosClientOptions.queryCompatibilityMode) {
+        case QueryCompatibilityMode.SqlQuery:
+          initialHeaders[Constants.HttpHeaders.ContentType] = Constants.MediaTypes.SQL;
+          break;
+        case QueryCompatibilityMode.Query:
+        case QueryCompatibilityMode.Default:
+        default:
+          if (typeof query === "string") {
+            query = { query }; // Converts query text to query object.
+          }
+          initialHeaders[Constants.HttpHeaders.ContentType] = Constants.MediaTypes.QueryJson;
+          break;
+      }
+
+      const reqHeaders = await getHeaders(
+        this.cosmosClientOptions.auth,
+        initialHeaders,
+        "post",
+        path,
+        id,
+        type,
+        options,
+        partitionKeyRangeId
+      );
+      this.applySessionToken(path, reqHeaders);
+
+      const response = await this.requestHandler.post(readEndpoint, request, query, reqHeaders);
+      const { result, headers: resHeaders } = response;
+      this.captureSessionToken(undefined, path, Constants.OperationTypes.Query, resHeaders);
+      return this.processQueryFeedResponse({ result, headers: resHeaders }, !!query, resultFn);
+    }
+  }
+
+  public queryPartitionKeyRanges(collectionLink: string, query?: string | SqlQuerySpec, options?: FeedOptions) {
+    const isNameBased = Base.isLinkNameBased(collectionLink);
+    const path = Helper.getPathFromLink(collectionLink, "pkranges", isNameBased);
+    const id = Helper.getIdFromLink(collectionLink, isNameBased);
+    const cb: FetchFunctionCallback = innerOptions => {
+      return this.queryFeed(path, "pkranges", id, result => result.PartitionKeyRanges, query, innerOptions);
+    };
+    return new QueryIterator(this, query, options, cb);
+  }
+
+  /** @ignore */
+  public async deleteResource(
+    path: string,
+    type: string,
+    id: string,
+    initialHeaders: IHeaders,
+    options?: RequestOptions
+  ): Promise<Response<any>> {
+    try {
+      const reqHeaders = await getHeaders(
+        this.cosmosClientOptions.auth,
+        { ...initialHeaders, ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
+        "delete",
+        path,
+        id,
+        type,
+        options
+      );
+
+      this.applySessionToken(path, reqHeaders);
+      // deleteResource will use WriteEndpoint since it uses DELETE operation
+      const writeEndpoint = await this.globalEndpointManager.getWriteEndpoint();
+      const response = await this.requestHandler.delete(writeEndpoint, path, reqHeaders);
+      if (Base.parseLink(path).type !== "colls") {
+        this.captureSessionToken(undefined, path, Constants.OperationTypes.Delete, response.headers);
+      } else {
+        this.clearSessionToken(path);
+      }
+      return response;
+    } catch (err) {
+      this.captureSessionToken(err, path, Constants.OperationTypes.Upsert, (err as ErrorResponse).headers);
+      throw err;
+    }
+  }
+
+  private processQueryFeedResponse(
+    res: Response<any>,
+    isQuery: boolean,
+    resultFn: (result: { [key: string]: any }) => any[]
+  ): Response<any> {
+    if (isQuery) {
+      return { result: resultFn(res.result), headers: res.headers };
+    } else {
+      const newResult = resultFn(res.result).map((body: any) => body);
+      return { result: newResult, headers: res.headers };
     }
   }
 

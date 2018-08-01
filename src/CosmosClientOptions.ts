@@ -1,6 +1,6 @@
 import { Agent } from "http";
 import { AuthOptions } from "./auth";
-import { ConnectionPolicy, ConsistencyLevel } from "./documents";
+import { ConnectionPolicy, ConsistencyLevel, QueryCompatibilityMode } from "./documents";
 import { IHeaders } from "./queryExecutionContext/IHeaders";
 
 export interface CosmosClientOptions {
@@ -18,4 +18,5 @@ export interface CosmosClientOptions {
   consistencyLevel?: keyof typeof ConsistencyLevel;
   defaultHeaders?: IHeaders;
   agent?: Agent;
+  queryCompatibilityMode?: QueryCompatibilityMode;
 }

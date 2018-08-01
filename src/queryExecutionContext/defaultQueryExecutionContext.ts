@@ -1,9 +1,10 @@
 import { IExecutionContext } from ".";
+import { ClientContext } from "../ClientContext";
 import { Constants } from "../common";
 import { DocumentClient } from "../documentclient";
 import { ClientSideMetrics, QueryMetrics } from "../queryMetrics";
 import { Response } from "../request";
-import { SqlParameter, SqlQuerySpec } from "./SqlQuerySpec";
+import { SqlQuerySpec } from "./SqlQuerySpec";
 
 /** @hidden */
 export type FetchFunctionCallback = (options: any) => Promise<Response<any>>;
@@ -39,13 +40,12 @@ export class DefaultQueryExecutionContext implements IExecutionContext {
    * @ignore
    */
   constructor(
-    documentclient: DocumentClient,
+    private clientContext: ClientContext,
     query: string | SqlQuerySpec,
     options: any,
     fetchFunctions: FetchFunctionCallback | FetchFunctionCallback[]
   ) {
     // TODO: any options
-    this.documentclient = documentclient;
     this.query = query;
     this.resources = [];
     this.currentIndex = 0;

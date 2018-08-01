@@ -3,13 +3,12 @@ import {
   DefaultQueryExecutionContext,
   FetchFunctionCallback,
   IExecutionContext,
-  IHeaders,
   PartitionedQueryExecutionContextInfo,
   PipelinedQueryExecutionContext,
   SqlQuerySpec
 } from ".";
+import { ClientContext } from "../ClientContext";
 import { StatusCodes, SubStatusCodes } from "../common";
-import { DocumentClient } from "../documentclient";
 import { Response } from "../request/request";
 
 /** @hidden */
@@ -28,20 +27,19 @@ export class ProxyQueryExecutionContext implements IExecutionContext {
    * @ignore
    */
   constructor(
-    private documentclient: DocumentClient,
+    private clientContext: ClientContext,
     private query: SqlQuerySpec | string,
     private options: any, // TODO: any options
     private fetchFunctions: FetchFunctionCallback | FetchFunctionCallback[],
     private resourceLink: string | string[]
   ) {
-    this.documentclient = documentclient;
     this.query = query;
     this.fetchFunctions = fetchFunctions;
     // clone options
     this.options = JSON.parse(JSON.stringify(options || {}));
     this.resourceLink = resourceLink;
     this.queryExecutionContext = new DefaultQueryExecutionContext(
-      this.documentclient,
+      this.clientContext,
       this.query,
       this.options,
       this.fetchFunctions
@@ -85,7 +83,7 @@ export class ProxyQueryExecutionContext implements IExecutionContext {
     const collectionLink = Array.isArray(this.resourceLink) ? this.resourceLink[0] : this.resourceLink;
 
     return new PipelinedQueryExecutionContext(
-      this.documentclient,
+      this.clientContext,
       collectionLink,
       this.query,
       this.options,

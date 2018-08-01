@@ -1,11 +1,11 @@
 import * as semaphore from "semaphore";
 import { Base } from "../base";
-import { QueryIterator } from "../queryIterator";
+import { ClientContext } from "../ClientContext";
+import { Helper } from "../common";
 import { CollectionRoutingMapFactory, InMemoryCollectionRoutingMap, QueryRange } from "./";
 
 /** @hidden */
 export class PartitionKeyRangeCache {
-  private documentclient: any;
   private collectionRoutingMapByCollectionId: {
     [key: string]: InMemoryCollectionRoutingMap;
   };
@@ -19,9 +19,7 @@ export class PartitionKeyRangeCache {
    * @param {object} documentclient - The documentclient object.
    * @ignore
    */
-  constructor(documentclient: any) {
-    // TODO: documentClient
-    this.documentclient = documentclient;
+  constructor(private clientContext: ClientContext) {
     this.collectionRoutingMapByCollectionId = {};
     this.sem = semaphore(1);
   }
@@ -34,7 +32,7 @@ export class PartitionKeyRangeCache {
    */
   public async onCollectionRoutingMap(collectionLink: string): Promise<InMemoryCollectionRoutingMap> {
     const isNameBased = Base.isLinkNameBased(collectionLink);
-    const collectionId = this.documentclient.getIdFromLink(collectionLink, isNameBased);
+    const collectionId = Helper.getIdFromLink(collectionLink, isNameBased);
 
     let collectionRoutingMap = this.collectionRoutingMapByCollectionId[collectionId];
     if (collectionRoutingMap === undefined) {
@@ -44,10 +42,7 @@ export class PartitionKeyRangeCache {
           let crm: InMemoryCollectionRoutingMap = this.collectionRoutingMapByCollectionId[collectionId];
           if (crm === undefined) {
             try {
-              const partitionKeyRangesIterator: QueryIterator<any> = this.documentclient.readPartitionKeyRanges(
-                collectionLink
-              );
-              const { result: resources } = await partitionKeyRangesIterator.toArray();
+              const { result: resources } = await this.clientContext.queryPartitionKeyRanges(collectionLink).toArray();
 
               crm = CollectionRoutingMapFactory.createCompleteRoutingMap(resources.map(r => [r, true]), collectionId);
 

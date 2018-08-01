@@ -1,4 +1,5 @@
 import * as assert from "assert";
+import { ClientContext } from "../ClientContext";
 import { Constants } from "../common";
 import { PartitionKeyRangeCache, QueryRange } from "./";
 
@@ -16,9 +17,9 @@ export class SmartRoutingMapProvider {
    * @param {object} documentclient                - The documentclient object.
    * @ignore
    */
-  constructor(documentclient: any) {
+  constructor(clientContext: ClientContext) {
     // TODO: documentclient any
-    this.partitionKeyRangeCache = new PartitionKeyRangeCache(documentclient);
+    this.partitionKeyRangeCache = new PartitionKeyRangeCache(clientContext);
   }
   private static _secondRangeIsAfterFirstRange(range1: QueryRange, range2: QueryRange) {
     assert.notEqual(range1.max, undefined, "invalid arg");

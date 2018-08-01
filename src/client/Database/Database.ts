@@ -1,10 +1,10 @@
-import { UriFactory, Helper } from "../../common";
+import { ClientContext } from "../../ClientContext";
+import { Helper, UriFactory } from "../../common";
 import { CosmosClient } from "../../CosmosClient";
 import { RequestOptions } from "../../request";
 import { Container, Containers } from "../Container";
 import { User, Users } from "../User";
 import { DatabaseResponse } from "./DatabaseResponse";
-import { ClientContext } from "../../ClientContext";
 
 /**
  * Operations for reading or deleting an existing database.
@@ -76,7 +76,7 @@ export class Database {
 
   /** Read the definition of the given Database. */
   public async read(options?: RequestOptions): Promise<DatabaseResponse> {
-    const path = Helper.getPathFromLink(this.url, "");
+    const path = Helper.getPathFromLink(this.url);
     const id = Helper.getIdFromLink(this.url);
     const response = await this.clientContext.read(path, "dbs", id, undefined, options);
     return {

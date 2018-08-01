@@ -17,7 +17,7 @@ export class Helper {
   }
 
   /** @ignore */
-  public static getPathFromLink(resourceLink: string, resourceType: string, isNameBased: boolean = true) {
+  public static getPathFromLink(resourceLink: string, resourceType?: string, isNameBased: boolean = true) {
     if (isNameBased) {
       resourceLink = Base.trimSlashes(resourceLink);
       if (resourceType) {
