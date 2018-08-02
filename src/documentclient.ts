@@ -2,7 +2,6 @@ import { Readable } from "stream";
 import { Base, ResponseCallback } from "./base";
 import { ClientContext } from "./ClientContext";
 import { Constants, StatusCodes, SubStatusCodes } from "./common";
-import { CosmosClientOptions } from "./CosmosClientOptions";
 import { DocumentClientBase } from "./DocumentClientBase";
 import { ConnectionPolicy, ConsistencyLevel, Document, PartitionKey, QueryCompatibilityMode } from "./documents";
 import { FetchFunctionCallback, IHeaders, SqlQuerySpec } from "./queryExecutionContext";
@@ -12,17 +11,27 @@ import { ErrorResponse, FeedOptions, MediaOptions, RequestOptions, Response } fr
 // TODO: This needs to eventually be refactored away
 /** @hidden */
 export class DocumentClient extends DocumentClientBase {
-  private clientContext: ClientContext;
   constructor(
     public urlConnection: string,
     auth: any,
     connectionPolicy?: ConnectionPolicy,
     consistencyLevel?: ConsistencyLevel,
-    cosmosClientOptions?: CosmosClientOptions
+    private clientContext?: ClientContext
   ) {
     // TODO: any auth options
-    super(urlConnection, auth, connectionPolicy, consistencyLevel);
-    this.clientContext = new ClientContext(cosmosClientOptions, this._globalEndpointManager);
+    super(
+      urlConnection,
+      auth,
+      connectionPolicy,
+      consistencyLevel,
+      {
+        endpoint: urlConnection,
+        auth,
+        consistencyLevel,
+        connectionPolicy
+      },
+      async (opts: RequestOptions) => this.getDatabaseAccount(opts)
+    );
   }
 
   // NOT USED IN NEW OM

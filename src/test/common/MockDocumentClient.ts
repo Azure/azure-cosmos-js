@@ -6,4 +6,8 @@ export class MockedClientContext {
   public readPartitionKeyRanges(collectionLink: any) {
     return new MockedQueryIterator(this.partitionKeyRanges);
   }
+
+  public queryPartitionKeyRanges(collectionLink: any) {
+    return new MockedQueryIterator(this.partitionKeyRanges);
+  }
 }

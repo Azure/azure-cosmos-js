@@ -4,6 +4,7 @@ import * as tunnel from "tunnel";
 import * as url from "url";
 import { Base, ResponseCallback } from "./base";
 import { Constants, Helper, Platform } from "./common";
+import { CosmosClientOptions } from "./CosmosClientOptions";
 import { ConnectionPolicy, ConsistencyLevel, DatabaseAccount, QueryCompatibilityMode } from "./documents";
 import { GlobalEndpointManager } from "./globalEndpointManager";
 import { IHeaders } from "./queryExecutionContext";
@@ -34,7 +35,9 @@ export abstract class DocumentClientBase {
     public urlConnection: string,
     auth: any, // TODO: any auth
     connectionPolicy: ConnectionPolicy,
-    consistencyLevel: ConsistencyLevel
+    consistencyLevel: ConsistencyLevel,
+    private options: CosmosClientOptions,
+    private readDatabaseAccount: (opts: RequestOptions) => Promise<Response<DatabaseAccount>>
   ) {
     if (auth) {
       this.masterKey = auth.masterKey;
@@ -81,7 +84,7 @@ export abstract class DocumentClientBase {
 
     this.partitionKeyDefinitionCache = {};
 
-    this._globalEndpointManager = new GlobalEndpointManager(this);
+    this._globalEndpointManager = new GlobalEndpointManager(this.options, this.readDatabaseAccount);
 
     this.sessionContainer = new SessionContainer(this.urlConnection);
 

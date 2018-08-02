@@ -1,7 +1,6 @@
 import { IExecutionContext } from ".";
 import { ClientContext } from "../ClientContext";
 import { Constants } from "../common";
-import { DocumentClient } from "../documentclient";
 import { ClientSideMetrics, QueryMetrics } from "../queryMetrics";
 import { Response } from "../request";
 import { SqlQuerySpec } from "./SqlQuerySpec";
@@ -19,7 +18,6 @@ enum STATES {
 /** @hidden */
 export class DefaultQueryExecutionContext implements IExecutionContext {
   private static readonly STATES = STATES;
-  private documentclient: DocumentClient;
   private query: string | SqlQuerySpec;
   private resources: any; // TODO: any resources
   private currentIndex: number;
@@ -32,7 +30,7 @@ export class DefaultQueryExecutionContext implements IExecutionContext {
    * Provides the basic Query Execution Context.
    * This wraps the internal logic query execution using provided fetch functions
    * @constructor DefaultQueryExecutionContext
-   * @param {DocumentClient} documentclient        - The service endpoint to use to create the client.
+   * @param {ClientContext} clientContext          - Is used to read the partitionKeyRanges for split proofing
    * @param {SqlQuerySpec | string} query          - A SQL query.
    * @param {FeedOptions} [options]                - Represents the feed options.
    * @param {callback | callback[]} fetchFunctions - A function to retrieve each page of data.

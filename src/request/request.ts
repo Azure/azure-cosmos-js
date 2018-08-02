@@ -268,8 +268,9 @@ export async function getHeaders(
 
   // If the user is not using partition resolver, we add options.partitonKey to the header for elastic containers
   if (
-    (authOptions as any).partitionResolver === undefined || // TODO: paritionResolver does not exist
-    (authOptions as any).partitionResolver === null
+    authOptions &&
+    ((authOptions as any).partitionResolver === undefined || // TODO: paritionResolver does not exist
+      (authOptions as any).partitionResolver === null)
   ) {
     if (opts.partitionKey !== undefined) {
       let partitionKey: string[] | string = opts.partitionKey;

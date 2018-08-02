@@ -1,9 +1,14 @@
+import { Agent, AgentOptions } from "https";
+import * as tunnel from "tunnel";
+import * as url from "url";
+import { Constants, RequestOptions } from ".";
 import { Database, Databases } from "./client/Database/";
 import { Offer, Offers } from "./client/Offer/";
 import { ClientContext } from "./ClientContext";
+import { Platform } from "./common";
 import { CosmosClientOptions } from "./CosmosClientOptions";
 import { DocumentClient } from "./documentclient";
-import { ConsistencyLevel, DatabaseAccount } from "./documents";
+import { ConnectionPolicy, ConsistencyLevel, DatabaseAccount } from "./documents";
 import { GlobalEndpointManager } from "./globalEndpointManager";
 import { CosmosResponse } from "./request";
 
@@ -56,6 +61,58 @@ export class CosmosClient {
 
   private clientContext: ClientContext;
   constructor(private options: CosmosClientOptions) {
+    options.auth = options.auth || {};
+
+    options.connectionPolicy = options.connectionPolicy || new ConnectionPolicy();
+
+    options.defaultHeaders = options.defaultHeaders || {};
+    options.defaultHeaders[Constants.HttpHeaders.CacheControl] = "no-cache";
+    options.defaultHeaders[Constants.HttpHeaders.Version] = Constants.CurrentVersion;
+    if (options.consistencyLevel !== undefined) {
+      options.defaultHeaders[Constants.HttpHeaders.ConsistencyLevel] = options.consistencyLevel;
+    }
+
+    const platformDefaultHeaders = Platform.getPlatformDefaultHeaders() || {};
+    for (const platformDefaultHeader of Object.keys(platformDefaultHeaders)) {
+      options.defaultHeaders[platformDefaultHeader] = platformDefaultHeaders[platformDefaultHeader];
+    }
+
+    options.defaultHeaders[Constants.HttpHeaders.UserAgent] = Platform.getUserAgent();
+
+    if (!this.options.agent) {
+      // Initialize request agent
+      const requestAgentOptions: AgentOptions & tunnel.HttpsOverHttpsOptions & tunnel.HttpsOverHttpOptions = {
+        keepAlive: true,
+        maxSockets: 256,
+        maxFreeSockets: 256
+      };
+      if (!!this.options.connectionPolicy.ProxyUrl) {
+        const proxyUrl = url.parse(this.options.connectionPolicy.ProxyUrl);
+        const port = parseInt(proxyUrl.port, 10);
+        requestAgentOptions.proxy = {
+          host: proxyUrl.hostname,
+          port,
+          headers: {}
+        };
+
+        if (!!proxyUrl.auth) {
+          requestAgentOptions.proxy.proxyAuth = proxyUrl.auth;
+        }
+
+        this.options.agent =
+          proxyUrl.protocol.toLowerCase() === "https:"
+            ? tunnel.httpsOverHttps(requestAgentOptions)
+            : tunnel.httpsOverHttp(requestAgentOptions); // TODO: type coersion
+      } else {
+        this.options.agent = new Agent(requestAgentOptions); // TODO: Move to request?
+      }
+    }
+
+    const globalEndpointManager = new GlobalEndpointManager(this.options, async (opts: RequestOptions) =>
+      this.documentClient.getDatabaseAccount(opts)
+    );
+    this.clientContext = new ClientContext(options, globalEndpointManager);
+
     this.databases = new Databases(this, this.clientContext);
     this.offers = new Offers(this);
 
@@ -63,10 +120,9 @@ export class CosmosClient {
       options.endpoint,
       options.auth,
       options.connectionPolicy,
-      ConsistencyLevel[options.consistencyLevel]
+      ConsistencyLevel[options.consistencyLevel],
+      this.clientContext
     );
-    const globalEndpointManager = new GlobalEndpointManager(this.documentClient);
-    this.clientContext = new ClientContext(options, globalEndpointManager);
   }
 
   /**
