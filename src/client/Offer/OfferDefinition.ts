@@ -6,6 +6,6 @@ export interface OfferDefinition {
   offerResourceId?: string;
   content?: {
     offerThroughput: number;
-    offerIsRUPerMinuteThroughputEnabled: boolean;
+    offerIsRUPerMinuteThroughputEnabled?: boolean;
   };
 }

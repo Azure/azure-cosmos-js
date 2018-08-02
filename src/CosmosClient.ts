@@ -53,7 +53,6 @@ export class CosmosClient {
    */
   constructor(private options: CosmosClientOptions) {
     this.databases = new Databases(this);
-    this.offers = new Offers(this);
 
     this.documentClient = new DocumentClient(
       options.endpoint,

@@ -143,7 +143,7 @@ function createRequestObject(
  * @param {object} data - the data body returned from the executon of a request.
  * @hidden
  */
-function getErrorBody(response: ClientResponse, data: string, headers: IHeaders): ErrorResponse {
+export function getErrorBody(response: ClientResponse, data: string, headers: IHeaders): ErrorResponse {
   const errorBody: ErrorResponse = {
     code: response.statusCode,
     body: data,

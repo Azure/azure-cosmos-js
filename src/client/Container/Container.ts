@@ -1,8 +1,10 @@
-import { Constants, UriFactory } from "../../common";
-import { RequestOptions, Response } from "../../request";
+import { Constants, StatusCodes, UriFactory } from "../../common";
+import { HeaderUtils, SqlQuerySpec } from "../../queryExecutionContext";
+import { ErrorResponse, RequestOptions } from "../../request";
 import { Conflict } from "../Conflict";
 import { Database } from "../Database";
 import { Item, Items } from "../Item";
+import { Offer, OfferResponse } from "../Offer";
 import { StoredProcedure, StoredProcedures } from "../StoredProcedure";
 import { Trigger, Triggers } from "../Trigger";
 import { UserDefinedFunction, UserDefinedFunctions } from "../UserDefinedFunction";
@@ -155,5 +157,78 @@ export class Container {
       ref: this,
       container: this
     };
+  }
+
+  /**
+   * Reads the offer for the Container
+   */
+  public async readOffer(): Promise<OfferResponse> {
+    const { body: containerDef, headers: readHeaders } = await this.read();
+    const link = (containerDef as any)._self; // TODO: any
+    const querySpec: SqlQuerySpec = {
+      query: "SELECT r.content FROM root r where r.resource = @link",
+      parameters: [{ name: "@link", value: link }]
+    };
+
+    const { result: responses, headers: queryHeaders } = await this.database.client.offers.query(querySpec).toArray();
+    HeaderUtils.mergeHeaders(readHeaders, queryHeaders);
+    if (responses.length <= 0) {
+      const errorResponse: ErrorResponse = {
+        body: "Offer not found",
+        headers: readHeaders,
+        code: StatusCodes.NotFound,
+        activityId: queryHeaders[Constants.HttpHeaders.ActivityId]
+      };
+      throw errorResponse;
+    } else {
+      const ref = new Offer(this.database.client, responses[0].id);
+      return { body: responses[0], headers: readHeaders, offer: ref, ref };
+    }
+  }
+
+  /**
+   * Read the current throughput for the container.
+   *
+   * Returns null if the container doesn't have any throughput. This is because it is using Database level throughput.
+   */
+  public async readThroughput(): Promise<number | null> {
+    try {
+      const response = await this.readOffer();
+      return response.body.content.offerThroughput;
+    } catch (err) {
+      if (err && err.code === StatusCodes.NotFound) {
+        return null;
+      } else {
+        throw err;
+      }
+    }
+  }
+
+  /**
+   * Replaces the current throughput for the given container.
+   *
+   * This will throw an exception if the container is using Database level throughput.
+   * @param throughputInRus The number of RUs to set
+   */
+  public async replaceThroughput(throughputInRus: number): Promise<void> {
+    const { body: containerDef } = await this.read();
+    const link = (containerDef as any)._self; // TODO: any
+    const querySpec: SqlQuerySpec = {
+      query: "SELECT * FROM root r where r.resource = @link",
+      parameters: [{ name: "@link", value: link }]
+    };
+
+    const { result: responses } = await this.database.client.documentClient.queryOffers(querySpec).toArray();
+    if (responses.length <= 0) {
+      throw new Error(
+        "No valid offer for the Container. This is likely because it is using Database-level throughput."
+      );
+    } else {
+      const origOfferDef = (responses as any)[0];
+      const offerLink = origOfferDef._self; // TODO: any
+      const newOffer = { ...origOfferDef };
+      newOffer.content.offerThroughput = throughputInRus;
+      await this.database.client.documentClient.replaceOffer(offerLink, {});
+    }
   }
 }
