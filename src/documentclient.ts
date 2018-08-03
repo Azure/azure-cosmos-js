@@ -374,6 +374,7 @@ export class DocumentClient extends DocumentClientBase {
     }
   }
 
+  
   public async readCollection(
     collectionLink: string,
     options?: RequestOptions,
@@ -572,9 +573,9 @@ export class DocumentClient extends DocumentClientBase {
     return this.queryCollections(databaseLink, undefined, options);
   }
 
-  public readDocuments(collectionLink: string, options?: FeedOptions) {
-    return this.queryDocuments(collectionLink, undefined, options);
-  }
+  // public readDocuments(collectionLink: string, options?: FeedOptions) {
+  //   return this.queryDocuments(collectionLink, undefined, options);
+  // }
 
   public readPartitionKeyRanges(collectionLink: string, options?: FeedOptions) {
     return this.queryPartitionKeyRanges(collectionLink, undefined, options);
@@ -740,14 +741,14 @@ export class DocumentClient extends DocumentClientBase {
     });
   }
 
-  public queryDocuments(documentsFeedOrDatabaseLink: string, query?: string | SqlQuerySpec, options?: FeedOptions) {
-    const partitionResolver = this.partitionResolvers[documentsFeedOrDatabaseLink];
-    const collectionLinks =
-      partitionResolver === undefined || partitionResolver === null
-        ? [documentsFeedOrDatabaseLink]
-        : partitionResolver.resolveForRead(options && options.partitionKey);
-    return this.queryDocumentsPrivate(collectionLinks, query, options);
-  }
+  // public queryDocuments(documentsFeedOrDatabaseLink: string, query?: string | SqlQuerySpec, options?: FeedOptions) {
+  //   const partitionResolver = this.partitionResolvers[documentsFeedOrDatabaseLink];
+  //   const collectionLinks =
+  //     partitionResolver === undefined || partitionResolver === null
+  //       ? [documentsFeedOrDatabaseLink]
+  //       : partitionResolver.resolveForRead(options && options.partitionKey);
+  //   return this.queryDocumentsPrivate(collectionLinks, query, options);
+  // }
 
   public queryPartitionKeyRanges(collectionLink: string, query: string | SqlQuerySpec, options?: FeedOptions) {
     const isNameBased = Base.isLinkNameBased(collectionLink);

@@ -17,7 +17,7 @@ export class ClientContext {
   private connectionPolicy: ConnectionPolicy;
   private requestHandler: RequestHandler;
 
-  public partitionKeyDefinitionCache: any; // TODO: ParitionKeyDefinitionCache
+  public partitionKeyDefinitionCache: { [containerUrl: string]: any }; // TODO: ParitionKeyDefinitionCache
   public constructor(
     private cosmosClientOptions: CosmosClientOptions,
     private globalEndpointManager: GlobalEndpointManager
@@ -29,6 +29,7 @@ export class ClientContext {
       this.connectionPolicy,
       this.cosmosClientOptions.agent
     );
+    this.partitionKeyDefinitionCache = {};
   }
   /** @ignore */
   public async read<T>(
@@ -248,6 +249,99 @@ export class ClientContext {
         reqHeaders[Constants.HttpHeaders.SessionToken] = sessionToken;
       }
     }
+  }
+
+  public async replace<T>(
+    resource: any,
+    path: string,
+    type: string,
+    id: string,
+    initialHeaders: IHeaders,
+    options?: RequestOptions
+  ): Promise<Response<T>> {
+    try {
+      const reqHeaders = await getHeaders(
+        this.cosmosClientOptions.auth,
+        { ...initialHeaders, ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
+        "put",
+        path,
+        id,
+        type,
+        options
+      );
+      this.applySessionToken(path, reqHeaders);
+
+      // replace will use WriteEndpoint since it uses PUT operation
+      const writeEndpoint = await this.globalEndpointManager.getWriteEndpoint();
+      const response = await this.requestHandler.put(writeEndpoint, path, resource, reqHeaders);
+      this.captureSessionToken(undefined, path, Constants.OperationTypes.Replace, response.headers);
+      return response;
+    } catch (err) {
+      this.captureSessionToken(err, path, Constants.OperationTypes.Upsert, (err as ErrorResponse).headers);
+      throw err;
+    }
+  }
+
+  public async upsert<T>(
+    body: T,
+    path: string,
+    type: string,
+    id: string,
+    initialHeaders: IHeaders,
+    options?: RequestOptions
+  ): Promise<Response<T>> {
+    try {
+      const requestHeaders = await getHeaders(
+        this.cosmosClientOptions.auth,
+        { ...initialHeaders, ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
+        "post",
+        path,
+        id,
+        type,
+        options
+      );
+
+      Helper.setIsUpsertHeader(requestHeaders);
+      this.applySessionToken(path, requestHeaders);
+
+      // upsert will use WriteEndpoint since it uses POST operation
+      const writeEndpoint = await this.globalEndpointManager.getWriteEndpoint();
+      const response = await this.requestHandler.post(writeEndpoint, path, body, requestHeaders);
+      this.captureSessionToken(undefined, path, Constants.OperationTypes.Upsert, response.headers);
+      return response;
+    } catch (err) {
+      this.captureSessionToken(err, path, Constants.OperationTypes.Upsert, (err as ErrorResponse).headers);
+      throw err;
+    }
+  }
+
+  public async execute<T>(
+    sprocLink: string,
+    params?: any[], // TODO: any
+    options?: RequestOptions
+  ): Promise<Response<T>> {
+    const initialHeaders = { ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) };
+
+    // Accept a single parameter or an array of parameters.
+    // Didn't add type annotation for this because we should legacy this behavior
+    if (params !== null && params !== undefined && !Array.isArray(params)) {
+      params = [params];
+    }
+    const path = Helper.getPathFromLink(sprocLink);
+    const id = Helper.getIdFromLink(sprocLink);
+
+    const headers = await getHeaders(
+      this.cosmosClientOptions.auth,
+      initialHeaders,
+      "post",
+      path,
+      id,
+      "sprocs",
+      options
+    );
+    // executeStoredProcedure will use WriteEndpoint since it uses POST operation
+    const writeEndpoint = await this.globalEndpointManager.getWriteEndpoint();
+    return this.requestHandler.post(writeEndpoint, path, params, headers);
   }
 
   private captureSessionToken(err: ErrorResponse, path: string, opType: string, resHeaders: IHeaders) {

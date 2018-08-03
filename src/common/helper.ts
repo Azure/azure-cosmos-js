@@ -1,4 +1,5 @@
 ﻿import { Constants } from ".";
+import { IHeaders } from "..";
 import { Base } from "../base";
 
 /** @hidden */
@@ -6,6 +7,116 @@ const Regexes = Constants.RegularExpressions;
 
 /** @hidden */
 export class Helper {
+  public static setIsUpsertHeader(headers: IHeaders) {
+    if (headers === undefined || headers === null) {
+      throw new Error('The "headers" parameter must not be null or undefined');
+    }
+
+    if (!(headers instanceof Object)) {
+      throw new Error(`The "headers" parameter must be an instance of "Object". Actual type is: "${typeof headers}".`);
+    }
+
+    (headers as IHeaders)[Constants.HttpHeaders.IsUpsert] = true;
+  }
+
+  // TODO: replace with well known library?
+  public static generateGuidId() {
+    let id = "";
+
+    for (let i = 0; i < 8; i++) {
+      id += Base.getHexaDigit();
+    }
+
+    id += "-";
+
+    for (let i = 0; i < 4; i++) {
+      id += Base.getHexaDigit();
+    }
+
+    id += "-";
+
+    for (let i = 0; i < 4; i++) {
+      id += Base.getHexaDigit();
+    }
+
+    id += "-";
+
+    for (let i = 0; i < 4; i++) {
+      id += Base.getHexaDigit();
+    }
+
+    id += "-";
+
+    for (let i = 0; i < 12; i++) {
+      id += Base.getHexaDigit();
+    }
+
+    return id;
+  }
+
+  public static parsePath(path: string) {
+    const pathParts = [];
+    let currentIndex = 0;
+
+    const throwError = () => {
+      throw new Error("Path " + path + " is invalid at index " + currentIndex);
+    };
+
+    const getEscapedToken = () => {
+      const quote = path[currentIndex];
+      let newIndex = ++currentIndex;
+
+      while (true) {
+        newIndex = path.indexOf(quote, newIndex);
+        if (newIndex === -1) {
+          throwError();
+        }
+
+        if (path[newIndex - 1] !== "\\") {
+          break;
+        }
+
+        ++newIndex;
+      }
+
+      const token = path.substr(currentIndex, newIndex - currentIndex);
+      currentIndex = newIndex + 1;
+      return token;
+    };
+
+    const getToken = () => {
+      const newIndex = path.indexOf("/", currentIndex);
+      let token = null;
+      if (newIndex === -1) {
+        token = path.substr(currentIndex);
+        currentIndex = path.length;
+      } else {
+        token = path.substr(currentIndex, newIndex - currentIndex);
+        currentIndex = newIndex;
+      }
+
+      token = token.trim();
+      return token;
+    };
+
+    while (currentIndex < path.length) {
+      if (path[currentIndex] !== "/") {
+        throwError();
+      }
+
+      if (++currentIndex === path.length) {
+        break;
+      }
+
+      if (path[currentIndex] === '"' || path[currentIndex] === "'") {
+        pathParts.push(getEscapedToken());
+      } else {
+        pathParts.push(getToken());
+      }
+    }
+
+    return pathParts;
+  }
   public static isResourceValid(resource: any, err: any) {
     // TODO: any TODO: code smell
     if (resource.id) {

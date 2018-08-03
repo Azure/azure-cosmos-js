@@ -47,7 +47,7 @@ export class Database {
    * Note: the intention is to get this object from {@link CosmosClient} via `client.databsae(id)`, not to instaniate it yourself.
    */
   constructor(public readonly client: CosmosClient, public readonly id: string, private clientContext: ClientContext) {
-    this.containers = new Containers(this);
+    this.containers = new Containers(this, this.clientContext);
     this.users = new Users(this);
   }
 
@@ -62,7 +62,7 @@ export class Database {
    * ```
    */
   public container(id: string): Container {
-    return new Container(this, id);
+    return new Container(this, id, this.clientContext);
   }
 
   /**
