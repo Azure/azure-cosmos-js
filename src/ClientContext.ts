@@ -1,7 +1,7 @@
 import { Constants, CosmosClientOptions, IHeaders, QueryIterator, RequestOptions, Response, SqlQuerySpec } from ".";
 import { Base } from "./base";
 import { Helper, StatusCodes, SubStatusCodes } from "./common";
-import { ConnectionPolicy, QueryCompatibilityMode } from "./documents";
+import { ConnectionPolicy, DatabaseAccount, QueryCompatibilityMode } from "./documents";
 import { GlobalEndpointManager } from "./globalEndpointManager";
 import { FetchFunctionCallback } from "./queryExecutionContext";
 import { FeedOptions, RequestHandler } from "./request";
@@ -342,6 +342,51 @@ export class ClientContext {
     // executeStoredProcedure will use WriteEndpoint since it uses POST operation
     const writeEndpoint = await this.globalEndpointManager.getWriteEndpoint();
     return this.requestHandler.post(writeEndpoint, path, params, headers);
+  }
+
+  /**
+   * Gets the Database account information.
+   * @memberof DocumentClient
+   * @instance
+   * @param {string} [options.urlConnection]   - The endpoint url whose database account needs to be retrieved. \
+   * If not present, current client's url will be used.
+   * @param {RequestCallback} callback         - The callback for the request. The second parameter of the \
+   * callback will be of type {@link DatabaseAccount}.
+   */
+  public async getDatabaseAccount(options?: RequestOptions): Promise<Response<DatabaseAccount>> {
+    const urlConnection = options.urlConnection || this.cosmosClientOptions.endpoint;
+
+    const requestHeaders = await getHeaders(
+      this.cosmosClientOptions.auth,
+      this.cosmosClientOptions.defaultHeaders,
+      "get",
+      "",
+      "",
+      "",
+      {}
+    );
+
+    const { result, headers } = await this.requestHandler.get(urlConnection, "", requestHeaders);
+
+    const databaseAccount = new DatabaseAccount();
+    databaseAccount.DatabasesLink = "/dbs/";
+    databaseAccount.MediaLink = "/media/";
+    databaseAccount.MaxMediaStorageUsageInMB = headers[Constants.HttpHeaders.MaxMediaStorageUsageInMB] as number;
+    databaseAccount.CurrentMediaStorageUsageInMB = headers[
+      Constants.HttpHeaders.CurrentMediaStorageUsageInMB
+    ] as number;
+    databaseAccount.ConsistencyPolicy = result.userConsistencyPolicy;
+
+    // WritableLocations and ReadableLocations properties will be available
+    // only for geo-replicated database accounts
+    if (Constants.WritableLocations in result && result.id !== "localhost") {
+      databaseAccount._writableLocations = result[Constants.WritableLocations];
+    }
+    if (Constants.ReadableLocations in result && result.id !== "localhost") {
+      databaseAccount._readableLocations = result[Constants.ReadableLocations];
+    }
+
+    return { result: databaseAccount, headers };
   }
 
   private captureSessionToken(err: ErrorResponse, path: string, opType: string, resHeaders: IHeaders) {

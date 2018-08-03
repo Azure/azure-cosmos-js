@@ -7,8 +7,7 @@ import { Offer, Offers } from "./client/Offer/";
 import { ClientContext } from "./ClientContext";
 import { Platform } from "./common";
 import { CosmosClientOptions } from "./CosmosClientOptions";
-import { DocumentClient } from "./documentclient";
-import { ConnectionPolicy, ConsistencyLevel, DatabaseAccount } from "./documents";
+import { ConnectionPolicy, DatabaseAccount } from "./documents";
 import { GlobalEndpointManager } from "./globalEndpointManager";
 import { CosmosResponse } from "./request";
 
@@ -49,11 +48,6 @@ export class CosmosClient {
    * Use `.offer(id)` to read, or replace existing offers.
    */
   public readonly offers: Offers;
-  /**
-   * @ignore
-   * @hidden
-   */
-  public documentClient: DocumentClient; // TODO: This will go away.
   /**
    * Creates a new {@link CosmosClient} object. See {@link CosmosClientOptions} for more details on what options you can use.
    * @param options bag of options - require at least endpoint and auth to be configured
@@ -109,27 +103,19 @@ export class CosmosClient {
     }
 
     const globalEndpointManager = new GlobalEndpointManager(this.options, async (opts: RequestOptions) =>
-      this.documentClient.getDatabaseAccount(opts)
+      this.getDatabaseAccount(opts)
     );
     this.clientContext = new ClientContext(options, globalEndpointManager);
 
     this.databases = new Databases(this, this.clientContext);
-    this.offers = new Offers(this);
-
-    this.documentClient = new DocumentClient(
-      options.endpoint,
-      options.auth,
-      options.connectionPolicy,
-      ConsistencyLevel[options.consistencyLevel],
-      this.clientContext
-    );
+    this.offers = new Offers(this, this.clientContext);
   }
 
   /**
    * Get information about the current {@link DatabaseAccount} (including which regions are supported, etc.)
    */
-  public async getDatabaseAccount(): Promise<CosmosResponse<DatabaseAccount, CosmosClient>> {
-    const response = await this.documentClient.getDatabaseAccount();
+  public async getDatabaseAccount(options: RequestOptions): Promise<CosmosResponse<DatabaseAccount, CosmosClient>> {
+    const response = await this.clientContext.getDatabaseAccount(options);
     return { body: response.result, headers: response.headers, ref: this };
   }
 
@@ -158,6 +144,6 @@ export class CosmosClient {
    * @param id The id of the offer.
    */
   public offer(id: string) {
-    return new Offer(this, id);
+    return new Offer(this, id, this.clientContext);
   }
 }

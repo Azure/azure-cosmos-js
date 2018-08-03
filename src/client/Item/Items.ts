@@ -1,6 +1,5 @@
 import { ClientContext } from "../../ClientContext";
 import { Helper } from "../../common";
-import { DocumentClient } from "../../documentclient";
 import { FetchFunctionCallback, SqlQuerySpec } from "../../queryExecutionContext";
 import { QueryIterator } from "../../queryIterator";
 import { FeedOptions, RequestOptions } from "../../request";
