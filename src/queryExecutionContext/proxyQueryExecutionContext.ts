@@ -14,18 +14,7 @@ import { Response } from "../request/request";
 /** @hidden */
 export class ProxyQueryExecutionContext implements IExecutionContext {
   private queryExecutionContext: IExecutionContext;
-  /**
-   * Represents a ProxyQueryExecutionContext Object. If the query is a partitioned query which can be \
-   * parallelized it switches the execution context.
-   * @constructor ProxyQueryExecutionContext
-   * @param {object} documentclient                - The documentclient object.
-   * @param {SqlQuerySpec | string} query          - A SQL query.
-   * @param {FeedOptions} options                  - Represents the feed options.
-   * @param {callback | callback[]} fetchFunctions - A function to retrieve each page of data. \
-   * An array of functions may be used to query more than one partition.
-   * @param {string} [resourceLink]                - collectionLink for parallelized query execution.
-   * @ignore
-   */
+
   constructor(
     private clientContext: ClientContext,
     private query: SqlQuerySpec | string,

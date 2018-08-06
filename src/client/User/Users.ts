@@ -1,4 +1,3 @@
-import { helpers } from "handlebars";
 import { ClientContext } from "../../ClientContext";
 import { Helper } from "../../common";
 import { CosmosClient } from "../../CosmosClient";
@@ -31,7 +30,7 @@ export class Users {
    * @param options
    */
   public query(query: SqlQuerySpec, options?: FeedOptions): QueryIterator<UserDefinition> {
-    const path = Helper.getPathFromLink(this.database.url);
+    const path = Helper.getPathFromLink(this.database.url, "users");
     const id = Helper.getIdFromLink(this.database.url);
 
     return new QueryIterator(this.clientContext, query, options, innerOptions => {
@@ -62,8 +61,8 @@ export class Users {
       throw err;
     }
 
-    const path = Helper.getPathFromLink(this.database.url);
-    const id = helpers.getIdFromLink(this.database.url);
+    const path = Helper.getPathFromLink(this.database.url, "users");
+    const id = Helper.getIdFromLink(this.database.url);
     const response = await this.clientContext.create(body, path, "users", id, undefined, options);
     const ref = new User(this.database, response.result.id, this.clientContext);
     return { body: response.result, headers: response.headers, ref, user: ref };
@@ -80,8 +79,8 @@ export class Users {
       throw err;
     }
 
-    const path = Helper.getPathFromLink(this.database.url);
-    const id = helpers.getIdFromLink(this.database.url);
+    const path = Helper.getPathFromLink(this.database.url, "users");
+    const id = Helper.getIdFromLink(this.database.url);
 
     const response = await this.clientContext.upsert(body, path, "users", id, undefined, options);
     const ref = new User(this.database, response.result.id, this.clientContext);

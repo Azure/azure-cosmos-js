@@ -48,7 +48,7 @@ export class Database {
    */
   constructor(public readonly client: CosmosClient, public readonly id: string, private clientContext: ClientContext) {
     this.containers = new Containers(this, this.clientContext);
-    this.users = new Users(this);
+    this.users = new Users(this, this.clientContext);
   }
 
   /**
@@ -71,7 +71,7 @@ export class Database {
    * Use `.users` for creating new users, or querying/reading all users.
    */
   public user(id: string): User {
-    return new User(this, id);
+    return new User(this, id, this.clientContext);
   }
 
   /** Read the definition of the given Database. */

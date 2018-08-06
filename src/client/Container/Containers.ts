@@ -38,7 +38,7 @@ export class Containers {
    * ```
    */
   public query(query: SqlQuerySpec, options?: FeedOptions): QueryIterator<ContainerDefinition> {
-    const path = Helper.getPathFromLink(this.database.url);
+    const path = Helper.getPathFromLink(this.database.url, "colls");
     const id = Helper.getIdFromLink(this.database.url);
 
     return new QueryIterator(this.clientContext, query, options, innerOptions => {
@@ -67,9 +67,8 @@ export class Containers {
     const err = {};
     if (!Helper.isResourceValid(body, err)) {
       throw err;
-      return;
     }
-    const path = Helper.getPathFromLink(this.database.url);
+    const path = Helper.getPathFromLink(this.database.url, "colls");
     const id = Helper.getIdFromLink(this.database.url);
 
     const response = await this.clientContext.create(body, path, "colls", id, undefined, options);

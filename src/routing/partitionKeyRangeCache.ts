@@ -1,8 +1,7 @@
 import * as semaphore from "semaphore";
-import { Base } from "../base";
+import { CollectionRoutingMapFactory, InMemoryCollectionRoutingMap, QueryRange } from ".";
 import { ClientContext } from "../ClientContext";
 import { Helper } from "../common";
-import { CollectionRoutingMapFactory, InMemoryCollectionRoutingMap, QueryRange } from "./";
 
 /** @hidden */
 export class PartitionKeyRangeCache {
@@ -11,14 +10,6 @@ export class PartitionKeyRangeCache {
   };
   private sem: semaphore.Semaphore;
 
-  /**
-   * Represents a PartitionKeyRangeCache.
-   * PartitionKeyRangeCache provides list of effective partition key ranges for a collection.
-   * This implementation loads and caches the collection routing map per collection on demand.
-   * @constructor PartitionKeyRangeCache
-   * @param {object} documentclient - The documentclient object.
-   * @ignore
-   */
   constructor(private clientContext: ClientContext) {
     this.collectionRoutingMapByCollectionId = {};
     this.sem = semaphore(1);
@@ -31,8 +22,7 @@ export class PartitionKeyRangeCache {
    * @ignore
    */
   public async onCollectionRoutingMap(collectionLink: string): Promise<InMemoryCollectionRoutingMap> {
-    const isNameBased = Base.isLinkNameBased(collectionLink);
-    const collectionId = Helper.getIdFromLink(collectionLink, isNameBased);
+    const collectionId = Helper.getIdFromLink(collectionLink);
 
     let collectionRoutingMap = this.collectionRoutingMapByCollectionId[collectionId];
     if (collectionRoutingMap === undefined) {

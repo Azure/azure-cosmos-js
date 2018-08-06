@@ -2,8 +2,8 @@ import { Agent, AgentOptions } from "https";
 import * as tunnel from "tunnel";
 import * as url from "url";
 import { Constants, RequestOptions } from ".";
-import { Database, Databases } from "./client/Database/";
-import { Offer, Offers } from "./client/Offer/";
+import { Database, Databases } from "./client/Database";
+import { Offer, Offers } from "./client/Offer";
 import { ClientContext } from "./ClientContext";
 import { Platform } from "./common";
 import { CosmosClientOptions } from "./CosmosClientOptions";
@@ -114,7 +114,7 @@ export class CosmosClient {
   /**
    * Get information about the current {@link DatabaseAccount} (including which regions are supported, etc.)
    */
-  public async getDatabaseAccount(options: RequestOptions): Promise<CosmosResponse<DatabaseAccount, CosmosClient>> {
+  public async getDatabaseAccount(options?: RequestOptions): Promise<CosmosResponse<DatabaseAccount, CosmosClient>> {
     const response = await this.clientContext.getDatabaseAccount(options);
     return { body: response.result, headers: response.headers, ref: this };
   }

@@ -23,17 +23,6 @@ export class PipelinedQueryExecutionContext implements IExecutionContext {
   private endpoint: IEndpointComponent;
   private pageSize: number;
   private static DEFAULT_PAGE_SIZE = 10;
-  /**
-   * Provides the PipelinedQueryExecutionContext. It piplelines top and orderby execution context if necessary
-   * @constructor PipelinedQueryExecutionContext
-   * @param {object} documentclient                - The documentclient object.
-   * @param {SqlQuerySpec | string} query          - A SQL query.
-   * @param {FeedOptions} options                  - Represents the feed options.
-   * @param {callback | callback[]} fetchFunctions - A function to retrieve each page of data. \
-   * An array of functions may be used to query more than one partition.
-   * @param {string} [resourceLink]                - collectionLink for parallelized query execution.
-   * @ignore
-   */
   constructor(
     private clientContext: ClientContext,
     private collectionLink: string,

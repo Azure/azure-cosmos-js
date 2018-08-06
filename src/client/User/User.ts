@@ -39,7 +39,7 @@ export class User {
     private readonly clientContext: ClientContext
   ) {
     this.client = this.database.client;
-    this.permissions = new Permissions(this);
+    this.permissions = new Permissions(this, this.clientContext);
   }
 
   /**
@@ -49,7 +49,7 @@ export class User {
    * @param id
    */
   public permission(id: string): Permission {
-    return new Permission(this, id);
+    return new Permission(this, id, this.clientContext);
   }
 
   /**

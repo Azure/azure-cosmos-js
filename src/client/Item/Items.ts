@@ -124,7 +124,7 @@ export class Items {
    * @param options Used for modifying the request (for instance, specifying the partition key).
    */
   public async create<T extends ItemDefinition>(body: T, options?: RequestOptions): Promise<ItemResponse<T>>;
-  public async create<T extends ItemDefinition>(body: T, options?: RequestOptions): Promise<ItemResponse<T>> {
+  public async create<T extends ItemDefinition>(body: T, options: RequestOptions = {}): Promise<ItemResponse<T>> {
     if (options.partitionKey === undefined && options.skipGetPartitionKeyDefinition !== true) {
       const { body: partitionKeyDefinition } = await this.container.getPartitionKeyDefinition();
       options.partitionKey = this.container.extractPartitionKey(body, partitionKeyDefinition);
@@ -181,7 +181,7 @@ export class Items {
    * @param options Used for modifying the request (for instance, specifying the partition key).
    */
   public async upsert<T extends ItemDefinition>(body: T, options?: RequestOptions): Promise<ItemResponse<T>>;
-  public async upsert<T extends ItemDefinition>(body: T, options?: RequestOptions): Promise<ItemResponse<T>> {
+  public async upsert<T extends ItemDefinition>(body: T, options: RequestOptions = {}): Promise<ItemResponse<T>> {
     if (options.partitionKey === undefined && options.skipGetPartitionKeyDefinition !== true) {
       const { body: partitionKeyDefinition } = await this.container.getPartitionKeyDefinition();
       options.partitionKey = this.container.extractPartitionKey(body, partitionKeyDefinition);
@@ -198,7 +198,7 @@ export class Items {
       throw err;
     }
 
-    const path = Helper.getPathFromLink(this.container.url);
+    const path = Helper.getPathFromLink(this.container.url, "docs");
     const id = Helper.getIdFromLink(this.container.url);
 
     const response = (await this.clientContext.upsert<T>(body, path, "docs", id, undefined, options)) as T & ItemBody;

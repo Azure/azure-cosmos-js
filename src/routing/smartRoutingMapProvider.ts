@@ -1,7 +1,7 @@
 import * as assert from "assert";
+import { PartitionKeyRangeCache, QueryRange } from ".";
 import { ClientContext } from "../ClientContext";
 import { Constants } from "../common";
-import { PartitionKeyRangeCache, QueryRange } from "./";
 
 /** @hidden */
 export const PARITIONKEYRANGE = Constants.PartitionKeyRange;
@@ -9,16 +9,8 @@ export const PARITIONKEYRANGE = Constants.PartitionKeyRange;
 /** @hidden */
 export class SmartRoutingMapProvider {
   private partitionKeyRangeCache: PartitionKeyRangeCache;
-  /**
-   * Represents a SmartRoutingMapProvider Object,
-   * Efficiently uses PartitionKeyRangeCache and minimizes the unnecessary
-   * invocation of PartitionKeyRangeCache.getOverlappingRanges()
-   * @constructor SmartRoutingMapProvider
-   * @param {object} documentclient                - The documentclient object.
-   * @ignore
-   */
+
   constructor(clientContext: ClientContext) {
-    // TODO: documentclient any
     this.partitionKeyRangeCache = new PartitionKeyRangeCache(clientContext);
   }
   private static _secondRangeIsAfterFirstRange(range1: QueryRange, range2: QueryRange) {

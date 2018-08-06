@@ -1,6 +1,5 @@
 import * as assert from "assert";
 import { FetchFunctionCallback, SqlQuerySpec } from ".";
-import { Base } from "../base";
 import { ClientContext } from "../ClientContext";
 import { Constants, Helper, StatusCodes, SubStatusCodes } from "../common";
 import { FeedOptions } from "../request";
@@ -46,7 +45,7 @@ export class DocumentProducer {
    * @ignore
    */
   constructor(
-    private clientContext: ClientContext, // TODO: any documentclient
+    private clientContext: ClientContext,
     collectionLink: string,
     query: SqlQuerySpec,
     targetPartitionKeyRange: any, // TODO: any partition key range
@@ -95,9 +94,8 @@ export class DocumentProducer {
   }
 
   public fetchFunction: FetchFunctionCallback = async (options: any) => {
-    const isNameBased = Base.isLinkNameBased(this.collectionLink);
-    const path = Helper.getPathFromLink(this.collectionLink, "docs", isNameBased);
-    const id = Helper.getIdFromLink(this.collectionLink, isNameBased);
+    const path = Helper.getPathFromLink(this.collectionLink, "docs");
+    const id = Helper.getIdFromLink(this.collectionLink);
 
     return this.clientContext.queryFeed(
       path,

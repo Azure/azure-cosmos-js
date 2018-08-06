@@ -72,9 +72,9 @@ export class Container {
     private readonly clientContext: ClientContext
   ) {
     this.items = new Items(this, this.clientContext);
-    this.storedProcedures = new StoredProcedures(this);
-    this.triggers = new Triggers(this);
-    this.userDefinedFunctions = new UserDefinedFunctions(this);
+    this.storedProcedures = new StoredProcedures(this, this.clientContext);
+    this.triggers = new Triggers(this, this.clientContext);
+    this.userDefinedFunctions = new UserDefinedFunctions(this, this.clientContext);
   }
 
   /**
@@ -98,7 +98,7 @@ export class Container {
    * @param id The id of the {@link UserDefinedFunction}.
    */
   public userDefinedFunction(id: string): UserDefinedFunction {
-    return new UserDefinedFunction(this, id);
+    return new UserDefinedFunction(this, id, this.clientContext);
   }
 
   /**
@@ -108,7 +108,7 @@ export class Container {
    * @param id The id of the {@link Conflict}.
    */
   public conflict(id: string): Conflict {
-    return new Conflict(this, id);
+    return new Conflict(this, id, this.clientContext);
   }
 
   /**
@@ -118,7 +118,7 @@ export class Container {
    * @param id The id of the {@link StoredProcedure}.
    */
   public storedProcedure(id: string): StoredProcedure {
-    return new StoredProcedure(this, id);
+    return new StoredProcedure(this, id, this.clientContext);
   }
 
   /**
@@ -128,7 +128,7 @@ export class Container {
    * @param id The id of the {@link Trigger}.
    */
   public trigger(id: string): Trigger {
-    return new Trigger(this, id);
+    return new Trigger(this, id, this.clientContext);
   }
 
   /** Read the container's definition */

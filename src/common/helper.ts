@@ -1,12 +1,88 @@
 ﻿import { Constants } from ".";
 import { IHeaders } from "..";
-import { Base } from "../base";
 
 /** @hidden */
 const Regexes = Constants.RegularExpressions;
 
 /** @hidden */
 export class Helper {
+  public static jsonStringifyAndEscapeNonASCII(arg: any) {
+    // TODO: better way for this? Not sure.
+    // escapes non-ASCII characters as \uXXXX
+    return JSON.stringify(arg).replace(/[\u0080-\uFFFF]/g, m => {
+      return "\\u" + ("0000" + m.charCodeAt(0).toString(16)).slice(-4);
+    });
+  }
+
+  public static parseLink(resourcePath: string) {
+    if (resourcePath.length === 0) {
+      /* for DatabaseAccount case, both type and objectBody will be undefined. */
+      return {
+        type: undefined,
+        objectBody: undefined
+      };
+    }
+
+    if (resourcePath[resourcePath.length - 1] !== "/") {
+      resourcePath = resourcePath + "/";
+    }
+
+    if (resourcePath[0] !== "/") {
+      resourcePath = "/" + resourcePath;
+    }
+
+    /*
+         The path will be in the form of /[resourceType]/[resourceId]/ ....
+         /[resourceType]//[resourceType]/[resourceId]/ .... /[resourceType]/[resourceId]/
+         or /[resourceType]/[resourceId]/ .... /[resourceType]/[resourceId]/[resourceType]/[resourceId]/ ....
+          /[resourceType]/[resourceId]/
+         The result of split will be in the form of
+         [[[resourceType], [resourceId] ... ,[resourceType], [resourceId], ""]
+         In the first case, to extract the resourceId it will the element before last ( at length -2 )
+         and the the type will before it ( at length -3 )
+         In the second case, to extract the resource type it will the element before last ( at length -2 )
+        */
+    const pathParts = resourcePath.split("/");
+    let id;
+    let type;
+    if (pathParts.length % 2 === 0) {
+      // request in form /[resourceType]/[resourceId]/ .... /[resourceType]/[resourceId].
+      id = pathParts[pathParts.length - 2];
+      type = pathParts[pathParts.length - 3];
+    } else {
+      // request in form /[resourceType]/[resourceId]/ .... /[resourceType]/.
+      id = pathParts[pathParts.length - 3];
+      type = pathParts[pathParts.length - 2];
+    }
+
+    const result = {
+      type,
+      objectBody: {
+        id,
+        self: resourcePath
+      }
+    };
+
+    return result;
+  }
+
+  public static getContainerLink(link: string) {
+    return link
+      .split("/")
+      .slice(0, 4)
+      .join("/");
+  }
+
+  public static trimSlashes(source: string) {
+    return source
+      .replace(Constants.RegularExpressions.TrimLeftSlashes, "")
+      .replace(Constants.RegularExpressions.TrimRightSlashes, "");
+  }
+
+  public static getHexaDigit() {
+    return Math.floor(Math.random() * 16).toString(16);
+  }
+
   public static setIsUpsertHeader(headers: IHeaders) {
     if (headers === undefined || headers === null) {
       throw new Error('The "headers" parameter must not be null or undefined');
@@ -24,31 +100,31 @@ export class Helper {
     let id = "";
 
     for (let i = 0; i < 8; i++) {
-      id += Base.getHexaDigit();
+      id += Helper.getHexaDigit();
     }
 
     id += "-";
 
     for (let i = 0; i < 4; i++) {
-      id += Base.getHexaDigit();
+      id += Helper.getHexaDigit();
     }
 
     id += "-";
 
     for (let i = 0; i < 4; i++) {
-      id += Base.getHexaDigit();
+      id += Helper.getHexaDigit();
     }
 
     id += "-";
 
     for (let i = 0; i < 4; i++) {
-      id += Base.getHexaDigit();
+      id += Helper.getHexaDigit();
     }
 
     id += "-";
 
     for (let i = 0; i < 12; i++) {
-      id += Base.getHexaDigit();
+      id += Helper.getHexaDigit();
     }
 
     return id;
@@ -145,17 +221,17 @@ export class Helper {
   /** @ignore */
   public static getIdFromLink(resourceLink: string, isNameBased: boolean = true) {
     if (isNameBased) {
-      resourceLink = Base.trimSlashes(resourceLink);
+      resourceLink = Helper.trimSlashes(resourceLink);
       return resourceLink;
     } else {
-      return Base.parseLink(resourceLink).objectBody.id.toLowerCase();
+      return Helper.parseLink(resourceLink).objectBody.id.toLowerCase();
     }
   }
 
   /** @ignore */
   public static getPathFromLink(resourceLink: string, resourceType?: string, isNameBased: boolean = true) {
     if (isNameBased) {
-      resourceLink = Base.trimSlashes(resourceLink);
+      resourceLink = Helper.trimSlashes(resourceLink);
       if (resourceType) {
         return "/" + encodeURI(resourceLink) + "/" + resourceType;
       } else {

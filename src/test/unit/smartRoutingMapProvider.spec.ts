@@ -1,7 +1,7 @@
 ﻿import * as assert from "assert";
 import { ClientContext } from "../../ClientContext";
 import { PartitionKeyRangeCache, QueryRange, SmartRoutingMapProvider } from "../../routing";
-import { MockedClientContext } from "./../common/MockDocumentClient";
+import { MockedClientContext } from "../common/MockClientContext";
 
 describe("Smart Routing Map Provider OverlappingRanges", function() {
   const containerLink = "dbs/7JZZAA==/colls/7JZZAOS-JQA=/";

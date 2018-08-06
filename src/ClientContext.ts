@@ -1,5 +1,4 @@
 import { Constants, CosmosClientOptions, IHeaders, QueryIterator, RequestOptions, Response, SqlQuerySpec } from ".";
-import { Base } from "./base";
 import { Helper, StatusCodes, SubStatusCodes } from "./common";
 import { ConnectionPolicy, DatabaseAccount, QueryCompatibilityMode } from "./documents";
 import { GlobalEndpointManager } from "./globalEndpointManager";
@@ -143,9 +142,8 @@ export class ClientContext {
   }
 
   public queryPartitionKeyRanges(collectionLink: string, query?: string | SqlQuerySpec, options?: FeedOptions) {
-    const isNameBased = Base.isLinkNameBased(collectionLink);
-    const path = Helper.getPathFromLink(collectionLink, "pkranges", isNameBased);
-    const id = Helper.getIdFromLink(collectionLink, isNameBased);
+    const path = Helper.getPathFromLink(collectionLink, "pkranges");
+    const id = Helper.getIdFromLink(collectionLink);
     const cb: FetchFunctionCallback = innerOptions => {
       return this.queryFeed(path, "pkranges", id, result => result.PartitionKeyRanges, query, innerOptions);
     };
@@ -174,7 +172,7 @@ export class ClientContext {
       // deleteResource will use WriteEndpoint since it uses DELETE operation
       const writeEndpoint = await this.globalEndpointManager.getWriteEndpoint();
       const response = await this.requestHandler.delete(writeEndpoint, path, reqHeaders);
-      if (Base.parseLink(path).type !== "colls") {
+      if (Helper.parseLink(path).type !== "colls") {
         this.captureSessionToken(undefined, path, Constants.OperationTypes.Delete, response.headers);
       } else {
         this.clearSessionToken(path);
@@ -346,14 +344,10 @@ export class ClientContext {
 
   /**
    * Gets the Database account information.
-   * @memberof DocumentClient
-   * @instance
    * @param {string} [options.urlConnection]   - The endpoint url whose database account needs to be retrieved. \
    * If not present, current client's url will be used.
-   * @param {RequestCallback} callback         - The callback for the request. The second parameter of the \
-   * callback will be of type {@link DatabaseAccount}.
    */
-  public async getDatabaseAccount(options?: RequestOptions): Promise<Response<DatabaseAccount>> {
+  public async getDatabaseAccount(options: RequestOptions = {}): Promise<Response<DatabaseAccount>> {
     const urlConnection = options.urlConnection || this.cosmosClientOptions.endpoint;
 
     const requestHeaders = await getHeaders(
@@ -403,28 +397,39 @@ export class ClientContext {
     }
   }
 
+  private getSessionToken(collectionLink: string) {
+    if (!collectionLink) {
+      throw new Error("collectionLink cannot be null");
+    }
+
+    const paths = Helper.parseLink(collectionLink);
+
+    if (paths === undefined) {
+      return "";
+    }
+
+    const request = this.getSessionParams(collectionLink);
+    return this.sessionContainer.resolveGlobalSessionToken(request);
+  }
+
   private clearSessionToken(path: string) {
     const request = this.getSessionParams(path);
     this.sessionContainer.clearToken(request);
   }
 
   private getSessionParams(resourceLink: string) {
-    const isNameBased = Base.isLinkNameBased(resourceLink);
-    let resourceId: string = null;
+    const resourceId: string = null;
     let resourceAddress: string = null;
-    const parserOutput = Base.parseLink(resourceLink);
-    if (isNameBased) {
-      resourceAddress = parserOutput.objectBody.self;
-    } else {
-      resourceAddress = parserOutput.objectBody.id;
-      resourceId = parserOutput.objectBody.id;
-    }
+    const parserOutput = Helper.parseLink(resourceLink);
+
+    resourceAddress = parserOutput.objectBody.self;
+
     const resourceType = parserOutput.type;
     return {
-      isNameBased,
       resourceId,
       resourceAddress,
-      resourceType
+      resourceType,
+      isNameBased: true
     };
   }
 

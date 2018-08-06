@@ -31,7 +31,6 @@ export interface AuthOptions {
 
 /** @hidden */
 export class AuthHandler {
-  // TODO: documentClient
   public static async getAuthorizationHeader(
     authOptions: AuthOptions,
     verb: string,
