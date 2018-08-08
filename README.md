@@ -53,7 +53,7 @@ Install Node.js 6 or above and npm
 
 The SDK is not supported in Node v4 or below. Those Node.js versions are out of support and not recommended for production. Our support will only cover maintained versions of Node.js.
 
-To use the SDK, first [create an account](https://docs.microsoft.com/en-us/azure/cosmos-db/create-documentdb-nodejs) and follow [tutorial](https://docs.microsoft.com/en-us/azure/cosmos-db/sql-api-nodejs-get-started-preview).
+To use the SDK, first [create an account](https://docs.microsoft.com/en-us/azure/cosmos-db/create-sql-api-nodejs-preview) and follow [tutorial](https://docs.microsoft.com/en-us/azure/cosmos-db/sql-api-nodejs-application-preview).
 
 #### Note:
 
