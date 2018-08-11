@@ -66,6 +66,12 @@ export class Helper {
     return result;
   }
 
+  public static sleep(time: number): Promise<void> {
+    return new Promise(resolve => {
+      setTimeout(resolve, time);
+    });
+  }
+
   public static getContainerLink(link: string) {
     return link
       .split("/")

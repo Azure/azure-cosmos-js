@@ -362,23 +362,7 @@ export class ClientContext {
 
     const { result, headers } = await this.requestHandler.get(urlConnection, "", requestHeaders);
 
-    const databaseAccount = new DatabaseAccount();
-    databaseAccount.DatabasesLink = "/dbs/";
-    databaseAccount.MediaLink = "/media/";
-    databaseAccount.MaxMediaStorageUsageInMB = headers[Constants.HttpHeaders.MaxMediaStorageUsageInMB] as number;
-    databaseAccount.CurrentMediaStorageUsageInMB = headers[
-      Constants.HttpHeaders.CurrentMediaStorageUsageInMB
-    ] as number;
-    databaseAccount.ConsistencyPolicy = result.userConsistencyPolicy;
-
-    // WritableLocations and ReadableLocations properties will be available
-    // only for geo-replicated database accounts
-    if (Constants.WritableLocations in result && result.id !== "localhost") {
-      databaseAccount._writableLocations = result[Constants.WritableLocations];
-    }
-    if (Constants.ReadableLocations in result && result.id !== "localhost") {
-      databaseAccount._readableLocations = result[Constants.ReadableLocations];
-    }
+    const databaseAccount = new DatabaseAccount(result, headers);
 
     return { result: databaseAccount, headers };
   }
@@ -397,6 +381,7 @@ export class ClientContext {
     }
   }
 
+  // TODO: some session tests are using this, but I made them use type coercsion to call this method because I don't think it should be public.
   private getSessionToken(collectionLink: string) {
     if (!collectionLink) {
       throw new Error("collectionLink cannot be null");

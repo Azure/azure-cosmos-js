@@ -159,6 +159,9 @@ export const Constants = {
   Name: "name",
   DatabaseAccountEndpoint: "databaseAccountEndpoint",
 
+  // ServiceDocument Resource
+  ENABLE_MULTIPLE_WRITABLE_LOCATIONS: "enableMultipleWritableLocations",
+
   // Background refresh time
   DefaultUnavailableLocationExpirationTimeMS: 5 * 60 * 1000,
 
