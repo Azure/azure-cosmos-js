@@ -260,3 +260,5 @@ node_modules
 lib/**
 
 *.tgz
+
+stats.json
