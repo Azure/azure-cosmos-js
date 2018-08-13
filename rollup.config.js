@@ -7,7 +7,8 @@ export default [
     output: {
       file: "dist-test/index.js",
       format: "umd",
-      name: "CosmosClient"
+      name: "TestCosmosClient",
+      sourcemap: true
     },
     plugins: [localResolve(), multiEntry({ exports: false })],
     treeshake: false
@@ -17,7 +18,8 @@ export default [
     output: {
       file: "dist/index.js",
       format: "umd",
-      name: "CosmosClient"
+      name: "CosmosClient",
+      sourcemap: true
     },
     plugins: [localResolve()]
   }
