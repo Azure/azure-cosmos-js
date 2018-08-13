@@ -1,6 +1,6 @@
-import * as assert from "assert";
+import assert from "assert";
 import * as util from "util";
-import { QueryIterator } from "../..";
+import { QueryIterator } from "../../index";
 import { Container, ContainerDefinition, Database } from "../../client";
 import { CosmosClient } from "../../CosmosClient";
 import { DataType, IndexKind, PartitionKind } from "../../documents";

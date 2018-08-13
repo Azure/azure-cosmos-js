@@ -1,4 +1,4 @@
-import { Container } from ".";
+import { Container } from "./index";
 import { CosmosResponse } from "../../request/CosmosResponse";
 import { ContainerDefinition } from "./ContainerDefinition";
 

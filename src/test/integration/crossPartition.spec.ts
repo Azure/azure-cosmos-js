@@ -1,7 +1,7 @@
-import * as assert from "assert";
+import assert from "assert";
 import * as _ from "underscore";
 import * as util from "util";
-import { Constants } from "../..";
+import { Constants } from "../../index";
 import { Container, ContainerDefinition } from "../../client";
 import { DataType, IndexKind, PartitionKind } from "../../documents";
 import { SqlQuerySpec } from "../../queryExecutionContext";

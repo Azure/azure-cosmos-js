@@ -1,6 +1,6 @@
-import * as assert from "assert";
+import assert from "assert";
 import * as sinon from "sinon";
-import { Constants, CosmosClient, IHeaders } from "../..";
+import { Constants, CosmosClient, IHeaders } from "../../index";
 import { ClientContext } from "../../ClientContext";
 import { Helper } from "../../common";
 import { ConsistencyLevel, PartitionKind } from "../../documents";

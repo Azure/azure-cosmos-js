@@ -1,4 +1,4 @@
-import { CompareFunction, Range } from ".";
+import { CompareFunction, Range } from "./index";
 import { Document, PartitionKey } from "../documents";
 
 /** @hidden */

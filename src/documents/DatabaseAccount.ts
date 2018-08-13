@@ -1,4 +1,4 @@
-import { ConsistencyLevel } from ".";
+import { ConsistencyLevel } from "./index";
 
 /**
  * Represents a DatabaseAccount in the Azure Cosmos DB database service.

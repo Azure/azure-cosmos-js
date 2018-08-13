@@ -1,7 +1,7 @@
 ﻿import * as http from "http";
 import * as net from "net";
 import * as url from "url";
-import { CosmosClient, DocumentBase } from "../..";
+import { CosmosClient, DocumentBase } from "../../index";
 import { endpoint, masterKey } from "../common/_testConfig";
 import { addEntropy } from "../common/TestHelpers";
 

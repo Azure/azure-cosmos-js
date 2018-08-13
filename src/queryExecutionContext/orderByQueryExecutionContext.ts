@@ -4,7 +4,7 @@ import {
   OrderByDocumentProducerComparator,
   ParallelQueryExecutionContextBase,
   PartitionedQueryExecutionContextInfo
-} from ".";
+} from "./index";
 import { ClientContext } from "../ClientContext";
 
 /** @hidden */

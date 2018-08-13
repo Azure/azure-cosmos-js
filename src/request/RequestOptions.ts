@@ -1,4 +1,4 @@
-import { IHeaders } from "..";
+import { IHeaders } from "../index";
 import { PartitionKey } from "../documents";
 
 /**

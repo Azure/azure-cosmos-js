@@ -1,5 +1,6 @@
 ﻿// tslint:disable:no-bitwise
-import * as BigInt from "big-integer";
+
+import BigInt from "big-integer";
 import { Int64BE } from "int64-buffer";
 
 /** @hidden */

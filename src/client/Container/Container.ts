@@ -1,4 +1,4 @@
-import { PartitionKey } from "../..";
+import { PartitionKey } from "../../index";
 import { ClientContext } from "../../ClientContext";
 import { Helper, UriFactory } from "../../common";
 import { PartitionKeyDefinition } from "../../documents";

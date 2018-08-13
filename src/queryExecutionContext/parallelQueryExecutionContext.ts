@@ -3,7 +3,7 @@ import {
   IExecutionContext,
   ParallelQueryExecutionContextBase,
   PartitionedQueryExecutionContextInfo
-} from ".";
+} from "./index";
 import { ClientContext } from "../ClientContext";
 import { PARITIONKEYRANGE } from "../routing";
 

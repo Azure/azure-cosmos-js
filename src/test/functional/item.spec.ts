@@ -1,5 +1,5 @@
-import * as assert from "assert";
-import { Container, DocumentBase } from "../..";
+import assert from "assert";
+import { Container, DocumentBase } from "../../index";
 import {
   bulkDeleteItems,
   bulkInsertItems,

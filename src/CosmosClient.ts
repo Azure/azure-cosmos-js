@@ -1,7 +1,7 @@
 import { Agent, AgentOptions } from "https";
 import * as tunnel from "tunnel";
 import * as url from "url";
-import { Constants, RequestOptions } from ".";
+import { Constants, RequestOptions } from "./index";
 import { Database, Databases } from "./client/Database";
 import { Offer, Offers } from "./client/Offer";
 import { ClientContext } from "./ClientContext";

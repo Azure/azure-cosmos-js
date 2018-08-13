@@ -1,4 +1,4 @@
-import * as assert from "assert";
+import assert from "assert";
 import {
   DefaultQueryExecutionContext,
   FetchFunctionCallback,
@@ -6,7 +6,7 @@ import {
   PartitionedQueryExecutionContextInfo,
   PipelinedQueryExecutionContext,
   SqlQuerySpec
-} from ".";
+} from "./index";
 import { ClientContext } from "../ClientContext";
 import { StatusCodes, SubStatusCodes } from "../common";
 import { Response } from "../request/request";

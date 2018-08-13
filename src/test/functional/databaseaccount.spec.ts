@@ -1,5 +1,5 @@
-import * as assert from "assert";
-import { CosmosClient } from "../..";
+import assert from "assert";
+import { CosmosClient } from "../../index";
 import { endpoint, masterKey } from "../common/_testConfig";
 import { removeAllDatabases } from "../common/TestHelpers";
 

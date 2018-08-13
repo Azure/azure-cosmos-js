@@ -1,7 +1,7 @@
-﻿import * as assert from "assert";
+﻿import assert from "assert";
 import * as bs from "binary-search-bounds";
-import * as PriorityQueue from "priorityqueuejs";
-import * as semaphore from "semaphore";
+import PriorityQueue from "priorityqueuejs";
+import semaphore from "semaphore";
 import * as util from "util";
 import {
   DocumentProducer,
@@ -10,7 +10,7 @@ import {
   IHeaders,
   PartitionedQueryExecutionContextInfo,
   PartitionedQueryExecutionContextInfoParser
-} from ".";
+} from "./index";
 import { ClientContext } from "../ClientContext";
 import { StatusCodes, SubStatusCodes } from "../common";
 import { Response } from "../request/request";

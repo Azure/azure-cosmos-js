@@ -1,4 +1,4 @@
-import { IExecutionContext } from ".";
+import { IExecutionContext } from "./index";
 import { ClientContext } from "../ClientContext";
 import { Constants } from "../common";
 import { ClientSideMetrics, QueryMetrics } from "../queryMetrics";

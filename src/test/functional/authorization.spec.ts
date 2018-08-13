@@ -1,5 +1,5 @@
-import * as assert from "assert";
-import { CosmosClient, DocumentBase } from "../..";
+import assert from "assert";
+import { CosmosClient, DocumentBase } from "../../index";
 import { PermissionDefinition } from "../../client";
 import { endpoint } from "../common/_testConfig";
 import { createOrUpsertPermission, getTestContainer, getTestDatabase, removeAllDatabases } from "../common/TestHelpers";

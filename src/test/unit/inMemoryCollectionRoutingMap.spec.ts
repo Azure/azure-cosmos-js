@@ -1,4 +1,4 @@
-﻿import * as assert from "assert";
+﻿import assert from "assert";
 import * as _ from "underscore";
 import { CollectionRoutingMapFactory, InMemoryCollectionRoutingMap, QueryRange } from "../../routing";
 

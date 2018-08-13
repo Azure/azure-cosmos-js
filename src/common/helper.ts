@@ -1,5 +1,5 @@
-﻿import { Constants } from ".";
-import { IHeaders } from "..";
+﻿import { Constants } from "./index";
+import { IHeaders } from "../index";
 
 /** @hidden */
 const Regexes = Constants.RegularExpressions;

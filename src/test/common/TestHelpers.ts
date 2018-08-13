@@ -1,5 +1,5 @@
-import * as assert from "assert";
-import { Container, CosmosClient, Database, DatabaseDefinition, Item, RequestOptions, Response } from "../..";
+import assert from "assert";
+import { Container, CosmosClient, Database, DatabaseDefinition, Item, RequestOptions, Response } from "../../index";
 import {
   ContainerDefinition,
   ItemDefinition,

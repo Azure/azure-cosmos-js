@@ -1,4 +1,4 @@
-import { ConnectionMode, MediaReadMode } from ".";
+import { ConnectionMode, MediaReadMode } from "./index";
 import { RetryOptions } from "../retry";
 /**
  * Represents the Connection policy associated with a CosmosClient in the Azure Cosmos DB database service.

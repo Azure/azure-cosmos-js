@@ -2,7 +2,7 @@
 import { RequestOptions } from "https";
 import { Stream } from "stream";
 import * as url from "url";
-import { EndpointDiscoveryRetryPolicy, ResourceThrottleRetryPolicy, SessionReadRetryPolicy } from ".";
+import { EndpointDiscoveryRetryPolicy, ResourceThrottleRetryPolicy, SessionReadRetryPolicy } from "./index";
 import { Constants, StatusCodes, SubStatusCodes } from "../common";
 import { ConnectionPolicy } from "../documents";
 import { GlobalEndpointManager } from "../globalEndpointManager";

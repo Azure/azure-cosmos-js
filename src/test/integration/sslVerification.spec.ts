@@ -1,5 +1,5 @@
-﻿import * as assert from "assert";
-import { CosmosClient, DocumentBase } from "../..";
+﻿import assert from "assert";
+import { CosmosClient, DocumentBase } from "../../index";
 import { getTestDatabase } from "../common/TestHelpers";
 
 const endpoint = "https://localhost:443";

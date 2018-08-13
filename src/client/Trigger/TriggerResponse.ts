@@ -1,4 +1,4 @@
-import { Trigger } from ".";
+import { Trigger } from "./index";
 import { CosmosResponse } from "../../request";
 import { TriggerDefinition } from "./TriggerDefinition";
 

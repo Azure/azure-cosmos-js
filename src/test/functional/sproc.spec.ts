@@ -1,5 +1,5 @@
-import * as assert from "assert";
-import { Constants, CosmosClient, DocumentBase } from "../..";
+import assert from "assert";
+import { Constants, CosmosClient, DocumentBase } from "../../index";
 import { Container, StoredProcedureDefinition } from "../../client";
 import { bulkInsertItems, getTestContainer, getTestDatabase, removeAllDatabases } from "../common/TestHelpers";
 

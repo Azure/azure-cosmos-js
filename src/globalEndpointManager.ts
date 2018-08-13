@@ -1,6 +1,6 @@
 ﻿import * as url from "url";
-import { RequestOptions } from ".";
-import { Response } from ".";
+import { RequestOptions } from "./index";
+import { Response } from "./index";
 import { Constants } from "./common";
 import { CosmosClientOptions } from "./CosmosClientOptions";
 import { DatabaseAccount, LocationsType } from "./documents";

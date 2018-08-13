@@ -1,5 +1,5 @@
 import * as _ from "underscore";
-import { InMemoryCollectionRoutingMap } from ".";
+import { InMemoryCollectionRoutingMap } from "./index";
 import { Constants } from "../common";
 
 /** @hidden */

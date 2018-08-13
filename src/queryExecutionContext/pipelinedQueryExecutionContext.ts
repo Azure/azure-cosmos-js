@@ -6,7 +6,7 @@ import {
   ParallelQueryExecutionContext,
   PartitionedQueryExecutionContextInfo,
   PartitionedQueryExecutionContextInfoParser
-} from ".";
+} from "./index";
 import { ClientContext } from "../ClientContext";
 import { Response } from "../request/request";
 import {

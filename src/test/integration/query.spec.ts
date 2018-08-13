@@ -1,5 +1,5 @@
-import * as assert from "assert";
-import { Constants, FeedOptions } from "../..";
+import assert from "assert";
+import { Constants, FeedOptions } from "../../index";
 import { PartitionKind } from "../../documents";
 import { getTestContainer, getTestDatabase, removeAllDatabases } from "../common/TestHelpers";
 
