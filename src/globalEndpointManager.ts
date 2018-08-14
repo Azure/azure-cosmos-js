@@ -101,6 +101,9 @@ export class GlobalEndpointManager {
         }
 
         ({ shouldRefresh } = this.locationCache.shouldRefreshEndpoints());
+        if (!shouldRefresh) {
+          break;
+        }
         await Helper.sleep(this.backgroundRefreshTimeIntervalInMS);
       } while (shouldRefresh);
       this.isRefreshing = false;

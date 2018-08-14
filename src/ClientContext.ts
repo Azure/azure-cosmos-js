@@ -59,8 +59,8 @@ export class ClientContext {
         endpointOverride: null
       };
       // read will use ReadEndpoint since it uses GET operation
-      const readEndpoint = await this.globalEndpointManager.getReadEndpoint();
-      const response = await this.requestHandler.get(readEndpoint, request, requestHeaders);
+      const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
+      const response = await this.requestHandler.get(endpoint, request, requestHeaders);
       this.captureSessionToken(undefined, path, Constants.OperationTypes.Read, response.headers);
       return response;
     } catch (err) {
@@ -80,7 +80,6 @@ export class ClientContext {
   ): Promise<Response<any>> {
     // Query operations will use ReadEndpoint even though it uses
     // GET(for queryFeed) and POST(for regular query operations)
-    const readEndpoint = await this.globalEndpointManager.getReadEndpoint();
 
     const request: any = {
       // TODO: any request
@@ -89,6 +88,8 @@ export class ClientContext {
       client: this,
       endpointOverride: null
     };
+
+    const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
 
     const initialHeaders = { ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) };
     if (query === undefined) {
@@ -104,7 +105,7 @@ export class ClientContext {
       );
       this.applySessionToken(path, reqHeaders);
 
-      const { result, headers: resHeaders } = await this.requestHandler.get(readEndpoint, request, reqHeaders);
+      const { result, headers: resHeaders } = await this.requestHandler.get(endpoint, request, reqHeaders);
       this.captureSessionToken(undefined, path, Constants.OperationTypes.Query, resHeaders);
       return this.processQueryFeedResponse({ result, headers: resHeaders }, !!query, resultFn);
     } else {
@@ -135,7 +136,7 @@ export class ClientContext {
       );
       this.applySessionToken(path, reqHeaders);
 
-      const response = await this.requestHandler.post(readEndpoint, request, query, reqHeaders);
+      const response = await this.requestHandler.post(endpoint, request, query, reqHeaders);
       const { result, headers: resHeaders } = response;
       this.captureSessionToken(undefined, path, Constants.OperationTypes.Query, resHeaders);
       return this.processQueryFeedResponse({ result, headers: resHeaders }, !!query, resultFn);
@@ -169,10 +170,17 @@ export class ClientContext {
         options
       );
 
+      const request: RequestContext = {
+        client: this,
+        operationType: Constants.OperationTypes.Delete,
+        path,
+        resourceType: type
+      };
+
       this.applySessionToken(path, reqHeaders);
       // deleteResource will use WriteEndpoint since it uses DELETE operation
-      const writeEndpoint = await this.globalEndpointManager.getWriteEndpoint();
-      const response = await this.requestHandler.delete(writeEndpoint, path, reqHeaders);
+      const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
+      const response = await this.requestHandler.delete(endpoint, request, reqHeaders);
       if (Helper.parseLink(path).type !== "colls") {
         this.captureSessionToken(undefined, path, Constants.OperationTypes.Delete, response.headers);
       } else {
@@ -286,8 +294,8 @@ export class ClientContext {
       this.applySessionToken(path, reqHeaders);
 
       // replace will use WriteEndpoint since it uses PUT operation
-      const writeEndpoint = await this.globalEndpointManager.getWriteEndpoint();
-      const response = await this.requestHandler.put(writeEndpoint, request, resource, reqHeaders);
+      const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(reqHeaders);
+      const response = await this.requestHandler.put(endpoint, request, resource, reqHeaders);
       this.captureSessionToken(undefined, path, Constants.OperationTypes.Replace, response.headers);
       return response;
     } catch (err) {
@@ -326,8 +334,8 @@ export class ClientContext {
       this.applySessionToken(path, requestHeaders);
 
       // upsert will use WriteEndpoint since it uses POST operation
-      const writeEndpoint = await this.globalEndpointManager.getWriteEndpoint();
-      const response = await this.requestHandler.post(writeEndpoint, request, body, requestHeaders);
+      const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
+      const response = await this.requestHandler.post(endpoint, request, body, requestHeaders);
       this.captureSessionToken(undefined, path, Constants.OperationTypes.Upsert, response.headers);
       return response;
     } catch (err) {
@@ -369,8 +377,8 @@ export class ClientContext {
     };
 
     // executeStoredProcedure will use WriteEndpoint since it uses POST operation
-    const writeEndpoint = await this.globalEndpointManager.getWriteEndpoint();
-    return this.requestHandler.post(writeEndpoint, request, params, headers);
+    const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
+    return this.requestHandler.post(endpoint, request, params, headers);
   }
 
   /**

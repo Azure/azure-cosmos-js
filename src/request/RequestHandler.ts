@@ -195,7 +195,7 @@ export class RequestHandler {
   }
 
   /** @ignore */
-  public delete(urlString: string, request: any, headers: IHeaders) {
+  public delete(urlString: string, request: RequestContext, headers: IHeaders) {
     return RequestHandler.request(
       this.globalEndpointManager,
       this.connectionPolicy,

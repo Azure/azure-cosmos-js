@@ -76,7 +76,9 @@ export class Helper {
 
   public static sleep(time: number): Promise<void> {
     return new Promise(resolve => {
-      setTimeout(resolve, time);
+      setTimeout(() => {
+        resolve();
+      }, time);
     });
   }
 
