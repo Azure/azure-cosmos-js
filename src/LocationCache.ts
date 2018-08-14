@@ -1,5 +1,7 @@
+import { Helper } from "./common";
 import { CosmosClientOptions } from "./CosmosClientOptions";
 import { DatabaseAccount, Location } from "./documents";
+import { RequestContext } from "./request/RequestContext";
 
 enum EndpointOperationType {
   None = "None",
@@ -20,14 +22,16 @@ export class LocationCache {
   private locationUnavailabilityInfoByEndpoint: Map<string, LocationUnavailabilityInfo> = new Map();
   private availableReadLocations: Map<string, string>;
   private availableWriteLocations: Map<string, string>;
-  private writeEndpoints: string[];
-  private readEndpoints: string[];
+  private writeEndpoints: ReadonlyArray<string>;
+  private readEndpoints: ReadonlyArray<string>;
   private lastCacheUpdateTimestamp: Date = new Date(0);
   private canRefreshInBackground: boolean;
   private defaultEndpoint: string;
   private enableMultipleWritableLocations: boolean;
   public constructor(private options: CosmosClientOptions) {
     this.defaultEndpoint = options.endpoint;
+    this.writeEndpoints = [this.defaultEndpoint];
+    this.readEndpoints = [this.defaultEndpoint];
   }
 
   public get prefferredLocations(): string[] {
@@ -39,7 +43,7 @@ export class LocationCache {
    * 1. Preferred location
    * 2. Endpoint availability
    */
-  public getWriteEndpoints(): string[] {
+  public getWriteEndpoints(): ReadonlyArray<string> {
     if (
       this.locationUnavailabilityInfoByEndpoint.size > 0 &&
       new Date(Date.now() - this.options.connectionPolicy.backgroundRefreshLocationTimeIntervalMS) >
@@ -55,7 +59,7 @@ export class LocationCache {
    * 1. Preferred location
    * 2. Endpoint availability
    */
-  public getReadEnndpoints(): string[] {
+  public getReadEnndpoints(): ReadonlyArray<string> {
     if (
       this.locationUnavailabilityInfoByEndpoint.size > 0 &&
       new Date(Date.now() - this.options.connectionPolicy.backgroundRefreshLocationTimeIntervalMS) >
@@ -102,16 +106,17 @@ export class LocationCache {
     );
   }
 
-  private resolveServiceEndpoint(request: {}): string {
-    let endpoints: string[];
+  public resolveServiceEndpoint(request: RequestContext): string {
+    let endpoints: ReadonlyArray<string>;
     let regionIndex = 0;
-    if (request.useWriteEndpoint || request.operationTypes === "write") {
+    if (!Helper.isReadRequest(request)) {
       endpoints = this.writeEndpoints;
-      if (!this.canUseMultipleWriteLocations() || request.getResourceType() !== "document") {
+      if (!this.canUseMultipleWriteLocations() || request.resourceType !== "document") {
+        // TODO: document should be enum
         // For non-document resource types in case of client can use multiple write locations
         // or when client cannot use multiple write locations, flip-flop between the
         // first and the second writable region in DatabaseAccount (for manual failover)
-        regionIndex = request.useAlternativeWriteEndpoint() ? 1 : 0;
+        regionIndex = request.useAlternateWriteEndpoint ? 1 : 0;
         const availableWriteEndpointsByLocation = this.availableWriteLocations;
         endpoints = this.getPreferredAvailableEndpoints(
           availableWriteEndpointsByLocation,

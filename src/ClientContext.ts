@@ -5,6 +5,7 @@ import { GlobalEndpointManager } from "./globalEndpointManager";
 import { FetchFunctionCallback } from "./queryExecutionContext";
 import { FeedOptions, RequestHandler } from "./request";
 import { ErrorResponse, getHeaders } from "./request/request";
+import { RequestContext } from "./request/RequestContext";
 import { SessionContainer } from "./sessionContainer";
 
 /**
@@ -203,11 +204,18 @@ export class ClientContext {
         options
       );
 
+      const request: RequestContext = {
+        client: this,
+        operationType: Constants.OperationTypes.Create,
+        path,
+        resourceType: type
+      };
+
       // create will use WriteEndpoint since it uses POST operation
       this.applySessionToken(path, requestHeaders);
 
-      const writeEndpoint = await this.globalEndpointManager.getWriteEndpoint();
-      const response = await this.requestHandler.post(writeEndpoint, path, body, requestHeaders);
+      const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
+      const response = await this.requestHandler.post(endpoint, request, body, requestHeaders);
       this.captureSessionToken(undefined, path, Constants.OperationTypes.Create, response.headers);
       return response;
     } catch (err) {
@@ -267,11 +275,19 @@ export class ClientContext {
         type,
         options
       );
+
+      const request: RequestContext = {
+        client: this,
+        operationType: Constants.OperationTypes.Replace,
+        path,
+        resourceType: type
+      };
+
       this.applySessionToken(path, reqHeaders);
 
       // replace will use WriteEndpoint since it uses PUT operation
       const writeEndpoint = await this.globalEndpointManager.getWriteEndpoint();
-      const response = await this.requestHandler.put(writeEndpoint, path, resource, reqHeaders);
+      const response = await this.requestHandler.put(writeEndpoint, request, resource, reqHeaders);
       this.captureSessionToken(undefined, path, Constants.OperationTypes.Replace, response.headers);
       return response;
     } catch (err) {
@@ -299,12 +315,19 @@ export class ClientContext {
         options
       );
 
+      const request: RequestContext = {
+        client: this,
+        operationType: Constants.OperationTypes.Upsert,
+        path,
+        resourceType: type
+      };
+
       Helper.setIsUpsertHeader(requestHeaders);
       this.applySessionToken(path, requestHeaders);
 
       // upsert will use WriteEndpoint since it uses POST operation
       const writeEndpoint = await this.globalEndpointManager.getWriteEndpoint();
-      const response = await this.requestHandler.post(writeEndpoint, path, body, requestHeaders);
+      const response = await this.requestHandler.post(writeEndpoint, request, body, requestHeaders);
       this.captureSessionToken(undefined, path, Constants.OperationTypes.Upsert, response.headers);
       return response;
     } catch (err) {
@@ -337,9 +360,17 @@ export class ClientContext {
       "sprocs",
       options
     );
+
+    const request: RequestContext = {
+      client: this,
+      operationType: Constants.OperationTypes.Execute,
+      path,
+      resourceType: "sprocs"
+    };
+
     // executeStoredProcedure will use WriteEndpoint since it uses POST operation
     const writeEndpoint = await this.globalEndpointManager.getWriteEndpoint();
-    return this.requestHandler.post(writeEndpoint, path, params, headers);
+    return this.requestHandler.post(writeEndpoint, request, params, headers);
   }
 
   /**
@@ -360,7 +391,14 @@ export class ClientContext {
       {}
     );
 
-    const { result, headers } = await this.requestHandler.get(urlConnection, "", requestHeaders);
+    const request: RequestContext = {
+      client: this,
+      operationType: Constants.OperationTypes.Read,
+      path: "",
+      resourceType: "DatabaseAccount"
+    };
+
+    const { result, headers } = await this.requestHandler.get(urlConnection, request, requestHeaders);
 
     const databaseAccount = new DatabaseAccount(result, headers);
 

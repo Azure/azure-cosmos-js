@@ -219,7 +219,8 @@ export const Constants = {
     Upsert: "upsert",
     Delete: "delete",
     Read: "read",
-    Query: "query"
+    Query: "query",
+    Execute: "execute"
   },
 
   PartitionKeyRange: {

@@ -1,6 +1,7 @@
-﻿import { Constants, StatusCodes } from "../common";
+﻿import { Helper } from "../common";
 import { GlobalEndpointManager } from "../globalEndpointManager";
 import { ErrorResponse } from "../request/request";
+import { RequestContext } from "../request/RequestContext";
 
 /**
  * This class implements the retry policy for endpoint discovery.
@@ -21,7 +22,7 @@ export class EndpointDiscoveryRetryPolicy {
    * @constructor EndpointDiscoveryRetryPolicy
    * @param {object} globalEndpointManager The GlobalEndpointManager instance.
    */
-  constructor(private globalEndpointManager: GlobalEndpointManager) {
+  constructor(private globalEndpointManager: GlobalEndpointManager, private request: RequestContext) {
     this.maxRetryAttemptCount = EndpointDiscoveryRetryPolicy.maxRetryAttemptCount;
     this.currentRetryAttemptCount = 0;
     this.retryAfterInMilliseconds = EndpointDiscoveryRetryPolicy.retryAfterInMilliseconds;
@@ -32,19 +33,34 @@ export class EndpointDiscoveryRetryPolicy {
    * @param {object} err - Error returned by the request.
    */
   public async shouldRetry(err: ErrorResponse): Promise<boolean> {
-    if (err) {
-      if (
-        this.currentRetryAttemptCount < this.maxRetryAttemptCount &&
-        this.globalEndpointManager.enableEndpointDiscovery
-      ) {
-        this.currentRetryAttemptCount++;
-        // TODO: Tracing
-        // console.log("Write region was changed, refreshing the regions list from database account
-        // and will retry the request.");
-        await this.globalEndpointManager.refreshEndpointList();
-        return true;
-      }
+    if (!err) {
+      return false;
     }
-    return false;
+
+    if (!this.globalEndpointManager.enableEndpointDiscovery) {
+      return false;
+    }
+
+    if (this.currentRetryAttemptCount >= this.maxRetryAttemptCount) {
+      return false;
+    }
+
+    this.currentRetryAttemptCount++;
+
+    if (Helper.isReadRequest(this.request)) {
+      this.globalEndpointManager.markCurrentLocationUnavailableForRead();
+    } else {
+      this.globalEndpointManager.markCurrentLocationUnavailableForWrite();
+    }
+
+    if (!Helper.isReadRequest(this.request) && this.globalEndpointManager.getAlternateEndpoint()) {
+      this.request.useAlternateWriteEndpoint = !this.request.useAlternateWriteEndpoint;
+    } else {
+      // TODO: Tracing
+      // console.log("Write region was changed, refreshing the regions list from database account
+      // and will retry the request.");
+      await this.globalEndpointManager.refreshEndpointList();
+    }
+    return true;
   }
 }

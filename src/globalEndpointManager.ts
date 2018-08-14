@@ -5,6 +5,7 @@ import { Constants, Helper } from "./common";
 import { CosmosClientOptions } from "./CosmosClientOptions";
 import { DatabaseAccount, Location } from "./documents";
 import { LocationCache } from "./LocationCache";
+import { RequestContext } from "./request/RequestContext";
 
 /**
  * @hidden
@@ -63,6 +64,25 @@ export class GlobalEndpointManager {
       await this.refreshEndpointList();
     }
     return this.locationCache.getWriteEndpoint();
+  }
+
+  public getAlternateEndpoint(): string {
+    return this.locationCache.getAlternativeWriteEndpoint();
+  }
+
+  public markCurrentLocationUnavailableForRead() {
+    this.locationCache.markCurrentLocationUnavailableForRead();
+  }
+
+  public markCurrentLocationUnavailableForWrite() {
+    this.locationCache.markCurrentLocationUnavailableForWrite();
+  }
+
+  public async resolveServiceEndpoint(request: RequestContext) {
+    if (!this.isEndpointCacheInitialized) {
+      await this.refreshEndpointList();
+    }
+    return this.locationCache.resolveServiceEndpoint(request);
   }
 
   /**

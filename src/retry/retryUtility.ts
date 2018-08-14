@@ -1,13 +1,12 @@
-﻿import { WriteStream } from "fs";
-import { RequestOptions } from "https";
+﻿import { RequestOptions } from "https";
 import { Stream } from "stream";
 import * as url from "url";
 import { EndpointDiscoveryRetryPolicy, ResourceThrottleRetryPolicy, SessionReadRetryPolicy } from ".";
-import { Constants, StatusCodes, SubStatusCodes } from "../common";
+import { Constants, Helper, StatusCodes, SubStatusCodes } from "../common";
 import { ConnectionPolicy } from "../documents";
 import { GlobalEndpointManager } from "../globalEndpointManager";
-import { IHeaders } from "../queryExecutionContext";
-import { ErrorResponse, Response } from "../request";
+import { Response } from "../request";
+import { RequestContext } from "../request/RequestContext";
 import { DefaultRetryPolicy } from "./defaultRetryPolicy";
 
 /** @hidden */
@@ -41,12 +40,12 @@ export class RetryUtility {
     createRequestObjectFunc: CreateRequestObjectStubFunction,
     connectionPolicy: ConnectionPolicy,
     requestOptions: RequestOptions,
-    request: any
+    request: RequestContext
   ): Promise<Response<any>> {
     // TODO: any request
-    const r = typeof request !== "string" ? request : { path: "", operationType: "nonReadOps", client: null };
+    const r: RequestContext = typeof request !== "string" ? request : { path: "", operationType: "nonReadOps" };
 
-    const endpointDiscoveryRetryPolicy = new EndpointDiscoveryRetryPolicy(globalEndpointManager);
+    const endpointDiscoveryRetryPolicy = new EndpointDiscoveryRetryPolicy(globalEndpointManager, r);
     const resourceThrottleRetryPolicy = new ResourceThrottleRetryPolicy(
       connectionPolicy.RetryOptions.MaxRetryAttemptCount,
       connectionPolicy.RetryOptions.FixedRetryIntervalInMilliseconds,
@@ -122,25 +121,21 @@ export class RetryUtility {
         throw err;
       } else {
         const newUrl = (results as any)[1]; // TODO: any hack
-        return new Promise<Response<any>>((resolve, reject) => {
-          setTimeout(async () => {
-            if (typeof newUrl !== "undefined") {
-              requestOptions = this.modifyRequestOptions(requestOptions, newUrl);
-            }
-            resolve(
-              await this.apply(
-                body,
-                createRequestObjectFunc,
-                connectionPolicy,
-                requestOptions,
-                endpointDiscoveryRetryPolicy,
-                resourceThrottleRetryPolicy,
-                sessionReadRetryPolicy,
-                defaultRetryPolicy
-              )
-            );
-          }, retryPolicy.retryAfterInMilliseconds);
-        });
+        await Helper.sleep(retryPolicy.retryAfterInMilliseconds);
+
+        if (typeof newUrl !== "undefined") {
+          requestOptions = this.modifyRequestOptions(requestOptions, newUrl);
+        }
+        return this.apply(
+          body,
+          createRequestObjectFunc,
+          connectionPolicy,
+          requestOptions,
+          endpointDiscoveryRetryPolicy,
+          resourceThrottleRetryPolicy,
+          sessionReadRetryPolicy,
+          defaultRetryPolicy
+        );
       }
     }
   }
