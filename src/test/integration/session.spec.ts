@@ -5,7 +5,7 @@ import { ClientContext } from "../../ClientContext";
 import { Helper } from "../../common";
 import { ConsistencyLevel, PartitionKind } from "../../documents";
 import { RequestHandler } from "../../request";
-import { SessionContainer } from "../../sessionContainer";
+import { SessionContainer } from "../../session/sessionContainer";
 import { endpoint, masterKey } from "../common/_testConfig";
 import { getTestDatabase, removeAllDatabases } from "../common/TestHelpers";
 

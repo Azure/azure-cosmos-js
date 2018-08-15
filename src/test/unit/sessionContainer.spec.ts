@@ -1,8 +1,8 @@
 ﻿import * as assert from "assert";
 import { Constants } from "../../common";
 import { IHeaders } from "../../queryExecutionContext/IHeaders";
+import { SessionContainer } from "../../session/sessionContainer";
 import { SessionContext } from "../../session/SessionContext";
-import { SessionContainer } from "../../sessionContainer";
 
 describe("SessionContainer", function() {
   const collectionLink = "dbs/testDatabase/colls/testCollection";

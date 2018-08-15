@@ -6,8 +6,8 @@ import { FetchFunctionCallback } from "./queryExecutionContext";
 import { FeedOptions, RequestHandler } from "./request";
 import { ErrorResponse, getHeaders } from "./request/request";
 import { RequestContext } from "./request/RequestContext";
+import { SessionContainer } from "./session/sessionContainer";
 import { SessionContext } from "./session/SessionContext";
-import { SessionContainer } from "./sessionContainer";
 
 /**
  * @hidden

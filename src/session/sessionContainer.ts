@@ -1,7 +1,7 @@
-﻿import { Constants, EMPTY, Helper, ResourceId } from "./common";
-import { IHeaders } from "./queryExecutionContext";
-import { SessionContext } from "./session/SessionContext";
-import { VectorSessionToken } from "./session/VectorSessionToken";
+﻿import { Constants, EMPTY, Helper, ResourceId } from "../common";
+import { IHeaders } from "../queryExecutionContext";
+import { SessionContext } from "./SessionContext";
+import { VectorSessionToken } from "./VectorSessionToken";
 
 /** @hidden */
 export class SessionContainer {
