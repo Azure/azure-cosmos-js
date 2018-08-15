@@ -1,171 +1,129 @@
-﻿import * as BigInt from "big-integer";
-import { Constants, EMPTY, Helper, ResourceId } from "./common";
+﻿import { Constants, EMPTY, Helper, ResourceId } from "./common";
 import { IHeaders } from "./queryExecutionContext";
+import { SessionContext } from "./session/SessionContext";
+import { VectorSessionToken } from "./session/VectorSessionToken";
 
 /** @hidden */
 export class SessionContainer {
+  private static readonly EMPTY_SESSION_TOKEN = "";
+  private static readonly SESSION_TOKEN_SEPARATOR = ",";
+  private static readonly SESSION_TOKEN_PARTITION_SPLITTER = ":";
   constructor(
-    private hostname?: string,
-    private collectionNameToCollectionResourceId: {
-      [collectionName: string]: string;
-    } = {},
-    // TODO: chrande made this public for a test
-    public collectionResourceIdToSessionTokens: {
-      [collectionResourceId: string]: { [SessionName: string]: string };
-    } = {}
+    private collectionNameToCollectionResourceId = new Map<string, string>(),
+    private collectionResourceIdToSessionTokens = new Map<string, Map<string, VectorSessionToken>>()
   ) {}
 
-  public getHostName() {
-    // TODO: move to getter
-    return this.hostname;
+  public get(request: SessionContext) {
+    if (!request) {
+      throw new Error("request cannot be null");
+    }
+    const rangeIdToTokenMap = this.getPartitionKeyRangeIdToTokenMap(request.resourceAddress);
+    return SessionContainer.getCombinedSessionTokenString(rangeIdToTokenMap);
   }
 
-  public getPartitionKeyRangeIdToTokenMap(request: any) {
-    // TODO: any
-    return this.getPartitionKeyRangeIdToTokenMapPrivate(
-      request["isNameBased"],
-      request["resourceId"],
-      request["resourceAddress"]
-    );
+  public remove(request: SessionContext) {
+    let collectionResourceId: string;
+    const resourceAddress = Helper.trimSlashes(request.resourceAddress);
+    const collectionName = Helper.getContainerLink(resourceAddress);
+    if (collectionName) {
+      collectionResourceId = this.collectionNameToCollectionResourceId.get(collectionName);
+      this.collectionNameToCollectionResourceId.delete(collectionName);
+    }
+    if (collectionResourceId !== undefined) {
+      this.collectionResourceIdToSessionTokens.delete(collectionResourceId);
+    }
   }
 
-  public getPartitionKeyRangeIdToTokenMapPrivate(isNameBased: boolean, rId: string, resourceAddress: string) {
-    let rangeIdToTokenMap = null;
-    if (!isNameBased) {
-      if (rId) {
-        const resourceIdObject = new ResourceId();
-        const resourceId = resourceIdObject.parse(rId);
-        if (resourceId.documentCollection !== EMPTY) {
-          rangeIdToTokenMap = this.collectionResourceIdToSessionTokens[resourceId.getUniqueDocumentCollectionId()];
-        }
+  public set(request: SessionContext, resHeaders: IHeaders) {
+    // TODO: we check the master logic a few different places. Might not need it.
+    if (!resHeaders || SessionContainer.isReadingFromMaster(request.resourceType, request.operationType)) {
+      return;
+    }
+
+    const sessionTokenString = resHeaders[Constants.HttpHeaders.SessionToken];
+    if (!sessionTokenString) {
+      return;
+    }
+
+    const containerName = this.getContainerName(request, resHeaders);
+
+    const ownerId = !request.isNameBased
+      ? request.resourceId
+      : resHeaders[Constants.HttpHeaders.OwnerId] || request.resourceId;
+
+    if (!ownerId) {
+      return;
+    }
+
+    const resourceIdObject = new ResourceId();
+    const resourceId = resourceIdObject.parse(ownerId);
+
+    if (resourceId.documentCollection !== EMPTY && containerName) {
+      const containerRid = resourceId.getUniqueDocumentCollectionId();
+      if (!this.collectionResourceIdToSessionTokens.has(containerRid)) {
+        this.collectionResourceIdToSessionTokens.set(containerRid, new Map());
       }
-    } else {
-      resourceAddress = Helper.trimSlashes(resourceAddress);
-      const collectionName = Helper.getContainerLink(resourceAddress);
-      if (collectionName && collectionName in this.collectionNameToCollectionResourceId) {
-        rangeIdToTokenMap = this.collectionResourceIdToSessionTokens[
-          this.collectionNameToCollectionResourceId[collectionName]
-        ];
+
+      if (!this.collectionNameToCollectionResourceId.has(containerName)) {
+        this.collectionNameToCollectionResourceId.set(containerName, containerRid);
       }
+
+      const containerSessionContainer = this.collectionResourceIdToSessionTokens.get(containerRid);
+      SessionContainer.compareAndSetToken(sessionTokenString, containerSessionContainer);
+    }
+  }
+
+  private getPartitionKeyRangeIdToTokenMap(resourceAddress: string): Map<string, VectorSessionToken> {
+    let rangeIdToTokenMap: Map<string, VectorSessionToken> = null;
+    resourceAddress = Helper.trimSlashes(resourceAddress);
+    const collectionName = Helper.getContainerLink(resourceAddress);
+    if (collectionName && this.collectionNameToCollectionResourceId.has(collectionName)) {
+      rangeIdToTokenMap = this.collectionResourceIdToSessionTokens.get(
+        this.collectionNameToCollectionResourceId.get(collectionName)
+      );
     }
 
     return rangeIdToTokenMap;
   }
 
-  public resolveGlobalSessionToken(request: any) {
-    // TODO: any request
-    if (!request) {
-      throw new Error("request cannot be null");
+  private static getCombinedSessionTokenString(tokens: Map<string, VectorSessionToken>) {
+    if (!tokens || tokens.size === 0) {
+      return SessionContainer.EMPTY_SESSION_TOKEN;
     }
 
-    return this.resolveGlobalSessionTokenPrivate(
-      request["isNameBased"],
-      request["resourceId"],
-      request["resourceAddress"]
-    );
-  }
-
-  public resolveGlobalSessionTokenPrivate(isNameBased: boolean, rId: string, resourceAddress: string) {
-    const rangeIdToTokenMap = this.getPartitionKeyRangeIdToTokenMapPrivate(isNameBased, rId, resourceAddress);
-    if (rangeIdToTokenMap != null) {
-      return this.getCombinedSessionToken(rangeIdToTokenMap);
-    }
-
-    return "";
-  }
-
-  public clearToken(request: any) {
-    // TODO: any request
-    let collectionResourceId;
-    if (!request["isNameBased"]) {
-      if (request["resourceId"]) {
-        const resourceIdObject = new ResourceId();
-        const resourceId = resourceIdObject.parse(request["resourceId"]);
-        if (resourceId.documentCollection !== EMPTY) {
-          collectionResourceId = resourceId.getUniqueDocumentCollectionId();
-        }
-      }
-    } else {
-      const resourceAddress = Helper.trimSlashes(request["resourceAddress"]);
-      const collectionName = Helper.getContainerLink(resourceAddress);
-      if (collectionName) {
-        collectionResourceId = this.collectionNameToCollectionResourceId[collectionName];
-        delete this.collectionNameToCollectionResourceId[collectionName];
-      }
-    }
-    if (collectionResourceId !== undefined) {
-      delete this.collectionResourceIdToSessionTokens[collectionResourceId];
-    }
-  }
-
-  public setSessionToken(request: any, resHeaders: IHeaders) {
-    // TODO: any request
-    if (resHeaders && !this.isReadingFromMaster(request["resourceType"], request["opearationType"])) {
-      const sessionToken = resHeaders[Constants.HttpHeaders.SessionToken];
-      if (sessionToken) {
-        let ownerFullName = resHeaders[Constants.HttpHeaders.OwnerFullName];
-        if (!ownerFullName) {
-          ownerFullName = Helper.trimSlashes(request["resourceAddress"]);
-        }
-
-        const collectionName = Helper.getContainerLink(ownerFullName as string);
-
-        const ownerId = !request["isNameBased"]
-          ? request["resourceId"]
-          : resHeaders[Constants.HttpHeaders.OwnerId] || request["resourceId"];
-
-        if (ownerId) {
-          const resourceIdObject = new ResourceId();
-          const resourceId = resourceIdObject.parse(ownerId);
-
-          if (resourceId.documentCollection !== EMPTY && collectionName) {
-            const uniqueDocumentCollectionId = resourceId.getUniqueDocumentCollectionId();
-            this.setSesisonTokenPrivate(uniqueDocumentCollectionId, collectionName, sessionToken as string);
-          }
-        }
-      }
-    }
-  }
-
-  public setSesisonTokenPrivate(collectionRid: string, collectionName: string, sessionToken: string) {
-    if (!(collectionRid in this.collectionResourceIdToSessionTokens)) {
-      this.collectionResourceIdToSessionTokens[collectionRid] = {};
-    }
-    this.compareAndSetToken(sessionToken, this.collectionResourceIdToSessionTokens[collectionRid]);
-    if (!(collectionName in this.collectionNameToCollectionResourceId)) {
-      this.collectionNameToCollectionResourceId[collectionName] = collectionRid;
-    }
-  }
-
-  public getCombinedSessionToken(tokens: { [key: string]: string }) {
     let result = "";
-    if (tokens) {
-      for (const index in tokens) {
-        if (tokens.hasOwnProperty(index)) {
-          result = result + index + ":" + tokens[index] + ",";
-        }
-      }
+    for (const [range, token] of tokens.entries()) {
+      result +=
+        range +
+        SessionContainer.SESSION_TOKEN_PARTITION_SPLITTER +
+        token.toString() +
+        SessionContainer.SESSION_TOKEN_SEPARATOR;
     }
     return result.slice(0, -1);
   }
 
-  public compareAndSetToken(newToken: string, oldTokens: { [key: string]: string }) {
-    if (newToken) {
-      const newTokenParts = newToken.split(":");
-      if (newTokenParts.length === 2) {
-        const range = newTokenParts[0];
-        const newLSN = BigInt(newTokenParts[1]);
-        const success = false;
+  private static compareAndSetToken(newTokenString: string, containerSessionTokens: Map<string, VectorSessionToken>) {
+    if (!newTokenString) {
+      return;
+    }
 
-        const oldLSN = BigInt(oldTokens[range]);
-        if (!oldLSN || oldLSN.lesser(newLSN)) {
-          oldTokens[range] = newLSN.toString();
-        }
+    const partitionsParts = newTokenString.split(SessionContainer.SESSION_TOKEN_SEPARATOR);
+    for (const partitionPart of partitionsParts) {
+      const newTokenParts = partitionPart.split(SessionContainer.SESSION_TOKEN_PARTITION_SPLITTER);
+      if (newTokenParts.length !== 2) {
+        return;
       }
+
+      const range = newTokenParts[0];
+      const newToken = VectorSessionToken.create(newTokenParts[1]);
+      const tokenForRange = !containerSessionTokens.get(range)
+        ? newToken
+        : containerSessionTokens.get(range).merge(newToken);
+      containerSessionTokens.set(range, tokenForRange);
     }
   }
 
-  public isReadingFromMaster(resourceType: string, operationType: string) {
+  private static isReadingFromMaster(resourceType: string, operationType: string): boolean {
     if (
       resourceType === Constants.Path.OffersPathSegment ||
       resourceType === Constants.Path.DatabasesPathSegment ||
@@ -180,5 +138,14 @@ export class SessionContainer {
     }
 
     return false;
+  }
+
+  private getContainerName(request: SessionContext, headers: IHeaders) {
+    let ownerFullName = headers[Constants.HttpHeaders.OwnerFullName];
+    if (!ownerFullName) {
+      ownerFullName = Helper.trimSlashes(request.resourceAddress);
+    }
+
+    return Helper.getContainerLink(ownerFullName as string);
   }
 }

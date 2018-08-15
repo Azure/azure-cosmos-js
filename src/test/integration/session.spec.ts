@@ -75,12 +75,12 @@ describe("Session Token", function() {
     const container = database.container(createdContainerDef.id);
     assert.equal(postSpy.lastCall.args[3][Constants.HttpHeaders.SessionToken], undefined);
     // TODO: testing implementation detail by looking at containerResourceIdToSesssionTokens
-    assert.deepEqual(sessionContainer.collectionResourceIdToSessionTokens, {});
+    assert.deepEqual((sessionContainer as any).collectionResourceIdToSessionTokens, {});
 
     const { body: document1 } = await container.items.create({ id: "1" });
     assert.equal(postSpy.lastCall.args[3][Constants.HttpHeaders.SessionToken], undefined);
 
-    let tokens = getToken(sessionContainer.collectionResourceIdToSessionTokens);
+    let tokens = getToken((sessionContainer as any).collectionResourceIdToSessionTokens);
     index1 = getIndex(tokens);
     assert.notEqual(tokens[index1], undefined);
     let firstPartitionLSN = tokens[index1];
@@ -88,10 +88,10 @@ describe("Session Token", function() {
     const { body: document2 } = await container.items.create({ id: "2" });
     assert.equal(
       postSpy.lastCall.args[3][Constants.HttpHeaders.SessionToken],
-      sessionContainer.getCombinedSessionToken(tokens)
+      (sessionContainer as any).getCombinedSessionToken(tokens)
     );
 
-    tokens = getToken(sessionContainer.collectionResourceIdToSessionTokens);
+    tokens = getToken((sessionContainer as any).collectionResourceIdToSessionTokens);
     index2 = getIndex(tokens, index1);
     assert.equal(tokens[index1], firstPartitionLSN);
     assert.notEqual(tokens[index2], undefined);
@@ -101,18 +101,18 @@ describe("Session Token", function() {
 
     assert.equal(
       getSpy.lastCall.args[2][Constants.HttpHeaders.SessionToken],
-      sessionContainer.getCombinedSessionToken(tokens)
+      (sessionContainer as any).getCombinedSessionToken(tokens)
     );
-    tokens = getToken(sessionContainer.collectionResourceIdToSessionTokens);
+    tokens = getToken((sessionContainer as any).collectionResourceIdToSessionTokens);
     assert.equal(tokens[index1], firstPartitionLSN);
     assert.equal(tokens[index2], secondPartitionLSN);
 
     const { body: document13 } = await container.items.upsert({ id: "1", operation: "upsert" }, { partitionKey: "1" });
     assert.equal(
       postSpy.lastCall.args[3][Constants.HttpHeaders.SessionToken],
-      sessionContainer.getCombinedSessionToken(tokens)
+      (sessionContainer as any).getCombinedSessionToken(tokens)
     );
-    tokens = getToken(sessionContainer.collectionResourceIdToSessionTokens);
+    tokens = getToken((sessionContainer as any).collectionResourceIdToSessionTokens);
     assert.equal(tokens[index1], (Number(firstPartitionLSN) + 1).toString());
     assert.equal(tokens[index2], secondPartitionLSN);
     firstPartitionLSN = tokens[index1];
@@ -121,9 +121,9 @@ describe("Session Token", function() {
 
     assert.equal(
       deleteSpy.lastCall.args[2][Constants.HttpHeaders.SessionToken],
-      sessionContainer.getCombinedSessionToken(tokens)
+      (sessionContainer as any).getCombinedSessionToken(tokens)
     );
-    tokens = getToken(sessionContainer.collectionResourceIdToSessionTokens);
+    tokens = getToken((sessionContainer as any).collectionResourceIdToSessionTokens);
     assert.equal(tokens[index1], firstPartitionLSN);
     assert.equal(tokens[index2], (Number(secondPartitionLSN) + 1).toString());
     secondPartitionLSN = tokens[index2];
@@ -131,9 +131,9 @@ describe("Session Token", function() {
     await container.item(document13.id).replace({ id: "1", operation: "replace" }, { partitionKey: "1" });
     assert.equal(
       putSpy.lastCall.args[3][Constants.HttpHeaders.SessionToken],
-      sessionContainer.getCombinedSessionToken(tokens)
+      (sessionContainer as any).getCombinedSessionToken(tokens)
     );
-    tokens = getToken(sessionContainer.collectionResourceIdToSessionTokens);
+    tokens = getToken((sessionContainer as any).collectionResourceIdToSessionTokens);
     assert.equal(tokens[index1], (Number(firstPartitionLSN) + 1).toString());
     assert.equal(tokens[index2], secondPartitionLSN);
     firstPartitionLSN = tokens[index1];
@@ -145,18 +145,18 @@ describe("Session Token", function() {
     await queryIterator.toArray();
     assert.equal(
       postSpy.lastCall.args[3][Constants.HttpHeaders.SessionToken],
-      sessionContainer.getCombinedSessionToken(tokens)
+      (sessionContainer as any).getCombinedSessionToken(tokens)
     );
-    tokens = getToken(sessionContainer.collectionResourceIdToSessionTokens);
+    tokens = getToken((sessionContainer as any).collectionResourceIdToSessionTokens);
     assert.equal(tokens[index1], firstPartitionLSN);
     assert.equal(tokens[index2], secondPartitionLSN);
 
     await container.delete();
     assert.equal(
       deleteSpy.lastCall.args[2][Constants.HttpHeaders.SessionToken],
-      sessionContainer.getCombinedSessionToken(tokens)
+      (sessionContainer as any).getCombinedSessionToken(tokens)
     );
-    assert.deepEqual(sessionContainer.collectionResourceIdToSessionTokens, {});
+    assert.deepEqual((sessionContainer as any).collectionResourceIdToSessionTokens, {});
 
     getSpy.restore();
     postSpy.restore();
@@ -185,7 +185,7 @@ describe("Session Token", function() {
     const container = database.container(containerDefinition.id);
     await container.items.create({ id: "1" });
     const callbackSpy = sinon.spy(function(pat: string, reqHeaders: IHeaders) {
-      const oldTokens = sessionContainer.collectionResourceIdToSessionTokens;
+      const oldTokens = (sessionContainer as any).collectionResourceIdToSessionTokens;
       reqHeaders[Constants.HttpHeaders.SessionToken] = increaseLSN(oldTokens);
     });
     const applySessionTokenStub = sinon.stub(clientContext as any, "applySessionToken").callsFake(callbackSpy);
@@ -248,7 +248,7 @@ describe("Session Token", function() {
       .container(createdContainerDef.id)
       .item(createdDocument.id)
       .delete(requestOptions);
-    const setSessionTokenSpy = sinon.spy(sessionContainer, "setSessionToken");
+    const setSessionTokenSpy = sinon.spy(sessionContainer, "set");
 
     try {
       await createdContainer.item(createdDocument.id).read(requestOptions);

@@ -6,6 +6,7 @@ import { FetchFunctionCallback } from "./queryExecutionContext";
 import { FeedOptions, RequestHandler } from "./request";
 import { ErrorResponse, getHeaders } from "./request/request";
 import { RequestContext } from "./request/RequestContext";
+import { SessionContext } from "./session/SessionContext";
 import { SessionContainer } from "./sessionContainer";
 
 /**
@@ -23,7 +24,7 @@ export class ClientContext {
     private globalEndpointManager: GlobalEndpointManager
   ) {
     this.connectionPolicy = cosmosClientOptions.connectionPolicy || new ConnectionPolicy();
-    this.sessionContainer = new SessionContainer(cosmosClientOptions.endpoint);
+    this.sessionContainer = new SessionContainer();
     this.requestHandler = new RequestHandler(
       globalEndpointManager,
       this.connectionPolicy,
@@ -258,7 +259,7 @@ export class ClientContext {
     }
 
     if (request["resourceAddress"]) {
-      const sessionToken = this.sessionContainer.resolveGlobalSessionToken(request);
+      const sessionToken = this.sessionContainer.get(request);
       if (sessionToken !== "") {
         reqHeaders[Constants.HttpHeaders.SessionToken] = sessionToken;
       }
@@ -414,7 +415,7 @@ export class ClientContext {
   }
 
   private captureSessionToken(err: ErrorResponse, path: string, opType: string, resHeaders: IHeaders) {
-    const request: any = this.getSessionParams(path); // TODO: any request
+    const request = this.getSessionParams(path); // TODO: any request
     request.operationType = opType;
     if (
       !err ||
@@ -423,7 +424,7 @@ export class ClientContext {
           err.code === StatusCodes.Conflict ||
           (err.code === StatusCodes.NotFound && err.substatus !== SubStatusCodes.ReadSessionNotAvailable)))
     ) {
-      this.sessionContainer.setSessionToken(request, resHeaders);
+      this.sessionContainer.set(request, resHeaders);
     }
   }
 
@@ -440,15 +441,15 @@ export class ClientContext {
     }
 
     const request = this.getSessionParams(collectionLink);
-    return this.sessionContainer.resolveGlobalSessionToken(request);
+    return this.sessionContainer.get(request);
   }
 
   private clearSessionToken(path: string) {
     const request = this.getSessionParams(path);
-    this.sessionContainer.clearToken(request);
+    this.sessionContainer.remove(request);
   }
 
-  private getSessionParams(resourceLink: string) {
+  private getSessionParams(resourceLink: string): SessionContext {
     const resourceId: string = null;
     let resourceAddress: string = null;
     const parserOutput = Helper.parseLink(resourceLink);
