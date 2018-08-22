@@ -1,5 +1,4 @@
 import * as assert from "assert";
-import * as _ from "underscore";
 import * as util from "util";
 import { Constants } from "../..";
 import { Container, ContainerDefinition } from "../../client";
@@ -8,8 +7,16 @@ import { SqlQuerySpec } from "../../queryExecutionContext";
 import { QueryIterator } from "../../queryIterator";
 import { bulkInsertItems, getTestContainer, removeAllDatabases } from "../common/TestHelpers";
 
-function compareSpam(a: any, b: any) {
-  return a["spam"] - b["spam"];
+function compare(key: string) {
+  return function(a: any, b: any): number {
+    if (a[key] > b[key]) {
+      return 1;
+    }
+    if (a[key] < b[key]) {
+      return -1;
+    }
+    return 0;
+  };
 }
 
 describe("Cross Partition", function() {
@@ -464,7 +471,7 @@ describe("Cross Partition", function() {
         maxDegreeOfParallelism: 0
       };
 
-      const expectedOrderedIds = documentDefinitions.sort(compareSpam).map(function(r) {
+      const expectedOrderedIds = documentDefinitions.sort(compare("spam")).map(function(r) {
         return r["id"];
       });
 
@@ -481,7 +488,7 @@ describe("Cross Partition", function() {
         maxDegreeOfParallelism: 1
       };
 
-      const expectedOrderedIds = documentDefinitions.sort(compareSpam).map(function(r) {
+      const expectedOrderedIds = documentDefinitions.sort(compare("spam")).map(function(r) {
         return r["id"];
       });
 
@@ -498,7 +505,7 @@ describe("Cross Partition", function() {
         maxDegreeOfParallelism: 3
       };
 
-      const expectedOrderedIds = documentDefinitions.sort(compareSpam).map(function(r) {
+      const expectedOrderedIds = documentDefinitions.sort(compare("spam")).map(function(r) {
         return r["id"];
       });
 
@@ -515,7 +522,7 @@ describe("Cross Partition", function() {
         maxDegreeOfParallelism: -1
       };
 
-      const expectedOrderedIds = documentDefinitions.sort(compareSpam).map(function(r) {
+      const expectedOrderedIds = documentDefinitions.sort(compare("spam")).map(function(r) {
         return r["id"];
       });
 
@@ -531,7 +538,7 @@ describe("Cross Partition", function() {
         maxItemCount: 2
       };
 
-      const expectedOrderedIds = documentDefinitions.sort(compareSpam).map(function(r) {
+      const expectedOrderedIds = documentDefinitions.sort(compare("spam")).map(function(r) {
         return r["id"];
       });
 
@@ -549,7 +556,7 @@ describe("Cross Partition", function() {
         maxItemCount: 2
       };
 
-      const expectedOrderedIds = documentDefinitions.sort(compareSpam).map(function(r) {
+      const expectedOrderedIds = documentDefinitions.sort(compare("spam")).map(function(r) {
         return r["id"];
       });
 
@@ -567,7 +574,7 @@ describe("Cross Partition", function() {
         maxItemCount: 2
       };
 
-      const expectedOrderedIds = documentDefinitions.sort(compareSpam).map(function(r) {
+      const expectedOrderedIds = documentDefinitions.sort(compare("spam")).map(function(r) {
         return r["id"];
       });
 
@@ -586,7 +593,7 @@ describe("Cross Partition", function() {
       };
 
       const expectedOrderedIds = documentDefinitions
-        .sort(compareSpam)
+        .sort(compare("spam"))
         .map(function(r) {
           return r["id"];
         })
@@ -608,7 +615,7 @@ describe("Cross Partition", function() {
       };
 
       const expectedOrderedIds = documentDefinitions
-        .sort(compareSpam)
+        .sort(compare("spam"))
         .map(function(r) {
           return r["id"];
         })
@@ -630,7 +637,7 @@ describe("Cross Partition", function() {
         maxItemCount: 2
       };
 
-      const expectedOrderedIds = documentDefinitions.sort(compareSpam).map(function(r) {
+      const expectedOrderedIds = documentDefinitions.sort(compare("spam")).map(function(r) {
         return r["id"];
       });
 
@@ -767,7 +774,7 @@ describe("Cross Partition", function() {
       };
 
       const expectedOrderedIds = documentDefinitions
-        .sort(compareSpam)
+        .sort(compare("spam"))
         .map(function(r) {
           return r["id"];
         })
@@ -788,7 +795,7 @@ describe("Cross Partition", function() {
       };
 
       const expectedOrderedIds = documentDefinitions
-        .sort(compareSpam)
+        .sort(compare("spam"))
         .filter(function(r) {
           return r["cnt"] > 5;
         })
@@ -827,11 +834,7 @@ describe("Cross Partition", function() {
         maxItemCount: 2
       };
 
-      // prepare expected results
-      const getOrderByKey = function(r: any) {
-        return r["cnt"];
-      };
-      const expectedOrderedIds = documentDefinitions.sort(compareSpam).map(function(r) {
+      const expectedOrderedIds = documentDefinitions.sort(compare("cnt")).map(function(r) {
         return r["id"];
       });
 
@@ -847,11 +850,7 @@ describe("Cross Partition", function() {
         maxItemCount: 2
       };
 
-      // prepare expected results
-      const getOrderByKey = function(r: any) {
-        return r["number"];
-      };
-      const expectedOrderedIds = documentDefinitions.sort(compareSpam).map(function(r) {
+      const expectedOrderedIds = documentDefinitions.sort(compare("number")).map(function(r) {
         return r["id"];
       });
 
@@ -896,7 +895,7 @@ describe("Cross Partition", function() {
         maxItemCount: 2
       };
 
-      const expectedOrderedIds = documentDefinitions.sort(compareSpam).map(function(r) {
+      const expectedOrderedIds = documentDefinitions.sort(compare("spam")).map(function(r) {
         return r["id"];
       });
 
