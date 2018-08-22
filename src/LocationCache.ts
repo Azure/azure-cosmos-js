@@ -111,7 +111,7 @@ export class LocationCache {
     let regionIndex = 0;
     if (!Helper.isReadRequest(request)) {
       endpoints = this.writeEndpoints;
-      if (!this.canUseMultipleWriteLocations() || request.resourceType !== "document") {
+      if (!this.canUseMultipleWriteLocations() || request.resourceType !== "docs") {
         // TODO: document should be enum
         // For non-document resource types in case of client can use multiple write locations
         // or when client cannot use multiple write locations, flip-flop between the
@@ -232,7 +232,7 @@ export class LocationCache {
     enableMultipleWritableLocations?: boolean
   ) {
     if (enableMultipleWritableLocations) {
-      this.enableMultipleWritableLocations = this.enableMultipleWritableLocations;
+      this.enableMultipleWritableLocations = enableMultipleWritableLocations;
     }
 
     this.clearStaleEndpointUnavailabilityInfo();
@@ -310,7 +310,7 @@ export class LocationCache {
         continue;
       }
 
-      endpointsByLocation.set(location.name, location.databaseAccountEndpoint);
+      endpointsByLocation.set(location.name.toLowerCase().replace(/ /g, ""), location.databaseAccountEndpoint);
     }
     return endpointsByLocation;
   }

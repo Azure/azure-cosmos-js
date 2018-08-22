@@ -103,9 +103,9 @@ export class ConflictWorker {
         const items = await Promise.all(insertTask);
         p.succeed();
 
-        const numberOfConflicts = items.reduce<number>((prev, curr) => (curr === null ? ++prev : prev), 0);
+        const numberOfConflicts = items.reduce<number>((prev, curr) => (curr !== null ? ++prev : prev), 0);
 
-        if (numberOfConflicts > 0) {
+        if (numberOfConflicts > 1) {
           p = logger(`Caused ${numberOfConflicts}, verifying conflict resolution`).succeed();
 
           for (const item of items) {
@@ -131,7 +131,7 @@ export class ConflictWorker {
       const [initialRegionName, initialClient] = this.clients.entries().next().value;
       const container = initialClient.database(this.databaseName).container(this.manualContainerName);
       const item = { regionId: 0, regionEndpoint: initialRegionName, ...itemBase }; // TODO: ReadEndpoint?
-      await container.items.create(item);
+      const { body: newItemDef } = await container.items.create(item);
 
       await this.sleep(1000); // 1 second for the write to sync
 
@@ -142,7 +142,7 @@ export class ConflictWorker {
       const updates: Array<Promise<ItemDefinition>> = [];
       let index = 0;
       for (const [regionName, client] of this.clients.entries()) {
-        const newDef = { regionId: index++, regionName, ...itemBase };
+        const newDef = { regionId: index++, regionName, ...itemBase, _etag: newItemDef._etag };
         updates.push(
           this.tryUpdateItem(
             client
@@ -156,7 +156,7 @@ export class ConflictWorker {
 
       const updatedItems = await Promise.all(updates);
       const numberOfConflicts = updatedItems.reduce((p: number, c: ItemDefinition) => (c !== null ? ++p : p), -1);
-      if (numberOfConflicts > 0) {
+      if (numberOfConflicts > 1) {
         console.log(`2) Caused ${numberOfConflicts} update conflicts, verifying conflict resolution`);
 
         for (const updatedItem of updatedItems) {
@@ -164,6 +164,7 @@ export class ConflictWorker {
             await this.validateAllManualConflict(updatedItem);
           }
         }
+        break;
       }
     } while (true);
   }
@@ -175,7 +176,7 @@ export class ConflictWorker {
       const [initialRegionName, initialClient] = this.clients.entries().next().value;
       const container = initialClient.database(this.databaseName).container(this.manualContainerName);
       const item = { regionId: 0, regionEndpoint: initialRegionName, ...itemBase }; // TODO: ReadEndpoint?
-      await container.items.create(item);
+      const { body: newItemDef } = await container.items.create(item);
 
       await this.sleep(1000); // 1 second for the write to sync
 
@@ -186,7 +187,7 @@ export class ConflictWorker {
       const deletes: Array<Promise<ItemDefinition>> = [];
       let index = 0;
       for (const [regionName, client] of this.clients.entries()) {
-        const newDef = { regionId: index++, regionName, ...itemBase };
+        const newDef = { regionId: index++, regionName, ...itemBase, _etag: newItemDef._etag };
         deletes.push(
           this.tryDeleteItem(
             client
@@ -200,7 +201,7 @@ export class ConflictWorker {
 
       const deletedItems = await Promise.all(deletes);
       const numberOfConflicts = deletedItems.reduce((p: number, c: ItemDefinition) => (c !== null ? ++p : p), -1);
-      if (numberOfConflicts > 0) {
+      if (numberOfConflicts > 1) {
         console.log(`2) Caused ${numberOfConflicts} delete conflicts, verifying conflict resolution`);
 
         for (const deletedItem of deletedItems) {
@@ -233,9 +234,9 @@ export class ConflictWorker {
       const { result: conflicts } = await container.conflicts.readAll().toArray();
 
       for (const conflict of conflicts) {
-        if (conflict.operationKind !== Constants.OperationTypes.Delete) {
-          const content = conflict.content;
-          if (item.id !== conflict.id) {
+        if (conflict.operationType !== Constants.OperationTypes.Delete) {
+          const content = JSON.parse(conflict.content as any);
+          if (item.id !== content.id) {
             continue;
           }
 
@@ -254,7 +255,7 @@ export class ConflictWorker {
             }
           }
         } else {
-          if (conflict.sourceResourceId === item._rid) {
+          if (conflict.resourceId === item._rid) {
             console.log(`Delete conflict found @ ${clientRegion}`);
             return false;
           }
@@ -300,7 +301,7 @@ export class ConflictWorker {
       const [initialRegionName, initialClient] = this.clients.entries().next().value;
       const container = initialClient.database(this.databaseName).container(this.lwwContainerName);
       const item = { regionId: 0, regionEndpoint: initialRegionName, ...itemBase }; // TODO: ReadEndpoint?
-      await container.items.create(item);
+      const { body: newItemDef } = await container.items.create(item);
 
       await this.sleep(1000); // 1 second for the write to sync
 
@@ -309,7 +310,7 @@ export class ConflictWorker {
       const updates: Array<Promise<ItemDefinition>> = [];
       let index = 0;
       for (const [regionName, client] of this.clients.entries()) {
-        const newDef = { regionId: index++, regionName, ...itemBase };
+        const newDef = { regionId: index++, regionName, ...itemBase, _etag: newItemDef._etag };
         updates.push(
           this.tryUpdateItem(
             client
@@ -520,7 +521,7 @@ export class ConflictWorker {
       const [initialRegionName, initialClient] = this.clients.entries().next().value;
       const container = initialClient.database(this.databaseName).container(this.udpContainerName);
       const item = { regionId: 0, regionEndpoint: initialRegionName, ...itemBase }; // TODO: ReadEndpoint?
-      await container.items.create(item);
+      const { body: newItemDef } = await container.items.create(item);
 
       await this.sleep(1000); // 1 second for the write to sync
 
@@ -529,7 +530,7 @@ export class ConflictWorker {
       const deletes: Array<Promise<ItemDefinition>> = [];
       let index = 0;
       for (const [regionName, client] of this.clients.entries()) {
-        const newDef = { regionId: index++, regionName, ...itemBase };
+        const newDef = { regionId: index++, regionName, ...itemBase, _etag: newItemDef._etag };
         if (index % 2 === 1) {
           deletes.push(
             this.tryDeleteItem(
@@ -648,7 +649,8 @@ export class ConflictWorker {
       if (err.statusCode === StatusCodes.PreconditionFailed || err.statusCode === StatusCodes.NotFound) {
         return null; // Lost synchronously or not document yet. No conflict is induced.
       } else {
-        throw new Error(err);
+        console.log("tryUpdateItem hit unexpected error");
+        throw new Error(JSON.stringify(err));
       }
     }
   }
@@ -677,14 +679,14 @@ export class ConflictWorker {
     const conflicts = await container.conflicts.readAll().toArray();
 
     for (const conflict of conflicts.result) {
-      if (conflict.operationKind !== Constants.OperationTypes.Delete) {
-        const content = conflict.content;
+      if (conflict.operationType !== Constants.OperationTypes.Delete) {
+        const content = JSON.parse(conflict.content);
         if (content._rid === item._rid && content._etag === item._etag && content.regionId === item.regionId) {
-          console.log(`Deleting manual conflict ${conflict.sourceResourceId} from region ${item.regionId}`);
+          console.log(`Deleting manual conflict ${conflict.resourceId} from region ${item.regionId}`);
           await container.conflict(conflict.id).delete();
         }
-      } else if (conflict.sourceResourceId === item._rid) {
-        console.log(`Deleting manual conflict ${conflict.sourceResourceId} from region ${item.regionId}`);
+      } else if (conflict.resourceId === item._rid) {
+        console.log(`Deleting manual conflict ${conflict.resourceId} from region ${item.regionId}`);
         await container.conflict(conflict.id).delete();
       }
     }

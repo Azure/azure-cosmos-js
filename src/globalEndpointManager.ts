@@ -1,10 +1,11 @@
 ﻿import * as url from "url";
 import { RequestOptions } from ".";
-import { Response } from ".";
 import { Constants, Helper } from "./common";
+import { CosmosClient } from "./CosmosClient";
 import { CosmosClientOptions } from "./CosmosClientOptions";
-import { DatabaseAccount, Location } from "./documents";
+import { DatabaseAccount } from "./documents";
 import { LocationCache } from "./LocationCache";
+import { CosmosResponse } from "./request";
 import { RequestContext } from "./request/RequestContext";
 
 /**
@@ -34,7 +35,7 @@ export class GlobalEndpointManager {
    */
   constructor(
     options: CosmosClientOptions,
-    private readDatabaseAccount: (opts: RequestOptions) => Promise<Response<DatabaseAccount>>
+    private readDatabaseAccount: (opts: RequestOptions) => Promise<CosmosResponse<DatabaseAccount, CosmosClient>>
   ) {
     this.defaultEndpoint = options.endpoint;
     this.readEndpoint = options.endpoint;
@@ -94,6 +95,26 @@ export class GlobalEndpointManager {
     if (!this.isRefreshing) {
       this.isRefreshing = true;
       let shouldRefresh = false;
+      const databaseAccount = await this.getDatabaseAccountFromAnyEndpoint();
+      if (databaseAccount) {
+        this.locationCache.onDatabaseAccountRead(databaseAccount);
+      }
+
+      ({ shouldRefresh } = this.locationCache.shouldRefreshEndpoints());
+      if (shouldRefresh) {
+        this.backgroundRefresh();
+        return;
+      } else {
+        this.isRefreshing = false;
+        this.isEndpointCacheInitialized = true;
+      }
+    }
+  }
+
+  private backgroundRefresh() {
+    process.nextTick(async () => {
+      this.isRefreshing = true;
+      let shouldRefresh = false;
       do {
         const databaseAccount = await this.getDatabaseAccountFromAnyEndpoint();
         if (databaseAccount) {
@@ -108,7 +129,7 @@ export class GlobalEndpointManager {
       } while (shouldRefresh);
       this.isRefreshing = false;
       this.isEndpointCacheInitialized = true;
-    }
+    });
   }
 
   /**
@@ -122,7 +143,7 @@ export class GlobalEndpointManager {
   private async getDatabaseAccountFromAnyEndpoint(): Promise<DatabaseAccount> {
     try {
       const options = { urlConnection: this.defaultEndpoint };
-      const { result: databaseAccount } = await this.readDatabaseAccount(options);
+      const { body: databaseAccount } = await this.readDatabaseAccount(options);
       return databaseAccount;
       // If for any reason(non - globaldb related), we are not able to get the database
       // account from the above call to readDatabaseAccount,
@@ -139,7 +160,7 @@ export class GlobalEndpointManager {
         try {
           const locationalEndpoint = GlobalEndpointManager.getLocationalEndpoint(this.defaultEndpoint, location);
           const options = { urlConnection: locationalEndpoint };
-          const { result: databaseAccount } = await this.readDatabaseAccount(options);
+          const { body: databaseAccount } = await this.readDatabaseAccount(options);
           if (databaseAccount) {
             return databaseAccount;
           }

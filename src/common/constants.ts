@@ -150,7 +150,10 @@ export const Constants = {
 
     // StoredProcedure related headers
     EnableScriptLogging: "x-ms-documentdb-script-enable-logging",
-    ScriptLogResults: "x-ms-documentdb-script-log-results"
+    ScriptLogResults: "x-ms-documentdb-script-log-results",
+
+    // Multi-Region Write
+    ALLOW_MULTIPLE_WRITES: "x-ms-cosmos-allow-tentative-writes"
   },
 
   // GlobalDB related constants
@@ -160,7 +163,7 @@ export const Constants = {
   DatabaseAccountEndpoint: "databaseAccountEndpoint",
 
   // ServiceDocument Resource
-  ENABLE_MULTIPLE_WRITABLE_LOCATIONS: "enableMultipleWritableLocations",
+  ENABLE_MULTIPLE_WRITABLE_LOCATIONS: "enableMultipleWriteLocations",
 
   // Background refresh time
   DefaultUnavailableLocationExpirationTimeMS: 5 * 60 * 1000,

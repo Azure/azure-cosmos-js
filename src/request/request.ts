@@ -176,10 +176,15 @@ export async function getHeaders(
   resourceId: string,
   resourceType: string,
   options: RequestOptions | FeedOptions | MediaOptions,
-  partitionKeyRangeId?: string
+  partitionKeyRangeId?: string,
+  useMultipleWRiteLocations?: boolean
 ): Promise<IHeaders> {
   const headers: IHeaders = { ...defaultHeaders };
   const opts: RequestOptions & FeedOptions & MediaOptions = (options || {}) as any; // TODO: this is dirty
+
+  if (useMultipleWRiteLocations && verb !== "GET") {
+    headers[Constants.HttpHeaders.ALLOW_MULTIPLE_WRITES] = true;
+  }
 
   if (opts.continuation) {
     headers[Constants.HttpHeaders.Continuation] = opts.continuation;
