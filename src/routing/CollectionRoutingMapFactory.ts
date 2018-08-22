@@ -17,8 +17,8 @@ export class CollectionRoutingMapFactory {
       sortedRanges.push(r);
     }
 
-    sortedRanges = _.sortBy(sortedRanges, r => {
-      return r[0][Constants.PartitionKeyRange.MinInclusive];
+    sortedRanges = sortedRanges.sort((a, b) => {
+      return a[0][Constants.PartitionKeyRange.MinInclusive] - b[0][Constants.PartitionKeyRange.MinInclusive];
     });
     const partitionKeyOrderedRange = sortedRanges.map(r => r[0]);
     const orderedPartitionInfo = sortedRanges.map(r => r[1]);

@@ -8,6 +8,10 @@ import { SqlQuerySpec } from "../../queryExecutionContext";
 import { QueryIterator } from "../../queryIterator";
 import { bulkInsertItems, getTestContainer, removeAllDatabases } from "../common/TestHelpers";
 
+function compareSpam(a: any, b: any) {
+  return a["spam"] - b["spam"];
+}
+
 describe("Cross Partition", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || "30000");
   const generateDocuments = function(docSize: number) {
@@ -313,10 +317,6 @@ describe("Cross Partition", function() {
         maxDegreeOfParallelism: 0
       };
 
-      // prepare expected results
-      const getOrderByKey = function(r: any) {
-        return r["spam"];
-      };
       const expectedOrderedIds = [1, 10, 18, 2, 3, 13, 14, 16, 17, 0, 11, 12, 5, 9, 19, 4, 6, 7, 8, 15];
 
       // validates the results size and order
@@ -333,10 +333,6 @@ describe("Cross Partition", function() {
         populateQueryMetrics: true
       };
 
-      // prepare expected results
-      const getOrderByKey = function(r: any) {
-        return r["spam"];
-      };
       const expectedOrderedIds = [1, 10, 18, 2, 3, 13, 14, 16, 17, 0, 11, 12, 5, 9, 19, 4, 6, 7, 8, 15];
 
       // validates the results size and order
@@ -352,10 +348,6 @@ describe("Cross Partition", function() {
         maxDegreeOfParallelism: 1
       };
 
-      // prepare expected results
-      const getOrderByKey = function(r: any) {
-        return r["spam"];
-      };
       const expectedOrderedIds = [1, 10, 18, 2, 3, 13, 14, 16, 17, 0, 11, 12, 5, 9, 19, 4, 6, 7, 8, 15];
 
       // validates the results size and order
@@ -371,10 +363,6 @@ describe("Cross Partition", function() {
         maxDegreeOfParallelism: 3
       };
 
-      // prepare expected results
-      const getOrderByKey = function(r: any) {
-        return r["spam"];
-      };
       const expectedOrderedIds = [1, 10, 18, 2, 3, 13, 14, 16, 17, 0, 11, 12, 5, 9, 19, 4, 6, 7, 8, 15];
 
       // validates the results size and order
@@ -476,11 +464,7 @@ describe("Cross Partition", function() {
         maxDegreeOfParallelism: 0
       };
 
-      // prepare expected results
-      const getOrderByKey = function(r: any) {
-        return r["spam"];
-      };
-      const expectedOrderedIds = _.sortBy(documentDefinitions, getOrderByKey).map(function(r) {
+      const expectedOrderedIds = documentDefinitions.sort(compareSpam).map(function(r) {
         return r["id"];
       });
 
@@ -497,11 +481,7 @@ describe("Cross Partition", function() {
         maxDegreeOfParallelism: 1
       };
 
-      // prepare expected results
-      const getOrderByKey = function(r: any) {
-        return r["spam"];
-      };
-      const expectedOrderedIds = _.sortBy(documentDefinitions, getOrderByKey).map(function(r) {
+      const expectedOrderedIds = documentDefinitions.sort(compareSpam).map(function(r) {
         return r["id"];
       });
 
@@ -518,11 +498,7 @@ describe("Cross Partition", function() {
         maxDegreeOfParallelism: 3
       };
 
-      // prepare expected results
-      const getOrderByKey = function(r: any) {
-        return r["spam"];
-      };
-      const expectedOrderedIds = _.sortBy(documentDefinitions, getOrderByKey).map(function(r) {
+      const expectedOrderedIds = documentDefinitions.sort(compareSpam).map(function(r) {
         return r["id"];
       });
 
@@ -539,11 +515,7 @@ describe("Cross Partition", function() {
         maxDegreeOfParallelism: -1
       };
 
-      // prepare expected results
-      const getOrderByKey = function(r: any) {
-        return r["spam"];
-      };
-      const expectedOrderedIds = _.sortBy(documentDefinitions, getOrderByKey).map(function(r) {
+      const expectedOrderedIds = documentDefinitions.sort(compareSpam).map(function(r) {
         return r["id"];
       });
 
@@ -559,11 +531,7 @@ describe("Cross Partition", function() {
         maxItemCount: 2
       };
 
-      // prepare expected results
-      const getOrderByKey = function(r: any) {
-        return r["spam"];
-      };
-      const expectedOrderedIds = _.sortBy(documentDefinitions, getOrderByKey).map(function(r) {
+      const expectedOrderedIds = documentDefinitions.sort(compareSpam).map(function(r) {
         return r["id"];
       });
 
@@ -581,11 +549,7 @@ describe("Cross Partition", function() {
         maxItemCount: 2
       };
 
-      // prepare expected results
-      const getOrderByKey = function(r: any) {
-        return r["spam"];
-      };
-      const expectedOrderedIds = _.sortBy(documentDefinitions, getOrderByKey).map(function(r) {
+      const expectedOrderedIds = documentDefinitions.sort(compareSpam).map(function(r) {
         return r["id"];
       });
 
@@ -603,11 +567,7 @@ describe("Cross Partition", function() {
         maxItemCount: 2
       };
 
-      // prepare expected results
-      const getOrderByKey = function(r: any) {
-        return r["spam"];
-      };
-      const expectedOrderedIds = _.sortBy(documentDefinitions, getOrderByKey).map(function(r) {
+      const expectedOrderedIds = documentDefinitions.sort(compareSpam).map(function(r) {
         return r["id"];
       });
 
@@ -625,11 +585,8 @@ describe("Cross Partition", function() {
         maxItemCount: 2
       };
 
-      // prepare expected results
-      const getOrderByKey = function(r: any) {
-        return r["spam"];
-      };
-      const expectedOrderedIds = _.sortBy(documentDefinitions, getOrderByKey)
+      const expectedOrderedIds = documentDefinitions
+        .sort(compareSpam)
         .map(function(r) {
           return r["id"];
         })
@@ -650,11 +607,8 @@ describe("Cross Partition", function() {
         maxItemCount: 2
       };
 
-      // prepare expected results
-      const getOrderByKey = function(r: any) {
-        return r["spam"];
-      };
-      const expectedOrderedIds = _.sortBy(documentDefinitions, getOrderByKey)
+      const expectedOrderedIds = documentDefinitions
+        .sort(compareSpam)
         .map(function(r) {
           return r["id"];
         })
@@ -676,11 +630,7 @@ describe("Cross Partition", function() {
         maxItemCount: 2
       };
 
-      // prepare expected results
-      const getOrderByKey = function(r: any) {
-        return r["spam"];
-      };
-      const expectedOrderedIds = _.sortBy(documentDefinitions, getOrderByKey).map(function(r) {
+      const expectedOrderedIds = documentDefinitions.sort(compareSpam).map(function(r) {
         return r["id"];
       });
 
@@ -816,11 +766,8 @@ describe("Cross Partition", function() {
         maxItemCount: 2
       };
 
-      // prepare expected results
-      const getOrderByKey = function(r: any) {
-        return r["spam"];
-      };
-      const expectedOrderedIds = _.sortBy(documentDefinitions, getOrderByKey)
+      const expectedOrderedIds = documentDefinitions
+        .sort(compareSpam)
         .map(function(r) {
           return r["id"];
         })
@@ -840,11 +787,8 @@ describe("Cross Partition", function() {
         maxItemCount: 2
       };
 
-      // prepare expected results
-      const getOrderByKey = function(r: any) {
-        return r["spam"];
-      };
-      const expectedOrderedIds = _.sortBy(documentDefinitions, getOrderByKey)
+      const expectedOrderedIds = documentDefinitions
+        .sort(compareSpam)
         .filter(function(r) {
           return r["cnt"] > 5;
         })
@@ -887,7 +831,7 @@ describe("Cross Partition", function() {
       const getOrderByKey = function(r: any) {
         return r["cnt"];
       };
-      const expectedOrderedIds = _.sortBy(documentDefinitions, getOrderByKey).map(function(r) {
+      const expectedOrderedIds = documentDefinitions.sort(compareSpam).map(function(r) {
         return r["id"];
       });
 
@@ -907,7 +851,7 @@ describe("Cross Partition", function() {
       const getOrderByKey = function(r: any) {
         return r["number"];
       };
-      const expectedOrderedIds = _.sortBy(documentDefinitions, getOrderByKey).map(function(r) {
+      const expectedOrderedIds = documentDefinitions.sort(compareSpam).map(function(r) {
         return r["id"];
       });
 
@@ -952,11 +896,7 @@ describe("Cross Partition", function() {
         maxItemCount: 2
       };
 
-      // prepare expected results
-      const getOrderByKey = function(r: any) {
-        return r["spam"];
-      };
-      const expectedOrderedIds = _.sortBy(documentDefinitions, getOrderByKey).map(function(r) {
+      const expectedOrderedIds = documentDefinitions.sort(compareSpam).map(function(r) {
         return r["id"];
       });
 
