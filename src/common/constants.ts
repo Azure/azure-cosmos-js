@@ -169,7 +169,7 @@ export const Constants = {
   ThrottleRetryCount: "x-ms-throttle-retry-count",
   ThrottleRetryWaitTimeInMs: "x-ms-throttle-retry-wait-time-ms",
 
-  CurrentVersion: "2017-11-15",
+  CurrentVersion: "2018-06-18",
 
   SDKName: "azure-cosmos-js",
   SDKVersion: "2.0.0-3", // TODO: should pull this from package.json. Blocked by Tslint https://github.com/palantir/tslint/issues/3957
