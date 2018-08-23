@@ -5,25 +5,18 @@ async function run() {
   const scenarios = new MultiRegionWriteScenario();
   await scenarios.init();
 
-  // await scenarios.runBasic();
-  try {
-    await scenarios.runManualConflict();
-  } catch (err) {
-    console.error("Manual sceanrio failed");
-    console.error(err);
-  }
-  try {
-    await scenarios.runLWW();
-  } catch (err) {
-    console.error("LWW sceanrio failed");
-    console.error(err);
-  }
-  try {
-    await scenarios.runUDP();
-  } catch (err) {
-    console.error("UDP sceanrio failed");
-    console.error(err);
-  }
+  await scenarios.runBasic();
+  await scenarios.runManualConflict();
+  await scenarios.runLWW();
+  await scenarios.runUDP();
 }
 
-run().catch(console.error);
+run()
+  .catch(err => {
+    console.error(err);
+    process.exit(1);
+  })
+  .then(() => {
+    console.log("Complete!");
+    process.exit(0);
+  });

@@ -187,7 +187,7 @@ export class ConflictWorker {
       const deletes: Array<Promise<ItemDefinition>> = [];
       let index = 0;
       for (const [regionName, client] of this.clients.entries()) {
-        const newDef = { regionId: index++, regionName, ...itemBase, _etag: newItemDef._etag };
+        const newDef = { regionId: index++, regionName, ...itemBase, _etag: newItemDef._etag, _rid: newItemDef._rid };
         deletes.push(
           this.tryDeleteItem(
             client
@@ -249,7 +249,7 @@ export class ConflictWorker {
               console.log(`Document from region ${item.regionId} won the conflict @ ${clientRegion}`);
               return false;
             } catch (err) {
-              if (err.statusCode && err.statusCode === StatusCodes.NotFound) {
+              if (err.code && err.code === StatusCodes.NotFound) {
                 console.log(`Item from region ${item.regionId} not found @ ${clientRegion}`);
               }
             }
@@ -342,7 +342,7 @@ export class ConflictWorker {
       const [initialRegionName, initialClient] = this.clients.entries().next().value;
       const container = initialClient.database(this.databaseName).container(this.lwwContainerName);
       const item = { regionId: 0, regionEndpoint: initialRegionName, ...itemBase }; // TODO: ReadEndpoint?
-      await container.items.create(item);
+      const { body: newItemDef } = await container.items.create(item);
 
       await this.sleep(1000); // 1 second for the write to sync
 
@@ -351,7 +351,7 @@ export class ConflictWorker {
       const deletes: Array<Promise<ItemDefinition>> = [];
       let index = 0;
       for (const [regionName, client] of this.clients.entries()) {
-        const newDef = { regionId: index++, regionName, ...itemBase };
+        const newDef = { regionId: index++, regionName, ...itemBase, _etag: newItemDef._etag };
         if (index % 2 === 1) {
           deletes.push(
             this.tryDeleteItem(
@@ -413,7 +413,7 @@ export class ConflictWorker {
         try {
           await container.item(items[0].id).read();
         } catch (err) {
-          if (err.statusCode === StatusCodes.NotFound) {
+          if (err.code === StatusCodes.NotFound) {
             console.log(`Delete conflict won @ ${regionName}`);
             return;
           }
@@ -480,7 +480,7 @@ export class ConflictWorker {
       const [initialRegionName, initialClient] = this.clients.entries().next().value;
       const container = initialClient.database(this.databaseName).container(this.udpContainerName);
       const item = { regionId: 0, regionEndpoint: initialRegionName, ...itemBase }; // TODO: ReadEndpoint?
-      await container.items.create(item);
+      const { body: newItemDef } = await container.items.create(item);
 
       await this.sleep(1000); // 1 second for the write to sync
 
@@ -489,7 +489,7 @@ export class ConflictWorker {
       const updates: Array<Promise<ItemDefinition>> = [];
       let index = 0;
       for (const [regionName, client] of this.clients.entries()) {
-        const newDef = { regionId: index++, regionName, ...itemBase };
+        const newDef = { regionId: index++, regionName, ...itemBase, _etag: newItemDef._etag };
         updates.push(
           this.tryUpdateItem(
             client
@@ -590,9 +590,9 @@ export class ConflictWorker {
     if (hasDeleteConflict) {
       do {
         try {
-          await container.item(items[0].id).read();
+          const { body: shouldNotExist } = await container.item(items[0].id).read();
         } catch (err) {
-          if (err.statusCode === StatusCodes.NotFound) {
+          if (err.code === StatusCodes.NotFound) {
             console.log(`Delete conflict won @ ${regionName}`);
             return;
           }
@@ -646,7 +646,7 @@ export class ConflictWorker {
         }
       })).body;
     } catch (err) {
-      if (err.statusCode === StatusCodes.PreconditionFailed || err.statusCode === StatusCodes.NotFound) {
+      if (err.code === StatusCodes.PreconditionFailed || err.code === StatusCodes.NotFound) {
         return null; // Lost synchronously or not document yet. No conflict is induced.
       } else {
         console.log("tryUpdateItem hit unexpected error");
@@ -657,7 +657,7 @@ export class ConflictWorker {
 
   private async tryDeleteItem(item: Item, newDef: ItemDefinition): Promise<ItemDefinition> {
     try {
-      await item.delete({
+      const { body: deletedItem } = await item.delete({
         accessCondition: {
           type: "IfMatch",
           condition: newDef._etag
@@ -665,7 +665,7 @@ export class ConflictWorker {
       });
       return newDef;
     } catch (err) {
-      if (err.statusCode === StatusCodes.PreconditionFailed || err.statusCode === StatusCodes.NotFound) {
+      if (err.code === StatusCodes.PreconditionFailed || err.code === StatusCodes.NotFound) {
         return null; // Lost synchronously or not document yet. No conflict is induced.
       } else {
         throw new Error(err);
