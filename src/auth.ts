@@ -1,4 +1,4 @@
-import createHmac = require("create-hmac");
+import createHmac from "create-hmac";
 import { PermissionDefinition } from "./client";
 import { Helper } from "./common";
 import { IHeaders } from "./queryExecutionContext";
