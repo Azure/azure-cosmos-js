@@ -21,7 +21,7 @@ import { CosmosResponse } from "./request";
  * ```
  * @example Instantiate a client with custom Connection Policy
  * ```typescript
- * const connectionPolicy = new DocumentBase.ConnectionPolicy();
+ * const connectionPolicy = new ConnectionPolicy();
  * connectionPolicy.RequestTimeout = 10000;
  * const client = new CosmosClient({
  *    endpoint: "<URL HERE>",
