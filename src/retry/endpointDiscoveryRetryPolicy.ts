@@ -54,7 +54,7 @@ export class EndpointDiscoveryRetryPolicy {
     }
 
     if (!Helper.isReadRequest(this.request) && this.globalEndpointManager.getAlternateEndpoint()) {
-      this.request.useAlternateWriteEndpoint = !this.request.useAlternateWriteEndpoint;
+      this.request.retryCount++;
     } else {
       // TODO: Tracing
       // console.log("Write region was changed, refreshing the regions list from database account

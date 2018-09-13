@@ -5,6 +5,6 @@ export interface RequestContext {
   operationType?: string;
   client?: ClientContext;
   endpointOverride?: boolean; // ?
-  useAlternateWriteEndpoint?: boolean;
+  retryCount?: number;
   resourceType?: string;
 }

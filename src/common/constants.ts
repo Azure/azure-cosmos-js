@@ -245,3 +245,16 @@ export const Constants = {
     MaximumExclusiveEffectivePartitionKey: "FF"
   }
 };
+
+export enum ResourceType {
+  database = "dbs",
+  offer = "offers",
+  user = "users",
+  permission = "permissions",
+  container = "colls",
+  conflicts = "conflicts",
+  sproc = "sprocs",
+  udf = "udfs",
+  trigger = "triggers",
+  item = "docs"
+}
