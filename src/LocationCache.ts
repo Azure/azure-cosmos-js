@@ -269,12 +269,7 @@ export class LocationCache {
       this.defaultEndpoint
     );
 
-    this.orderedHubLocations = this.orderedWriteLocations.reduce((prev, curr, i) => {
-      if (i < 2) {
-        prev.push(curr);
-      }
-      return prev;
-    }, []);
+    this.orderedHubLocations = this.orderedWriteLocations.slice(0, 2);
 
     this.lastCacheUpdateTimestamp = new Date();
   }
