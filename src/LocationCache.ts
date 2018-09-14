@@ -1,4 +1,4 @@
-import { Helper } from "./common";
+import { Constants, Helper, ResourceType } from "./common";
 import { CosmosClientOptions } from "./CosmosClientOptions";
 import { DatabaseAccount, Location } from "./documents";
 import { RequestContext } from "./request/RequestContext";
@@ -20,8 +20,11 @@ interface LocationUnavailabilityInfo {
  */
 export class LocationCache {
   private locationUnavailabilityInfoByEndpoint: Map<string, LocationUnavailabilityInfo> = new Map();
-  private availableReadLocations: Map<string, string>;
-  private availableWriteLocations: Map<string, string>;
+  private availableReadLocations: ReadonlyMap<string, string>;
+  private availableWriteLocations: ReadonlyMap<string, string>;
+  private orderedWriteLocations: ReadonlyArray<string>;
+  private orderedReadLocations: ReadonlyArray<string>;
+  private orderedHubLocations: ReadonlyArray<string>;
   private writeEndpoints: ReadonlyArray<string>;
   private readEndpoints: ReadonlyArray<string>;
   private lastCacheUpdateTimestamp: Date = new Date(0);
@@ -106,23 +109,22 @@ export class LocationCache {
     );
   }
 
+  public getHubEndpoint(): string {
+    return this.orderedWriteLocations[0];
+  }
+
   public resolveServiceEndpoint(request: RequestContext): string {
     let endpoints: ReadonlyArray<string>;
-    let regionIndex = 0;
+    let regionIndex = request.retryCount;
     if (!Helper.isReadRequest(request)) {
-      endpoints = this.writeEndpoints;
-      if (!this.canUseMultipleWriteLocations() || request.resourceType !== "docs") {
-        // TODO: document should be enum
+      if (!this.canUseMultipleWriteLocations(request)) {
         // For non-document resource types in case of client can use multiple write locations
         // or when client cannot use multiple write locations, flip-flop between the
         // first and the second writable region in DatabaseAccount (for manual failover)
-        regionIndex = request.useAlternateWriteEndpoint ? 1 : 0;
-        const availableWriteEndpointsByLocation = this.availableWriteLocations;
-        endpoints = this.getPreferredAvailableEndpoints(
-          availableWriteEndpointsByLocation,
-          EndpointOperationType.None,
-          this.defaultEndpoint
-        );
+        regionIndex = regionIndex % 2;
+        endpoints = null; // set to 1 and 2 from this.availableWriteLocations
+      } else {
+        endpoints = this.writeEndpoints;
       }
     } else {
       endpoints = this.readEndpoints;
@@ -239,31 +241,47 @@ export class LocationCache {
 
     if (this.options.connectionPolicy.EnableEndpointDiscovery) {
       if (readLocations) {
-        this.availableReadLocations = this.getEndpointByLocation(readLocations);
+        ({
+          endpointsByLocation: this.availableReadLocations,
+          orderedLocations: this.orderedReadLocations
+        } = this.getEndpointByLocation(readLocations));
       }
 
       if (writeLocations) {
-        this.availableWriteLocations = this.getEndpointByLocation(writeLocations);
+        ({
+          endpointsByLocation: this.availableWriteLocations,
+          orderedLocations: this.orderedWriteLocations
+        } = this.getEndpointByLocation(writeLocations));
       }
     }
 
     this.writeEndpoints = this.getPreferredAvailableEndpoints(
       this.availableWriteLocations,
+      this.orderedWriteLocations,
       EndpointOperationType.Write,
       this.defaultEndpoint
     );
 
     this.readEndpoints = this.getPreferredAvailableEndpoints(
       this.availableReadLocations,
+      this.orderedReadLocations,
       EndpointOperationType.Read,
       this.defaultEndpoint
     );
 
-    this.lastCacheUpdateTimestamp = new Date(Date.now());
+    this.orderedHubLocations = this.orderedWriteLocations.reduce((prev, curr, i) => {
+      if (i < 2) {
+        prev.push(curr);
+      }
+      return prev;
+    }, []);
+
+    this.lastCacheUpdateTimestamp = new Date();
   }
 
   public getPreferredAvailableEndpoints(
-    endpointsByLocation: Map<string, string>,
+    endpointsByLocation: ReadonlyMap<string, string>,
+    orderedLocations: ReadonlyArray<string>,
     expectedAvailableOperation: EndpointOperationType,
     fallbackEndpoint: string
   ): string[] {
@@ -289,8 +307,10 @@ export class LocationCache {
           endpoints.push(fallbackEndpoint);
         }
       } else {
-        for (const endpoint of endpointsByLocation.values()) {
-          endpoints.push(endpoint);
+        for (const location of orderedLocations) {
+          if (endpointsByLocation.has(location)) {
+            endpoints.push(endpointsByLocation.get(location));
+          }
         }
       }
     }
@@ -302,20 +322,33 @@ export class LocationCache {
     return endpoints;
   }
 
-  private getEndpointByLocation(locations: Location[]): Map<string, string> {
+  private getEndpointByLocation(
+    locations: Location[]
+  ): { endpointsByLocation: Map<string, string>; orderedLocations: string[] } {
     const endpointsByLocation: Map<string, string> = new Map();
+    const orderedLocations: string[] = [];
 
     for (const location of locations) {
       if (!location) {
         continue;
       }
-
-      endpointsByLocation.set(location.name.toLowerCase().replace(/ /g, ""), location.databaseAccountEndpoint);
+      const fixedUpLocation = location.name.toLowerCase().replace(/ /g, "");
+      endpointsByLocation.set(fixedUpLocation, location.databaseAccountEndpoint);
+      orderedLocations.push(fixedUpLocation);
     }
-    return endpointsByLocation;
+    return { endpointsByLocation, orderedLocations };
   }
 
-  private canUseMultipleWriteLocations(): boolean {
-    return this.options.connectionPolicy.UseMultipleWriteLocations && this.enableMultipleWritableLocations;
+  private canUseMultipleWriteLocations(request?: RequestContext): boolean {
+    let canUse = this.options.connectionPolicy.UseMultipleWriteLocations && this.enableMultipleWritableLocations;
+
+    if (request) {
+      canUse =
+        canUse &&
+        (request.resourceType === ResourceType.item ||
+          (request.resourceType === ResourceType.sproc && request.operationType === Constants.OperationTypes.Execute));
+    }
+
+    return canUse;
   }
 }

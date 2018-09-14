@@ -46,7 +46,7 @@ export class VectorSessionToken {
 
     const [versionStr, globalLsnStr, ...regionSegments] = sessionToken.split(VectorSessionToken.SEGMENT_SEPARATOR);
 
-    const version = parseFloat(versionStr);
+    const version = parseInt(versionStr, 10);
     const globalLsn = parseFloat(globalLsnStr);
 
     if (!isNumber(version) || !isNumber(globalLsn)) {
@@ -87,11 +87,6 @@ export class VectorSessionToken {
           this.areRegionProgressEqual(other.localLsnByregion);
   }
 
-  // TODO: Might not need this
-  public isValid(other: VectorSessionToken): boolean {
-    throw new Error("Not implemented");
-  }
-
   public merge(other: VectorSessionToken): VectorSessionToken {
     if (other == null) {
       throw new Error("other (Vector Session Token) must not be null");
@@ -112,7 +107,7 @@ export class VectorSessionToken {
         highestLocalLsnByRegion.set(regionId, BigInt.max(highLocalLsn, lowLocalLsn));
       } else if (this.version === other.version) {
         throw new Error(
-          `Session tokens had same version, but different regions. Session 1: ${this.sessionToken} - Session 2: ${
+          `Compared session tokens have unexpected regions. Session 1: ${this.sessionToken} - Session 2: ${
             this.sessionToken
           }`
         );

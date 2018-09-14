@@ -120,6 +120,24 @@ export class CosmosClient {
   }
 
   /**
+   * Gets the currently used write endpoint url. Useful for troubleshooting purposes.
+   *
+   * The url may contain a region suffix (e.g. "-eastus") if we're using location specific endpoints.
+   */
+  public getWriteEndpoint(): Promise<string> {
+    return this.clientContext.getWriteEndpoint();
+  }
+
+  /**
+   * Gets the currently used read endpoint. Useful for troubleshooting purposes.
+   *
+   * The url may contain a region suffix (e.g. "-eastus") if we're using location specific endpoints.
+   */
+  public getReadEndpoitn(): Promise<string> {
+    return this.clientContext.getReadEndpoint();
+  }
+
+  /**
    * Used for reading, updating, or deleting a existing database by id or accessing containers belonging to that database.
    *
    * This does not make a network call. Use `.read` to get info about the database after getting the {@link Database} object.

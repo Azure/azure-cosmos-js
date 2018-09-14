@@ -21,8 +21,6 @@ import { RequestContext } from "./request/RequestContext";
  */
 export class GlobalEndpointManager {
   private defaultEndpoint: string;
-  private readEndpoint: string;
-  private writeEndpoint: string;
   public enableEndpointDiscovery: boolean;
   private isEndpointCacheInitialized: boolean;
   private locationCache: LocationCache;
@@ -38,8 +36,6 @@ export class GlobalEndpointManager {
     private readDatabaseAccount: (opts: RequestOptions) => Promise<CosmosResponse<DatabaseAccount, CosmosClient>>
   ) {
     this.defaultEndpoint = options.endpoint;
-    this.readEndpoint = options.endpoint;
-    this.writeEndpoint = options.endpoint;
     this.enableEndpointDiscovery = options.connectionPolicy.EnableEndpointDiscovery;
     this.isEndpointCacheInitialized = false;
     this.locationCache = new LocationCache(options);
@@ -69,6 +65,10 @@ export class GlobalEndpointManager {
 
   public getAlternateEndpoint(): string {
     return this.locationCache.getAlternativeWriteEndpoint();
+  }
+
+  public getHubEndpoint(): string {
+    return this.locationCache.getHubEndpoint();
   }
 
   public markCurrentLocationUnavailableForRead() {
@@ -115,18 +115,23 @@ export class GlobalEndpointManager {
     process.nextTick(async () => {
       this.isRefreshing = true;
       let shouldRefresh = false;
-      do {
-        const databaseAccount = await this.getDatabaseAccountFromAnyEndpoint();
-        if (databaseAccount) {
-          this.locationCache.onDatabaseAccountRead(databaseAccount);
-        }
+      try {
+        do {
+          const databaseAccount = await this.getDatabaseAccountFromAnyEndpoint();
+          if (databaseAccount) {
+            this.locationCache.onDatabaseAccountRead(databaseAccount);
+          }
 
-        ({ shouldRefresh } = this.locationCache.shouldRefreshEndpoints());
-        if (!shouldRefresh) {
-          break;
-        }
-        await Helper.sleep(this.backgroundRefreshTimeIntervalInMS);
-      } while (shouldRefresh);
+          ({ shouldRefresh } = this.locationCache.shouldRefreshEndpoints());
+          if (!shouldRefresh) {
+            break;
+          }
+          await Helper.sleep(this.backgroundRefreshTimeIntervalInMS);
+        } while (shouldRefresh);
+      } catch (err) {
+        /* swallow error */
+        // TODO: Tracing
+      }
       this.isRefreshing = false;
       this.isEndpointCacheInitialized = true;
     });
@@ -152,7 +157,7 @@ export class GlobalEndpointManager {
       // and keeping eating the exception until we get the database account and return None at the end,
       // if we are not able to get that info from any endpoints
     } catch (err) {
-      // TODO: error handling? Maybe at least tracing? Do we continue on all errors?
+      // TODO: Tracing
     }
 
     if (this.locationCache.prefferredLocations) {
@@ -165,7 +170,7 @@ export class GlobalEndpointManager {
             return databaseAccount;
           }
         } catch (err) {
-          // TODO: probably need error handling here?
+          // TODO: Tracing
         }
       }
     }

@@ -17,7 +17,8 @@ export class SessionContainer {
     if (!request) {
       throw new Error("request cannot be null");
     }
-    const rangeIdToTokenMap = this.getPartitionKeyRangeIdToTokenMap(request.resourceAddress);
+    const collectionName = Helper.getContainerLink(request.resourceAddress);
+    const rangeIdToTokenMap = this.getPartitionKeyRangeIdToTokenMap(collectionName);
     return SessionContainer.getCombinedSessionTokenString(rangeIdToTokenMap);
   }
 
@@ -73,10 +74,8 @@ export class SessionContainer {
     }
   }
 
-  private getPartitionKeyRangeIdToTokenMap(resourceAddress: string): Map<string, VectorSessionToken> {
+  private getPartitionKeyRangeIdToTokenMap(collectionName: string): Map<string, VectorSessionToken> {
     let rangeIdToTokenMap: Map<string, VectorSessionToken> = null;
-    resourceAddress = Helper.trimSlashes(resourceAddress);
-    const collectionName = Helper.getContainerLink(resourceAddress);
     if (collectionName && this.collectionNameToCollectionResourceId.has(collectionName)) {
       rangeIdToTokenMap = this.collectionResourceIdToSessionTokens.get(
         this.collectionNameToCollectionResourceId.get(collectionName)
@@ -123,6 +122,7 @@ export class SessionContainer {
     }
   }
 
+  // TODO: have a assert if the type doesn't mastch known types
   private static isReadingFromMaster(resourceType: string, operationType: string): boolean {
     if (
       resourceType === Constants.Path.OffersPathSegment ||

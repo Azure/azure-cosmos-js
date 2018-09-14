@@ -1,6 +1,6 @@
 import { Constants, CosmosClientOptions, IHeaders, QueryIterator, RequestOptions, Response, SqlQuerySpec } from ".";
 import { Helper, StatusCodes, SubStatusCodes } from "./common";
-import { ConnectionPolicy, DatabaseAccount, QueryCompatibilityMode } from "./documents";
+import { ConnectionPolicy, ConsistencyLevel, DatabaseAccount, QueryCompatibilityMode } from "./documents";
 import { GlobalEndpointManager } from "./globalEndpointManager";
 import { FetchFunctionCallback } from "./queryExecutionContext";
 import { FeedOptions, RequestHandler } from "./request";
@@ -261,12 +261,16 @@ export class ClientContext {
       return;
     }
 
-    const sessionConsistency = reqHeaders[Constants.HttpHeaders.ConsistencyLevel];
+    const sessionConsistency: ConsistencyLevel = reqHeaders[Constants.HttpHeaders.ConsistencyLevel];
     if (!sessionConsistency) {
       return;
     }
 
-    if (request["resourceAddress"]) {
+    if (sessionConsistency !== ConsistencyLevel.Session) {
+      return;
+    }
+
+    if (request.resourceAddress) {
       const sessionToken = this.sessionContainer.get(request);
       if (sessionToken !== "") {
         reqHeaders[Constants.HttpHeaders.SessionToken] = sessionToken;
@@ -428,6 +432,14 @@ export class ClientContext {
     const databaseAccount = new DatabaseAccount(result, headers);
 
     return { result: databaseAccount, headers };
+  }
+
+  public getWriteEndpoint(): Promise<string> {
+    return this.globalEndpointManager.getWriteEndpoint();
+  }
+
+  public getReadEndpoint(): Promise<string> {
+    return this.globalEndpointManager.getReadEndpoint();
   }
 
   private captureSessionToken(err: ErrorResponse, path: string, opType: string, resHeaders: IHeaders) {

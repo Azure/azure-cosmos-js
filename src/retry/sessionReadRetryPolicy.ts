@@ -31,7 +31,6 @@ export class SessionReadRetryPolicy {
    * will be retried or not.
    */
   public async shouldRetry(err: ErrorResponse): Promise<boolean | [boolean, url.UrlWithStringQuery]> {
-    // TODO: any custom error
     if (err) {
       if (
         this.currentRetryAttemptCount <= this.maxRetryAttemptCount &&
@@ -39,14 +38,15 @@ export class SessionReadRetryPolicy {
           this.request.operationType === Constants.OperationTypes.Query)
       ) {
         const readEndpoint = await this.globalEndpointManager.getReadEndpoint();
-        const writeEndpoint = await this.globalEndpointManager.getWriteEndpoint();
-        if (readEndpoint !== writeEndpoint && this.request.endpointOverride == null) {
+        const hubEndpoint = await this.globalEndpointManager.getHubEndpoint();
+        // TODO: get the hub region instead of using writeEndpoint
+        if (readEndpoint !== hubEndpoint && this.request.endpointOverride == null) {
           this.currentRetryAttemptCount++;
           // TODO: tracing
           // console.log("Read with session token not available in read region.\
-          // Trying read from write region.");
-          this.request.endpointOverride = writeEndpoint;
-          const newUrl = url.parse(writeEndpoint);
+          // Trying read from hub region.");
+          this.request.endpointOverride = hubEndpoint;
+          const newUrl = url.parse(hubEndpoint);
           return [true, newUrl];
         } else {
           // TODO: tracing
