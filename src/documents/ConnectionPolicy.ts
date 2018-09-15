@@ -35,5 +35,4 @@ export class ConnectionPolicy {
    * Default is `false`.
    */
   public UseMultipleWriteLocations: boolean = false;
-  public backgroundRefreshLocationTimeIntervalMS = Constants.DefaultUnavailableLocationExpirationTimeMS;
 }

@@ -30,6 +30,7 @@ export class LocationCache {
   private lastCacheUpdateTimestamp: Date = new Date(0);
   private defaultEndpoint: string;
   private enableMultipleWritableLocations: boolean;
+
   public constructor(private options: CosmosClientOptions) {
     this.defaultEndpoint = options.endpoint;
     this.writeEndpoints = [this.defaultEndpoint];
@@ -151,11 +152,7 @@ export class LocationCache {
    * 2. Endpoint availability
    */
   private getWriteEndpoints(): ReadonlyArray<string> {
-    if (
-      this.locationUnavailabilityInfoByEndpoint.size > 0 &&
-      new Date(Date.now() - this.options.connectionPolicy.backgroundRefreshLocationTimeIntervalMS) >
-        this.lastCacheUpdateTimestamp
-    ) {
+    if (this.locationUnavailabilityInfoByEndpoint.size > 0 && this.canUpdateCache(this.lastCacheUpdateTimestamp)) {
       this.updateLocationCache();
     }
     return this.writeEndpoints;
@@ -167,11 +164,7 @@ export class LocationCache {
    * 2. Endpoint availability
    */
   private getReadEndpoints(): ReadonlyArray<string> {
-    if (
-      this.locationUnavailabilityInfoByEndpoint.size > 0 &&
-      new Date(Date.now() - this.options.connectionPolicy.backgroundRefreshLocationTimeIntervalMS) >
-        this.lastCacheUpdateTimestamp
-    ) {
+    if (this.locationUnavailabilityInfoByEndpoint.size > 0 && this.canUpdateCache(this.lastCacheUpdateTimestamp)) {
       this.updateLocationCache();
     }
     return this.readEndpoints;
@@ -180,11 +173,7 @@ export class LocationCache {
   private clearStaleEndpointUnavailabilityInfo() {
     if (this.locationUnavailabilityInfoByEndpoint.size > 0) {
       for (const [endpoint, info] of this.locationUnavailabilityInfoByEndpoint.entries()) {
-        if (
-          info &&
-          new Date(Date.now() - this.options.connectionPolicy.backgroundRefreshLocationTimeIntervalMS) >
-            info.lastUnavailablityCheckTimeStamp
-        ) {
+        if (info && this.canUpdateCache(info.lastUnavailablityCheckTimeStamp)) {
           this.locationUnavailabilityInfoByEndpoint.delete(endpoint);
         }
       }
@@ -201,10 +190,7 @@ export class LocationCache {
     ) {
       return false;
     } else {
-      if (
-        new Date(Date.now() - this.options.connectionPolicy.backgroundRefreshLocationTimeIntervalMS) >
-        unavailabilityInfo.lastUnavailablityCheckTimeStamp
-      ) {
+      if (this.canUpdateCache(unavailabilityInfo.lastUnavailablityCheckTimeStamp)) {
         return false;
       } else {
         return true;
@@ -351,5 +337,9 @@ export class LocationCache {
     }
 
     return canUse;
+  }
+
+  private canUpdateCache(timestamp: Date): boolean {
+    return new Date(Date.now() - Constants.DefaultUnavailableLocationExpirationTimeMS) > timestamp;
   }
 }
