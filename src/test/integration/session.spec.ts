@@ -270,22 +270,20 @@ describe("Session Token", function() {
     const database = await getTestDatabase("session test", client);
 
     const containerLink = "dbs/" + database.id + "/colls/" + containerId;
-    const increaseLSN = function(oldTokens: any) {
-      for (const coll in oldTokens) {
-        if (oldTokens.hasOwnProperty(coll)) {
-          for (const token in oldTokens[coll]) {
-            if (oldTokens[coll].hasOwnProperty(token)) {
-              const newVal = (Number(oldTokens[coll][token]) + 2000).toString();
-              return token + ":" + newVal;
-            }
-          }
+    const increaseLSN = function(oldTokens: Map<string, Map<string, VectorSessionToken>>) {
+      for (const [coll, tokens] of oldTokens.entries()) {
+        for (const [pk, token] of tokens.entries()) {
+          (token as any).globalLsn = (token as any).version + 200;
+          const newToken = token.merge(token);
+          return `0:${newToken.toString()}`;
         }
       }
+      throw new Error("No valid token found to increase");
     };
 
     await database.containers.create(containerDefinition, containerOptions);
     const container = database.container(containerDefinition.id);
-    await container.items.create({ id: "1" });
+    const { headers } = await container.items.create({ id: "1" });
     const callbackSpy = sinon.spy(function(path: string, reqHeaders: IHeaders) {
       const oldTokens = getCollection2TokenMap(sessionContainer);
       reqHeaders[Constants.HttpHeaders.SessionToken] = increaseLSN(oldTokens);
@@ -298,6 +296,7 @@ describe("Session Token", function() {
       assert.equal(err.substatus, 1002, "Substatus should indicate the LSN didn't catchup.");
       assert.equal(callbackSpy.callCount, 1);
       assert.equal(Helper.trimSlashes(callbackSpy.lastCall.args[0]), containerLink + "/docs/1");
+    } finally {
       applySessionTokenStub.restore();
     }
     await container.item("1").read({ partitionKey: "1" });
@@ -359,6 +358,7 @@ describe("Session Token", function() {
       assert.equal(err.code, 404, "expecting 404 (Not found)");
       assert.equal(err.substatus, undefined, "expecting substatus code to be undefined");
       assert.equal(setSessionTokenSpy.callCount, 1, "unexpected number of calls to sesSessionToken");
+    } finally {
       setSessionTokenSpy.restore();
     }
   });

@@ -17,7 +17,7 @@ export class SessionContainer {
     if (!request) {
       throw new Error("request cannot be null");
     }
-    const collectionName = Helper.getContainerLink(request.resourceAddress);
+    const collectionName = Helper.getContainerLink(Helper.trimSlashes(request.resourceAddress));
     const rangeIdToTokenMap = this.getPartitionKeyRangeIdToTokenMap(collectionName);
     return SessionContainer.getCombinedSessionTokenString(rangeIdToTokenMap);
   }

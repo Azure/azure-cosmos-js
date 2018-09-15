@@ -272,7 +272,7 @@ export class ClientContext {
 
     if (request.resourceAddress) {
       const sessionToken = this.sessionContainer.get(request);
-      if (sessionToken !== "") {
+      if (sessionToken) {
         reqHeaders[Constants.HttpHeaders.SessionToken] = sessionToken;
       }
     }
