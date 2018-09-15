@@ -286,7 +286,7 @@ describe("Session Token", function() {
     await database.containers.create(containerDefinition, containerOptions);
     const container = database.container(containerDefinition.id);
     await container.items.create({ id: "1" });
-    const callbackSpy = sinon.spy(function(pat: string, reqHeaders: IHeaders) {
+    const callbackSpy = sinon.spy(function(path: string, reqHeaders: IHeaders) {
       const oldTokens = getCollection2TokenMap(sessionContainer);
       reqHeaders[Constants.HttpHeaders.SessionToken] = increaseLSN(oldTokens);
     });
