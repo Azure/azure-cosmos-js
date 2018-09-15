@@ -62,7 +62,8 @@ export class RetryUtility {
       endpointDiscoveryRetryPolicy,
       resourceThrottleRetryPolicy,
       sessionReadRetryPolicy,
-      defaultRetryPolicy
+      defaultRetryPolicy,
+      request
     );
   }
 
@@ -86,7 +87,8 @@ export class RetryUtility {
     endpointDiscoveryRetryPolicy: EndpointDiscoveryRetryPolicy,
     resourceThrottleRetryPolicy: ResourceThrottleRetryPolicy,
     sessionReadRetryPolicy: SessionReadRetryPolicy,
-    defaultRetryPolicy: DefaultRetryPolicy
+    defaultRetryPolicy: DefaultRetryPolicy,
+    request: RequestContext
   ): Promise<Response<any>> {
     // TODO: any response
     const httpsRequest = createRequestObjectFunc(connectionPolicy, requestOptions, body);
@@ -120,10 +122,11 @@ export class RetryUtility {
         err.headers = { ...err.headers, ...headers };
         throw err;
       } else {
+        request.retryCount++;
         const newUrl = (results as any)[1]; // TODO: any hack
         await Helper.sleep(retryPolicy.retryAfterInMilliseconds);
 
-        if (typeof newUrl !== "undefined") {
+        if (newUrl) {
           requestOptions = this.modifyRequestOptions(requestOptions, newUrl);
         }
         return this.apply(
@@ -134,7 +137,8 @@ export class RetryUtility {
           endpointDiscoveryRetryPolicy,
           resourceThrottleRetryPolicy,
           sessionReadRetryPolicy,
-          defaultRetryPolicy
+          defaultRetryPolicy,
+          request
         );
       }
     }

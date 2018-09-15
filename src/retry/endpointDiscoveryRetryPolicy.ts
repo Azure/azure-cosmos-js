@@ -32,7 +32,7 @@ export class EndpointDiscoveryRetryPolicy {
    * Determines whether the request should be retried or not.
    * @param {object} err - Error returned by the request.
    */
-  public async shouldRetry(err: ErrorResponse): Promise<boolean> {
+  public async shouldRetry(err: ErrorResponse): Promise<boolean | [boolean, string]> {
     if (!err) {
       return false;
     }
@@ -54,13 +54,14 @@ export class EndpointDiscoveryRetryPolicy {
     }
 
     if (!Helper.isReadRequest(this.request) && this.globalEndpointManager.getAlternateEndpoint()) {
-      this.request.retryCount++;
+      // TODO: tracing
     } else {
       // TODO: Tracing
       // console.log("Write region was changed, refreshing the regions list from database account
       // and will retry the request.");
       await this.globalEndpointManager.refreshEndpointList();
     }
-    return true;
+    const newUrl = await this.globalEndpointManager.resolveServiceEndpoint(this.request);
+    return [true, newUrl];
   }
 }
