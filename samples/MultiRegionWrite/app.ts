@@ -5,7 +5,7 @@ async function run() {
   const scenarios = new MultiRegionWriteScenario();
   await scenarios.init();
 
-  // await scenarios.runBasic();
+  await scenarios.runBasic();
   await scenarios.runManualConflict();
   await scenarios.runLWW();
   await scenarios.runUDP();
