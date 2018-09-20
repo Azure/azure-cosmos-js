@@ -6,6 +6,7 @@ import { Constants, Helper, StatusCodes, SubStatusCodes } from "../common";
 import { ConnectionPolicy } from "../documents";
 import { GlobalEndpointManager } from "../globalEndpointManager";
 import { Response } from "../request";
+import { LocationRouting } from "../request/LocationRouting";
 import { RequestContext } from "../request/RequestContext";
 import { DefaultRetryPolicy } from "./defaultRetryPolicy";
 import { IRetryPolicy } from "./IRetryPolicy";
@@ -98,20 +99,19 @@ export class RetryUtility {
   ): Promise<Response<any>> {
     // TODO: any response
     const httpsRequest = createRequestObjectFunc(connectionPolicy, requestOptions, body);
-
-    request.locationEndpointToRoute = null;
-    request.ignorePreferredLocation = null;
-    request.locationIndexToRoute = null;
+    if (!request.locationRouting) {
+      request.locationRouting = new LocationRouting();
+    }
+    request.locationRouting.clearRouteToLocation();
     if (retryContext) {
-      request.locationIndexToRoute = retryContext.retryCount;
-      request.ignorePreferredLocation = retryContext.retryRequestOnPreferredLocations;
+      request.locationRouting.routeToLocation(retryContext.retryCount, !retryContext.retryRequestOnPreferredLocations);
       if (retryContext.clearSessionTokenNotAvailable) {
         request.client.clearSessionToken(request.path);
       }
     }
     const locationEndpoint = await globalEndpointManager.resolveServiceEndpoint(request);
     requestOptions = this.modifyRequestOptions(requestOptions, url.parse(locationEndpoint));
-    request.locationEndpointToRoute = locationEndpoint;
+    request.locationRouting.routeToLocation(locationEndpoint);
     try {
       const { result, headers } = await (httpsRequest as Promise<Response<any>>);
       headers[Constants.ThrottleRetryCount] = resourceThrottleRetryPolicy.currentRetryAttemptCount;
@@ -119,7 +119,7 @@ export class RetryUtility {
       return { result, headers };
     } catch (err) {
       // TODO: any error
-      let retryPolicy: IRetryPolicy = null; // TODO: any Need an interface
+      let retryPolicy: IRetryPolicy = null;
       const headers = err.headers || {};
       if (err.code === StatusCodes.Forbidden && err.substatus === SubStatusCodes.WriteForbidden) {
         retryPolicy = endpointDiscoveryRetryPolicy;

@@ -26,7 +26,7 @@ export class SessionRetryPolicy implements IRetryPolicy {
     private globalEndpointManager: GlobalEndpointManager,
     private request: RequestContext,
     private connectionPolicy: ConnectionPolicy
-  ) {} // TODO: any request
+  ) {}
 
   /**
    * Determines whether the request should be retried or not.
@@ -46,8 +46,8 @@ export class SessionRetryPolicy implements IRetryPolicy {
     if (this.globalEndpointManager.canUseMultipleWriteLocations(this.request)) {
       // If we can write to multiple locations, we should against every write endpoint until we succeed
       const endpoints = Helper.isReadRequest(this.request)
-        ? await this.globalEndpointManager.getReadEndpoint()
-        : await this.globalEndpointManager.getWriteEndpoint();
+        ? await this.globalEndpointManager.getReadEndpoints()
+        : await this.globalEndpointManager.getWriteEndpoints();
       if (this.currentRetryAttemptCount > endpoints.length) {
         return false;
       } else {

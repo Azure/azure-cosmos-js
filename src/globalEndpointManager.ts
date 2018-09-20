@@ -63,8 +63,18 @@ export class GlobalEndpointManager {
     return this.locationCache.getWriteEndpoint();
   }
 
-  public getAlternateEndpoint(): string {
-    return this.locationCache.getAlternativeWriteEndpoint();
+  public async getReadEndpoints(): Promise<ReadonlyArray<string>> {
+    if (!this.isEndpointCacheInitialized) {
+      await this.refreshEndpointList();
+    }
+    return this.locationCache.getReadEndpoints();
+  }
+
+  public async getWriteEndpoints(): Promise<ReadonlyArray<string>> {
+    if (!this.isEndpointCacheInitialized) {
+      await this.refreshEndpointList();
+    }
+    return this.locationCache.getWriteEndpoints();
   }
 
   public markCurrentLocationUnavailableForRead(endpoint: string) {

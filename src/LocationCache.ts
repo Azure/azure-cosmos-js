@@ -53,12 +53,28 @@ export class LocationCache {
     return this.getReadEndpoints()[0];
   }
 
-  public getAlternativeWriteEndpoint(): string {
-    if (this.locationInfo.writeEndpoints.length >= 2) {
-      return this.locationInfo.writeEndpoints[1];
-    } else {
-      return null;
+  /**
+   * Gets list of write endpoints ordered by
+   * 1. Preferred location
+   * 2. Endpoint availability
+   */
+  public getWriteEndpoints(): ReadonlyArray<string> {
+    if (this.locationUnavailabilityInfoByEndpoint.size > 0 && this.canUpdateCache(this.lastCacheUpdateTimestamp)) {
+      this.updateLocationCache();
     }
+    return this.locationInfo.writeEndpoints;
+  }
+
+  /**
+   * Gets list of read endpoints ordered by
+   * 1. Preferred location
+   * 2. Endpoint availability
+   */
+  public getReadEndpoints(): ReadonlyArray<string> {
+    if (this.locationUnavailabilityInfoByEndpoint.size > 0 && this.canUpdateCache(this.lastCacheUpdateTimestamp)) {
+      this.updateLocationCache();
+    }
+    return this.locationInfo.readEndpoints;
   }
 
   public markCurrentLocationUnavailableForRead(endpoint: string) {
@@ -82,20 +98,20 @@ export class LocationCache {
   }
 
   public resolveServiceEndpoint(request: RequestContext): string {
-    let locationIndex = request.locationIndexToRoute || 0;
+    let locationIndex = request.locationRouting.locationIndexToRoute || 0;
 
     if (!this.options.connectionPolicy.EnableEndpointDiscovery) {
       return this.defaultEndpoint;
     }
 
-    if (request.locationEndpointToRoute) {
-      return request.locationEndpointToRoute;
+    if (request.locationRouting.locationEndpointToRoute) {
+      return request.locationRouting.locationEndpointToRoute;
     }
 
     // If we're ignoring preferred locations, or if it's a write request that can't use multiple locations
     // then default to the first two write locations, alternating (or the default endpoint)
     if (
-      request.ignorePreferredLocation ||
+      request.locationRouting.ignorePreferredLocation ||
       (!Helper.isReadRequest(request) && !this.canUseMultipleWriteLocations(request))
     ) {
       const currentInfo = this.locationInfo;
@@ -174,30 +190,6 @@ export class LocationCache {
     return canUse;
   }
 
-  /**
-   * Gets list of write endpoints ordered by
-   * 1. Preferred location
-   * 2. Endpoint availability
-   */
-  private getWriteEndpoints(): ReadonlyArray<string> {
-    if (this.locationUnavailabilityInfoByEndpoint.size > 0 && this.canUpdateCache(this.lastCacheUpdateTimestamp)) {
-      this.updateLocationCache();
-    }
-    return this.locationInfo.writeEndpoints;
-  }
-
-  /**
-   * Gets list of read endpoints ordered by
-   * 1. Preferred location
-   * 2. Endpoint availability
-   */
-  private getReadEndpoints(): ReadonlyArray<string> {
-    if (this.locationUnavailabilityInfoByEndpoint.size > 0 && this.canUpdateCache(this.lastCacheUpdateTimestamp)) {
-      this.updateLocationCache();
-    }
-    return this.locationInfo.readEndpoints;
-  }
-
   private clearStaleEndpointUnavailabilityInfo() {
     if (this.locationUnavailabilityInfoByEndpoint.size > 0) {
       for (const [endpoint, info] of this.locationUnavailabilityInfoByEndpoint.entries()) {
@@ -257,6 +249,8 @@ export class LocationCache {
     }
 
     this.clearStaleEndpointUnavailabilityInfo();
+
+    // TODO: To sstay consistent with .NET, grab a local copy of the locationInfo
 
     if (this.options.connectionPolicy.EnableEndpointDiscovery) {
       if (readLocations) {

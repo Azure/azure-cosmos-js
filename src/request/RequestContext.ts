@@ -1,4 +1,5 @@
 import { ClientContext } from "../ClientContext";
+import { LocationRouting } from "./LocationRouting";
 
 export interface RequestContext {
   path?: string;
@@ -6,7 +7,5 @@ export interface RequestContext {
   client?: ClientContext;
   retryCount?: number;
   resourceType?: string;
-  ignorePreferredLocation?: boolean;
-  locationIndexToRoute?: number;
-  locationEndpointToRoute?: string;
+  locationRouting?: LocationRouting;
 }
