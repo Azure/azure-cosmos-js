@@ -472,7 +472,7 @@ export class ClientContext {
     return this.sessionContainer.get(request);
   }
 
-  private clearSessionToken(path: string) {
+  public clearSessionToken(path: string) {
     const request = this.getSessionParams(path);
     this.sessionContainer.remove(request);
   }

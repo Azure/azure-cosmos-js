@@ -1,13 +1,15 @@
 ﻿import { RequestOptions } from "https";
 import { Stream } from "stream";
 import * as url from "url";
-import { EndpointDiscoveryRetryPolicy, ResourceThrottleRetryPolicy, SessionReadRetryPolicy } from ".";
+import { EndpointDiscoveryRetryPolicy, ResourceThrottleRetryPolicy, SessionRetryPolicy } from ".";
 import { Constants, Helper, StatusCodes, SubStatusCodes } from "../common";
 import { ConnectionPolicy } from "../documents";
 import { GlobalEndpointManager } from "../globalEndpointManager";
 import { Response } from "../request";
 import { RequestContext } from "../request/RequestContext";
 import { DefaultRetryPolicy } from "./defaultRetryPolicy";
+import { IRetryPolicy } from "./IRetryPolicy";
+import { RetryContext } from "./RetryContext";
 
 /** @hidden */
 export interface Body {
@@ -51,7 +53,7 @@ export class RetryUtility {
       connectionPolicy.RetryOptions.FixedRetryIntervalInMilliseconds,
       connectionPolicy.RetryOptions.MaxWaitTimeInSeconds
     );
-    const sessionReadRetryPolicy = new SessionReadRetryPolicy(globalEndpointManager, r);
+    const sessionReadRetryPolicy = new SessionRetryPolicy(globalEndpointManager, r, connectionPolicy);
     const defaultRetryPolicy = new DefaultRetryPolicy(request.operationType);
 
     return this.apply(
@@ -63,7 +65,9 @@ export class RetryUtility {
       resourceThrottleRetryPolicy,
       sessionReadRetryPolicy,
       defaultRetryPolicy,
-      request
+      globalEndpointManager,
+      request,
+      {}
     );
   }
 
@@ -86,13 +90,28 @@ export class RetryUtility {
     requestOptions: RequestOptions,
     endpointDiscoveryRetryPolicy: EndpointDiscoveryRetryPolicy,
     resourceThrottleRetryPolicy: ResourceThrottleRetryPolicy,
-    sessionReadRetryPolicy: SessionReadRetryPolicy,
+    sessionReadRetryPolicy: SessionRetryPolicy,
     defaultRetryPolicy: DefaultRetryPolicy,
-    request: RequestContext
+    globalEndpointManager: GlobalEndpointManager,
+    request: RequestContext,
+    retryContext: RetryContext
   ): Promise<Response<any>> {
     // TODO: any response
     const httpsRequest = createRequestObjectFunc(connectionPolicy, requestOptions, body);
 
+    request.locationEndpointToRoute = null;
+    request.ignorePreferredLocation = null;
+    request.locationIndexToRoute = null;
+    if (retryContext) {
+      request.locationIndexToRoute = retryContext.retryCount;
+      request.ignorePreferredLocation = retryContext.retryRequestOnPreferredLocations;
+      if (retryContext.clearSessionTokenNotAvailable) {
+        request.client.clearSessionToken(request.path);
+      }
+    }
+    const locationEndpoint = await globalEndpointManager.resolveServiceEndpoint(request);
+    requestOptions = this.modifyRequestOptions(requestOptions, url.parse(locationEndpoint));
+    request.locationEndpointToRoute = locationEndpoint;
     try {
       const { result, headers } = await (httpsRequest as Promise<Response<any>>);
       headers[Constants.ThrottleRetryCount] = resourceThrottleRetryPolicy.currentRetryAttemptCount;
@@ -100,11 +119,7 @@ export class RetryUtility {
       return { result, headers };
     } catch (err) {
       // TODO: any error
-      let retryPolicy:
-        | SessionReadRetryPolicy
-        | EndpointDiscoveryRetryPolicy
-        | ResourceThrottleRetryPolicy
-        | DefaultRetryPolicy = null; // TODO: any Need an interface
+      let retryPolicy: IRetryPolicy = null; // TODO: any Need an interface
       const headers = err.headers || {};
       if (err.code === StatusCodes.Forbidden && err.substatus === SubStatusCodes.WriteForbidden) {
         retryPolicy = endpointDiscoveryRetryPolicy;
@@ -115,7 +130,7 @@ export class RetryUtility {
       } else {
         retryPolicy = defaultRetryPolicy;
       }
-      const results = await retryPolicy.shouldRetry(err);
+      const results = await retryPolicy.shouldRetry(err, retryContext);
       if (!results) {
         headers[Constants.ThrottleRetryCount] = resourceThrottleRetryPolicy.currentRetryAttemptCount;
         headers[Constants.ThrottleRetryWaitTimeInMs] = resourceThrottleRetryPolicy.cummulativeWaitTimeinMilliseconds;
@@ -125,10 +140,6 @@ export class RetryUtility {
         request.retryCount++;
         const newUrl = (results as any)[1]; // TODO: any hack
         await Helper.sleep(retryPolicy.retryAfterInMilliseconds);
-
-        if (newUrl) {
-          requestOptions = this.modifyRequestOptions(requestOptions, newUrl);
-        }
         return this.apply(
           body,
           createRequestObjectFunc,
@@ -138,13 +149,15 @@ export class RetryUtility {
           resourceThrottleRetryPolicy,
           sessionReadRetryPolicy,
           defaultRetryPolicy,
-          request
+          globalEndpointManager,
+          request,
+          retryContext
         );
       }
     }
   }
 
-  public static modifyRequestOptions(
+  private static modifyRequestOptions(
     oldRequestOptions: RequestOptions | any, // TODO: any hack is bad
     newUrl: url.UrlWithStringQuery | any
   ) {

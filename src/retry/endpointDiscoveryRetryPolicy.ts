@@ -2,12 +2,14 @@
 import { GlobalEndpointManager } from "../globalEndpointManager";
 import { ErrorResponse } from "../request/request";
 import { RequestContext } from "../request/RequestContext";
+import { IRetryPolicy } from "./IRetryPolicy";
+import { RetryContext } from "./RetryContext";
 
 /**
  * This class implements the retry policy for endpoint discovery.
  * @hidden
  */
-export class EndpointDiscoveryRetryPolicy {
+export class EndpointDiscoveryRetryPolicy implements IRetryPolicy {
   /** Current retry attempt count. */
   public currentRetryAttemptCount: number;
   /** Retry interval in milliseconds. */
@@ -32,7 +34,11 @@ export class EndpointDiscoveryRetryPolicy {
    * Determines whether the request should be retried or not.
    * @param {object} err - Error returned by the request.
    */
-  public async shouldRetry(err: ErrorResponse): Promise<boolean | [boolean, string]> {
+  public async shouldRetry(
+    err: ErrorResponse,
+    retryContext: RetryContext,
+    locationEndpoint: string
+  ): Promise<boolean | [boolean, string]> {
     if (!err) {
       return false;
     }
@@ -48,9 +54,9 @@ export class EndpointDiscoveryRetryPolicy {
     this.currentRetryAttemptCount++;
 
     if (Helper.isReadRequest(this.request)) {
-      this.globalEndpointManager.markCurrentLocationUnavailableForRead();
+      this.globalEndpointManager.markCurrentLocationUnavailableForRead(locationEndpoint);
     } else {
-      this.globalEndpointManager.markCurrentLocationUnavailableForWrite();
+      this.globalEndpointManager.markCurrentLocationUnavailableForWrite(locationEndpoint);
     }
 
     if (!Helper.isReadRequest(this.request) && this.globalEndpointManager.getAlternateEndpoint()) {
@@ -61,7 +67,7 @@ export class EndpointDiscoveryRetryPolicy {
       // and will retry the request.");
       await this.globalEndpointManager.refreshEndpointList();
     }
-    const newUrl = await this.globalEndpointManager.resolveServiceEndpoint(this.request);
-    return [true, newUrl];
+
+    return true;
   }
 }

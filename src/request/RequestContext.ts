@@ -4,7 +4,9 @@ export interface RequestContext {
   path?: string;
   operationType?: string;
   client?: ClientContext;
-  endpointOverride?: boolean; // ?
   retryCount?: number;
   resourceType?: string;
+  ignorePreferredLocation?: boolean;
+  locationIndexToRoute?: number;
+  locationEndpointToRoute?: string;
 }

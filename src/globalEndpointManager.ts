@@ -67,16 +67,16 @@ export class GlobalEndpointManager {
     return this.locationCache.getAlternativeWriteEndpoint();
   }
 
-  public getHubEndpoint(): string {
-    return this.locationCache.getHubEndpoint();
+  public markCurrentLocationUnavailableForRead(endpoint: string) {
+    this.locationCache.markCurrentLocationUnavailableForRead(endpoint);
   }
 
-  public markCurrentLocationUnavailableForRead() {
-    this.locationCache.markCurrentLocationUnavailableForRead();
+  public markCurrentLocationUnavailableForWrite(endpoint: string) {
+    this.locationCache.markCurrentLocationUnavailableForWrite(endpoint);
   }
 
-  public markCurrentLocationUnavailableForWrite() {
-    this.locationCache.markCurrentLocationUnavailableForWrite();
+  public canUseMultipleWriteLocations(request: RequestContext) {
+    return this.locationCache.canUseMultipleWriteLocations(request);
   }
 
   public async resolveServiceEndpoint(request: RequestContext) {

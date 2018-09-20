@@ -125,6 +125,7 @@ export class ConflictWorker {
   }
 
   private async RunUpdateConflictOnManual() {
+    let retryCount = 5;
     do {
       const itemBase = { id: guid() };
 
@@ -142,7 +143,12 @@ export class ConflictWorker {
       const updates: Array<Promise<ItemDefinition>> = [];
       let index = 0;
       for (const [regionName, client] of this.clients.entries()) {
-        const newDef = { regionId: index++, regionName, ...itemBase, _etag: newItemDef._etag };
+        const newDef = {
+          regionId: index++,
+          regionName,
+          ...itemBase,
+          _etag: newItemDef._etag
+        };
         updates.push(
           this.tryUpdateItem(
             client
@@ -156,7 +162,7 @@ export class ConflictWorker {
 
       const updatedItems = await Promise.all(updates);
       const numberOfConflicts = updatedItems.reduce((p: number, c: ItemDefinition) => (c !== null ? ++p : p), -1);
-      if (numberOfConflicts > 1) {
+      if (numberOfConflicts > 0) {
         console.log(`2) Caused ${numberOfConflicts} update conflicts, verifying conflict resolution`);
 
         for (const updatedItem of updatedItems) {
@@ -164,9 +170,12 @@ export class ConflictWorker {
             await this.validateAllManualConflict(updatedItem);
           }
         }
-        break;
+        return;
+      } else {
+        console.log(`Found ${numberOfConflicts} - retrying to create more conflicts`);
       }
-    } while (true);
+    } while (retryCount--);
+    console.error("Could not enduce an update conflict for manual conflict resolution");
   }
 
   private async RunDeleteConflictOnManual() {
@@ -204,11 +213,8 @@ export class ConflictWorker {
       if (numberOfConflicts > 1) {
         console.log(`2) Caused ${numberOfConflicts} delete conflicts, verifying conflict resolution`);
 
-        for (const deletedItem of deletedItems) {
-          if (deletedItem) {
-            await this.validateAllManualConflict(deletedItem);
-          }
-        }
+        await this.validateLWW(deletedItems, true); // LWW deletes and manual deletes are handled the same
+
         break;
       } else {
         console.warn("Retrying update/delete to induce conflicts");
@@ -295,6 +301,7 @@ export class ConflictWorker {
   }
 
   private async RunUpdateConflictOnLWW() {
+    let retry = 5;
     do {
       const itemBase = { id: guid() };
 
@@ -328,11 +335,12 @@ export class ConflictWorker {
         console.log(`2) Caused ${items.length} update conflicts, verifying conflict resolution`);
 
         await this.validateLWW(items);
-        break;
+        return;
       } else {
         console.warn("Retrying update to induce conflicts");
       }
-    } while (true);
+    } while (retry--);
+    console.error("Could not induce update conflict on LWW");
   }
 
   private async RunDeleteConflictOnLWW() {
@@ -638,6 +646,7 @@ export class ConflictWorker {
   }
 
   private async tryUpdateItem(item: Item, newDef: ItemDefinition): Promise<ItemDefinition & ItemBody> {
+    const time = Date.now();
     try {
       return (await item.replace(newDef, {
         accessCondition: {
@@ -647,6 +656,7 @@ export class ConflictWorker {
       })).body;
     } catch (err) {
       if (err.code === StatusCodes.PreconditionFailed || err.code === StatusCodes.NotFound) {
+        console.log(`${await item.container.database.client.getWriteEndpoint()} hit ${err.code} at ${time}`);
         return null; // Lost synchronously or not document yet. No conflict is induced.
       } else {
         console.log("tryUpdateItem hit unexpected error");
