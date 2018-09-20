@@ -59,14 +59,10 @@ export class EndpointDiscoveryRetryPolicy implements IRetryPolicy {
       this.globalEndpointManager.markCurrentLocationUnavailableForWrite(locationEndpoint);
     }
 
-    if (!Helper.isReadRequest(this.request) && this.globalEndpointManager.getAlternateEndpoint()) {
-      // TODO: tracing
-    } else {
-      // TODO: Tracing
-      // console.log("Write region was changed, refreshing the regions list from database account
-      // and will retry the request.");
-      await this.globalEndpointManager.refreshEndpointList();
-    }
+    // TODO: Tracing
+    // console.log("Write region was changed, refreshing the regions list from database account
+    // and will retry the request.");
+    await this.globalEndpointManager.refreshEndpointList();
 
     return true;
   }
