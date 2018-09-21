@@ -70,6 +70,7 @@ addScenario({ numberOfRegions: 3, useMultipleWriteLocations: true });
 addScenario({ numberOfRegions: 5, useMultipleWriteLocations: true });
 
 describe("Location Cache", function() {
+  this.timeout(process.env.MOCHA_TIMEOUT || 2000);
   for (const scenario of scenarios) {
     describe(`when there is a DatabaseAccount refresh and ${
       scenario.connectionPolicy.PreferredLocations.length
@@ -141,44 +142,12 @@ describe("Location Cache", function() {
         assert.equal(resolveEndpoint, writeEndpoint, "resolve endpoint should match write endpoint");
       });
 
-      if (
-        scenario.connectionPolicy.PreferredLocations.length < 2 ||
-        !scenario.connectionPolicy.UseMultipleWriteLocations
-      ) {
-        it("alternate endpoint should return null", function() {
-          const alternateEndpoint = locationCache.getAlternativeWriteEndpoint();
-          assert.equal(
-            alternateEndpoint,
-            null,
-            "alternate write endpoint should be non null after database account info refresh"
-          );
-        });
-      } else {
-        it("alternate endpoint should return non-null", function() {
-          const alternateEndpoint = locationCache.getAlternativeWriteEndpoint();
-          assert.equal(
-            alternateEndpoint,
-            getEndpointFromRegion(scenario.connectionPolicy.PreferredLocations[1]),
-            "alternate write endpoint should be non null after database account info refresh"
-          );
-        });
-      }
-
       // After this, there are side effects. All the "markUnavailable" ones will remove locations from the list.
       // It's probably best to not add new "it"s below here to avoid unreliable tests.
       if (scenario.connectionPolicy.PreferredLocations.length > 0) {
-        it("hub endpoint should return non null", function() {
-          const hubEndpoint = locationCache.getHubEndpoint();
-          assert.equal(
-            hubEndpoint,
-            scenario.databaseAccount.writableLocations[0].databaseAccountEndpoint,
-            "hub endpoint should be non null after database account info refresh"
-          );
-        });
-
         if (!scenario.connectionPolicy.UseMultipleWriteLocations) {
           it("write endpoint should match default endpoint even after being marked unavailable", function() {
-            locationCache.markCurrentLocationUnavailableForWrite();
+            locationCache.markCurrentLocationUnavailableForWrite(locationCache.getWriteEndpoint());
             const writeEndpoint = locationCache.getWriteEndpoint();
             assert.equal(
               writeEndpoint,
@@ -197,14 +166,9 @@ describe("Location Cache", function() {
           });
         }
       } else {
-        it("hub endpoint should return null", function() {
-          const hubEndpoint = locationCache.getHubEndpoint();
-          assert.equal(hubEndpoint, null, "hub endpoint should be null even after database account info refresh");
-        });
-
         if (!scenario.connectionPolicy.UseMultipleWriteLocations) {
           it("write endpoint should match default endpoint even after being marked unavailable", function() {
-            locationCache.markCurrentLocationUnavailableForWrite();
+            locationCache.markCurrentLocationUnavailableForWrite(locationCache.getWriteEndpoint());
             const writeEndpoint = locationCache.getWriteEndpoint();
             assert.equal(
               writeEndpoint,
@@ -230,7 +194,7 @@ describe("Location Cache", function() {
 
       if (scenario.connectionPolicy.PreferredLocations.length > 1) {
         it("read endpoint should return next endpoint after being marked unavailable", function() {
-          locationCache.markCurrentLocationUnavailableForRead();
+          locationCache.markCurrentLocationUnavailableForRead(locationCache.getReadEndpoint());
           const readEndpoint = locationCache.getReadEndpoint();
           assert.equal(
             readEndpoint,
@@ -249,7 +213,7 @@ describe("Location Cache", function() {
 
         if (scenario.connectionPolicy.UseMultipleWriteLocations) {
           it("write endpoint should return next endpoint after being marked unavailable", function() {
-            locationCache.markCurrentLocationUnavailableForWrite();
+            locationCache.markCurrentLocationUnavailableForWrite(locationCache.getWriteEndpoint());
             const writeEndpoint = locationCache.getWriteEndpoint();
             assert.equal(
               writeEndpoint,
@@ -273,7 +237,7 @@ describe("Location Cache", function() {
         }
       } else {
         it("read endpoint should match default endpoint even after being marked unavailable", function() {
-          locationCache.markCurrentLocationUnavailableForRead();
+          locationCache.markCurrentLocationUnavailableForRead(locationCache.getReadEndpoint());
           const readEndpoint = locationCache.getReadEndpoint();
           assert.equal(
             readEndpoint,
@@ -297,7 +261,7 @@ describe("Location Cache", function() {
 
         if (scenario.connectionPolicy.UseMultipleWriteLocations) {
           it("write endpoint should match default endpoint even after being marked unavailable", function() {
-            locationCache.markCurrentLocationUnavailableForWrite();
+            locationCache.markCurrentLocationUnavailableForWrite(locationCache.getWriteEndpoint());
             const writeEndpoint = locationCache.getWriteEndpoint();
             assert.equal(
               writeEndpoint,
@@ -326,10 +290,17 @@ describe("Location Cache", function() {
       const cosmosClientOptions: CosmosClientOptions = { auth: {}, endpoint, connectionPolicy };
       const locationCache = new LocationCache(cosmosClientOptions);
 
-      it("shouldn't refresh", function() {
-        const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
-        assert.equal(shouldRefresh, false, "shouldn't need to refresh");
-      });
+      if (!scenario.connectionPolicy.UseMultipleWriteLocations) {
+        it("shouldn't refresh", function() {
+          const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
+          assert.equal(shouldRefresh, false, "shouldn't need to refresh");
+        });
+      } else {
+        it("should refresh", function() {
+          const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
+          assert.equal(shouldRefresh, true, "should need to refresh");
+        });
+      }
 
       it("preferred locations should match the connection policy preferred locations", function() {
         const preferredLocations = locationCache.prefferredLocations;
@@ -358,20 +329,6 @@ describe("Location Cache", function() {
         );
       });
 
-      it("alternate endpoint should return null", function() {
-        const alternateEndpoint = locationCache.getAlternativeWriteEndpoint();
-        assert.equal(
-          alternateEndpoint,
-          null,
-          "alternate write endpoint should be null prior to any database account info"
-        );
-      });
-
-      it("hub endpoint should return null", function() {
-        const hubEndpoint = locationCache.getHubEndpoint();
-        assert.equal(hubEndpoint, null, "hub endpoint should be null prior to any database account info");
-      });
-
       it(`read request for resolve endpoint, retry count 0, should match read endpoint`, function() {
         const resolveEndpoint = locationCache.resolveServiceEndpoint({
           operationType: Constants.OperationTypes.Read,
@@ -397,7 +354,7 @@ describe("Location Cache", function() {
       // After this, there are side effects. All the "markUnavailable" ones will remove locations from the list.
       // It's probably best to not add new "it"s below here to avoid unreliable tests.
       it("read endpoint should match default endpoint even after being marked unavailable", function() {
-        locationCache.markCurrentLocationUnavailableForRead();
+        locationCache.markCurrentLocationUnavailableForRead(locationCache.getReadEndpoint());
         const readEndpoint = locationCache.getReadEndpoint();
         assert.equal(
           readEndpoint,
@@ -413,7 +370,7 @@ describe("Location Cache", function() {
       });
 
       it("write endpoint should match default endpoint even after being marked unavailable", function() {
-        locationCache.markCurrentLocationUnavailableForWrite();
+        locationCache.markCurrentLocationUnavailableForWrite(locationCache.getWriteEndpoint());
         const writeEndpoint = locationCache.getWriteEndpoint();
         assert.equal(
           writeEndpoint,

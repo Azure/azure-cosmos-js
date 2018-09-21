@@ -1,10 +1,11 @@
 import { ClientContext } from "../ClientContext";
+import { LocationRouting } from "./LocationRouting";
 
 export interface RequestContext {
   path?: string;
   operationType?: string;
   client?: ClientContext;
-  endpointOverride?: boolean; // ?
   retryCount?: number;
   resourceType?: string;
+  locationRouting?: LocationRouting;
 }

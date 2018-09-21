@@ -63,20 +63,30 @@ export class GlobalEndpointManager {
     return this.locationCache.getWriteEndpoint();
   }
 
-  public getAlternateEndpoint(): string {
-    return this.locationCache.getAlternativeWriteEndpoint();
+  public async getReadEndpoints(): Promise<ReadonlyArray<string>> {
+    if (!this.isEndpointCacheInitialized) {
+      await this.refreshEndpointList();
+    }
+    return this.locationCache.getReadEndpoints();
   }
 
-  public getHubEndpoint(): string {
-    return this.locationCache.getHubEndpoint();
+  public async getWriteEndpoints(): Promise<ReadonlyArray<string>> {
+    if (!this.isEndpointCacheInitialized) {
+      await this.refreshEndpointList();
+    }
+    return this.locationCache.getWriteEndpoints();
   }
 
-  public markCurrentLocationUnavailableForRead() {
-    this.locationCache.markCurrentLocationUnavailableForRead();
+  public markCurrentLocationUnavailableForRead(endpoint: string) {
+    this.locationCache.markCurrentLocationUnavailableForRead(endpoint);
   }
 
-  public markCurrentLocationUnavailableForWrite() {
-    this.locationCache.markCurrentLocationUnavailableForWrite();
+  public markCurrentLocationUnavailableForWrite(endpoint: string) {
+    this.locationCache.markCurrentLocationUnavailableForWrite(endpoint);
+  }
+
+  public canUseMultipleWriteLocations(request: RequestContext) {
+    return this.locationCache.canUseMultipleWriteLocations(request);
   }
 
   public async resolveServiceEndpoint(request: RequestContext) {

@@ -1,14 +1,24 @@
 import { Constants, Helper, ResourceType } from "./common";
 import { CosmosClientOptions } from "./CosmosClientOptions";
 import { DatabaseAccount, Location } from "./documents";
+import { LocationInfo } from "./LocationInfo";
+import { LocationRouting } from "./request/LocationRouting";
 import { RequestContext } from "./request/RequestContext";
 
+/**
+ * @private
+ * @hidden
+ */
 enum EndpointOperationType {
   None = "None",
   Read = "Read",
   Write = "Write"
 }
 
+/**
+ * @private
+ * @hidden
+ */
 interface LocationUnavailabilityInfo {
   lastUnavailablityCheckTimeStamp: Date;
   operationTypes: Set<keyof typeof EndpointOperationType>;
@@ -17,24 +27,19 @@ interface LocationUnavailabilityInfo {
 /**
  * Implements the abstraction to resolve target location for geo-replicated Database Account
  * with multiple writable and readable locations.
+ * @private
+ * @hidden
  */
 export class LocationCache {
   private locationUnavailabilityInfoByEndpoint: Map<string, LocationUnavailabilityInfo> = new Map();
-  private availableReadLocations: ReadonlyMap<string, string>;
-  private availableWriteLocations: ReadonlyMap<string, string>;
-  private orderedWriteLocations: ReadonlyArray<string>;
-  private orderedReadLocations: ReadonlyArray<string>;
-  private orderedHubLocations: ReadonlyArray<string>;
-  private writeEndpoints: ReadonlyArray<string>;
-  private readEndpoints: ReadonlyArray<string>;
+  private locationInfo: LocationInfo;
   private lastCacheUpdateTimestamp: Date = new Date(0);
   private defaultEndpoint: string;
   private enableMultipleWritableLocations: boolean;
 
   public constructor(private options: CosmosClientOptions) {
     this.defaultEndpoint = options.endpoint;
-    this.writeEndpoints = [this.defaultEndpoint];
-    this.readEndpoints = [this.defaultEndpoint];
+    this.locationInfo = new LocationInfo(options.connectionPolicy.PreferredLocations, options.endpoint);
   }
 
   public get prefferredLocations(): string[] {
@@ -49,24 +54,36 @@ export class LocationCache {
     return this.getReadEndpoints()[0];
   }
 
-  public getAlternativeWriteEndpoint(): string {
-    if (this.writeEndpoints.length >= 2) {
-      return this.writeEndpoints[1];
-    } else {
-      return null;
+  /**
+   * Gets list of write endpoints ordered by
+   * 1. Preferred location
+   * 2. Endpoint availability
+   */
+  public getWriteEndpoints(): ReadonlyArray<string> {
+    if (this.locationUnavailabilityInfoByEndpoint.size > 0 && this.canUpdateCache(this.lastCacheUpdateTimestamp)) {
+      this.updateLocationCache();
     }
+    return this.locationInfo.writeEndpoints;
   }
 
-  public getHubEndpoint(): string {
-    return this.availableWriteLocations ? this.availableWriteLocations.get(this.orderedHubLocations[0]) : null;
+  /**
+   * Gets list of read endpoints ordered by
+   * 1. Preferred location
+   * 2. Endpoint availability
+   */
+  public getReadEndpoints(): ReadonlyArray<string> {
+    if (this.locationUnavailabilityInfoByEndpoint.size > 0 && this.canUpdateCache(this.lastCacheUpdateTimestamp)) {
+      this.updateLocationCache();
+    }
+    return this.locationInfo.readEndpoints;
   }
 
-  public markCurrentLocationUnavailableForRead() {
-    this.markEndpointUnavailable(this.readEndpoints[0], EndpointOperationType.Read);
+  public markCurrentLocationUnavailableForRead(endpoint: string) {
+    this.markEndpointUnavailable(endpoint, EndpointOperationType.Read);
   }
 
-  public markCurrentLocationUnavailableForWrite() {
-    this.markEndpointUnavailable(this.writeEndpoints[0], EndpointOperationType.Write);
+  public markCurrentLocationUnavailableForWrite(endpoint: string) {
+    this.markEndpointUnavailable(endpoint, EndpointOperationType.Write);
   }
 
   /**
@@ -82,43 +99,57 @@ export class LocationCache {
   }
 
   public resolveServiceEndpoint(request: RequestContext): string {
-    let endpoints: ReadonlyArray<string>;
-    let regionIndex = 0;
-    if (!Helper.isReadRequest(request)) {
-      if (!this.canUseMultipleWriteLocations(request)) {
-        // For non-document resource types in case of client can use multiple write locations
-        // or when client cannot use multiple write locations, flip-flop between the
-        // first and the second writable region in DatabaseAccount (for manual failover)
-        regionIndex = regionIndex % 2;
-        if (this.orderedWriteLocations && this.orderedWriteLocations.length > 0) {
-          endpoints = this.orderedWriteLocations
-            .slice(0, 2)
-            .map(location => this.availableWriteLocations.get(location)); // set to 1 and 2 from this.availableWriteLocations
-        } else {
-          endpoints = [this.defaultEndpoint];
-        }
+    request.locationRouting = request.locationRouting || new LocationRouting();
+
+    let locationIndex = request.locationRouting.locationIndexToRoute || 0;
+
+    if (!this.options.connectionPolicy.EnableEndpointDiscovery) {
+      return this.defaultEndpoint;
+    }
+
+    if (request.locationRouting.locationEndpointToRoute) {
+      return request.locationRouting.locationEndpointToRoute;
+    }
+
+    // If we're ignoring preferred locations, or if it's a write request that can't use multiple locations
+    // then default to the first two write locations, alternating (or the default endpoint)
+    if (
+      request.locationRouting.ignorePreferredLocation ||
+      (!Helper.isReadRequest(request) && !this.canUseMultipleWriteLocations(request))
+    ) {
+      const currentInfo = this.locationInfo;
+      if (currentInfo.orderedWriteLocations.length > 0) {
+        locationIndex = Math.min(locationIndex % 2, currentInfo.orderedWriteLocations.length - 1);
+        const writeLocation = currentInfo.orderedWriteLocations[locationIndex];
+        return currentInfo.availableWriteEndpointByLocation.get(writeLocation);
       } else {
-        endpoints = this.writeEndpoints;
+        return this.defaultEndpoint;
       }
     } else {
-      endpoints = this.readEndpoints;
+      // If we're using preferred regions, then choose the correct endpoint based on the location index
+      const endpoints = Helper.isReadRequest(request)
+        ? this.locationInfo.readEndpoints
+        : this.locationInfo.writeEndpoints;
+      return endpoints[locationIndex % endpoints.length];
     }
-    return endpoints[regionIndex % endpoints.length];
   }
 
   public shouldRefreshEndpoints(): { shouldRefresh: boolean; canRefreshInBackground: boolean } {
-    const mostPreferredLocation: string = this.options.connectionPolicy.PreferredLocations
-      ? this.options.connectionPolicy.PreferredLocations[0]
-      : null;
-
     let canRefreshInBackground = true;
+    const currentInfo = this.locationInfo;
+
+    const mostPreferredLocation: string = currentInfo.preferredLocations ? currentInfo.preferredLocations[0] : null;
 
     if (this.options.connectionPolicy.EnableEndpointDiscovery) {
+      // Refresh if client opts-in to use multiple write locations, but it's not enabled on the server.
+      const shouldRefresh =
+        this.options.connectionPolicy.UseMultipleWriteLocations && !this.enableMultipleWritableLocations;
+
       if (mostPreferredLocation) {
-        if (this.availableReadLocations) {
-          const mostPreferredReadEndpoint = this.availableReadLocations.get(mostPreferredLocation);
+        if (currentInfo.availableReadEndpointByLocation.size > 0) {
+          const mostPreferredReadEndpoint = currentInfo.availableReadEndpointByLocation.get(mostPreferredLocation);
           if (mostPreferredReadEndpoint) {
-            if (mostPreferredReadEndpoint !== this.readEndpoints[0]) {
+            if (mostPreferredReadEndpoint !== currentInfo.readEndpoints[0]) {
               return { shouldRefresh: true, canRefreshInBackground };
             }
           } else {
@@ -127,18 +158,21 @@ export class LocationCache {
         }
 
         if (!this.canUseMultipleWriteLocations()) {
-          if (this.isEndpointUnavailable(this.writeEndpoints[0], EndpointOperationType.Write)) {
-            canRefreshInBackground = this.writeEndpoints.length > 1;
+          if (this.isEndpointUnavailable(currentInfo.writeEndpoints[0], EndpointOperationType.Write)) {
+            canRefreshInBackground = currentInfo.writeEndpoints.length > 1;
             return { shouldRefresh: true, canRefreshInBackground };
           } else {
-            return { shouldRefresh: false, canRefreshInBackground };
+            return { shouldRefresh, canRefreshInBackground };
           }
         } else if (mostPreferredLocation) {
-          const mostPreferredWriteEndpoint = this.availableWriteLocations.get(mostPreferredLocation);
+          const mostPreferredWriteEndpoint = currentInfo.availableWriteEndpointByLocation.get(mostPreferredLocation);
           if (mostPreferredWriteEndpoint) {
-            return { shouldRefresh: mostPreferredWriteEndpoint !== this.writeEndpoints[0], canRefreshInBackground };
+            return {
+              shouldRefresh: shouldRefresh || mostPreferredWriteEndpoint !== currentInfo.writeEndpoints[0],
+              canRefreshInBackground
+            };
           } else {
-            return { shouldRefresh: true, canRefreshInBackground };
+            return { shouldRefresh, canRefreshInBackground };
           }
         }
       }
@@ -146,28 +180,17 @@ export class LocationCache {
     return { shouldRefresh: false, canRefreshInBackground };
   }
 
-  /**
-   * Gets list of write endpoints ordered by
-   * 1. Preferred location
-   * 2. Endpoint availability
-   */
-  private getWriteEndpoints(): ReadonlyArray<string> {
-    if (this.locationUnavailabilityInfoByEndpoint.size > 0 && this.canUpdateCache(this.lastCacheUpdateTimestamp)) {
-      this.updateLocationCache();
-    }
-    return this.writeEndpoints;
-  }
+  public canUseMultipleWriteLocations(request?: RequestContext): boolean {
+    let canUse = this.options.connectionPolicy.UseMultipleWriteLocations && this.enableMultipleWritableLocations;
 
-  /**
-   * Gets list of read endpoints ordered by
-   * 1. Preferred location
-   * 2. Endpoint availability
-   */
-  private getReadEndpoints(): ReadonlyArray<string> {
-    if (this.locationUnavailabilityInfoByEndpoint.size > 0 && this.canUpdateCache(this.lastCacheUpdateTimestamp)) {
-      this.updateLocationCache();
+    if (request) {
+      canUse =
+        canUse &&
+        (request.resourceType === ResourceType.item ||
+          (request.resourceType === ResourceType.sproc && request.operationType === Constants.OperationTypes.Execute));
     }
-    return this.readEndpoints;
+
+    return canUse;
   }
 
   private clearStaleEndpointUnavailabilityInfo() {
@@ -179,7 +202,6 @@ export class LocationCache {
       }
     }
   }
-
   private isEndpointUnavailable(endpoint: string, expectedAvailableOperations: EndpointOperationType) {
     const unavailabilityInfo = this.locationUnavailabilityInfoByEndpoint.get(endpoint);
 
@@ -231,37 +253,37 @@ export class LocationCache {
 
     this.clearStaleEndpointUnavailabilityInfo();
 
+    // TODO: To sstay consistent with .NET, grab a local copy of the locationInfo
+
     if (this.options.connectionPolicy.EnableEndpointDiscovery) {
       if (readLocations) {
         ({
-          endpointsByLocation: this.availableReadLocations,
-          orderedLocations: this.orderedReadLocations
+          endpointsByLocation: this.locationInfo.availableReadEndpointByLocation,
+          orderedLocations: this.locationInfo.orderedReadLocations
         } = this.getEndpointByLocation(readLocations));
       }
 
       if (writeLocations) {
         ({
-          endpointsByLocation: this.availableWriteLocations,
-          orderedLocations: this.orderedWriteLocations
+          endpointsByLocation: this.locationInfo.availableWriteEndpointByLocation,
+          orderedLocations: this.locationInfo.orderedWriteLocations
         } = this.getEndpointByLocation(writeLocations));
       }
     }
 
-    this.writeEndpoints = this.getPreferredAvailableEndpoints(
-      this.availableWriteLocations,
-      this.orderedWriteLocations,
+    this.locationInfo.writeEndpoints = this.getPreferredAvailableEndpoints(
+      this.locationInfo.availableWriteEndpointByLocation,
+      this.locationInfo.orderedWriteLocations,
       EndpointOperationType.Write,
       this.defaultEndpoint
     );
 
-    this.readEndpoints = this.getPreferredAvailableEndpoints(
-      this.availableReadLocations,
-      this.orderedReadLocations,
+    this.locationInfo.readEndpoints = this.getPreferredAvailableEndpoints(
+      this.locationInfo.availableReadEndpointByLocation,
+      this.locationInfo.orderedReadLocations,
       EndpointOperationType.Read,
       this.defaultEndpoint
     );
-
-    this.orderedHubLocations = this.orderedWriteLocations ? this.orderedWriteLocations.slice(0, 2) : [];
 
     this.lastCacheUpdateTimestamp = new Date();
   }
@@ -324,19 +346,6 @@ export class LocationCache {
       orderedLocations.push(fixedUpLocation);
     }
     return { endpointsByLocation, orderedLocations };
-  }
-
-  private canUseMultipleWriteLocations(request?: RequestContext): boolean {
-    let canUse = this.options.connectionPolicy.UseMultipleWriteLocations && this.enableMultipleWritableLocations;
-
-    if (request) {
-      canUse =
-        canUse &&
-        (request.resourceType === ResourceType.item ||
-          (request.resourceType === ResourceType.sproc && request.operationType === Constants.OperationTypes.Execute));
-    }
-
-    return canUse;
   }
 
   private canUpdateCache(timestamp: Date): boolean {
