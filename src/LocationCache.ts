@@ -98,7 +98,7 @@ export class LocationCache {
   }
 
   public resolveServiceEndpoint(request: RequestContext): string {
-    let locationIndex = request.locationRouting.locationIndexToRoute || 0;
+    let locationIndex = request.locationRouting ? request.locationRouting.locationIndexToRoute || 0 : 0;
 
     if (!this.options.connectionPolicy.EnableEndpointDiscovery) {
       return this.defaultEndpoint;

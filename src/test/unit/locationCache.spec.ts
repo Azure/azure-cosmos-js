@@ -142,29 +142,6 @@ describe("Location Cache", function() {
         assert.equal(resolveEndpoint, writeEndpoint, "resolve endpoint should match write endpoint");
       });
 
-      if (
-        scenario.connectionPolicy.PreferredLocations.length < 2 ||
-        !scenario.connectionPolicy.UseMultipleWriteLocations
-      ) {
-        it("alternate endpoint should return null", function() {
-          const alternateEndpoint = locationCache.getAlternativeWriteEndpoint();
-          assert.equal(
-            alternateEndpoint,
-            null,
-            "alternate write endpoint should be non null after database account info refresh"
-          );
-        });
-      } else {
-        it("alternate endpoint should return non-null", function() {
-          const alternateEndpoint = locationCache.getAlternativeWriteEndpoint();
-          assert.equal(
-            alternateEndpoint,
-            getEndpointFromRegion(scenario.connectionPolicy.PreferredLocations[1]),
-            "alternate write endpoint should be non null after database account info refresh"
-          );
-        });
-      }
-
       // After this, there are side effects. All the "markUnavailable" ones will remove locations from the list.
       // It's probably best to not add new "it"s below here to avoid unreliable tests.
       if (scenario.connectionPolicy.PreferredLocations.length > 0) {
@@ -349,15 +326,6 @@ describe("Location Cache", function() {
           writeEndpoint,
           endpoint,
           "write endpoint should match default endpoint prior to any database account info"
-        );
-      });
-
-      it("alternate endpoint should return null", function() {
-        const alternateEndpoint = locationCache.getAlternativeWriteEndpoint();
-        assert.equal(
-          alternateEndpoint,
-          null,
-          "alternate write endpoint should be null prior to any database account info"
         );
       });
 
