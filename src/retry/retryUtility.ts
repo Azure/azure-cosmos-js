@@ -104,7 +104,10 @@ export class RetryUtility {
     }
     request.locationRouting.clearRouteToLocation();
     if (retryContext) {
-      request.locationRouting.routeToLocation(retryContext.retryCount, !retryContext.retryRequestOnPreferredLocations);
+      request.locationRouting.routeToLocation(
+        retryContext.retryCount || 0,
+        !retryContext.retryRequestOnPreferredLocations
+      );
       if (retryContext.clearSessionTokenNotAvailable) {
         request.client.clearSessionToken(request.path);
       }
