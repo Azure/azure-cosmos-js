@@ -2,6 +2,7 @@ import { Constants, Helper, ResourceType } from "./common";
 import { CosmosClientOptions } from "./CosmosClientOptions";
 import { DatabaseAccount, Location } from "./documents";
 import { LocationInfo } from "./LocationInfo";
+import { LocationRouting } from "./request/LocationRouting";
 import { RequestContext } from "./request/RequestContext";
 
 /**
@@ -98,7 +99,9 @@ export class LocationCache {
   }
 
   public resolveServiceEndpoint(request: RequestContext): string {
-    let locationIndex = request.locationRouting ? request.locationRouting.locationIndexToRoute || 0 : 0;
+    request.locationRouting = request.locationRouting || new LocationRouting();
+
+    let locationIndex = request.locationRouting.locationIndexToRoute || 0;
 
     if (!this.options.connectionPolicy.EnableEndpointDiscovery) {
       return this.defaultEndpoint;
