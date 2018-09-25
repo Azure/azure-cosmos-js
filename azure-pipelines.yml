@@ -1,0 +1,10 @@
+pool:
+  vmImage: "vs2017-win2016"
+
+steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: "10.x"
+  - script: |
+      powershell ./admin.ps1
+      npm ci && npm run build && npm run test && npm run test-ts && npm run test-browser
