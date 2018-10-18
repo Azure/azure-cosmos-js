@@ -1,5 +1,5 @@
 import assert from "assert";
-import { FetchFunctionCallback, SqlQuerySpec } from "./index";
+import { FetchFunctionCallback, SqlQuerySpec } from ".";
 import { ClientContext } from "../ClientContext";
 import { Constants, Helper, StatusCodes, SubStatusCodes } from "../common";
 import { FeedOptions } from "../request";

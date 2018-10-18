@@ -1,5 +1,5 @@
 import assert from "assert";
-import { FeedOptions } from "../../index";
+import { FeedOptions } from "../..";
 import { Container } from "../../client";
 import { getTestContainer, removeAllDatabases } from "../common/TestHelpers";
 

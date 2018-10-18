@@ -1,5 +1,5 @@
 import assert from "assert";
-import { Constants, DocumentBase } from "../../index";
+import { Constants, DocumentBase } from "../..";
 import { ContainerDefinition, Database } from "../../client";
 import { DataType, Index, IndexedPath, IndexingMode, IndexingPolicy, IndexKind } from "../../documents";
 import { getTestDatabase, removeAllDatabases } from "../common/TestHelpers";

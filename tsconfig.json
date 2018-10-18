@@ -3,6 +3,7 @@
     "declaration": true,
     "module": "esnext",
     "moduleResolution": "node",
+    "importHelpers": true,
     "noImplicitAny": true,
     "outDir": "./dist-esm",
     "preserveConstEnums": true,
@@ -12,8 +13,8 @@
     "newLine": "LF",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "lib": ["es6", "esnext.asynciterable"]
+    "lib": ["es6", "esnext"]
   },
-  "include": ["./src/**/*", "./test/**/*.spec.ts"],
-  "exclude": ["node_modules"]
+  "include": ["./src/**/*", "./test/**/*.spec.ts", "./samples/MultiRegionWrite/**.ts"],
+  "exclude": ["node_modules", "samples"]
 }

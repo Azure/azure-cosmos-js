@@ -1,12 +1,12 @@
 import assert from "assert";
-import { Constants, FeedOptions } from "../../index";
+import { Constants, FeedOptions } from "../..";
 import { PartitionKind } from "../../documents";
 import { getTestContainer, getTestDatabase, removeAllDatabases } from "../common/TestHelpers";
 
 const doc = { id: "myId", pk: "pk" };
 
 describe("ResourceLink Trimming of leading and trailing slashes", function() {
-  this.timeout(10000);
+  this.timeout(process.env.MOCHA_TIMEOUT || 10000);
   const containerId = "testcontainer";
 
   beforeEach(async function() {

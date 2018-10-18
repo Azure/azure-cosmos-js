@@ -1,5 +1,5 @@
 import assert from "assert";
-import { DocumentBase } from "../../index";
+import { DocumentBase } from "../..";
 import { PermissionDefinition } from "../../client";
 import {
   createOrUpsertPermission,

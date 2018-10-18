@@ -1,5 +1,5 @@
 import assert from "assert";
-import { DocumentBase } from "../../index";
+import { DocumentBase } from "../..";
 import { Container, TriggerDefinition } from "../../client";
 import { getTestContainer, removeAllDatabases } from "../common/TestHelpers";
 

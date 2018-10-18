@@ -1,5 +1,5 @@
 import assert from "assert";
-import { AzureDocuments, Constants, CosmosClient, RetryOptions } from "../../index";
+import { AzureDocuments, Constants, CosmosClient, RetryOptions } from "../..";
 import * as request from "../../request";
 
 describe("retry policy tests", function() {

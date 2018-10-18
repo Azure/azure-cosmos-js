@@ -1,5 +1,5 @@
 import assert from "assert";
-import { Constants, CosmosClient, DocumentBase } from "../../index";
+import { Constants, CosmosClient, DocumentBase } from "../..";
 import { Container } from "../../client";
 import { endpoint, masterKey } from "../common/_testConfig";
 import { bulkInsertItems, getTestContainer, getTestDatabase, removeAllDatabases } from "../common/TestHelpers";
@@ -98,7 +98,7 @@ describe("NodeJS CRUD Tests", function() {
   });
 
   describe("Validate QueryIterator Functionality", function() {
-    this.timeout(30000);
+    this.timeout(process.env.MOCHA_TIMEOUT || 30000);
     let resources: { container: Container; doc1: any; doc2: any; doc3: any };
     beforeEach(async function() {
       const container = await getTestContainer("Validate QueryIterator Functionality", client);

@@ -1,5 +1,5 @@
 import assert from "assert";
-import { Database, DocumentBase } from "../../index";
+import { Database, DocumentBase } from "../..";
 import { createOrUpsertItem, getTestDatabase, removeAllDatabases } from "../common/TestHelpers";
 
 describe("NodeJS CRUD Tests", function() {

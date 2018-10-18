@@ -1,5 +1,5 @@
 import assert from "assert";
-import { IHeaders } from "../../index";
+import { IHeaders } from "../..";
 import { Constants, Helper } from "../../common";
 
 describe("Helper methods", function() {
