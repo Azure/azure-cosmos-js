@@ -2,9 +2,9 @@ import { Agent, OutgoingHttpHeaders } from "http";
 import { RequestOptions } from "https"; // TYPES ONLY
 import * as querystring from "querystring";
 import { Stream } from "stream";
-import { Constants, IHeaders } from "../index";
 import { ConnectionPolicy } from "../documents";
 import { GlobalEndpointManager } from "../globalEndpointManager";
+import { Constants, IHeaders } from "../index";
 import { Body, RetryUtility } from "../retry";
 import { bodyFromData, createRequestObject, parse, Response } from "./request";
 import { RequestContext } from "./RequestContext";

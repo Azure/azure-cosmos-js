@@ -1,3 +1,4 @@
+import { ClientContext } from "../ClientContext";
 import {
   DocumentProducer,
   IExecutionContext,
@@ -5,7 +6,6 @@ import {
   ParallelQueryExecutionContextBase,
   PartitionedQueryExecutionContextInfo
 } from "./index";
-import { ClientContext } from "../ClientContext";
 
 /** @hidden */
 export class OrderByQueryExecutionContext extends ParallelQueryExecutionContextBase implements IExecutionContext {

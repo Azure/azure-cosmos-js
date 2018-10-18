@@ -1,7 +1,7 @@
-import { PartitionKey } from "../../index";
 import { ClientContext } from "../../ClientContext";
 import { Helper, UriFactory } from "../../common";
 import { PartitionKeyDefinition } from "../../documents";
+import { PartitionKey } from "../../index";
 import { CosmosResponse, RequestOptions } from "../../request";
 import { Conflict, Conflicts } from "../Conflict";
 import { Database } from "../Database";

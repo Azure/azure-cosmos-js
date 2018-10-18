@@ -1,4 +1,7 @@
 import assert from "assert";
+import { ClientContext } from "../ClientContext";
+import { StatusCodes, SubStatusCodes } from "../common";
+import { Response } from "../request/request";
 import {
   DefaultQueryExecutionContext,
   FetchFunctionCallback,
@@ -7,9 +10,6 @@ import {
   PipelinedQueryExecutionContext,
   SqlQuerySpec
 } from "./index";
-import { ClientContext } from "../ClientContext";
-import { StatusCodes, SubStatusCodes } from "../common";
-import { Response } from "../request/request";
 
 /** @hidden */
 export class ProxyQueryExecutionContext implements IExecutionContext {

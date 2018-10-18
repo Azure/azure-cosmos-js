@@ -1,9 +1,9 @@
 import assert from "assert";
 import * as util from "util";
-import { QueryIterator } from "../../index";
 import { Container, ContainerDefinition, Database } from "../../client";
 import { CosmosClient } from "../../CosmosClient";
 import { DataType, IndexKind, PartitionKind } from "../../documents";
+import { QueryIterator } from "../../index";
 import { SqlQuerySpec } from "../../queryExecutionContext";
 import { endpoint, masterKey } from "../common/_testConfig";
 import { TestData } from "../common/TestData";

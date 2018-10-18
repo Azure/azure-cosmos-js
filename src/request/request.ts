@@ -11,8 +11,8 @@ import { Body } from "../retry";
 import { ErrorResponse } from "./ErrorResponse";
 export { ErrorResponse }; // Should refactor this out
 
-import { FeedOptions, MediaOptions, RequestOptions } from "./index";
 import { AuthHandler, AuthOptions } from "../auth";
+import { FeedOptions, MediaOptions, RequestOptions } from "./index";
 import { Response } from "./Response";
 export { Response }; // Should refactor this out
 
