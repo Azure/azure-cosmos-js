@@ -4,7 +4,7 @@ import { IHeaders } from "../../queryExecutionContext/IHeaders";
 import { SessionContainer } from "../../session/sessionContainer";
 import { SessionContext } from "../../session/SessionContext";
 
-describe("SessionContainer", function() {
+describe.only("SessionContainer", function() {
   const collectionLink = "dbs/testDatabase/colls/testCollection";
   const collectionId = "oWxIAN48yN0=";
 

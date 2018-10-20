@@ -56,6 +56,7 @@ export class SessionContainer {
       return;
     }
 
+    // TODO Doesn't ownerId uniquely identify the database+container?
     const resourceIdObject = new ResourceId();
     const resourceId = resourceIdObject.parse(ownerId);
 
