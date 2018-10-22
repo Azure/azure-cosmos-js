@@ -1,4 +1,6 @@
-﻿/** @hidden */
+﻿// tslint:disable:no-bitwise
+
+/** @hidden */
 export const EMPTY = "0"; // TODO: This is kinda hacky
 
 /** @hidden */
