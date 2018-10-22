@@ -143,7 +143,7 @@ export class VectorSessionToken {
 }
 
 function max(int1: string, int2: string) {
-  // TODO this only works for positive numbers?
+  // NOTE: This only works for positive numbers
   if (int1.length === int2.length) {
     return int1 > int2 ? int1 : int2;
   } else if (int1.length > int2.length) {

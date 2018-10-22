@@ -1,4 +1,4 @@
-﻿import { Constants, EMPTY, Helper, ResourceId } from "../common";
+﻿import { Constants, Helper } from "../common";
 import { IHeaders } from "../queryExecutionContext";
 import { SessionContext } from "./SessionContext";
 import { VectorSessionToken } from "./VectorSessionToken";
@@ -56,21 +56,18 @@ export class SessionContainer {
       return;
     }
 
-    // TODO Doesn't ownerId uniquely identify the database+container?
-    const resourceIdObject = new ResourceId();
-    const resourceId = resourceIdObject.parse(ownerId);
-
-    if (resourceId.documentCollection !== EMPTY && containerName) {
-      const containerRid = resourceId.getUniqueDocumentCollectionId();
-      if (!this.collectionResourceIdToSessionTokens.has(containerRid)) {
-        this.collectionResourceIdToSessionTokens.set(containerRid, new Map());
+    const ownerIdBuffer = Buffer.from(ownerId, "base64");
+    // Only if ownerId contains 8 bytes does it represent a database+collection
+    if (ownerIdBuffer.length === 8 && containerName) {
+      if (!this.collectionResourceIdToSessionTokens.has(ownerId)) {
+        this.collectionResourceIdToSessionTokens.set(ownerId, new Map());
       }
 
       if (!this.collectionNameToCollectionResourceId.has(containerName)) {
-        this.collectionNameToCollectionResourceId.set(containerName, containerRid);
+        this.collectionNameToCollectionResourceId.set(containerName, ownerId);
       }
 
-      const containerSessionContainer = this.collectionResourceIdToSessionTokens.get(containerRid);
+      const containerSessionContainer = this.collectionResourceIdToSessionTokens.get(ownerId);
       SessionContainer.compareAndSetToken(sessionTokenString, containerSessionContainer);
     }
   }
