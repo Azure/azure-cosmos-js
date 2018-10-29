@@ -56,9 +56,7 @@ export class SessionContainer {
       return;
     }
 
-    const ownerIdBuffer = Buffer.from(ownerId, "base64");
-    // Only if ownerId contains 8 bytes does it represent a database+collection
-    if (ownerIdBuffer.length === 8 && containerName) {
+    if (containerName && this.validateOwnerID(ownerId)) {
       if (!this.collectionResourceIdToSessionTokens.has(ownerId)) {
         this.collectionResourceIdToSessionTokens.set(ownerId, new Map());
       }
@@ -70,6 +68,16 @@ export class SessionContainer {
       const containerSessionContainer = this.collectionResourceIdToSessionTokens.get(ownerId);
       SessionContainer.compareAndSetToken(sessionTokenString, containerSessionContainer);
     }
+  }
+
+  private validateOwnerID(ownerId: string) {
+    const ownerIdBuffer = Buffer.from(ownerId, "base64");
+    // If ownerId contains exactly 8 bytes it represents a unique database+collection identifier. Otherwise it represents another resource
+    // The first 4 bytes are the database. The last 4 bytes are the collection.
+    if (ownerIdBuffer.length === 8) {
+      return true;
+    }
+    return false;
   }
 
   private getPartitionKeyRangeIdToTokenMap(collectionName: string): Map<string, VectorSessionToken> {
