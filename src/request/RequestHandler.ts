@@ -5,7 +5,7 @@ import { Stream } from "stream";
 import { Constants, IHeaders } from "..";
 import { ConnectionPolicy } from "../documents";
 import { GlobalEndpointManager } from "../globalEndpointManager";
-import { Body, RetryUtility } from "../retry";
+import { Body, execute } from "../retry";
 import { bodyFromData, createRequestObject, parse, Response } from "./request";
 import { RequestContext } from "./RequestContext";
 
@@ -101,7 +101,7 @@ export class RequestHandler {
 
     if (buffer) {
       requestOptions.headers[Constants.HttpHeaders.ContentLength] = buffer.length;
-      return RetryUtility.execute(
+      return execute(
         globalEndpointManager,
         { buffer, stream: null },
         this.createRequestObjectStub,
@@ -110,7 +110,7 @@ export class RequestHandler {
         request
       );
     } else if (stream) {
-      return RetryUtility.execute(
+      return execute(
         globalEndpointManager,
         { buffer: null, stream },
         this.createRequestObjectStub,
@@ -119,7 +119,7 @@ export class RequestHandler {
         request
       );
     } else {
-      return RetryUtility.execute(
+      return execute(
         globalEndpointManager,
         { buffer: null, stream: null },
         this.createRequestObjectStub,

@@ -18,34 +18,32 @@ export interface PartitionedQueryExecutionContextInfo {
 
 // TODO: any partitionedQueryExecutionInfo
 /** @hidden */
-export class PartitionedQueryExecutionContextInfoParser {
-  public static parseRewrittenQuery(partitionedQueryExecutionInfo: { [key: string]: any }) {
-    return this._extract(partitionedQueryExecutionInfo, PartitionedQueryContants.RewrittenQueryPath);
+export function parseRewrittenQuery(partitionedQueryExecutionInfo: { [key: string]: any }) {
+  return extract(partitionedQueryExecutionInfo, PartitionedQueryContants.RewrittenQueryPath);
+}
+export function parseQueryRanges(partitionedQueryExecutionInfo: { [key: string]: any }) {
+  return extract(partitionedQueryExecutionInfo, PartitionedQueryContants.QueryRangesPath);
+}
+export function parseOrderBy(partitionedQueryExecutionInfo: { [key: string]: any }) {
+  return extract(partitionedQueryExecutionInfo, PartitionedQueryContants.OrderByPath);
+}
+export function parseAggregates(partitionedQueryExecutionInfo: { [key: string]: any }) {
+  return extract(partitionedQueryExecutionInfo, PartitionedQueryContants.AggregatePath);
+}
+export function parseTop(partitionedQueryExecutionInfo: { [key: string]: any }) {
+  return extract(partitionedQueryExecutionInfo, PartitionedQueryContants.TopPath);
+}
+function extract(partitionedQueryExecutionInfo: { [key: string]: any }, path: string | string[]) {
+  let item = partitionedQueryExecutionInfo;
+  if (typeof path === "string") {
+    return item[path];
   }
-  public static parseQueryRanges(partitionedQueryExecutionInfo: { [key: string]: any }) {
-    return this._extract(partitionedQueryExecutionInfo, PartitionedQueryContants.QueryRangesPath);
-  }
-  public static parseOrderBy(partitionedQueryExecutionInfo: { [key: string]: any }) {
-    return this._extract(partitionedQueryExecutionInfo, PartitionedQueryContants.OrderByPath);
-  }
-  public static parseAggregates(partitionedQueryExecutionInfo: { [key: string]: any }) {
-    return this._extract(partitionedQueryExecutionInfo, PartitionedQueryContants.AggregatePath);
-  }
-  public static parseTop(partitionedQueryExecutionInfo: { [key: string]: any }) {
-    return this._extract(partitionedQueryExecutionInfo, PartitionedQueryContants.TopPath);
-  }
-  private static _extract(partitionedQueryExecutionInfo: { [key: string]: any }, path: string | string[]) {
-    let item = partitionedQueryExecutionInfo;
-    if (typeof path === "string") {
-      return item[path];
+  assert.ok(Array.isArray(path), util.format("%s is expected to be an array", JSON.stringify(path)));
+  for (const p of path) {
+    item = item[p];
+    if (item === undefined) {
+      return;
     }
-    assert.ok(Array.isArray(path), util.format("%s is expected to be an array", JSON.stringify(path)));
-    for (const p of path) {
-      item = item[p];
-      if (item === undefined) {
-        return;
-      }
-    }
-    return item;
   }
+  return item;
 }

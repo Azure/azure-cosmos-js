@@ -3,18 +3,13 @@ import * as bs from "binary-search-bounds";
 import PriorityQueue from "priorityqueuejs";
 import semaphore from "semaphore";
 import * as util from "util";
-import {
-  DocumentProducer,
-  HeaderUtils,
-  IExecutionContext,
-  IHeaders,
-  PartitionedQueryExecutionContextInfo,
-  PartitionedQueryExecutionContextInfoParser
-} from ".";
+import { DocumentProducer, IExecutionContext, IHeaders, PartitionedQueryExecutionContextInfo } from ".";
 import { ClientContext } from "../ClientContext";
 import { StatusCodes, SubStatusCodes } from "../common";
 import { Response } from "../request/request";
 import { PARITIONKEYRANGE, QueryRange, SmartRoutingMapProvider } from "../routing";
+import { getInitialHeader, mergeHeaders } from "./headerUtils";
+import { parseOrderBy, parseQueryRanges, parseRewrittenQuery } from "./partitionedQueryExecutionContextInfoParser";
 
 /** @hidden */
 export enum ParallelQueryExecutionContextBaseStates {
@@ -68,7 +63,7 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
     this.err = undefined;
     this.state = ParallelQueryExecutionContextBase.STATES.started;
     this.routingProvider = new SmartRoutingMapProvider(this.clientContext);
-    this.sortOrders = PartitionedQueryExecutionContextInfoParser.parseOrderBy(this.partitionedQueryExecutionInfo);
+    this.sortOrders = parseOrderBy(this.partitionedQueryExecutionInfo);
 
     if (options === undefined || options["maxItemCount"] === undefined) {
       this.pageSize = ParallelQueryExecutionContextBase.DEFAULT_PAGE_SIZE;
@@ -79,7 +74,7 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
 
     this.requestContinuation = options ? options.continuation : null;
     // response headers of undergoing operation
-    this.respHeaders = HeaderUtils.getInitialHeader();
+    this.respHeaders = getInitialHeader();
 
     // Make priority queue for documentProducers
     // The comparator is supplied by the derived class
@@ -221,20 +216,18 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
   }
 
   private _mergeWithActiveResponseHeaders(headers: IHeaders) {
-    HeaderUtils.mergeHeaders(this.respHeaders, headers);
+    mergeHeaders(this.respHeaders, headers);
   }
 
   private _getAndResetActiveResponseHeaders() {
     const ret = this.respHeaders;
-    this.respHeaders = HeaderUtils.getInitialHeader();
+    this.respHeaders = getInitialHeader();
     return ret;
   }
 
   private async _onTargetPartitionRanges() {
     // invokes the callback when the target partition ranges are ready
-    const parsedRanges = PartitionedQueryExecutionContextInfoParser.parseQueryRanges(
-      this.partitionedQueryExecutionInfo
-    );
+    const parsedRanges = parseQueryRanges(this.partitionedQueryExecutionInfo);
     const queryRanges = parsedRanges.map((item: any) => QueryRange.parseFromDict(item)); // TODO: any
     return this.routingProvider.getOverlappingRanges(this.collectionLink, queryRanges);
   }
@@ -553,9 +546,7 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
   private _createTargetPartitionQueryExecutionContext(partitionKeyTargetRange: any, continuationToken?: any) {
     // TODO: any
     // creates target partition range Query Execution Context
-    let rewrittenQuery = PartitionedQueryExecutionContextInfoParser.parseRewrittenQuery(
-      this.partitionedQueryExecutionInfo
-    );
+    let rewrittenQuery = parseRewrittenQuery(this.partitionedQueryExecutionInfo);
     let query = this.query;
     if (typeof query === "string") {
       query = { query };

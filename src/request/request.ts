@@ -3,7 +3,7 @@ import * as httpsTypes from "https"; // TYPES ONLY
 import { Socket } from "net";
 import { Stream } from "stream";
 import * as url from "url";
-import { Constants, Helper } from "../common";
+import { Constants, jsonStringifyAndEscapeNonASCII } from "../common";
 import { ConnectionPolicy, MediaReadMode } from "../documents";
 import { IHeaders } from "../queryExecutionContext";
 import { Body } from "../retry";
@@ -12,7 +12,7 @@ import { ErrorResponse } from "./ErrorResponse";
 export { ErrorResponse }; // Should refactor this out
 
 import { FeedOptions, MediaOptions, RequestOptions } from ".";
-import { AuthHandler, AuthOptions } from "../auth";
+import { AuthOptions, getAuthorizationHeader } from "../auth";
 import { Response } from "./Response";
 export { Response }; // Should refactor this out
 
@@ -273,7 +273,7 @@ export async function getHeaders(
     if (partitionKey === null || !Array.isArray(partitionKey)) {
       partitionKey = [partitionKey as string];
     }
-    headers[Constants.HttpHeaders.PartitionKey] = Helper.jsonStringifyAndEscapeNonASCII(partitionKey);
+    headers[Constants.HttpHeaders.PartitionKey] = jsonStringifyAndEscapeNonASCII(partitionKey);
   }
 
   if (authOptions.masterKey || authOptions.tokenProvider) {
@@ -306,7 +306,7 @@ export async function getHeaders(
     headers[Constants.HttpHeaders.DisableRUPerMinuteUsage] = true;
   }
   if (authOptions.masterKey || authOptions.resourceTokens || authOptions.tokenProvider || authOptions.permissionFeed) {
-    const token = await AuthHandler.getAuthorizationHeader(authOptions, verb, path, resourceId, resourceType, headers);
+    const token = await getAuthorizationHeader(authOptions, verb, path, resourceId, resourceType, headers);
     headers[Constants.HttpHeaders.Authorization] = token;
   }
   return headers;

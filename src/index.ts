@@ -1,4 +1,6 @@
 import * as DocumentBase from "./documents";
+import * as UriFactory from "./common/uriFactory";
+
 export {
   ConnectionMode,
   ConsistencyLevel,
@@ -23,7 +25,7 @@ export {
 } from "./documents";
 
 export { DocumentBase, DocumentBase as AzureDocuments };
-export { Constants, UriFactory } from "./common";
+export { Constants } from "./common";
 export { RetryOptions } from "./retry";
 export { Response, RequestOptions, FeedOptions, MediaOptions, ErrorResponse } from "./request";
 export { IHeaders, SqlParameter, SqlQuerySpec } from "./queryExecutionContext";
@@ -32,3 +34,4 @@ export * from "./queryMetrics";
 export { CosmosClient } from "./CosmosClient";
 export { CosmosClientOptions } from "./CosmosClientOptions";
 export * from "./client";
+export { UriFactory };

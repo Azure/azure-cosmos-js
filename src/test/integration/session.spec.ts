@@ -2,7 +2,7 @@ import assert from "assert";
 import * as sinon from "sinon";
 import { Constants, CosmosClient, IHeaders } from "../..";
 import { ClientContext } from "../../ClientContext";
-import { Helper } from "../../common";
+import { trimSlashes } from "../../common";
 import { ConsistencyLevel, PartitionKind } from "../../documents";
 import { RequestHandler } from "../../request";
 import { SessionContainer } from "../../session/sessionContainer";
@@ -295,7 +295,7 @@ describe("Session Token", function() {
     } catch (err) {
       assert.equal(err.substatus, 1002, "Substatus should indicate the LSN didn't catchup.");
       assert.equal(callbackSpy.callCount, 1);
-      assert.equal(Helper.trimSlashes(callbackSpy.lastCall.args[0]), containerLink + "/docs/1");
+      assert.equal(trimSlashes(callbackSpy.lastCall.args[0]), containerLink + "/docs/1");
     } finally {
       applySessionTokenStub.restore();
     }

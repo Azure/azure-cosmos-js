@@ -1,11 +1,9 @@
 import {
-  HeaderUtils,
   IExecutionContext,
   IHeaders,
   OrderByQueryExecutionContext,
   ParallelQueryExecutionContext,
-  PartitionedQueryExecutionContextInfo,
-  PartitionedQueryExecutionContextInfoParser
+  PartitionedQueryExecutionContextInfo
 } from ".";
 import { ClientContext } from "../ClientContext";
 import { Response } from "../request/request";
@@ -15,6 +13,8 @@ import {
   OrderByEndpointComponent,
   TopEndpointComponent
 } from "./EndpointComponent";
+import { getInitialHeader, mergeHeaders } from "./headerUtils";
+import { parseAggregates, parseOrderBy, parseTop } from "./partitionedQueryExecutionContextInfoParser";
 
 /** @hidden */
 export class PipelinedQueryExecutionContext implements IExecutionContext {
@@ -37,7 +37,7 @@ export class PipelinedQueryExecutionContext implements IExecutionContext {
     }
 
     // Pick between parallel vs order by execution context
-    const sortOrders = PartitionedQueryExecutionContextInfoParser.parseOrderBy(partitionedQueryExecutionInfo);
+    const sortOrders = parseOrderBy(partitionedQueryExecutionInfo);
     if (Array.isArray(sortOrders) && sortOrders.length > 0) {
       // Need to wrap orderby execution context in endpoint component, since the data is nested as a \
       //      "payload" property.
@@ -61,13 +61,13 @@ export class PipelinedQueryExecutionContext implements IExecutionContext {
     }
 
     // If aggregate then add that to the pipeline
-    const aggregates = PartitionedQueryExecutionContextInfoParser.parseAggregates(partitionedQueryExecutionInfo);
+    const aggregates = parseAggregates(partitionedQueryExecutionInfo);
     if (Array.isArray(aggregates) && aggregates.length > 0) {
       this.endpoint = new AggregateEndpointComponent(this.endpoint, aggregates);
     }
 
     // If top then add that to the pipeline
-    const top = PartitionedQueryExecutionContextInfoParser.parseTop(partitionedQueryExecutionInfo);
+    const top = parseTop(partitionedQueryExecutionInfo);
     if (typeof top === "number") {
       this.endpoint = new TopEndpointComponent(this.endpoint, top);
     }
@@ -93,7 +93,7 @@ export class PipelinedQueryExecutionContext implements IExecutionContext {
       return this.endpoint.fetchMore();
     } else {
       this.fetchBuffer = [];
-      this.fetchMoreRespHeaders = HeaderUtils.getInitialHeader();
+      this.fetchMoreRespHeaders = getInitialHeader();
       return this._fetchMoreImplementation();
     }
   }
@@ -101,7 +101,7 @@ export class PipelinedQueryExecutionContext implements IExecutionContext {
   private async _fetchMoreImplementation(): Promise<Response<any>> {
     try {
       const { result: item, headers } = await this.endpoint.nextItem();
-      HeaderUtils.mergeHeaders(this.fetchMoreRespHeaders, headers);
+      mergeHeaders(this.fetchMoreRespHeaders, headers);
       if (item === undefined) {
         // no more results
         if (this.fetchBuffer.length === 0) {
@@ -130,7 +130,7 @@ export class PipelinedQueryExecutionContext implements IExecutionContext {
         }
       }
     } catch (err) {
-      HeaderUtils.mergeHeaders(this.fetchMoreRespHeaders, err.headers);
+      mergeHeaders(this.fetchMoreRespHeaders, err.headers);
       err.headers = this.fetchMoreRespHeaders;
       if (err) {
         throw err;

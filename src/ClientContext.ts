@@ -1,6 +1,14 @@
 import { Constants, CosmosClientOptions, IHeaders, QueryIterator, RequestOptions, Response, SqlQuerySpec } from ".";
 import { Resource } from "./client/Resource";
-import { Helper, StatusCodes, SubStatusCodes } from "./common";
+import {
+  getIdFromLink,
+  getPathFromLink,
+  parseConnectionPolicy,
+  parseLink,
+  setIsUpsertHeader,
+  StatusCodes,
+  SubStatusCodes
+} from "./common";
 import { ConnectionPolicy, ConsistencyLevel, DatabaseAccount, QueryCompatibilityMode } from "./documents";
 import { GlobalEndpointManager } from "./globalEndpointManager";
 import { FetchFunctionCallback } from "./queryExecutionContext";
@@ -24,7 +32,7 @@ export class ClientContext {
     private cosmosClientOptions: CosmosClientOptions,
     private globalEndpointManager: GlobalEndpointManager
   ) {
-    this.connectionPolicy = Helper.parseConnectionPolicy(cosmosClientOptions.connectionPolicy);
+    this.connectionPolicy = parseConnectionPolicy(cosmosClientOptions.connectionPolicy);
     this.sessionContainer = new SessionContainer();
     this.requestHandler = new RequestHandler(
       globalEndpointManager,
@@ -150,8 +158,8 @@ export class ClientContext {
   }
 
   public queryPartitionKeyRanges(collectionLink: string, query?: string | SqlQuerySpec, options?: FeedOptions) {
-    const path = Helper.getPathFromLink(collectionLink, "pkranges");
-    const id = Helper.getIdFromLink(collectionLink);
+    const path = getPathFromLink(collectionLink, "pkranges");
+    const id = getIdFromLink(collectionLink);
     const cb: FetchFunctionCallback = innerOptions => {
       return this.queryFeed(path, "pkranges", id, result => result.PartitionKeyRanges, query, innerOptions);
     };
@@ -189,7 +197,7 @@ export class ClientContext {
       // deleteResource will use WriteEndpoint since it uses DELETE operation
       const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
       const response = await this.requestHandler.delete(endpoint, request, reqHeaders);
-      if (Helper.parseLink(path).type !== "colls") {
+      if (parseLink(path).type !== "colls") {
         this.captureSessionToken(undefined, path, Constants.OperationTypes.Delete, response.headers);
       } else {
         this.clearSessionToken(path);
@@ -383,7 +391,7 @@ export class ClientContext {
         resourceType: type
       };
 
-      Helper.setIsUpsertHeader(requestHeaders);
+      setIsUpsertHeader(requestHeaders);
       this.applySessionToken(path, requestHeaders);
 
       // upsert will use WriteEndpoint since it uses POST operation
@@ -409,8 +417,8 @@ export class ClientContext {
     if (params !== null && params !== undefined && !Array.isArray(params)) {
       params = [params];
     }
-    const path = Helper.getPathFromLink(sprocLink);
-    const id = Helper.getIdFromLink(sprocLink);
+    const path = getPathFromLink(sprocLink);
+    const id = getIdFromLink(sprocLink);
 
     const headers = await getHeaders(
       this.cosmosClientOptions.auth,
@@ -498,7 +506,7 @@ export class ClientContext {
       throw new Error("collectionLink cannot be null");
     }
 
-    const paths = Helper.parseLink(collectionLink);
+    const paths = parseLink(collectionLink);
 
     if (paths === undefined) {
       return "";
@@ -516,7 +524,7 @@ export class ClientContext {
   private getSessionParams(resourceLink: string): SessionContext {
     const resourceId: string = null;
     let resourceAddress: string = null;
-    const parserOutput = Helper.parseLink(resourceLink);
+    const parserOutput = parseLink(resourceLink);
 
     resourceAddress = parserOutput.objectBody.self;
 
