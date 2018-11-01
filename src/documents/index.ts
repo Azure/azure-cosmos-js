@@ -16,3 +16,4 @@ export * from "./QueryCompatibilityMode";
 export * from "./TriggerOperation";
 export * from "./TriggerType";
 export * from "./UserDefinedFunctionType";
+export * from "./OperationLogPolicy";

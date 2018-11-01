@@ -19,7 +19,8 @@ export {
   QueryCompatibilityMode,
   TriggerOperation,
   TriggerType,
-  UserDefinedFunctionType
+  UserDefinedFunctionType,
+  OperationLogPolicy
 } from "./documents";
 
 export { DocumentBase, DocumentBase as AzureDocuments };

@@ -1,7 +1,15 @@
 import assert from "assert";
 import { Constants, DocumentBase } from "../..";
 import { ContainerDefinition, Database } from "../../client";
-import { DataType, Index, IndexedPath, IndexingMode, IndexingPolicy, IndexKind } from "../../documents";
+import {
+  DataType,
+  Index,
+  IndexedPath,
+  IndexingMode,
+  IndexingPolicy,
+  IndexKind,
+  OperationLogPolicy
+} from "../../documents";
 import { getTestDatabase, removeAllDatabases } from "../common/TestHelpers";
 
 describe("NodeJS CRUD Tests", function() {
@@ -422,6 +430,38 @@ describe("NodeJS CRUD Tests", function() {
       } catch (err) {
         throw err;
       }
+    });
+  });
+
+  describe("create container with operationLogPolicy", function() {
+    this.timeout(process.env.MOCHA_TIMEOUT || 10000);
+    const operationLogRetentionTest = async function() {
+      const logRetentionDurationTenMin = 10;
+      const logRetentionDurationZeroMin = 0;
+
+      const database = await getTestDatabase("Validate Container CRUD");
+
+      // create a container without operationLogPolicy specified
+      const containerDefinition: ContainerDefinition = {
+        id: "sample container"
+      };
+      const { body: containerDef } = await database.containers.create(containerDefinition);
+      const container = database.container(containerDef.id);
+      assert.equal(containerDefinition.operationLogPolicy, null);
+
+      // Replace collection with operation log policy specified
+      containerDefinition.operationLogPolicy = { retentionDuration: logRetentionDurationTenMin };
+      const { body: replacedContainer } = await container.replace(containerDefinition);
+      assert.equal(replacedContainer.operationLogPolicy.retentionDuration, logRetentionDurationTenMin);
+
+      // Replace collection with a different operation log policy
+      containerDefinition.operationLogPolicy = { retentionDuration: logRetentionDurationZeroMin };
+      const { body: replacedContainer2 } = await container.replace(containerDefinition);
+      assert.equal(replacedContainer2.operationLogPolicy.retentionDuration, logRetentionDurationZeroMin);
+    };
+
+    it("test operationLogPolicy retrievable", async function() {
+      await operationLogRetentionTest();
     });
   });
 });
