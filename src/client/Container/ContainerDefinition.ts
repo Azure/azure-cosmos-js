@@ -12,6 +12,6 @@ export interface ContainerDefinition {
   defaultTtl?: number;
   /** The conflict resolution policy used to resolve conflicts in a container. */
   conflictResolutionPolicy?: ConflictResolutionPolicy;
-  /** The conflict resolution policy used to resolve conflicts in a container. */
+  /** The opearation log policy for a container. */
   operationLogPolicy?: OperationLogPolicy;
 }
