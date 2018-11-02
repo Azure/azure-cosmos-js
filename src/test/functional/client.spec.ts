@@ -4,7 +4,7 @@ import { CosmosClient, DocumentBase } from "../..";
 import { endpoint, masterKey } from "../common/_testConfig";
 import { getTestDatabase, removeAllDatabases } from "../common/TestHelpers";
 
-describe.only("NodeJS CRUD Tests", function() {
+describe("NodeJS CRUD Tests", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 20000);
 
   describe("Validate client request timeout", function() {
