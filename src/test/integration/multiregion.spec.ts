@@ -7,6 +7,7 @@ import { endpoint, masterKey } from "../common/_testConfig";
 
 // This test requires a multi-region write enabled account with at least two regions.
 (process.env.TESTS_MULTIREGION ? describe : describe.skip)("Multi-region tests", function() {
+  this.timeout(process.env.MOCHA_TIMEOUT || "30000");
   let preferredLocations: string[] = [];
   let dbAccount: DatabaseAccount;
 
