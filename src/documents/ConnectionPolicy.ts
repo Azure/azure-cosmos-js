@@ -1,8 +1,11 @@
+import { RequestOptions } from "https"; // TYPES ONLY
 import { ConnectionMode, MediaReadMode } from ".";
-import { RetryOptions } from "../retry";
+import { Response } from "../request";
+import { Body, RetryOptions } from "../retry";
 /**
  * Represents the Connection policy associated with a CosmosClient in the Azure Cosmos DB database service.
  */
+
 export class ConnectionPolicy {
   private static readonly defaultRequestTimeout: number = 60000;
   private static readonly defaultMediaRequestTimeout: number = 300000;
@@ -34,4 +37,12 @@ export class ConnectionPolicy {
    * Default is `false`.
    */
   public UseMultipleWriteLocations: boolean = false;
+  /**
+   * Override for the default SDK createRequetObject
+   */
+  public CreateRequestObject: (
+    connectionPolicy: ConnectionPolicy,
+    requestOptions: RequestOptions,
+    body: Body
+  ) => Promise<Response<any>>;
 }

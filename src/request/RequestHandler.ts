@@ -21,6 +21,9 @@ export class RequestHandler {
     requestOptions: RequestOptions,
     body: Body
   ) {
+    if (connectionPolicy.CreateRequestObject) {
+      return connectionPolicy.CreateRequestObject(connectionPolicy, requestOptions, body);
+    }
     return createRequestObject(connectionPolicy, requestOptions, body);
   }
 
