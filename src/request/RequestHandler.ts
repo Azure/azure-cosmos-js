@@ -49,7 +49,7 @@ export class RequestHandler {
     headers: IHeaders
   ): Promise<Response<any>> {
     // TODO: any
-    const path = (request as { path: string }).path === undefined ? request : (request as { path: string }).path;
+    const path = request.path;
     let body: any; // TODO: any
 
     if (data) {
@@ -85,8 +85,13 @@ export class RequestHandler {
     }
 
     const requestOptions: RequestOptions = parse(hostname);
+
     requestOptions.method = method;
-    requestOptions.path += path;
+    if (requestOptions.path && requestOptions.path !== "/") {
+      requestOptions.path += path;
+    } else {
+      requestOptions.path = path;
+    }
     requestOptions.headers = headers as OutgoingHttpHeaders;
     requestOptions.agent = requestAgent;
     requestOptions.secureProtocol = "TLSv1_client_method"; // TODO: Should be a constant
@@ -132,6 +137,7 @@ export class RequestHandler {
 
   /** @ignore */
   public get(urlString: string, request: RequestContext, headers: IHeaders) {
+    console.log(request);
     // TODO: any
     return RequestHandler.request(
       this.globalEndpointManager,
