@@ -137,7 +137,6 @@ export class RequestHandler {
 
   /** @ignore */
   public get(urlString: string, request: RequestContext, headers: IHeaders) {
-    console.log(request);
     // TODO: any
     return RequestHandler.request(
       this.globalEndpointManager,

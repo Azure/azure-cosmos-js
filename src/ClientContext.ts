@@ -142,8 +142,6 @@ export class ClientContext {
       );
       this.applySessionToken(path, reqHeaders);
 
-      console.log(endpoint);
-
       const response = await this.requestHandler.post(endpoint, request, query, reqHeaders);
       const { result, headers: resHeaders } = response;
       this.captureSessionToken(undefined, path, Constants.OperationTypes.Query, resHeaders);
