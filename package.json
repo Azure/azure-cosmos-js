@@ -26,6 +26,7 @@
     "compile": "echo Using TypeScript && tsc --version && tsc --pretty",
     "compile-prod": "echo Using TypeScript && tsc --version && tsc -p tsconfig.prod.json --pretty",
     "docs": "typedoc --excludePrivate --exclude \"**/test/**\" --mode file --out ./lib/docs ./src",
+    "prepack": "npm install && npm run build",
     "pack": "webpack -d",
     "pack-prod": "webpack -p",
     "build": "npm run clean && npm run check-format && npm run lint && npm run compile && npm run docs && npm run pack",
