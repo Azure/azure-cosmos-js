@@ -460,7 +460,7 @@ describe("NodeJS CRUD Tests", function() {
       assert.equal(replacedContainer2.changeFeedPolicy.retentionDuration, logRetentionDurationZeroMin);
     };
 
-    it("test operationLogPolicy retrievable", async function() {
+    it("test changeFeedPolicy retrievable", async function() {
       await changeFeedRetentionTest();
     });
   });
