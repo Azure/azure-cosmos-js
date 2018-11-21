@@ -1,4 +1,4 @@
-import { IndexingPolicy, OperationLogPolicy, PartitionKey, PartitionKeyDefinition } from "../../documents";
+import { ChangeFeedPolicy, IndexingPolicy, PartitionKey, PartitionKeyDefinition } from "../../documents";
 import { ConflictResolutionPolicy } from "../Conflict/ConflictResolutionPolicy";
 
 export interface ContainerDefinition {
@@ -12,6 +12,6 @@ export interface ContainerDefinition {
   defaultTtl?: number;
   /** The conflict resolution policy used to resolve conflicts in a container. */
   conflictResolutionPolicy?: ConflictResolutionPolicy;
-  /** The operation log policy for a container determines the log retention period for the change feed. */
-  operationLogPolicy?: OperationLogPolicy;
+  /** The changeFeed policy for a container determines the log retention period for the change feed. */
+  changeFeedPolicy?: ChangeFeedPolicy;
 }

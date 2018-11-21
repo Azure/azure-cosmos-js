@@ -20,7 +20,7 @@ export {
   TriggerOperation,
   TriggerType,
   UserDefinedFunctionType,
-  OperationLogPolicy
+  ChangeFeedPolicy
 } from "./documents";
 
 export { DocumentBase, DocumentBase as AzureDocuments };

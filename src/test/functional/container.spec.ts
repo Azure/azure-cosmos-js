@@ -2,13 +2,13 @@ import assert from "assert";
 import { Constants, DocumentBase } from "../..";
 import { ContainerDefinition, Database } from "../../client";
 import {
+  ChangeFeedPolicy,
   DataType,
   Index,
   IndexedPath,
   IndexingMode,
   IndexingPolicy,
-  IndexKind,
-  OperationLogPolicy
+  IndexKind
 } from "../../documents";
 import { getTestDatabase, removeAllDatabases } from "../common/TestHelpers";
 
@@ -433,35 +433,35 @@ describe("NodeJS CRUD Tests", function() {
     });
   });
 
-  describe("create container with operationLogPolicy", function() {
+  describe("create container with changeFeedPolicy", function() {
     this.timeout(process.env.MOCHA_TIMEOUT || 10000);
-    const operationLogRetentionTest = async function() {
+    const changeFeedRetentionTest = async function() {
       const logRetentionDurationTenMin = 10;
       const logRetentionDurationZeroMin = 0;
 
       const database = await getTestDatabase("Validate Container CRUD");
 
-      // create a container without operationLogPolicy specified
+      // create a container without changeFeedPolicy specified
       const containerDefinition: ContainerDefinition = {
         id: "sample container"
       };
       const { body: containerDef } = await database.containers.create(containerDefinition);
       const container = database.container(containerDef.id);
-      assert.equal(containerDefinition.operationLogPolicy, null);
+      assert.equal(containerDefinition.changeFeedPolicy, null);
 
-      // Replace collection with operation log policy specified
-      containerDefinition.operationLogPolicy = { retentionDuration: logRetentionDurationTenMin };
+      // Replace collection with changeFeedPolicy specified
+      containerDefinition.changeFeedPolicy = { retentionDuration: logRetentionDurationTenMin };
       const { body: replacedContainer } = await container.replace(containerDefinition);
-      assert.equal(replacedContainer.operationLogPolicy.retentionDuration, logRetentionDurationTenMin);
+      assert.equal(replacedContainer.changeFeedPolicy.retentionDuration, logRetentionDurationTenMin);
 
-      // Replace collection with a different operation log policy
-      containerDefinition.operationLogPolicy = { retentionDuration: logRetentionDurationZeroMin };
+      // Replace collection with a different changeFeedPolicy
+      containerDefinition.changeFeedPolicy = { retentionDuration: logRetentionDurationZeroMin };
       const { body: replacedContainer2 } = await container.replace(containerDefinition);
-      assert.equal(replacedContainer2.operationLogPolicy.retentionDuration, logRetentionDurationZeroMin);
+      assert.equal(replacedContainer2.changeFeedPolicy.retentionDuration, logRetentionDurationZeroMin);
     };
 
     it("test operationLogPolicy retrievable", async function() {
-      await operationLogRetentionTest();
+      await changeFeedRetentionTest();
     });
   });
 });
