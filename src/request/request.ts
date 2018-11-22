@@ -6,7 +6,6 @@ import * as url from "url";
 import { Constants, Helper } from "../common";
 import { ConnectionPolicy, MediaReadMode } from "../documents";
 import { IHeaders } from "../queryExecutionContext";
-import { Body } from "../retry";
 
 import { ErrorResponse } from "./ErrorResponse";
 export { ErrorResponse }; // Should refactor this out
@@ -65,7 +64,7 @@ export function parse(urlString: string) {
 export function createRequestObject(
   connectionPolicy: ConnectionPolicy,
   requestOptions: httpsTypes.RequestOptions,
-  body: Body
+  body: Buffer
 ): Promise<Response<any>> {
   return new Promise<Response<any>>((resolve, reject) => {
     function onTimeout() {
@@ -126,10 +125,8 @@ export function createRequestObject(
 
     httpsRequest.once("error", reject);
 
-    if (body["stream"] !== null) {
-      body["stream"].pipe(httpsRequest);
-    } else if (body["buffer"] !== null) {
-      httpsRequest.write(body["buffer"]);
+    if (body) {
+      httpsRequest.write(body);
       httpsRequest.end();
     } else {
       httpsRequest.end();
