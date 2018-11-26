@@ -1,3 +1,5 @@
+import { ChangeFeedIterator } from "../../ChangeFeedIterator";
+import { ChangeFeedOptions } from "../../ChangeFeedOptions";
 import { ClientContext } from "../../ClientContext";
 import { Helper } from "../../common";
 import { FetchFunctionCallback, SqlQuerySpec } from "../../queryExecutionContext";
@@ -8,6 +10,13 @@ import { Resource } from "../Resource";
 import { Item } from "./Item";
 import { ItemDefinition } from "./ItemDefinition";
 import { ItemResponse } from "./ItemResponse";
+
+import assert from "assert";
+import { isBoolean, isNumber, isString } from "util";
+
+function isChangeFeedOptions(options: unknown): options is ChangeFeedOptions {
+  return options && !(isString(options) || isBoolean(options) || isNumber(options));
+}
 
 /**
  * Operations for creating new items, and reading/querying all items
@@ -70,6 +79,54 @@ export class Items {
     };
 
     return new QueryIterator(this.clientContext, query, options, fetchFunction, this.container.url);
+  }
+
+  public readChangeFeed(
+    partitionKey: string | number | boolean,
+    changeFeedOptions: ChangeFeedOptions
+  ): ChangeFeedIterator<any>;
+  public readChangeFeed(changeFeedOptions: ChangeFeedOptions): ChangeFeedIterator<any>;
+  public readChangeFeed<T>(
+    partitionKey: string | number | boolean,
+    changeFeedOptions: ChangeFeedOptions
+  ): ChangeFeedIterator<T>;
+  public readChangeFeed<T>(changeFeedOptions: ChangeFeedOptions): ChangeFeedIterator<T>;
+  public readChangeFeed<T>(
+    partitionKeyOrChangeFeedOptions: string | number | boolean | ChangeFeedOptions,
+    changeFeedOptions?: ChangeFeedOptions
+  ): ChangeFeedIterator<T> {
+    let partitionKey: string | number | boolean;
+    if (!changeFeedOptions && isChangeFeedOptions(partitionKeyOrChangeFeedOptions)) {
+      partitionKey = undefined;
+      changeFeedOptions = partitionKeyOrChangeFeedOptions;
+    } else if (partitionKeyOrChangeFeedOptions !== undefined && !isChangeFeedOptions(partitionKeyOrChangeFeedOptions)) {
+      partitionKey = partitionKeyOrChangeFeedOptions;
+    }
+
+    if (!changeFeedOptions) {
+      throw new Error("changeFeedOptions must be a valid object");
+    }
+
+    if (partitionKey !== undefined) {
+      if (changeFeedOptions.partitionKey !== undefined && partitionKey !== changeFeedOptions.partitionKey) {
+        throw new Error(
+          "Two different partition keys were specified via the partition key parameter and changeFeedOptions"
+        );
+      }
+      changeFeedOptions.partitionKey = partitionKey;
+    }
+
+    const path = Helper.getPathFromLink(this.container.url, "docs");
+    const id = Helper.getIdFromLink(this.container.url);
+    return new ChangeFeedIterator<T>(
+      this.clientContext,
+      id,
+      path,
+      async () => {
+        return !!(await this.container.getPartitionKeyDefinition()).body;
+      },
+      changeFeedOptions
+    );
   }
 
   /**

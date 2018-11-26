@@ -106,7 +106,7 @@ export function createRequestObject(
           return reject(exception);
         }
 
-        resolve({ result, headers: response.headers as IHeaders });
+        resolve({ result, headers: response.headers as IHeaders, statusCode: response.statusCode });
       });
     });
 
