@@ -11,7 +11,7 @@
     "database",
     "cloud"
   ],
-  "version": "2.0.2",
+  "version": "2.0.5",
   "author": "Microsoft Corporation",
   "main": "./dist/index.js",
   "module": "./dist-esm/index.js",
@@ -58,16 +58,14 @@
     "rollup-plugin-local-resolve": "^1.0.7",
     "sinon": "^5.1.1",
     "ts-node": "^6.2.0",
-    "tslint": "^5.11.0",
+    "tslint": "5.11.0",
     "tslint-config-prettier": "^1.14.0",
-    "typedoc": "^0.11.1",
-    "typescript": "^3.0.1"
+    "typedoc": "0.13.0",
+    "typescript": "3.1.4"
   },
   "dependencies": {
-    "big-integer": "^1.6.32",
     "binary-search-bounds": "2.0.3",
     "create-hmac": "^1.1.7",
-    "int64-buffer": "^0.1.9",
     "priorityqueuejs": "1.0.0",
     "semaphore": "1.0.5",
     "stream-http": "^2.8.3",

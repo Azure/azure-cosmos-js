@@ -10,10 +10,7 @@
     "removeComments": false,
     "target": "es6",
     "sourceMap": true,
-    "newLine": "LF",
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "lib": ["es6", "esnext"]
+    "newLine": "LF"
   },
   "include": ["./src/**/*", "./test/**/*.spec.ts", "./samples/MultiRegionWrite/**.ts"],
   "exclude": ["node_modules", "samples"]
