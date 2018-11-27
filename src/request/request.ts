@@ -1,5 +1,5 @@
-import { ClientRequest, ClientResponse } from "http"; // TYPES ONLY
-import * as httpsTypes from "https"; // TYPES ONLY
+import http from "http";
+import https from "https";
 import { Socket } from "net";
 import { Stream } from "stream";
 import * as url from "url";
@@ -18,17 +18,6 @@ export { Response }; // Should refactor this out
 
 /** @hidden */
 const isBrowser = new Function("try {return this===window;}catch(e){ return false;}");
-
-// TODO: :This feels hacky... Maybe just do this in the webpack.config.json?
-// Alternatively, we can move to superagent which will handle this for us...
-// tslint:disable:no-var-requires
-/** @hidden */
-const https = isBrowser && false ? require("stream-http") : require("https");
-// tslint:enable:no-var-requires
-
-// ----------------------------------------------------------------------------
-// Utility methods
-//
 
 /** @hidden */
 function javaScriptFriendlyJSONStringify(s: object) {
@@ -64,7 +53,7 @@ export function parse(urlString: string) {
 /** @hidden */
 export function createRequestObject(
   connectionPolicy: ConnectionPolicy,
-  requestOptions: httpsTypes.RequestOptions,
+  requestOptions: http.RequestOptions,
   body: Body
 ): Promise<Response<any>> {
   return new Promise<Response<any>>((resolve, reject) => {
@@ -74,7 +63,7 @@ export function createRequestObject(
 
     const isMedia = requestOptions.path.indexOf("//media") === 0;
 
-    const httpsRequest: ClientRequest = https.request(requestOptions, (response: ClientResponse) => {
+    const httpsRequest: http.ClientRequest = https.request(requestOptions, (response: http.IncomingMessage) => {
       // In case of media response, return the stream to the user and the user will need
       // to handle reading the stream.
       if (isMedia && connectionPolicy.MediaReadMode === MediaReadMode.Streamed) {
@@ -91,7 +80,7 @@ export function createRequestObject(
         response.setEncoding("utf8");
       }
 
-      response.on("data", chunk => {
+      response.on("data", (chunk: any) => {
         data += chunk;
       });
       response.on("end", () => {
@@ -143,7 +132,7 @@ export function createRequestObject(
  * @param {object} data - the data body returned from the executon of a request.
  * @hidden
  */
-function getErrorBody(response: ClientResponse, data: string, headers: IHeaders): ErrorResponse {
+function getErrorBody(response: http.IncomingMessage, data: string, headers: IHeaders): ErrorResponse {
   const errorBody: ErrorResponse = {
     code: response.statusCode,
     body: data,

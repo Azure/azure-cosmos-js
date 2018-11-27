@@ -1,5 +1,4 @@
 import assert from "assert";
-import { FetchFunctionCallback, SqlQuerySpec } from ".";
 import { ClientContext } from "../ClientContext";
 import { Constants, Helper, StatusCodes, SubStatusCodes } from "../common";
 import { FeedOptions } from "../request";
@@ -7,6 +6,7 @@ import { Response } from "../request/request";
 import { DefaultQueryExecutionContext } from "./defaultQueryExecutionContext";
 import { FetchResult, FetchResultType } from "./FetchResult";
 import { HeaderUtils, IHeaders } from "./headerUtils";
+import { FetchFunctionCallback, SqlQuerySpec } from "./index";
 
 /** @hidden */
 const HttpHeaders = Constants;
