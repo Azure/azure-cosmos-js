@@ -1,11 +1,11 @@
 {
-  "$schema": "https://dev.office.com/json-schemas/api-extractor/api-extractor.schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/api-extractor.schema.json",
   "compiler": {
     "configType": "tsconfig",
     "rootFolder": "."
   },
   "project": {
-    "entryPointSourceFile": "dist-esm/src/index.d.ts"
+    "entryPointSourceFile": "dist-esm/index.d.ts"
   },
   "validationRules": {
     "missingReleaseTags": "allow"
