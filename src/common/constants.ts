@@ -175,7 +175,7 @@ export const Constants = {
   CurrentVersion: "2018-06-18",
 
   SDKName: "azure-cosmos-js",
-  SDKVersion: "2.0.5",
+  SDKVersion: process.env.VERSION,
 
   DefaultPrecisions: {
     DefaultNumberHashPrecision: 3,

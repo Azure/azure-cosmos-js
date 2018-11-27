@@ -1,6 +1,9 @@
-import localResolve from "rollup-plugin-local-resolve";
+import resolve from "rollup-plugin-local-resolve";
+import replace from "rollup-plugin-replace";
 import multiEntry from "rollup-plugin-multi-entry";
-import json from "rollup-plugin-json";
+import { version } from "./package.json";
+
+console.log(version);
 
 export default [
   {
@@ -11,7 +14,13 @@ export default [
       name: "TestCosmosClient",
       sourcemap: true
     },
-    plugins: [localResolve(), multiEntry({ exports: false })],
+    plugins: [
+      resolve(),
+      multiEntry({ exports: false }),
+      replace({
+        "process.env.VERSION": JSON.stringify(version)
+      })
+    ],
     treeshake: false
   },
   {
@@ -22,6 +31,11 @@ export default [
       name: "CosmosClient",
       sourcemap: true
     },
-    plugins: [localResolve()]
+    plugins: [
+      resolve(),
+      replace({
+        "process.env.VERSION": JSON.stringify(version)
+      })
+    ]
   }
 ];

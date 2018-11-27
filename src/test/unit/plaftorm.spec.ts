@@ -42,12 +42,3 @@ describe("Platform.getUserAgent", function() {
     });
   });
 });
-
-describe("Version", function() {
-  it("should have matching constant version & package version", function() {
-    const packageJson = require("../../../package.json");
-    const packageVersion = packageJson["version"];
-    const constantVersion = Constants.SDKVersion;
-    assert.equal(constantVersion, packageVersion, "Package.json and Constants.SDKVersion don't match");
-  });
-});
