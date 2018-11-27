@@ -42,6 +42,7 @@
     "@types/sinon": "^4.3.3",
     "@types/tunnel": "^0.0.0",
     "@types/underscore": "^1.8.8",
+    "execa": "1.0.0",
     "karma": "^3.0.0",
     "karma-chrome-launcher": "^2.2.0",
     "karma-cli": "^1.0.1",

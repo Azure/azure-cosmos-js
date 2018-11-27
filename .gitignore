@@ -260,3 +260,6 @@ node_modules
 lib/**
 
 *.tgz
+
+tsc-test/package-lock.json
+tsc-test/*.js
