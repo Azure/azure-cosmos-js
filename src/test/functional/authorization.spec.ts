@@ -1,5 +1,5 @@
 import assert from "assert";
-import { CosmosClient, DocumentBase } from "../..";
+import { CosmosClient, PartitionKind, PermissionMode } from "../..";
 import { PermissionDefinition } from "../../client";
 import { endpoint } from "../common/_testConfig";
 import { createOrUpsertPermission, getTestContainer, getTestDatabase, removeAllDatabases } from "../common/TestHelpers";
@@ -33,7 +33,7 @@ describe("NodeJS CRUD Tests", function() {
       const { body: user1 } = await database.users.create({ id: "user1" });
       let permission = {
         id: "permission On Coll1",
-        permissionMode: DocumentBase.PermissionMode.Read,
+        permissionMode: PermissionMode.Read,
         resource: (container1 as any)._self
       }; // TODO: any rid stuff
       // create permission for container1
@@ -46,7 +46,7 @@ describe("NodeJS CRUD Tests", function() {
       assert((permissionOnColl1 as any)._token !== undefined, "permission token is invalid");
       permission = {
         id: "permission On Doc1",
-        permissionMode: DocumentBase.PermissionMode.All,
+        permissionMode: PermissionMode.All,
         resource: (document2 as any)._self // TODO: any rid
       };
       // create permission for document 2
@@ -62,7 +62,7 @@ describe("NodeJS CRUD Tests", function() {
       const { body: user2 } = await database.users.create({ id: "user2" });
       permission = {
         id: "permission On coll2",
-        permissionMode: DocumentBase.PermissionMode.All,
+        permissionMode: PermissionMode.All,
         resource: (container2 as any)._self // TODO: any rid
       };
       // create permission on container 2
@@ -168,7 +168,7 @@ describe("NodeJS CRUD Tests", function() {
       const partitionKey = "key";
       const containerDefinition = {
         id: "coll1",
-        partitionKey: { paths: ["/" + partitionKey], kind: DocumentBase.PartitionKind.Hash }
+        partitionKey: { paths: ["/" + partitionKey], kind: PartitionKind.Hash }
       };
       const container = await getTestContainer("authorization CRUD multiple partitons", undefined, containerDefinition);
       // create user
@@ -178,7 +178,7 @@ describe("NodeJS CRUD Tests", function() {
       const key = 1;
       const permissionDefinition: PermissionDefinition = {
         id: "permission1",
-        permissionMode: DocumentBase.PermissionMode.All,
+        permissionMode: PermissionMode.All,
         resource: container.url,
         resourcePartitionKey: [key]
       };
