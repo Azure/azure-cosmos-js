@@ -1,5 +1,5 @@
 /// <reference lib="esnext.asynciterable" />
-import { isNumber } from "util";
+import { isNumber, isString } from "util";
 import { ChangeFeedOptions } from "./ChangeFeedOptions";
 import { Resource } from "./client";
 import { ClientContext } from "./ClientContext";
@@ -23,11 +23,9 @@ export class ChangeFeedIterator<T> {
   ) {
     // partition key XOR partition key range id
     const partitionKeyValid = changeFeedOptions.partitionKey !== undefined;
-    const partitionKeyRangeIdValid = !(
-      changeFeedOptions.partitionKeyRangeId === null ||
-      changeFeedOptions.partitionKeyRangeId === undefined ||
-      changeFeedOptions.partitionKeyRangeId === ""
-    );
+    const partitionKeyRangeIdValid =
+      isString(changeFeedOptions.partitionKeyRangeId) && changeFeedOptions.partitionKeyRangeId !== "";
+
     if (partitionKeyValid && partitionKeyRangeIdValid) {
       throw new Error(
         "PartitionKey and PartitionKeyRangeId cannot be specified at the same time in ChangeFeedOptions."

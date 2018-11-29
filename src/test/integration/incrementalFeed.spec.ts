@@ -1,7 +1,7 @@
 import assert from "assert";
 import { RequestOptions } from "../..";
 import { Container, ContainerDefinition } from "../../client";
-import { Constants } from "../../common";
+import { Constants, Helper } from "../../common";
 import { IHeaders } from "../../queryExecutionContext/IHeaders";
 import { getTestContainer, removeAllDatabases } from "../common/TestHelpers";
 
@@ -42,16 +42,21 @@ describe("Change Feed Iterator", function() {
       });
 
       // TODO: start time is currently being ignored. Need to investigate.
-      it.skip("should fetch updated items only", async function() {
+      it("should fetch updated items only with start time", async function() {
         await container.items.create({ id: "item1" });
         const date = new Date();
+        await Helper.sleep(3000);
         await container.items.create({ id: "item2" });
         const iterator = container.items.readChangeFeed({ startTime: date });
 
-        const { result: items, headers } = await iterator.executeNext();
+        const { result: itemsShouldBeEmpty, headers: headersShouldHaveInitialEtag } = await iterator.executeNext();
 
-        assert(headers.etag, "change feed response should have etag header");
-        const etag = headers.etag;
+        assert(headersShouldHaveInitialEtag.etag, "change feed response should have etag header");
+        const etag = headersShouldHaveInitialEtag.etag;
+
+        assert.equal(itemsShouldBeEmpty.length, 0, "Initial request should have empty results");
+
+        const { result: items } = await iterator.executeNext();
 
         assert.equal(items.length, 1, "initial number of items should be equal 1");
         assert.equal(items[0].id, "item2", "should find the newest item, but not the old");
@@ -75,7 +80,7 @@ describe("Change Feed Iterator", function() {
       });
     });
 
-    describe("Newly updated items should be fetched incremetally", function() {
+    describe("Newly updated items should be fetched incrementally", function() {
       let container: Container;
 
       // create container and two items
@@ -184,7 +189,7 @@ describe("Change Feed Iterator", function() {
 
         const { result: items, headers } = await iterator.executeNext();
         assert(headers.etag, "change feed response should have etag header");
-        assert.equal(items.length, 0, "change feed response should have no items on it intially");
+        assert.equal(items.length, 0, "change feed response should have no items on it initially");
 
         const { body: itemThatWasCreated } = await container.items.create({
           id: "item2",
@@ -217,7 +222,7 @@ describe("Change Feed Iterator", function() {
       await removeAllDatabases();
     });
 
-    describe("Newly updated items should be fetched incremetally", function() {
+    describe("Newly updated items should be fetched incrementally", function() {
       let container: Container;
 
       // create container and two items
@@ -245,7 +250,7 @@ describe("Change Feed Iterator", function() {
         await container.delete();
       });
 
-      it("should throw if used with no parittion key or partition key range id", async function() {
+      it("should throw if used with no partition key or partition key range id", async function() {
         const iterator = container.items.readChangeFeed({ startFromBeginning: true });
 
         try {
@@ -312,7 +317,7 @@ describe("Change Feed Iterator", function() {
 
         const { result: items, headers } = await iterator.executeNext();
         assert(headers.etag, "change feed response should have etag header");
-        assert.equal(items.length, 0, "change feed response should have no items on it intially");
+        assert.equal(items.length, 0, "change feed response should have no items on it initially");
 
         const { body: itemThatWasCreated, headers: createHeaders } = await container.items.create({
           id: "item2",
@@ -349,7 +354,7 @@ describe("Change Feed Iterator", function() {
       await removeAllDatabases();
     });
 
-    describe("Newly updated items should be fetched incremetally", function() {
+    describe("Newly updated items should be fetched incrementally", function() {
       let container: Container;
       let partitionKeyRangeId: string;
       let partitionKey: string;
@@ -465,7 +470,7 @@ describe("Change Feed Iterator", function() {
 
         const { result: items, headers } = await iterator.executeNext();
         assert(headers.etag, "change feed response should have etag header");
-        assert.equal(items.length, 0, "change feed response should have no items on it intially");
+        assert.equal(items.length, 0, "change feed response should have no items on it initially");
 
         const { body: itemThatWasCreated, headers: createHeaders } = await container.items.create({
           id: "item2",
