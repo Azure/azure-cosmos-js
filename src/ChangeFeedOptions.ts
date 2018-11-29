@@ -1,6 +1,6 @@
 export interface ChangeFeedOptions {
   maxItemCount?: number;
-  requestContinuation?: string;
+  continuation?: string;
   sessionToken?: string;
   partitionKeyRangeId?: string;
   partitionKey?: string | number | boolean;

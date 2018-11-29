@@ -1,12 +1,18 @@
 /// <reference lib="esnext.asynciterable" />
 import { isNumber, isString } from "util";
 import { ChangeFeedOptions } from "./ChangeFeedOptions";
+import { ChangeFeedResponse } from "./ChangeFeedResponse";
 import { Resource } from "./client";
 import { ClientContext } from "./ClientContext";
 import { Constants, ResourceType, StatusCodes } from "./common";
 import { FeedOptions } from "./request";
 import { Response } from "./request";
 
+/**
+ * Provides iterator for change feed.
+ *
+ * Use `Items.readChangeFeed` to get an instance of the iterator.
+ */
 export class ChangeFeedIterator<T> {
   private static readonly IfNoneMatchAllHeaderValue = "*";
   private nextIfNoneMatch: string;
@@ -14,6 +20,16 @@ export class ChangeFeedIterator<T> {
   private lastStatusCode: number;
   private isPartitionSpecified: boolean;
 
+  /**
+   * @internal
+   * @hidden
+   *
+   * @param clientContext
+   * @param resourceId
+   * @param resourceLink
+   * @param isPartitionedContainer
+   * @param changeFeedOptions
+   */
   constructor(
     private clientContext: ClientContext,
     private resourceId: string,
@@ -35,8 +51,8 @@ export class ChangeFeedIterator<T> {
     this.isPartitionSpecified = partitionKeyRangeIdValid || partitionKeyValid;
 
     let canUseStartFromBeginning = true;
-    if (changeFeedOptions.requestContinuation) {
-      this.nextIfNoneMatch = changeFeedOptions.requestContinuation;
+    if (changeFeedOptions.continuation) {
+      this.nextIfNoneMatch = changeFeedOptions.continuation;
       canUseStartFromBeginning = false;
     }
 
@@ -53,26 +69,38 @@ export class ChangeFeedIterator<T> {
     }
   }
 
+  /**
+   * Gets a value indicating whether there are potentially additional results that can be retrieved.
+   *
+   * Initially returns true. This value is set based on whether the last execution returned a continuation token.
+   *
+   * @returns Boolean value representing if whether there are potentially additional results that can be retrieved.
+   */
   get hasMoreResults(): boolean {
     return this.lastStatusCode !== StatusCodes.NotModified;
   }
 
-  public async *getAsyncIterator(): AsyncIterable<T[]> {
+  /**
+   * Gets an async iterator which will yield pages of results from Azure Cosmos DB.
+   */
+  public async *getAsyncIterator(): AsyncIterable<ChangeFeedResponse<Array<T & Resource>>> {
     while (this.hasMoreResults) {
       const result = await this.executeNext();
-      yield result.result;
+      yield result;
     }
   }
 
-  public async executeNext(): Promise<Response<Array<T & Resource>>>;
-  public async executeNext(): Promise<Response<Array<T & Resource>>> {
+  /**
+   * Read feed and retrieves the next page of results in Azure Cosmos DB.
+   */
+  public async executeNext(): Promise<ChangeFeedResponse<Array<T & Resource>>> {
     const response = await this.getFeedResponse();
     this.lastStatusCode = response.statusCode;
     this.nextIfNoneMatch = response.headers[Constants.HttpHeaders.ETag];
     return response;
   }
 
-  private async getFeedResponse(): Promise<Response<Array<T & Resource>>> {
+  private async getFeedResponse(): Promise<ChangeFeedResponse<Array<T & Resource>>> {
     if (!this.isPartitionSpecified && (await this.isPartitionedContainer())) {
       throw new Error("Container is partitioned, but no partition key or partition key range id was specified.");
     }
@@ -101,7 +129,7 @@ export class ChangeFeedIterator<T> {
       feedOptions.partitionKey = this.changeFeedOptions.partitionKey as any; // TODO: our partition key is too restrictive on the main object
     }
 
-    return this.clientContext.queryFeed<T>(
+    const response: Response<Array<T & Resource>> = await (this.clientContext.queryFeed<T>(
       this.resourceLink,
       ResourceType.item,
       this.resourceId,
@@ -109,6 +137,13 @@ export class ChangeFeedIterator<T> {
       undefined,
       feedOptions,
       this.changeFeedOptions.partitionKeyRangeId
-    ) as Promise<any>; // TODO: some funky issues with query feed. Probably need to change it up.
+    ) as Promise<any>); // TODO: some funky issues with query feed. Probably need to change it up.
+
+    return new ChangeFeedResponse(
+      response.result,
+      response.result ? response.result.length : 0,
+      response.statusCode,
+      response.headers
+    );
   }
 }

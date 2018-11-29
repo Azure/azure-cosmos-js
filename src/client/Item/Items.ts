@@ -81,18 +81,36 @@ export class Items {
     return new QueryIterator(this.clientContext, query, options, fetchFunction, this.container.url);
   }
 
+  /**
+   * Create a `ChangeFeedIterator` to iterate over pages of changes
+   * @param partitionKey
+   * @param changeFeedOptions
+   */
   public readChangeFeed(
     partitionKey: string | number | boolean,
     changeFeedOptions: ChangeFeedOptions
   ): ChangeFeedIterator<any>;
-  public readChangeFeed(changeFeedOptions: ChangeFeedOptions): ChangeFeedIterator<any>;
+  /**
+   *
+   * @param changeFeedOptions
+   */
+  public readChangeFeed(changeFeedOptions?: ChangeFeedOptions): ChangeFeedIterator<any>;
+  /**
+   *
+   * @param partitionKey
+   * @param changeFeedOptions
+   */
   public readChangeFeed<T>(
     partitionKey: string | number | boolean,
     changeFeedOptions: ChangeFeedOptions
   ): ChangeFeedIterator<T>;
-  public readChangeFeed<T>(changeFeedOptions: ChangeFeedOptions): ChangeFeedIterator<T>;
+  /**
+   *
+   * @param changeFeedOptions
+   */
+  public readChangeFeed<T>(changeFeedOptions?: ChangeFeedOptions): ChangeFeedIterator<T>;
   public readChangeFeed<T>(
-    partitionKeyOrChangeFeedOptions: string | number | boolean | ChangeFeedOptions,
+    partitionKeyOrChangeFeedOptions?: string | number | boolean | ChangeFeedOptions,
     changeFeedOptions?: ChangeFeedOptions
   ): ChangeFeedIterator<T> {
     let partitionKey: string | number | boolean;
