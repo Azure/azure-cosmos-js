@@ -11,7 +11,7 @@ import { Response } from "./request";
 /**
  * Provides iterator for change feed.
  *
- * Use `Items.readChangeFeed` to get an instance of the iterator.
+ * Use `Items.readChangeFeed()` to get an instance of the iterator.
  */
 export class ChangeFeedIterator<T> {
   private static readonly IfNoneMatchAllHeaderValue = "*";
@@ -116,7 +116,7 @@ export class ChangeFeedIterator<T> {
 
     if (this.nextIfNoneMatch) {
       feedOptions.accessCondition = {
-        type: "IfNoneMatch",
+        type: Constants.HttpHeaders.IfNoneMatch,
         condition: this.nextIfNoneMatch
       };
     }

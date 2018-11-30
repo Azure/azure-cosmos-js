@@ -9,7 +9,7 @@ export class ChangeFeedResponse<T> {
    * @internal
    * @hidden
    *
-   * @param results
+   * @param result
    * @param count
    * @param statusCode
    * @param headers
@@ -18,7 +18,7 @@ export class ChangeFeedResponse<T> {
     /**
      * Gets the items returned in the response from Azure Cosmos DB
      */
-    public readonly results: T,
+    public readonly result: T,
     /**
      * Gets the number of items returned in the response from Azure Cosmos DB
      */

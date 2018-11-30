@@ -83,19 +83,30 @@ export class Items {
 
   /**
    * Create a `ChangeFeedIterator` to iterate over pages of changes
+   *
    * @param partitionKey
    * @param changeFeedOptions
+   *
+   * @example Read from the beginning of the change feed.
+   * ```javascript
+   * const iterator = items.readChangeFeed({ startFromBeginning: true });
+   * const firstPage = await iterator.executeNext();
+   * const firstPageResults = firstPage.result
+   * const secondPage = await iterator.executeNext();
+   * ```
    */
   public readChangeFeed(
     partitionKey: string | number | boolean,
     changeFeedOptions: ChangeFeedOptions
   ): ChangeFeedIterator<any>;
   /**
+   * Create a `ChangeFeedIterator` to iterate over pages of changes
    *
    * @param changeFeedOptions
    */
   public readChangeFeed(changeFeedOptions?: ChangeFeedOptions): ChangeFeedIterator<any>;
   /**
+   * Create a `ChangeFeedIterator` to iterate over pages of changes
    *
    * @param partitionKey
    * @param changeFeedOptions
@@ -105,6 +116,7 @@ export class Items {
     changeFeedOptions: ChangeFeedOptions
   ): ChangeFeedIterator<T>;
   /**
+   * Create a `ChangeFeedIterator` to iterate over pages of changes
    *
    * @param changeFeedOptions
    */

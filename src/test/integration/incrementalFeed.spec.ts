@@ -41,7 +41,6 @@ describe("Change Feed Iterator", function() {
         await container.delete();
       });
 
-      // TODO: start time is currently being ignored. Need to investigate.
       it("should fetch updated items only with start time", async function() {
         await container.items.create({ id: "item1" });
         const date = new Date();
@@ -49,14 +48,14 @@ describe("Change Feed Iterator", function() {
         await container.items.create({ id: "item2" });
         const iterator = container.items.readChangeFeed({ startTime: date });
 
-        const { results: itemsShouldBeEmpty, etag: initialEtag } = await iterator.executeNext();
+        const { result: itemsShouldBeEmpty, etag: initialEtag } = await iterator.executeNext();
 
         assert(initialEtag, "change feed response should have etag header");
         const etag = initialEtag;
 
         assert.equal(itemsShouldBeEmpty.length, 0, "Initial request should have empty results");
 
-        const { results: items } = await iterator.executeNext();
+        const { result: items } = await iterator.executeNext();
 
         assert.equal(items.length, 1, "initial number of items should be equal 1");
         assert.equal(items[0].id, "item2", "should find the newest item, but not the old");
@@ -66,14 +65,14 @@ describe("Change Feed Iterator", function() {
         assert.deepEqual(replaced.name, "xyz", "replaced item should be valid");
 
         // Should continue from last etag
-        const { results: itemsAfterUpdate } = await iterator.executeNext();
+        const { result: itemsAfterUpdate } = await iterator.executeNext();
         assert.equal(itemsAfterUpdate.length, 1, "initial number of items should be equal 1");
         assert.equal(itemsAfterUpdate[0].name, "xyz", "fetched item should have 'name: xyz'");
         assert.equal(itemsAfterUpdate[0].id, item.id, "fetched item should be valid");
 
         // Equivalent to execute next on other iterator from the previous etag
         const iteratorWithContinuation = container.items.readChangeFeed({ continuation: etag });
-        const { results: itemsWithContinuation } = await iteratorWithContinuation.executeNext();
+        const { result: itemsWithContinuation } = await iteratorWithContinuation.executeNext();
         assert.equal(itemsWithContinuation.length, 1, "initial number of items should be equal 1");
         assert.equal(itemsWithContinuation[0].name, "xyz", "fetched item should have 'name: xyz'");
         assert.equal(itemsWithContinuation[0].id, item.id, "fetched item should be valid");
@@ -97,7 +96,7 @@ describe("Change Feed Iterator", function() {
       it("should fetch updated items only", async function() {
         const iterator = container.items.readChangeFeed({ startFromBeginning: true });
 
-        const { results: items, headers } = await iterator.executeNext();
+        const { result: items, headers } = await iterator.executeNext();
         assert(headers.etag, "change feed response should have etag header");
         const etag = headers.etag;
 
@@ -110,14 +109,14 @@ describe("Change Feed Iterator", function() {
         assert.deepEqual(replaced.name, "xyz", "replaced item should be valid");
 
         // Should continue from last etag
-        const { results: itemsAfterUpdate } = await iterator.executeNext();
+        const { result: itemsAfterUpdate } = await iterator.executeNext();
         assert.equal(itemsAfterUpdate.length, 1, "initial number of items should be equal 1");
         assert.equal(itemsAfterUpdate[0].name, "xyz", "fetched item should have 'name: xyz'");
         assert.equal(itemsAfterUpdate[0].id, item.id, "fetched item should be valid");
 
         // Equivalent to execute next on other iterator from the previous etag
         const iteratorWithContinuation = container.items.readChangeFeed({ continuation: etag });
-        const { results: itemsWithContinuation } = await iteratorWithContinuation.executeNext();
+        const { result: itemsWithContinuation } = await iteratorWithContinuation.executeNext();
         assert.equal(itemsWithContinuation.length, 1, "initial number of items should be equal 1");
         assert.equal(itemsWithContinuation[0].name, "xyz", "fetched item should have 'name: xyz'");
         assert.equal(itemsWithContinuation[0].id, item.id, "fetched item should be valid");
@@ -143,10 +142,10 @@ describe("Change Feed Iterator", function() {
 
         const items: any[] = [];
         for await (const page of iterator.getAsyncIterator()) {
-          if (page.results.length === 0) {
+          if (page.result.length === 0) {
             break;
           }
-          items.push(...page.results);
+          items.push(...page.result);
         }
 
         assert.equal(items.length, 2, "initial number of items should be equal 2");
@@ -160,10 +159,10 @@ describe("Change Feed Iterator", function() {
         // Should continue from last etag
         const itemsAfterUpdate: any[] = [];
         for await (const page of iterator.getAsyncIterator()) {
-          if (page.results.length === 0) {
+          if (page.result.length === 0) {
             break;
           }
-          itemsAfterUpdate.push(...page.results);
+          itemsAfterUpdate.push(...page.result);
         }
         assert.equal(itemsAfterUpdate.length, 1, "initial number of items should be equal 1");
         assert.equal(itemsAfterUpdate[0].name, "xyz", "fetched item should have 'name: xyz'");
@@ -187,7 +186,7 @@ describe("Change Feed Iterator", function() {
       it("should fetch new items only", async function() {
         const iterator = container.items.readChangeFeed({});
 
-        const { results: items, headers } = await iterator.executeNext();
+        const { result: items, headers } = await iterator.executeNext();
         assert(headers.etag, "change feed response should have etag header");
         assert.equal(items.length, 0, "change feed response should have no items on it initially");
 
@@ -196,7 +195,7 @@ describe("Change Feed Iterator", function() {
           prop: 1
         });
 
-        const { results: itemsAfterCreate } = await iterator.executeNext();
+        const { result: itemsAfterCreate } = await iterator.executeNext();
         assert.equal(itemsAfterCreate.length, 1, "should have 1 item from create");
         const itemThatWasFound = itemsAfterCreate[0];
 
@@ -205,12 +204,12 @@ describe("Change Feed Iterator", function() {
         delete itemThatWasFound._metadata;
         assert.deepEqual(itemThatWasFound, itemThatWasCreated, "actual value doesn't match with expected value.");
 
-        const { results: itemsShouldBeEmptyWithNoNewCreates } = await iterator.executeNext();
+        const { result: itemsShouldBeEmptyWithNoNewCreates } = await iterator.executeNext();
         assert.equal(itemsShouldBeEmptyWithNoNewCreates.length, 0, "should be nothing new");
 
         await container.items.create({ id: "item3" });
         await container.items.create({ id: "item4" });
-        const { results: itemsShouldHave2NewItems } = await iterator.executeNext();
+        const { result: itemsShouldHave2NewItems } = await iterator.executeNext();
         assert.equal(itemsShouldHave2NewItems.length, 2, "there should be 2 results");
       });
     });
@@ -268,7 +267,7 @@ describe("Change Feed Iterator", function() {
       it("should fetch updated items only", async function() {
         const iterator = container.items.readChangeFeed("0", { startFromBeginning: true });
 
-        const { results: items, headers } = await iterator.executeNext();
+        const { result: items, headers } = await iterator.executeNext();
         assert(headers.etag, "change feed response should have etag header");
 
         assert.equal(items.length, 2, "initial number of items should be equal 2");
@@ -279,7 +278,7 @@ describe("Change Feed Iterator", function() {
         const { body: replaced } = await container.item(item.id).replace(item);
         assert.deepEqual(replaced.name, "xyz", "replaced item should be valid");
 
-        const { results: itemsAfterUpdate } = await iterator.executeNext();
+        const { result: itemsAfterUpdate } = await iterator.executeNext();
         assert.equal(itemsAfterUpdate.length, 1, "initial number of items should be equal 1");
         assert.equal(itemsAfterUpdate[0].name, "xyz", "fetched item should have 'name: xyz'");
         assert.equal(itemsAfterUpdate[0].id, item.id, "fetched item should be valid");
@@ -315,7 +314,7 @@ describe("Change Feed Iterator", function() {
       it("should fetch new items only", async function() {
         const iterator = container.items.readChangeFeed("0", {});
 
-        const { results: items, headers } = await iterator.executeNext();
+        const { result: items, headers } = await iterator.executeNext();
         assert(headers.etag, "change feed response should have etag header");
         assert.equal(items.length, 0, "change feed response should have no items on it initially");
 
@@ -326,7 +325,7 @@ describe("Change Feed Iterator", function() {
         });
         console.log(`createHeaders: ${createHeaders}`);
 
-        const { results: itemsAfterCreate } = await iterator.executeNext();
+        const { result: itemsAfterCreate } = await iterator.executeNext();
         assert.equal(itemsAfterCreate.length, 1, "should have 1 item from create");
         const itemThatWasFound = itemsAfterCreate[0];
 
@@ -335,14 +334,14 @@ describe("Change Feed Iterator", function() {
         delete itemThatWasFound._metadata;
         assert.deepEqual(itemThatWasFound, itemThatWasCreated, "actual value doesn't match with expected value.");
 
-        const { results: itemsShouldBeEmptyWithNoNewCreates } = await iterator.executeNext();
+        const { result: itemsShouldBeEmptyWithNoNewCreates } = await iterator.executeNext();
         assert.equal(itemsShouldBeEmptyWithNoNewCreates.length, 0, "should be nothing new");
 
         await container.items.create({ id: "item3", key: "0" });
         await container.items.create({ id: "item4", key: "0" });
         await container.items.create({ id: "item3", key: "1" });
         await container.items.create({ id: "item4", key: "1" });
-        const { results: itemsShouldHave2NewItems } = await iterator.executeNext();
+        const { result: itemsShouldHave2NewItems } = await iterator.executeNext();
         assert.equal(itemsShouldHave2NewItems.length, 2, "there should be 2 results");
       });
     });
@@ -403,7 +402,7 @@ describe("Change Feed Iterator", function() {
       it("should fetch updated items only", async function() {
         const iterator = container.items.readChangeFeed({ startFromBeginning: true, partitionKeyRangeId });
 
-        const { results: items, headers } = await iterator.executeNext();
+        const { result: items, headers } = await iterator.executeNext();
         assert(headers.etag, "change feed response should have etag header");
 
         assert.equal(items.length, 2, "initial number of items should be equal 2");
@@ -414,7 +413,7 @@ describe("Change Feed Iterator", function() {
         const { body: replaced } = await container.item(item.id).replace(item);
         assert.deepEqual(replaced.name, "xyz", "replaced item should be valid");
 
-        const { results: itemsAfterUpdate } = await iterator.executeNext();
+        const { result: itemsAfterUpdate } = await iterator.executeNext();
         assert.equal(itemsAfterUpdate.length, 1, "initial number of items should be equal 1");
         assert.equal(itemsAfterUpdate[0].name, "xyz", "fetched item should have 'name: xyz'");
         assert.equal(itemsAfterUpdate[0].id, item.id, "fetched item should be valid");
@@ -468,7 +467,7 @@ describe("Change Feed Iterator", function() {
       it("should fetch new items only", async function() {
         const iterator = container.items.readChangeFeed({ partitionKeyRangeId });
 
-        const { results: items, headers } = await iterator.executeNext();
+        const { result: items, headers } = await iterator.executeNext();
         assert(headers.etag, "change feed response should have etag header");
         assert.equal(items.length, 0, "change feed response should have no items on it initially");
 
@@ -479,7 +478,7 @@ describe("Change Feed Iterator", function() {
         });
         console.log(`createHeaders: ${createHeaders}`);
 
-        const { results: itemsAfterCreate } = await iterator.executeNext();
+        const { result: itemsAfterCreate } = await iterator.executeNext();
         assert.equal(itemsAfterCreate.length, 1, "should have 1 item from create");
         const itemThatWasFound = itemsAfterCreate[0];
 
@@ -488,12 +487,12 @@ describe("Change Feed Iterator", function() {
         delete itemThatWasFound._metadata;
         assert.deepEqual(itemThatWasFound, itemThatWasCreated, "actual value doesn't match with expected value.");
 
-        const { results: itemsShouldBeEmptyWithNoNewCreates } = await iterator.executeNext();
+        const { result: itemsShouldBeEmptyWithNoNewCreates } = await iterator.executeNext();
         assert.equal(itemsShouldBeEmptyWithNoNewCreates.length, 0, "should be nothing new");
 
         await container.items.create({ id: "item3", key: partitionKey });
         await container.items.create({ id: "item4", key: partitionKey });
-        const { results: itemsShouldHave2NewItems } = await iterator.executeNext();
+        const { result: itemsShouldHave2NewItems } = await iterator.executeNext();
         assert.equal(itemsShouldHave2NewItems.length, 2, "there should be 2 results");
       });
     });
