@@ -261,5 +261,6 @@ lib/**
 
 *.tgz
 
-tsc-test/package-lock.json
-tsc-test/*.js
+ts-test/package-lock.json
+ts-test/package.json
+ts-test/*.js
