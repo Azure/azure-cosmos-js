@@ -153,7 +153,8 @@ export class Items {
       id,
       path,
       async () => {
-        return !!(await this.container.getPartitionKeyDefinition()).body;
+        const bodyWillBeTruthyIfPartitioned = (await this.container.getPartitionKeyDefinition()).body;
+        return !!bodyWillBeTruthyIfPartitioned;
       },
       changeFeedOptions
     );

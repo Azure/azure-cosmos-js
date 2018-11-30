@@ -101,7 +101,8 @@ export class ChangeFeedIterator<T> {
   }
 
   private async getFeedResponse(): Promise<ChangeFeedResponse<Array<T & Resource>>> {
-    if (!this.isPartitionSpecified && (await this.isPartitionedContainer())) {
+    const isParittionedContainer = await this.isPartitionedContainer();
+    if (!this.isPartitionSpecified && isParittionedContainer) {
       throw new Error("Container is partitioned, but no partition key or partition key range id was specified.");
     }
     const feedOptions: FeedOptions = { initialHeaders: {}, a_im: "Incremental feed" };
