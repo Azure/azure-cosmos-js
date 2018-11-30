@@ -4,6 +4,4 @@ notifications:
 node_js:
   - 10
 script:
-  - npm run build
-  - npm run test
-  - node ts-test.js
+  - npm run ci
