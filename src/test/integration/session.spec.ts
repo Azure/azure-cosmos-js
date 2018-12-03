@@ -274,7 +274,7 @@ describe("Session Token", function() {
     const increaseLSN = function(oldTokens: Map<string, Map<string, VectorSessionToken>>) {
       for (const [coll, tokens] of oldTokens.entries()) {
         for (const [pk, token] of tokens.entries()) {
-          (token as any).globalLsn = (token as any).version + 200;
+          (token as any).globalLsn = (token as any).globalLsn + 200;
           const newToken = token.merge(token);
           return `0:${newToken.toString()}`;
         }
