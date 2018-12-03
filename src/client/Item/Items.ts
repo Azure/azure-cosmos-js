@@ -137,21 +137,13 @@ export class Items {
       throw new Error("changeFeedOptions must be a valid object");
     }
 
-    if (partitionKey !== undefined) {
-      if (changeFeedOptions.partitionKey !== undefined && partitionKey !== changeFeedOptions.partitionKey) {
-        throw new Error(
-          "Two different partition keys were specified via the partition key parameter and changeFeedOptions"
-        );
-      }
-      changeFeedOptions.partitionKey = partitionKey;
-    }
-
     const path = Helper.getPathFromLink(this.container.url, "docs");
     const id = Helper.getIdFromLink(this.container.url);
     return new ChangeFeedIterator<T>(
       this.clientContext,
       id,
       path,
+      partitionKey,
       async () => {
         const bodyWillBeTruthyIfPartitioned = (await this.container.getPartitionKeyDefinition()).body;
         return !!bodyWillBeTruthyIfPartitioned;

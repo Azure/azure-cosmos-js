@@ -24,18 +24,6 @@ export interface ChangeFeedOptions {
    */
   sessionToken?: string;
   /**
-   * Advanced use only. Used to target an entire physical parittion.
-   *
-   * This value or the `partitionKey` value are required for partitioned conatiners.
-   */
-  partitionKeyRangeId?: string;
-  /**
-   * The logical partition key value.
-   *
-   * This value or the `partitionKeyRangeId` value are required for partitioned conatiners.
-   */
-  partitionKey?: string | number | boolean;
-  /**
    * Signals whether to start from the beginning or not.
    */
   startFromBeginning?: boolean;

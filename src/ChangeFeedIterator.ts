@@ -1,5 +1,5 @@
 /// <reference lib="esnext.asynciterable" />
-import { isNumber, isString } from "util";
+import { isNumber } from "util";
 import { ChangeFeedOptions } from "./ChangeFeedOptions";
 import { ChangeFeedResponse } from "./ChangeFeedResponse";
 import { Resource } from "./client";
@@ -34,21 +34,13 @@ export class ChangeFeedIterator<T> {
     private clientContext: ClientContext,
     private resourceId: string,
     private resourceLink: string,
+    private partitionKey: string | number | boolean,
     private isPartitionedContainer: () => Promise<boolean>,
     private changeFeedOptions: ChangeFeedOptions
   ) {
     // partition key XOR partition key range id
-    const partitionKeyValid = changeFeedOptions.partitionKey !== undefined;
-    const partitionKeyRangeIdValid =
-      isString(changeFeedOptions.partitionKeyRangeId) && changeFeedOptions.partitionKeyRangeId !== "";
-
-    if (partitionKeyValid && partitionKeyRangeIdValid) {
-      throw new Error(
-        "PartitionKey and PartitionKeyRangeId cannot be specified at the same time in ChangeFeedOptions."
-      );
-    }
-
-    this.isPartitionSpecified = partitionKeyRangeIdValid || partitionKeyValid;
+    const partitionKeyValid = partitionKey !== undefined;
+    this.isPartitionSpecified = partitionKeyValid;
 
     let canUseStartFromBeginning = true;
     if (changeFeedOptions.continuation) {
@@ -126,8 +118,8 @@ export class ChangeFeedIterator<T> {
       feedOptions.initialHeaders[Constants.HttpHeaders.IfModifiedSince] = this.ifModifiedSince;
     }
 
-    if (this.changeFeedOptions.partitionKey !== undefined) {
-      feedOptions.partitionKey = this.changeFeedOptions.partitionKey as any; // TODO: our partition key is too restrictive on the main object
+    if (this.partitionKey !== undefined) {
+      feedOptions.partitionKey = this.partitionKey as any; // TODO: our partition key is too restrictive on the main object
     }
 
     const response: Response<Array<T & Resource>> = await (this.clientContext.queryFeed<T>(
@@ -136,8 +128,7 @@ export class ChangeFeedIterator<T> {
       this.resourceId,
       result => (result ? result.Documents : []),
       undefined,
-      feedOptions,
-      this.changeFeedOptions.partitionKeyRangeId
+      feedOptions
     ) as Promise<any>); // TODO: some funky issues with query feed. Probably need to change it up.
 
     return new ChangeFeedResponse(
