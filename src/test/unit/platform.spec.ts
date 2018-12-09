@@ -4,12 +4,6 @@ import * as util from "util";
 import { Platform } from "../../common";
 import { Constants } from "../../index";
 
-// var assert = require("assert")
-//     , Contants = require("../lib/constants")
-//     , os = require("os")
-//     , Platform = require("../lib/platform")
-//     , util = require("util");
-
 describe("Platform.getUserAgent", function() {
   it("getUserAgent()", function() {
     const userAgent = Platform.getUserAgent();
