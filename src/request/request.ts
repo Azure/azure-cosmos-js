@@ -3,10 +3,10 @@ import https from "https";
 import { Socket } from "net";
 import { Stream } from "stream";
 import * as url from "url";
+
 import { Constants, Helper } from "../common";
 import { ConnectionPolicy, MediaReadMode } from "../documents";
 import { IHeaders } from "../queryExecutionContext";
-import { Body } from "../retry";
 
 import { ErrorResponse } from "./ErrorResponse";
 export { ErrorResponse }; // Should refactor this out
@@ -16,8 +16,9 @@ import { FeedOptions, MediaOptions, RequestOptions } from "./index";
 import { Response } from "./Response";
 export { Response }; // Should refactor this out
 
-/** @hidden */
-const isBrowser = new Function("try {return this===window;}catch(e){ return false;}");
+// ----------------------------------------------------------------------------
+// Utility methods
+//
 
 /** @hidden */
 function javaScriptFriendlyJSONStringify(s: object) {
@@ -53,8 +54,8 @@ export function parse(urlString: string) {
 /** @hidden */
 export function createRequestObject(
   connectionPolicy: ConnectionPolicy,
-  requestOptions: http.RequestOptions,
-  body: Body
+  requestOptions: https.RequestOptions,
+  body: Buffer
 ): Promise<Response<any>> {
   return new Promise<Response<any>>((resolve, reject) => {
     function onTimeout() {
@@ -95,7 +96,7 @@ export function createRequestObject(
           return reject(exception);
         }
 
-        resolve({ result, headers: response.headers as IHeaders });
+        resolve({ result, headers: response.headers as IHeaders, statusCode: response.statusCode });
       });
     });
 
@@ -115,10 +116,8 @@ export function createRequestObject(
 
     httpsRequest.once("error", reject);
 
-    if (body["stream"] !== null) {
-      body["stream"].pipe(httpsRequest);
-    } else if (body["buffer"] !== null) {
-      httpsRequest.write(body["buffer"]);
+    if (body) {
+      httpsRequest.write(body);
       httpsRequest.end();
     } else {
       httpsRequest.end();
@@ -265,7 +264,7 @@ export async function getHeaders(
     headers[Constants.HttpHeaders.PartitionKey] = Helper.jsonStringifyAndEscapeNonASCII(partitionKey);
   }
 
-  if (authOptions.masterKey || authOptions.tokenProvider) {
+  if (authOptions.masterKey || authOptions.key || authOptions.tokenProvider) {
     headers[Constants.HttpHeaders.XDate] = new Date().toUTCString();
   }
 
@@ -294,7 +293,13 @@ export async function getHeaders(
   if (opts.disableRUPerMinuteUsage) {
     headers[Constants.HttpHeaders.DisableRUPerMinuteUsage] = true;
   }
-  if (authOptions.masterKey || authOptions.resourceTokens || authOptions.tokenProvider || authOptions.permissionFeed) {
+  if (
+    authOptions.masterKey ||
+    authOptions.key ||
+    authOptions.resourceTokens ||
+    authOptions.tokenProvider ||
+    authOptions.permissionFeed
+  ) {
     const token = await AuthHandler.getAuthorizationHeader(authOptions, verb, path, resourceId, resourceType, headers);
     headers[Constants.HttpHeaders.Authorization] = token;
   }
