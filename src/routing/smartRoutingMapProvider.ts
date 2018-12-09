@@ -1,4 +1,3 @@
-import { PartitionKeyRangeCache, QueryRange } from ".";
 import { ClientContext } from "../ClientContext";
 import { Constants } from "../common";
 import { PartitionKeyRangeCache, QueryRange } from "./index";
