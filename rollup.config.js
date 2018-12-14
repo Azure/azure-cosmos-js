@@ -1,8 +1,6 @@
 import resolve from "rollup-plugin-local-resolve";
 import json from "rollup-plugin-json";
-import replace from "rollup-plugin-replace";
 import multiEntry from "rollup-plugin-multi-entry";
-import { version } from "./package.json";
 
 export default [
   {
