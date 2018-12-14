@@ -1,6 +1,7 @@
 import assert from "assert";
 import * as os from "os";
 import * as util from "util";
+import * as packageJson from "../../../package.json";
 import { Platform } from "../../common";
 import { Constants } from "../../index";
 
@@ -39,7 +40,6 @@ describe("Platform.getUserAgent", function() {
 
 describe("Version", function() {
   it("should have matching constant version & package version", function() {
-    const packageJson = require("../../../package.json");
     const packageVersion = packageJson["version"];
     const constantVersion = Constants.SDKVersion;
     assert.equal(constantVersion, packageVersion, "Package.json and Constants.SDKVersion don't match");
