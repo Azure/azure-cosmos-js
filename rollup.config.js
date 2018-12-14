@@ -4,7 +4,7 @@ import multiEntry from "rollup-plugin-multi-entry";
 
 export default [
   {
-    input: "dist-esm/test/**/*.spec.js",
+    input: "dist-esm/src/test/**/*.spec.js",
     output: {
       file: "dist-test/index.js",
       format: "umd",
