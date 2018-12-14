@@ -5,14 +5,14 @@
     "rootFolder": "."
   },
   "project": {
-    "entryPointSourceFile": "dist-esm/index.d.ts"
+    "entryPointSourceFile": "dist-esm/src/index.d.ts"
   },
   "validationRules": {
     "missingReleaseTags": "allow"
   },
   "dtsRollup": {
     "enabled": true,
-    "publishFolder": ".",
+    "publishFolder": "..",
     "mainDtsRollupPath": "dist/index.d.ts"
   },
   "apiReviewFile": {

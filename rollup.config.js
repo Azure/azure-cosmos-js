@@ -1,9 +1,8 @@
 import resolve from "rollup-plugin-local-resolve";
+import json from "rollup-plugin-json";
 import replace from "rollup-plugin-replace";
 import multiEntry from "rollup-plugin-multi-entry";
 import { version } from "./package.json";
-
-console.log(version);
 
 export default [
   {
@@ -11,31 +10,20 @@ export default [
     output: {
       file: "dist-test/index.js",
       format: "umd",
-      name: "TestCosmosClient",
+      name: "Microsoft.Azure.CosmosTest",
       sourcemap: true
     },
-    plugins: [
-      resolve(),
-      multiEntry({ exports: false }),
-      replace({
-        "process.env.VERSION": JSON.stringify(version)
-      })
-    ],
+    plugins: [resolve(), multiEntry({ exports: false }), json()],
     treeshake: false
   },
   {
-    input: "dist-esm/index.js",
+    input: "dist-esm/src/index.js",
     output: {
       file: "dist/index.js",
       format: "umd",
-      name: "CosmosClient",
+      name: "Microsoft.Azure.Cosmos",
       sourcemap: true
     },
-    plugins: [
-      resolve(),
-      replace({
-        "process.env.VERSION": JSON.stringify(version)
-      })
-    ]
+    plugins: [resolve(), json()]
   }
 ];
