@@ -7,7 +7,6 @@ import {
   TopEndpointComponent
 } from "./EndpointComponent";
 import {
-  HeaderUtils,
   IExecutionContext,
   IHeaders,
   OrderByQueryExecutionContext,
@@ -15,6 +14,7 @@ import {
   PartitionedQueryExecutionContextInfo,
   PartitionedQueryExecutionContextInfoParser
 } from "./index";
+import { getInitialHeader, mergeHeaders } from "./headerUtils";
 
 /** @hidden */
 export class PipelinedQueryExecutionContext implements IExecutionContext {
@@ -93,7 +93,7 @@ export class PipelinedQueryExecutionContext implements IExecutionContext {
       return this.endpoint.fetchMore();
     } else {
       this.fetchBuffer = [];
-      this.fetchMoreRespHeaders = HeaderUtils.getInitialHeader();
+      this.fetchMoreRespHeaders = getInitialHeader();
       return this._fetchMoreImplementation();
     }
   }
@@ -101,7 +101,7 @@ export class PipelinedQueryExecutionContext implements IExecutionContext {
   private async _fetchMoreImplementation(): Promise<Response<any>> {
     try {
       const { result: item, headers } = await this.endpoint.nextItem();
-      HeaderUtils.mergeHeaders(this.fetchMoreRespHeaders, headers);
+      mergeHeaders(this.fetchMoreRespHeaders, headers);
       if (item === undefined) {
         // no more results
         if (this.fetchBuffer.length === 0) {
@@ -130,7 +130,7 @@ export class PipelinedQueryExecutionContext implements IExecutionContext {
         }
       }
     } catch (err) {
-      HeaderUtils.mergeHeaders(this.fetchMoreRespHeaders, err.headers);
+      mergeHeaders(this.fetchMoreRespHeaders, err.headers);
       err.headers = this.fetchMoreRespHeaders;
       if (err) {
         throw err;

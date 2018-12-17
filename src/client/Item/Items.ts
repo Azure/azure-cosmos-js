@@ -135,8 +135,8 @@ export class Items {
       throw new Error("changeFeedOptions must be a valid object");
     }
 
-    const path = Helper.getPathFromLink(this.container.url, "docs");
-    const id = Helper.getIdFromLink(this.container.url);
+    const path = getPathFromLink(this.container.url, "docs");
+    const id = getIdFromLink(this.container.url);
     return new ChangeFeedIterator<T>(
       this.clientContext,
       id,

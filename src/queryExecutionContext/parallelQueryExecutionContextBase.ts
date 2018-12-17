@@ -7,12 +7,12 @@ import { Response } from "../request/request";
 import { PARITIONKEYRANGE, QueryRange, SmartRoutingMapProvider } from "../routing";
 import {
   DocumentProducer,
-  HeaderUtils,
   IExecutionContext,
   IHeaders,
   PartitionedQueryExecutionContextInfo,
   PartitionedQueryExecutionContextInfoParser
 } from "./index";
+import { getInitialHeader, mergeHeaders } from "./headerUtils";
 
 /** @hidden */
 export enum ParallelQueryExecutionContextBaseStates {
@@ -77,7 +77,7 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
 
     this.requestContinuation = options ? options.continuation : null;
     // response headers of undergoing operation
-    this.respHeaders = HeaderUtils.getInitialHeader();
+    this.respHeaders = getInitialHeader();
 
     // Make priority queue for documentProducers
     // The comparator is supplied by the derived class
@@ -219,12 +219,12 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
   }
 
   private _mergeWithActiveResponseHeaders(headers: IHeaders) {
-    HeaderUtils.mergeHeaders(this.respHeaders, headers);
+    mergeHeaders(this.respHeaders, headers);
   }
 
   private _getAndResetActiveResponseHeaders() {
     const ret = this.respHeaders;
-    this.respHeaders = HeaderUtils.getInitialHeader();
+    this.respHeaders = getInitialHeader();
     return ret;
   }
 

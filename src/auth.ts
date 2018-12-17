@@ -1,7 +1,7 @@
 import createHmac from "create-hmac";
 import { PermissionDefinition } from "./client";
-import { Helper } from "./common";
 import { IHeaders } from "./queryExecutionContext";
+import { getResourceIdFromPath } from "./common";
 
 /** @hidden */
 export interface IRequestInfo {
@@ -44,7 +44,7 @@ export class AuthHandler {
     if (authOptions.permissionFeed) {
       authOptions.resourceTokens = {};
       for (const permission of authOptions.permissionFeed) {
-        const id = Helper.getResourceIdFromPath(permission.resource);
+        const id = getResourceIdFromPath(permission.resource);
         if (!id) {
           throw new Error(`authorization error: ${id} \
                           is an invalid resourceId in permissionFeed`);

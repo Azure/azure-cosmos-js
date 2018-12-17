@@ -1,6 +1,6 @@
 import { RequestOptions } from "https";
 import * as url from "url";
-import { Constants, Helper, StatusCodes, SubStatusCodes } from "../common";
+import { Constants, StatusCodes, SubStatusCodes, sleep } from "../common";
 import { ConnectionPolicy } from "../documents";
 import { GlobalEndpointManager } from "../globalEndpointManager";
 import { Response } from "../request";
@@ -133,7 +133,7 @@ export class RetryUtility {
       } else {
         request.retryCount++;
         const newUrl = (results as any)[1]; // TODO: any hack
-        await Helper.sleep(retryPolicy.retryAfterInMilliseconds);
+        await sleep(retryPolicy.retryAfterInMilliseconds);
         return this.apply(
           body,
           createRequestObjectFunc,

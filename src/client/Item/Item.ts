@@ -2,7 +2,6 @@ import { ClientContext } from "../../ClientContext";
 import { createDocumentUri, getIdFromLink, getPathFromLink, isResourceValid } from "../../common";
 import { RequestOptions } from "../../request";
 import { Container } from "../Container";
-import { Resource } from "../Resource";
 import { ItemDefinition } from "./ItemDefinition";
 import { ItemResponse } from "./ItemResponse";
 

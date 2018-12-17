@@ -4,7 +4,7 @@ import { Socket } from "net";
 import { Stream } from "stream";
 import * as url from "url";
 
-import { Constants, Helper } from "../common";
+import { Constants, jsonStringifyAndEscapeNonASCII } from "../common";
 import { ConnectionPolicy, MediaReadMode } from "../documents";
 import { IHeaders } from "../queryExecutionContext";
 
@@ -261,7 +261,7 @@ export async function getHeaders(
     if (partitionKey === null || !Array.isArray(partitionKey)) {
       partitionKey = [partitionKey as string];
     }
-    headers[Constants.HttpHeaders.PartitionKey] = Helper.jsonStringifyAndEscapeNonASCII(partitionKey);
+    headers[Constants.HttpHeaders.PartitionKey] = jsonStringifyAndEscapeNonASCII(partitionKey);
   }
 
   if (authOptions.masterKey || authOptions.key || authOptions.tokenProvider) {
