@@ -12,9 +12,9 @@ import {
   IHeaders,
   OrderByQueryExecutionContext,
   ParallelQueryExecutionContext,
-  PartitionedQueryExecutionContextInfo,
-  PartitionedQueryExecutionContextInfoParser
+  PartitionedQueryExecutionContextInfo
 } from "./index";
+import * as PartitionedQueryExecutionContextInfoParser from "./partitionedQueryExecutionContextInfoParser";
 
 /** @hidden */
 export class PipelinedQueryExecutionContext implements IExecutionContext {

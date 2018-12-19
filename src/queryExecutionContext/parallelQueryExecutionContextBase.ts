@@ -6,13 +6,8 @@ import { StatusCodes, SubStatusCodes } from "../common";
 import { Response } from "../request/request";
 import { PARITIONKEYRANGE, QueryRange, SmartRoutingMapProvider } from "../routing";
 import { getInitialHeader, mergeHeaders } from "./headerUtils";
-import {
-  DocumentProducer,
-  IExecutionContext,
-  IHeaders,
-  PartitionedQueryExecutionContextInfo,
-  PartitionedQueryExecutionContextInfoParser
-} from "./index";
+import { DocumentProducer, IExecutionContext, IHeaders, PartitionedQueryExecutionContextInfo } from "./index";
+import * as PartitionedQueryExecutionContextInfoParser from "./partitionedQueryExecutionContextInfoParser";
 
 /** @hidden */
 export enum ParallelQueryExecutionContextBaseStates {
