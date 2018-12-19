@@ -15,19 +15,19 @@ export interface PartitionedQueryExecutionContextInfo {
 
 // TODO: any partitionedQueryExecutionInfo
 export function parseRewrittenQuery(partitionedQueryExecutionInfo: { [key: string]: any }) {
-  return this._extract(partitionedQueryExecutionInfo, PartitionedQueryContants.RewrittenQueryPath);
+  return _extract(partitionedQueryExecutionInfo, PartitionedQueryContants.RewrittenQueryPath);
 }
 export function parseQueryRanges(partitionedQueryExecutionInfo: { [key: string]: any }) {
-  return this._extract(partitionedQueryExecutionInfo, PartitionedQueryContants.QueryRangesPath);
+  return _extract(partitionedQueryExecutionInfo, PartitionedQueryContants.QueryRangesPath);
 }
 export function parseOrderBy(partitionedQueryExecutionInfo: { [key: string]: any }) {
-  return this._extract(partitionedQueryExecutionInfo, PartitionedQueryContants.OrderByPath);
+  return _extract(partitionedQueryExecutionInfo, PartitionedQueryContants.OrderByPath);
 }
 export function parseAggregates(partitionedQueryExecutionInfo: { [key: string]: any }) {
-  return this._extract(partitionedQueryExecutionInfo, PartitionedQueryContants.AggregatePath);
+  return _extract(partitionedQueryExecutionInfo, PartitionedQueryContants.AggregatePath);
 }
 export function parseTop(partitionedQueryExecutionInfo: { [key: string]: any }) {
-  return this._extract(partitionedQueryExecutionInfo, PartitionedQueryContants.TopPath);
+  return _extract(partitionedQueryExecutionInfo, PartitionedQueryContants.TopPath);
 }
 function _extract(partitionedQueryExecutionInfo: { [key: string]: any }, path: string | string[]) {
   let item = partitionedQueryExecutionInfo;

@@ -47,7 +47,7 @@ export async function execute(
   const sessionReadRetryPolicy = new SessionRetryPolicy(globalEndpointManager, r, connectionPolicy);
   const defaultRetryPolicy = new DefaultRetryPolicy(request.operationType);
 
-  return this.apply(
+  return apply(
     body,
     createRequestObjectFunc,
     connectionPolicy,
@@ -102,7 +102,7 @@ export async function apply(
     }
   }
   const locationEndpoint = await globalEndpointManager.resolveServiceEndpoint(request);
-  requestOptions = this.modifyRequestOptions(requestOptions, url.parse(locationEndpoint));
+  requestOptions = modifyRequestOptions(requestOptions, url.parse(locationEndpoint));
   request.locationRouting.routeToLocation(locationEndpoint);
   try {
     const { result, headers } = await (httpsRequest as Promise<Response<any>>);
@@ -132,7 +132,7 @@ export async function apply(
       request.retryCount++;
       const newUrl = (results as any)[1]; // TODO: any hack
       await sleep(retryPolicy.retryAfterInMilliseconds);
-      return this.apply(
+      return apply(
         body,
         createRequestObjectFunc,
         connectionPolicy,
