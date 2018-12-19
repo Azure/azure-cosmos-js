@@ -250,6 +250,7 @@ export const Constants = {
 };
 
 export enum ResourceType {
+  none = "",
   database = "dbs",
   offer = "offers",
   user = "users",
@@ -259,5 +260,6 @@ export enum ResourceType {
   sproc = "sprocs",
   udf = "udfs",
   trigger = "triggers",
-  item = "docs"
+  item = "docs",
+  pkranges = "pkranges"
 }

@@ -4,7 +4,7 @@ import { Socket } from "net";
 import { Stream } from "stream";
 import * as url from "url";
 
-import { Constants, Helper } from "../common";
+import { Constants, Helper, ResourceType } from "../common";
 import { ConnectionPolicy, MediaReadMode } from "../documents";
 import { IHeaders } from "../queryExecutionContext";
 
@@ -12,6 +12,7 @@ import { ErrorResponse } from "./ErrorResponse";
 export { ErrorResponse }; // Should refactor this out
 
 import { AuthHandler, AuthOptions } from "../auth";
+import { HTTPMethod } from "./HTTPMethod";
 import { FeedOptions, MediaOptions, RequestOptions } from "./index";
 import { Response } from "./Response";
 export { Response }; // Should refactor this out
@@ -159,10 +160,10 @@ function getErrorBody(response: http.IncomingMessage, data: string, headers: IHe
 export async function getHeaders(
   authOptions: AuthOptions,
   defaultHeaders: IHeaders,
-  verb: string,
+  verb: HTTPMethod,
   path: string,
   resourceId: string,
-  resourceType: string,
+  resourceType: ResourceType,
   options: RequestOptions | FeedOptions | MediaOptions,
   partitionKeyRangeId?: string,
   useMultipleWriteLocations?: boolean
@@ -268,7 +269,7 @@ export async function getHeaders(
     headers[Constants.HttpHeaders.XDate] = new Date().toUTCString();
   }
 
-  if (verb === "post" || verb === "put") {
+  if (verb === "POST" || verb === "PUT") {
     if (!headers[Constants.HttpHeaders.ContentType]) {
       headers[Constants.HttpHeaders.ContentType] = Constants.MediaTypes.Json;
     }

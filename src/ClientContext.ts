@@ -1,6 +1,6 @@
 import { PartitionKeyRange } from "./client/Container/PartitionKeyRange";
 import { Resource } from "./client/Resource";
-import { Helper, StatusCodes, SubStatusCodes } from "./common";
+import { Helper, ResourceType, StatusCodes, SubStatusCodes } from "./common";
 import { ConnectionPolicy, ConsistencyLevel, DatabaseAccount, QueryCompatibilityMode } from "./documents";
 import { GlobalEndpointManager } from "./globalEndpointManager";
 import {
@@ -45,7 +45,7 @@ export class ClientContext {
   /** @ignore */
   public async read<T>(
     path: string,
-    type: string,
+    type: ResourceType,
     id: string,
     initialHeaders: IHeaders,
     options?: RequestOptions
@@ -54,7 +54,7 @@ export class ClientContext {
       const requestHeaders = await getHeaders(
         this.cosmosClientOptions.auth,
         { ...initialHeaders, ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
-        "get",
+        "GET",
         path,
         id,
         type,
@@ -84,7 +84,7 @@ export class ClientContext {
 
   public async queryFeed<T>(
     path: string,
-    type: string, // TODO: code smell: enum?
+    type: ResourceType,
     id: string,
     resultFn: (result: { [key: string]: any }) => any[], // TODO: any
     query: SqlQuerySpec | string,
@@ -109,7 +109,7 @@ export class ClientContext {
       const reqHeaders = await getHeaders(
         this.cosmosClientOptions.auth,
         initialHeaders,
-        "get",
+        "GET",
         path,
         id,
         type,
@@ -141,7 +141,7 @@ export class ClientContext {
       const reqHeaders = await getHeaders(
         this.cosmosClientOptions.auth,
         initialHeaders,
-        "post",
+        "POST",
         path,
         id,
         type,
@@ -159,17 +159,17 @@ export class ClientContext {
   }
 
   public queryPartitionKeyRanges(collectionLink: string, query?: string | SqlQuerySpec, options?: FeedOptions) {
-    const path = Helper.getPathFromLink(collectionLink, "pkranges");
+    const path = Helper.getPathFromLink(collectionLink, ResourceType.pkranges);
     const id = Helper.getIdFromLink(collectionLink);
     const cb: FetchFunctionCallback = innerOptions => {
-      return this.queryFeed(path, "pkranges", id, result => result.PartitionKeyRanges, query, innerOptions);
+      return this.queryFeed(path, ResourceType.pkranges, id, result => result.PartitionKeyRanges, query, innerOptions);
     };
     return new QueryIterator<PartitionKeyRange>(this, query, options, cb);
   }
 
   public async delete<T>(
     path: string,
-    type: string,
+    type: ResourceType,
     id: string,
     initialHeaders: IHeaders,
     options?: RequestOptions
@@ -178,7 +178,7 @@ export class ClientContext {
       const reqHeaders = await getHeaders(
         this.cosmosClientOptions.auth,
         { ...initialHeaders, ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
-        "delete",
+        "DELETE",
         path,
         id,
         type,
@@ -214,7 +214,7 @@ export class ClientContext {
   public async create<T>(
     body: T,
     path: string,
-    type: string,
+    type: ResourceType,
     id: string,
     initialHeaders: IHeaders,
     options?: RequestOptions
@@ -224,7 +224,7 @@ export class ClientContext {
   public async create<T, U>(
     body: T,
     path: string,
-    type: string,
+    type: ResourceType,
     id: string,
     initialHeaders: IHeaders,
     options?: RequestOptions
@@ -232,7 +232,7 @@ export class ClientContext {
   public async create<T, U>(
     body: T,
     path: string,
-    type: string,
+    type: ResourceType,
     id: string,
     initialHeaders: IHeaders,
     options?: RequestOptions
@@ -241,7 +241,7 @@ export class ClientContext {
       const requestHeaders = await getHeaders(
         this.cosmosClientOptions.auth,
         { ...initialHeaders, ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
-        "post",
+        "POST",
         path,
         id,
         type,
@@ -310,7 +310,7 @@ export class ClientContext {
   public async replace<T>(
     resource: any,
     path: string,
-    type: string,
+    type: ResourceType,
     id: string,
     initialHeaders: IHeaders,
     options?: RequestOptions
@@ -319,7 +319,7 @@ export class ClientContext {
       const reqHeaders = await getHeaders(
         this.cosmosClientOptions.auth,
         { ...initialHeaders, ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
-        "put",
+        "PUT",
         path,
         id,
         type,
@@ -351,7 +351,7 @@ export class ClientContext {
   public async upsert<T>(
     body: T,
     path: string,
-    type: string,
+    type: ResourceType,
     id: string,
     initialHeaders: IHeaders,
     options?: RequestOptions
@@ -359,7 +359,7 @@ export class ClientContext {
   public async upsert<T, U>(
     body: T,
     path: string,
-    type: string,
+    type: ResourceType,
     id: string,
     initialHeaders: IHeaders,
     options?: RequestOptions
@@ -367,7 +367,7 @@ export class ClientContext {
   public async upsert<T>(
     body: T,
     path: string,
-    type: string,
+    type: ResourceType,
     id: string,
     initialHeaders: IHeaders,
     options?: RequestOptions
@@ -376,7 +376,7 @@ export class ClientContext {
       const requestHeaders = await getHeaders(
         this.cosmosClientOptions.auth,
         { ...initialHeaders, ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
-        "post",
+        "POST",
         path,
         id,
         type,
@@ -424,10 +424,10 @@ export class ClientContext {
     const headers = await getHeaders(
       this.cosmosClientOptions.auth,
       initialHeaders,
-      "post",
+      "POST",
       path,
       id,
-      "sprocs",
+      ResourceType.sproc,
       options,
       undefined,
       this.cosmosClientOptions.connectionPolicy.UseMultipleWriteLocations
@@ -437,7 +437,7 @@ export class ClientContext {
       client: this,
       operationType: Constants.OperationTypes.Execute,
       path,
-      resourceType: "sprocs"
+      resourceType: ResourceType.sproc
     };
 
     // executeStoredProcedure will use WriteEndpoint since it uses POST operation
@@ -456,10 +456,10 @@ export class ClientContext {
     const requestHeaders = await getHeaders(
       this.cosmosClientOptions.auth,
       this.cosmosClientOptions.defaultHeaders,
-      "get",
+      "GET",
       "",
       "",
-      "",
+      ResourceType.none,
       {},
       undefined,
       this.cosmosClientOptions.connectionPolicy.UseMultipleWriteLocations

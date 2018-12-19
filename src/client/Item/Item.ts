@@ -1,5 +1,5 @@
 import { ClientContext } from "../../ClientContext";
-import { Helper, UriFactory } from "../../common";
+import { Helper, UriFactory, ResourceType } from "../../common";
 import { RequestOptions } from "../../request";
 import { Container } from "../Container";
 import { Resource } from "../Resource";
@@ -74,7 +74,7 @@ export class Item {
     }
     const path = Helper.getPathFromLink(this.url);
     const id = Helper.getIdFromLink(this.url);
-    const response = await this.clientContext.read<T>(path, "docs", id, undefined, options);
+    const response = await this.clientContext.read<T>(path, ResourceType.item, id, undefined, options);
 
     return {
       body: response.result,
@@ -123,7 +123,7 @@ export class Item {
     const path = Helper.getPathFromLink(this.url);
     const id = Helper.getIdFromLink(this.url);
 
-    const response = await this.clientContext.replace<T>(body, path, "docs", id, undefined, options);
+    const response = await this.clientContext.replace<T>(body, path, ResourceType.item, id, undefined, options);
     return {
       body: response.result,
       headers: response.headers,
@@ -154,7 +154,7 @@ export class Item {
     const path = Helper.getPathFromLink(this.url);
     const id = Helper.getIdFromLink(this.url);
 
-    const response = await this.clientContext.delete<T>(path, "docs", id, undefined, options);
+    const response = await this.clientContext.delete<T>(path, ResourceType.item, id, undefined, options);
     return {
       body: response.result,
       headers: response.headers,

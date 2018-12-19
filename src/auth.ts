@@ -1,12 +1,13 @@
-import createHmac from "create-hmac";
+import { generateSignature } from "@azure/cosmos-sign";
 import { PermissionDefinition } from "./client";
-import { Helper } from "./common";
+import { Helper, ResourceType } from "./common";
 import { IHeaders } from "./queryExecutionContext";
+import { HTTPMethod } from "./request/HTTPMethod";
 
 /** @hidden */
 export interface IRequestInfo {
   [index: string]: any;
-  verb: string;
+  verb: HTTPMethod;
   path: string;
   resourceId: string;
   resourceType: string;
@@ -35,10 +36,10 @@ export interface AuthOptions {
 export class AuthHandler {
   public static async getAuthorizationHeader(
     authOptions: AuthOptions,
-    verb: string,
+    verb: HTTPMethod,
     path: string,
     resourceId: string,
-    resourceType: string,
+    resourceType: ResourceType,
     headers: IHeaders
   ): Promise<string> {
     if (authOptions.permissionFeed) {
@@ -77,34 +78,13 @@ export class AuthHandler {
   }
 
   private static getAuthorizationTokenUsingMasterKey(
-    verb: string,
+    verb: HTTPMethod,
     resourceId: string,
-    resourceType: string,
+    resourceType: ResourceType,
     headers: IHeaders,
     masterKey: string
   ) {
-    const key = Buffer.from(masterKey, "base64");
-
-    const text =
-      (verb || "").toLowerCase() +
-      "\n" +
-      (resourceType || "").toLowerCase() +
-      "\n" +
-      (resourceId || "") +
-      "\n" +
-      ((headers["x-ms-date"] as string) || "").toLowerCase() +
-      "\n" +
-      ((headers["date"] as string) || "").toLowerCase() +
-      "\n";
-
-    const body = Buffer.from(text, "utf8");
-    const signature = createHmac("sha256", key)
-      .update(body)
-      .digest("base64");
-    const MasterToken = "master";
-    const TokenVersion = "1.0";
-
-    return `type=${MasterToken}&ver=${TokenVersion}&sig=${signature}`;
+    return generateSignature(masterKey, verb, resourceType, resourceId, headers["x-ms-date"]);
   }
 
   // TODO: Resource tokens
