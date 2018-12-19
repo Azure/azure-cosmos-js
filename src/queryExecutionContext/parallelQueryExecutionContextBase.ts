@@ -1,10 +1,11 @@
-﻿import * as bs from "binary-search-bounds";
+import * as bs from "binary-search-bounds";
 import PriorityQueue from "priorityqueuejs";
 import semaphore from "semaphore";
 import { ClientContext } from "../ClientContext";
 import { StatusCodes, SubStatusCodes } from "../common";
 import { Response } from "../request/request";
 import { PARITIONKEYRANGE, QueryRange, SmartRoutingMapProvider } from "../routing";
+import { getInitialHeader, mergeHeaders } from "./headerUtils";
 import {
   DocumentProducer,
   IExecutionContext,
@@ -12,7 +13,6 @@ import {
   PartitionedQueryExecutionContextInfo,
   PartitionedQueryExecutionContextInfoParser
 } from "./index";
-import { getInitialHeader, mergeHeaders } from "./headerUtils";
 
 /** @hidden */
 export enum ParallelQueryExecutionContextBaseStates {

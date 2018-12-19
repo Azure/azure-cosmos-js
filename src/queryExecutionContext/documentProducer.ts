@@ -1,10 +1,10 @@
 import { ClientContext } from "../ClientContext";
-import { Constants, StatusCodes, SubStatusCodes, getPathFromLink, getIdFromLink } from "../common";
+import { Constants, getIdFromLink, getPathFromLink, StatusCodes, SubStatusCodes } from "../common";
 import { FeedOptions } from "../request";
 import { Response } from "../request/request";
 import { DefaultQueryExecutionContext } from "./defaultQueryExecutionContext";
 import { FetchResult, FetchResultType } from "./FetchResult";
-import { IHeaders, getInitialHeader, mergeHeaders } from "./headerUtils";
+import { getInitialHeader, IHeaders, mergeHeaders } from "./headerUtils";
 import { FetchFunctionCallback, SqlQuerySpec } from "./index";
 
 /** @hidden */

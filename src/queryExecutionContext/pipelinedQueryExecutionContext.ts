@@ -6,6 +6,7 @@ import {
   OrderByEndpointComponent,
   TopEndpointComponent
 } from "./EndpointComponent";
+import { getInitialHeader, mergeHeaders } from "./headerUtils";
 import {
   IExecutionContext,
   IHeaders,
@@ -14,7 +15,6 @@ import {
   PartitionedQueryExecutionContextInfo,
   PartitionedQueryExecutionContextInfoParser
 } from "./index";
-import { getInitialHeader, mergeHeaders } from "./headerUtils";
 
 /** @hidden */
 export class PipelinedQueryExecutionContext implements IExecutionContext {
