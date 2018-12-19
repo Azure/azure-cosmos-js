@@ -1,5 +1,12 @@
 import { ClientContext } from "../../ClientContext";
-import { Helper, UriFactory } from "../../common";
+import {
+  createDocumentCollectionUri,
+  getIdFromLink,
+  getPathFromLink,
+  isResourceValid,
+  parsePath,
+  ResourceType
+} from "../../common";
 import { PartitionKeyDefinition } from "../../documents";
 import { PartitionKey } from "../../index";
 import { QueryIterator } from "../../queryIterator";
@@ -61,7 +68,7 @@ export class Container {
    * Returns a reference URL to the resource. Used for linking in Permissions.
    */
   public get url() {
-    return UriFactory.createDocumentCollectionUri(this.database.id, this.id);
+    return createDocumentCollectionUri(this.database.id, this.id);
   }
 
   /**
@@ -138,10 +145,16 @@ export class Container {
 
   /** Read the container's definition */
   public async read(options?: RequestOptions): Promise<ContainerResponse> {
-    const path = Helper.getPathFromLink(this.url);
-    const id = Helper.getIdFromLink(this.url);
+    const path = getPathFromLink(this.url);
+    const id = getIdFromLink(this.url);
 
-    const response = await this.clientContext.read<ContainerDefinition>(path, "colls", id, undefined, options);
+    const response = await this.clientContext.read<ContainerDefinition>(
+      path,
+      ResourceType.container,
+      id,
+      undefined,
+      options
+    );
     this.clientContext.partitionKeyDefinitionCache[this.url] = response.result.partitionKey;
     return {
       body: response.result,
@@ -154,14 +167,21 @@ export class Container {
   /** Replace the container's definition */
   public async replace(body: ContainerDefinition, options?: RequestOptions): Promise<ContainerResponse> {
     const err = {};
-    if (!Helper.isResourceValid(body, err)) {
+    if (!isResourceValid(body, err)) {
       throw err;
     }
 
-    const path = Helper.getPathFromLink(this.url);
-    const id = Helper.getIdFromLink(this.url);
+    const path = getPathFromLink(this.url);
+    const id = getIdFromLink(this.url);
 
-    const response = await this.clientContext.replace<ContainerDefinition>(body, path, "colls", id, undefined, options);
+    const response = await this.clientContext.replace<ContainerDefinition>(
+      body,
+      path,
+      ResourceType.container,
+      id,
+      undefined,
+      options
+    );
     return {
       body: response.result,
       headers: response.headers,
@@ -172,10 +192,16 @@ export class Container {
 
   /** Delete the container */
   public async delete(options?: RequestOptions): Promise<ContainerResponse> {
-    const path = Helper.getPathFromLink(this.url);
-    const id = Helper.getIdFromLink(this.url);
+    const path = getPathFromLink(this.url);
+    const id = getIdFromLink(this.url);
 
-    const response = await this.clientContext.delete<ContainerDefinition>(path, "colls", id, undefined, options);
+    const response = await this.clientContext.delete<ContainerDefinition>(
+      path,
+      ResourceType.container,
+      id,
+      undefined,
+      options
+    );
     return {
       body: response.result,
       headers: response.headers,
@@ -220,7 +246,7 @@ export class Container {
     if (partitionKeyDefinition && partitionKeyDefinition.paths && partitionKeyDefinition.paths.length > 0) {
       const partitionKey: PartitionKey[] = [];
       partitionKeyDefinition.paths.forEach((path: string) => {
-        const pathParts = Helper.parsePath(path);
+        const pathParts = parsePath(path);
 
         let obj = document;
         for (const part of pathParts) {

@@ -1,5 +1,5 @@
 import * as url from "url";
-import { Constants, Helper } from "./common";
+import { Constants, sleep } from "./common";
 import { CosmosClient } from "./CosmosClient";
 import { CosmosClientOptions } from "./CosmosClientOptions";
 import { DatabaseAccount } from "./documents";
@@ -102,7 +102,7 @@ export class GlobalEndpointManager {
    *   We skip the refreshing if EnableEndpointDiscovery is set to False
    */
   public async refreshEndpointList(): Promise<void> {
-    if (!this.isRefreshing) {
+    if (!this.isRefreshing && this.enableEndpointDiscovery) {
       this.isRefreshing = true;
       let shouldRefresh = false;
       const databaseAccount = await this.getDatabaseAccountFromAnyEndpoint();
@@ -136,7 +136,7 @@ export class GlobalEndpointManager {
           if (!shouldRefresh) {
             break;
           }
-          await Helper.sleep(this.backgroundRefreshTimeIntervalInMS);
+          await sleep(this.backgroundRefreshTimeIntervalInMS);
         } while (shouldRefresh);
       } catch (err) {
         /* swallow error */

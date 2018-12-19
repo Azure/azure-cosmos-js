@@ -1,5 +1,5 @@
 import { ClientContext } from "../../ClientContext";
-import { Helper } from "../../common";
+import { getIdFromLink, getPathFromLink, isResourceValid, ResourceType } from "../../common";
 import { SqlQuerySpec } from "../../queryExecutionContext";
 import { QueryIterator } from "../../queryIterator";
 import { FeedOptions, RequestOptions } from "../../request";
@@ -35,11 +35,18 @@ export class Permissions {
    */
   public query<T>(query: SqlQuerySpec, options?: FeedOptions): QueryIterator<T>;
   public query<T>(query: SqlQuerySpec, options?: FeedOptions): QueryIterator<T> {
-    const path = Helper.getPathFromLink(this.user.url, "permissions");
-    const id = Helper.getIdFromLink(this.user.url);
+    const path = getPathFromLink(this.user.url, ResourceType.permission);
+    const id = getIdFromLink(this.user.url);
 
     return new QueryIterator(this.clientContext, query, options, innerOptions => {
-      return this.clientContext.queryFeed(path, "permissions", id, result => result.Permissions, query, innerOptions);
+      return this.clientContext.queryFeed(
+        path,
+        ResourceType.permission,
+        id,
+        result => result.Permissions,
+        query,
+        innerOptions
+      );
     });
   }
 
@@ -64,17 +71,17 @@ export class Permissions {
    */
   public async create(body: PermissionDefinition, options?: RequestOptions): Promise<PermissionResponse> {
     const err = {};
-    if (!Helper.isResourceValid(body, err)) {
+    if (!isResourceValid(body, err)) {
       throw err;
     }
 
-    const path = Helper.getPathFromLink(this.user.url, "permissions");
-    const id = Helper.getIdFromLink(this.user.url);
+    const path = getPathFromLink(this.user.url, ResourceType.permission);
+    const id = getIdFromLink(this.user.url);
 
     const response = await this.clientContext.create<PermissionDefinition, PermissionBody>(
       body,
       path,
-      "permissions",
+      ResourceType.permission,
       id,
       undefined,
       options
@@ -96,17 +103,17 @@ export class Permissions {
    */
   public async upsert(body: PermissionDefinition, options?: RequestOptions): Promise<PermissionResponse> {
     const err = {};
-    if (!Helper.isResourceValid(body, err)) {
+    if (!isResourceValid(body, err)) {
       throw err;
     }
 
-    const path = Helper.getPathFromLink(this.user.url, "permissions");
-    const id = Helper.getIdFromLink(this.user.url);
+    const path = getPathFromLink(this.user.url, ResourceType.permission);
+    const id = getIdFromLink(this.user.url);
 
     const response = await this.clientContext.upsert<PermissionDefinition, PermissionBody>(
       body,
       path,
-      "permissions",
+      ResourceType.permission,
       id,
       undefined,
       options

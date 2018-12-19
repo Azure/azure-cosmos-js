@@ -1,10 +1,9 @@
 import { Agent, AgentOptions } from "https";
-import * as tunnel from "tunnel";
 import * as url from "url";
 import { Database, Databases } from "./client/Database";
 import { Offer, Offers } from "./client/Offer";
 import { ClientContext } from "./ClientContext";
-import { Constants, Helper, Platform } from "./common";
+import { Constants, getPlatformDefaultHeaders, getUserAgent, parseConnectionPolicy } from "./common";
 import { CosmosClientOptions } from "./CosmosClientOptions";
 import { DatabaseAccount } from "./documents";
 import { GlobalEndpointManager } from "./globalEndpointManager";
@@ -59,7 +58,7 @@ export class CosmosClient {
       options.auth.key = options.key;
     }
 
-    options.connectionPolicy = Helper.parseConnectionPolicy(options.connectionPolicy);
+    options.connectionPolicy = parseConnectionPolicy(options.connectionPolicy);
 
     options.defaultHeaders = options.defaultHeaders || {};
     options.defaultHeaders[Constants.HttpHeaders.CacheControl] = "no-cache";
@@ -68,41 +67,12 @@ export class CosmosClient {
       options.defaultHeaders[Constants.HttpHeaders.ConsistencyLevel] = options.consistencyLevel;
     }
 
-    const platformDefaultHeaders = Platform.getPlatformDefaultHeaders() || {};
+    const platformDefaultHeaders = getPlatformDefaultHeaders() || {};
     for (const platformDefaultHeader of Object.keys(platformDefaultHeaders)) {
       options.defaultHeaders[platformDefaultHeader] = platformDefaultHeaders[platformDefaultHeader];
     }
 
-    options.defaultHeaders[Constants.HttpHeaders.UserAgent] = Platform.getUserAgent();
-
-    if (!this.options.agent) {
-      // Initialize request agent
-      const requestAgentOptions: AgentOptions & tunnel.HttpsOverHttpsOptions & tunnel.HttpsOverHttpOptions = {
-        keepAlive: true,
-        maxSockets: 256,
-        maxFreeSockets: 256
-      };
-      if (!!this.options.connectionPolicy.ProxyUrl) {
-        const proxyUrl = url.parse(this.options.connectionPolicy.ProxyUrl);
-        const port = parseInt(proxyUrl.port, 10);
-        requestAgentOptions.proxy = {
-          host: proxyUrl.hostname,
-          port,
-          headers: {}
-        };
-
-        if (!!proxyUrl.auth) {
-          requestAgentOptions.proxy.proxyAuth = proxyUrl.auth;
-        }
-
-        this.options.agent =
-          proxyUrl.protocol.toLowerCase() === "https:"
-            ? tunnel.httpsOverHttps(requestAgentOptions)
-            : tunnel.httpsOverHttp(requestAgentOptions); // TODO: type coersion
-      } else {
-        this.options.agent = new Agent(requestAgentOptions); // TODO: Move to request?
-      }
-    }
+    options.defaultHeaders[Constants.HttpHeaders.UserAgent] = getUserAgent();
 
     const globalEndpointManager = new GlobalEndpointManager(this.options, async (opts: RequestOptions) =>
       this.getDatabaseAccount(opts)

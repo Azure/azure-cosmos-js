@@ -1,6 +1,6 @@
 import { ClientContext } from "../../ClientContext";
-import { Helper, StatusCodes } from "../../common";
-import { HeaderUtils, SqlQuerySpec } from "../../queryExecutionContext";
+import { getIdFromLink, getPathFromLink, isResourceValid, ResourceType, StatusCodes } from "../../common";
+import { mergeHeaders, SqlQuerySpec } from "../../queryExecutionContext";
 import { QueryIterator } from "../../queryIterator";
 import { FeedOptions, RequestOptions } from "../../request";
 import { Database } from "../Database";
@@ -57,13 +57,13 @@ export class Containers {
    */
   public query<T>(query: SqlQuerySpec, options?: FeedOptions): QueryIterator<T>;
   public query<T>(query: SqlQuerySpec, options?: FeedOptions): QueryIterator<T> {
-    const path = Helper.getPathFromLink(this.database.url, "colls");
-    const id = Helper.getIdFromLink(this.database.url);
+    const path = getPathFromLink(this.database.url, ResourceType.container);
+    const id = getIdFromLink(this.database.url);
 
     return new QueryIterator(this.clientContext, query, options, innerOptions => {
       return this.clientContext.queryFeed<ContainerDefinition>(
         path,
-        "colls",
+        ResourceType.container,
         id,
         result => result.DocumentCollections,
         query,
@@ -91,13 +91,20 @@ export class Containers {
    */
   public async create(body: ContainerDefinition, options?: RequestOptions): Promise<ContainerResponse> {
     const err = {};
-    if (!Helper.isResourceValid(body, err)) {
+    if (!isResourceValid(body, err)) {
       throw err;
     }
-    const path = Helper.getPathFromLink(this.database.url, "colls");
-    const id = Helper.getIdFromLink(this.database.url);
+    const path = getPathFromLink(this.database.url, ResourceType.container);
+    const id = getIdFromLink(this.database.url);
 
-    const response = await this.clientContext.create<ContainerDefinition>(body, path, "colls", id, undefined, options);
+    const response = await this.clientContext.create<ContainerDefinition>(
+      body,
+      path,
+      ResourceType.container,
+      id,
+      undefined,
+      options
+    );
     const ref = new Container(this.database, response.result.id, this.clientContext);
     return {
       body: response.result,
@@ -141,7 +148,7 @@ export class Containers {
       if (err.code === StatusCodes.NotFound) {
         const createResponse = await this.create(body, options);
         // Must merge the headers to capture RU costskaty
-        HeaderUtils.mergeHeaders(createResponse.headers, err.headers);
+        mergeHeaders(createResponse.headers, err.headers);
         return createResponse;
       } else {
         throw err;

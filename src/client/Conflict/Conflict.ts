@@ -1,5 +1,5 @@
 import { ClientContext } from "../../ClientContext";
-import { Constants, Helper } from "../../common";
+import { Constants, getIdFromLink, getPathFromLink, ResourceType } from "../../common";
 import { RequestOptions } from "../../request";
 import { Container } from "../Container";
 import { ConflictDefinition } from "./ConflictDefinition";
@@ -33,10 +33,10 @@ export class Conflict {
    * @param options
    */
   public async read(options?: RequestOptions): Promise<ConflictResponse> {
-    const path = Helper.getPathFromLink(this.url, "conflicts");
-    const id = Helper.getIdFromLink(this.url);
+    const path = getPathFromLink(this.url, ResourceType.conflicts);
+    const id = getIdFromLink(this.url);
 
-    const response = await this.clientContext.read<ConflictDefinition>(path, "users", id, undefined, options);
+    const response = await this.clientContext.read<ConflictDefinition>(path, ResourceType.user, id, undefined, options);
     return { body: response.result, headers: response.headers, ref: this, conflict: this };
   }
 
@@ -45,10 +45,16 @@ export class Conflict {
    * @param options
    */
   public async delete(options?: RequestOptions): Promise<ConflictResponse> {
-    const path = Helper.getPathFromLink(this.url);
-    const id = Helper.getIdFromLink(this.url);
+    const path = getPathFromLink(this.url);
+    const id = getIdFromLink(this.url);
 
-    const response = await this.clientContext.delete<ConflictDefinition>(path, "conflicts", id, undefined, options);
+    const response = await this.clientContext.delete<ConflictDefinition>(
+      path,
+      ResourceType.conflicts,
+      id,
+      undefined,
+      options
+    );
     return { body: response.result, headers: response.headers, ref: this, conflict: this };
   }
 }

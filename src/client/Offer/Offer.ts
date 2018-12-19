@@ -1,5 +1,5 @@
 import { ClientContext } from "../../ClientContext";
-import { Constants, Helper } from "../../common";
+import { Constants, isResourceValid, ResourceType } from "../../common";
 import { CosmosClient } from "../../CosmosClient";
 import { RequestOptions } from "../../request";
 import { OfferDefinition } from "./OfferDefinition";
@@ -33,7 +33,13 @@ export class Offer {
    * @param options
    */
   public async read(options?: RequestOptions): Promise<OfferResponse> {
-    const response = await this.clientContext.read<OfferDefinition>(this.url, "offers", this.id, undefined, options);
+    const response = await this.clientContext.read<OfferDefinition>(
+      this.url,
+      ResourceType.offer,
+      this.id,
+      undefined,
+      options
+    );
     return { body: response.result, headers: response.headers, ref: this, offer: this };
   }
 
@@ -44,13 +50,13 @@ export class Offer {
    */
   public async replace(body: OfferDefinition, options?: RequestOptions): Promise<OfferResponse> {
     const err = {};
-    if (!Helper.isResourceValid(body, err)) {
+    if (!isResourceValid(body, err)) {
       throw err;
     }
     const response = await this.clientContext.replace<OfferDefinition>(
       body,
       this.url,
-      "offers",
+      ResourceType.offer,
       this.id,
       undefined,
       options
