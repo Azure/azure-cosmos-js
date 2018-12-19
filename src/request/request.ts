@@ -11,7 +11,7 @@ import { IHeaders } from "../queryExecutionContext";
 import { ErrorResponse } from "./ErrorResponse";
 export { ErrorResponse }; // Should refactor this out
 
-import { AuthOptions, getAuthorizationHeader } from "../auth";
+import { AuthOptions, setAuthorizationHeader } from "../auth";
 import { FeedOptions, MediaOptions, RequestOptions } from "./index";
 import { Response } from "./Response";
 export { Response }; // Should refactor this out
@@ -300,8 +300,7 @@ export async function getHeaders(
     authOptions.tokenProvider ||
     authOptions.permissionFeed
   ) {
-    const token = await getAuthorizationHeader(authOptions, verb, path, resourceId, resourceType, headers);
-    headers[Constants.HttpHeaders.Authorization] = token;
+    await setAuthorizationHeader(authOptions, verb, path, resourceId, resourceType, headers);
   }
   return headers;
 }

@@ -1,6 +1,6 @@
-import { generateSignature } from "@azure/cosmos-sign";
+import { generateHeaders } from "@azure/cosmos-sign";
 import { PermissionDefinition } from "./client";
-import { getResourceIdFromPath, HTTPMethod, ResourceType } from "./common";
+import { Constants, getResourceIdFromPath, HTTPMethod, ResourceType } from "./common";
 import { IHeaders } from "./queryExecutionContext";
 
 /** @hidden */
@@ -31,14 +31,14 @@ export interface AuthOptions {
   permissionFeed?: PermissionDefinition[]; // TODO: any
 }
 
-export async function getAuthorizationHeader(
+export async function setAuthorizationHeader(
   authOptions: AuthOptions,
   verb: HTTPMethod,
   path: string,
   resourceId: string,
   resourceType: ResourceType,
   headers: IHeaders
-): Promise<string> {
+): Promise<void> {
   if (authOptions.permissionFeed) {
     authOptions.resourceTokens = {};
     for (const permission of authOptions.permissionFeed) {
@@ -54,11 +54,13 @@ export async function getAuthorizationHeader(
 
   if (authOptions.masterKey || authOptions.key) {
     const key = authOptions.masterKey || authOptions.key;
-    return encodeURIComponent(getAuthorizationTokenUsingMasterKey(verb, resourceId, resourceType, headers, key));
+    getAuthorizationTokenUsingMasterKey(verb, resourceId, resourceType, headers, key);
   } else if (authOptions.resourceTokens) {
-    return encodeURIComponent(getAuthorizationTokenUsingResourceTokens(authOptions.resourceTokens, path, resourceId));
+    headers[Constants.HttpHeaders.Authorization] = encodeURIComponent(
+      getAuthorizationTokenUsingResourceTokens(authOptions.resourceTokens, path, resourceId)
+    );
   } else if (authOptions.tokenProvider) {
-    return encodeURIComponent(
+    headers[Constants.HttpHeaders.Authorization] = encodeURIComponent(
       await getAuthorizationTokenUsingTokenProvider(authOptions.tokenProvider, {
         verb,
         path,
@@ -77,7 +79,7 @@ function getAuthorizationTokenUsingMasterKey(
   headers: IHeaders,
   masterKey: string
 ) {
-  return generateSignature(masterKey, verb, resourceType, resourceId, headers["x-ms-date"]);
+  headers = Object.assign(headers, generateHeaders(masterKey, verb, resourceType, resourceId));
 }
 
 // TODO: Resource tokens
