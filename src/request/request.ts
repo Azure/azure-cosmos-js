@@ -268,7 +268,7 @@ export async function getHeaders(
     headers[Constants.HttpHeaders.XDate] = new Date().toUTCString();
   }
 
-  if (verb === "POST" || verb === "PUT") {
+  if (verb === HTTPMethod.post || verb === HTTPMethod.put) {
     if (!headers[Constants.HttpHeaders.ContentType]) {
       headers[Constants.HttpHeaders.ContentType] = Constants.MediaTypes.Json;
     }
