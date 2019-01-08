@@ -8,12 +8,16 @@ export interface RequestInfo {
   verb: HTTPMethod;
   path: string;
   resourceId: string;
-  resourceType: string;
+  resourceType: ResourceType;
   headers: IHeaders;
 }
 
 export type TokenProvider = (
-  requestInfo: RequestInfo,
+  verb: HTTPMethod,
+  path: string,
+  resourceId: string,
+  resourceType: ResourceType,
+  headers: IHeaders,
   /** The default function for generating header tokens using the masterKey */
   getAuthorizationTokenUsingMasterKey: typeof _getAuthorizationTokenUsingMasterKey
 ) => Promise<string>;
@@ -27,8 +31,8 @@ export interface AuthOptions {
    * Keys for the object are resource Ids and values are the resource tokens.
    */
   resourceTokens?: { [resourcePath: string]: string };
-  /** A function for resolving header authorization tokens.
-   * Keys for the object are resource Ids and values are the resource tokens.
+  /** A user supplied function for resolving header authorization tokens.
+   * Allows users to generating their own auth tokens, potentially using a separate service
    */
   tokenProvider?: TokenProvider;
   /** An array of {@link Permission} objects. */
@@ -66,13 +70,11 @@ export async function setAuthorizationHeader(
   } else if (authOptions.tokenProvider) {
     headers[Constants.HttpHeaders.Authorization] = encodeURIComponent(
       await authOptions.tokenProvider(
-        {
-          verb,
-          path,
-          resourceId,
-          resourceType,
-          headers
-        },
+        verb,
+        path,
+        resourceId,
+        resourceType,
+        headers,
         _getAuthorizationTokenUsingMasterKey
       )
     );
