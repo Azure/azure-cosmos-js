@@ -4,8 +4,7 @@ import { Constants, getResourceIdFromPath, HTTPMethod, ResourceType } from "./co
 import { IHeaders } from "./queryExecutionContext";
 
 /** @hidden */
-export interface IRequestInfo {
-  [index: string]: any;
+export interface RequestInfo {
   verb: HTTPMethod;
   path: string;
   resourceId: string;
@@ -13,9 +12,11 @@ export interface IRequestInfo {
   headers: IHeaders;
 }
 
-export interface ITokenProvider {
-  getToken: (requestInfo: IRequestInfo, callback?: (err: Error, token: string) => void) => Promise<string>;
-}
+export type TokenProvider = (
+  requestInfo: RequestInfo,
+  /** The default function for generating header tokens using the masterKey */
+  getAuthorizationTokenUsingMasterKey: typeof _getAuthorizationTokenUsingMasterKey
+) => Promise<string>;
 
 export interface AuthOptions {
   /** Account master key or read only key */
@@ -26,9 +27,12 @@ export interface AuthOptions {
    * Keys for the object are resource Ids and values are the resource tokens.
    */
   resourceTokens?: { [resourcePath: string]: string };
-  tokenProvider?: any; // TODO: any
+  /** A function for resolving header authorization tokens.
+   * Keys for the object are resource Ids and values are the resource tokens.
+   */
+  tokenProvider?: TokenProvider;
   /** An array of {@link Permission} objects. */
-  permissionFeed?: PermissionDefinition[]; // TODO: any
+  permissionFeed?: PermissionDefinition[];
 }
 
 export async function setAuthorizationHeader(
@@ -54,25 +58,28 @@ export async function setAuthorizationHeader(
 
   if (authOptions.masterKey || authOptions.key) {
     const key = authOptions.masterKey || authOptions.key;
-    getAuthorizationTokenUsingMasterKey(verb, resourceId, resourceType, headers, key);
+    _getAuthorizationTokenUsingMasterKey(verb, resourceId, resourceType, headers, key);
   } else if (authOptions.resourceTokens) {
     headers[Constants.HttpHeaders.Authorization] = encodeURIComponent(
       getAuthorizationTokenUsingResourceTokens(authOptions.resourceTokens, path, resourceId)
     );
   } else if (authOptions.tokenProvider) {
     headers[Constants.HttpHeaders.Authorization] = encodeURIComponent(
-      await getAuthorizationTokenUsingTokenProvider(authOptions.tokenProvider, {
-        verb,
-        path,
-        resourceId,
-        resourceType,
-        headers
-      })
+      await authOptions.tokenProvider(
+        {
+          verb,
+          path,
+          resourceId,
+          resourceType,
+          headers
+        },
+        _getAuthorizationTokenUsingMasterKey
+      )
     );
   }
 }
 
-function getAuthorizationTokenUsingMasterKey(
+function _getAuthorizationTokenUsingMasterKey(
   verb: HTTPMethod,
   resourceId: string,
   resourceType: ResourceType,
@@ -121,24 +128,4 @@ function getAuthorizationTokenUsingResourceTokens(
     }
   }
   return null;
-}
-
-function getAuthorizationTokenUsingTokenProvider(
-  tokenProvider: ITokenProvider,
-  requestInfo: IRequestInfo
-): Promise<string> {
-  requestInfo.getAuthorizationTokenUsingMasterKey = getAuthorizationTokenUsingMasterKey;
-  return new Promise(async (resolve, reject) => {
-    const callback = (err: Error, token: string) => {
-      if (reject) {
-        return reject(err);
-      }
-      resolve(token);
-    };
-
-    const results = tokenProvider.getToken(requestInfo, callback);
-    if (results.then && typeof results.then === "function") {
-      resolve(await results);
-    }
-  });
 }
