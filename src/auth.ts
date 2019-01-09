@@ -19,7 +19,13 @@ export type TokenProvider = (
   resourceType: ResourceType,
   headers: IHeaders,
   /** The default function for generating header tokens using the masterKey */
-  getAuthorizationTokenUsingMasterKey: typeof _getAuthorizationTokenUsingMasterKey
+  getAuthorizationTokenUsingMasterKey: (
+    verb: HTTPMethod,
+    resourceId: string,
+    resourceType: ResourceType,
+    headers: IHeaders,
+    masterKey: string
+  ) => void
 ) => Promise<string>;
 
 export interface AuthOptions {
@@ -62,26 +68,19 @@ export async function setAuthorizationHeader(
 
   if (authOptions.masterKey || authOptions.key) {
     const key = authOptions.masterKey || authOptions.key;
-    _getAuthorizationTokenUsingMasterKey(verb, resourceId, resourceType, headers, key);
+    getTokenUsingMasterKey(verb, resourceId, resourceType, headers, key);
   } else if (authOptions.resourceTokens) {
     headers[Constants.HttpHeaders.Authorization] = encodeURIComponent(
       getAuthorizationTokenUsingResourceTokens(authOptions.resourceTokens, path, resourceId)
     );
   } else if (authOptions.tokenProvider) {
     headers[Constants.HttpHeaders.Authorization] = encodeURIComponent(
-      await authOptions.tokenProvider(
-        verb,
-        path,
-        resourceId,
-        resourceType,
-        headers,
-        _getAuthorizationTokenUsingMasterKey
-      )
+      await authOptions.tokenProvider(verb, path, resourceId, resourceType, headers, getTokenUsingMasterKey)
     );
   }
 }
 
-function _getAuthorizationTokenUsingMasterKey(
+function getAuthorizationTokenUsingMasterKey(
   verb: HTTPMethod,
   resourceId: string,
   resourceType: ResourceType,
