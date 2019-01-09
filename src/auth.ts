@@ -80,7 +80,7 @@ export async function setAuthorizationHeader(
   }
 }
 
-function getAuthorizationTokenUsingMasterKey(
+function getTokenUsingMasterKey(
   verb: HTTPMethod,
   resourceId: string,
   resourceType: ResourceType,
