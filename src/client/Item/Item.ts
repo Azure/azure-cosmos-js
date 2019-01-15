@@ -4,6 +4,7 @@ import { RequestOptions } from "../../request";
 import { Container } from "../Container";
 import { ItemDefinition } from "./ItemDefinition";
 import { ItemResponse } from "./ItemResponse";
+import { extractPartitionKey } from "../../extractPartitionKey";
 
 /**
  * Used to perform operations on a specific item.
@@ -111,7 +112,7 @@ export class Item {
     }
     if (options.partitionKey === undefined && options.skipGetPartitionKeyDefinition !== true) {
       const { body: partitionKeyDefinition } = await this.container.getPartitionKeyDefinition();
-      options.partitionKey = this.container.extractPartitionKey(body, partitionKeyDefinition);
+      options.partitionKey = extractPartitionKey(body, partitionKeyDefinition);
     }
 
     const err = {};

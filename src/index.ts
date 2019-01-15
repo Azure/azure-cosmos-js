@@ -1,3 +1,4 @@
+export { extractPartitionKey } from "./extractPartitionKey";
 export {
   ConnectionMode,
   ConsistencyLevel,

@@ -10,6 +10,7 @@ import { Resource } from "../Resource";
 import { Item } from "./Item";
 import { ItemDefinition } from "./ItemDefinition";
 import { ItemResponse } from "./ItemResponse";
+import { extractPartitionKey } from "../../extractPartitionKey";
 
 function isChangeFeedOptions(options: unknown): options is ChangeFeedOptions {
   const optionsType = typeof options;
@@ -205,7 +206,7 @@ export class Items {
   public async create<T extends ItemDefinition>(body: T, options: RequestOptions = {}): Promise<ItemResponse<T>> {
     if (options.partitionKey === undefined && options.skipGetPartitionKeyDefinition !== true) {
       const { body: partitionKeyDefinition } = await this.container.getPartitionKeyDefinition();
-      options.partitionKey = this.container.extractPartitionKey(body, partitionKeyDefinition);
+      options.partitionKey = extractPartitionKey(body, partitionKeyDefinition);
     }
 
     // Generate random document id if the id is missing in the payload and
@@ -262,7 +263,7 @@ export class Items {
   public async upsert<T extends ItemDefinition>(body: T, options: RequestOptions = {}): Promise<ItemResponse<T>> {
     if (options.partitionKey === undefined && options.skipGetPartitionKeyDefinition !== true) {
       const { body: partitionKeyDefinition } = await this.container.getPartitionKeyDefinition();
-      options.partitionKey = this.container.extractPartitionKey(body, partitionKeyDefinition);
+      options.partitionKey = extractPartitionKey(body, partitionKeyDefinition);
     }
 
     // Generate random document id if the id is missing in the payload and
