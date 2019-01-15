@@ -2,6 +2,7 @@ import { ChangeFeedIterator } from "../../ChangeFeedIterator";
 import { ChangeFeedOptions } from "../../ChangeFeedOptions";
 import { ClientContext } from "../../ClientContext";
 import { generateGuidId, getIdFromLink, getPathFromLink, isResourceValid, ResourceType } from "../../common";
+import { extractPartitionKey } from "../../extractPartitionKey";
 import { FetchFunctionCallback, SqlQuerySpec } from "../../queryExecutionContext";
 import { QueryIterator } from "../../queryIterator";
 import { FeedOptions, RequestOptions } from "../../request";
@@ -10,7 +11,6 @@ import { Resource } from "../Resource";
 import { Item } from "./Item";
 import { ItemDefinition } from "./ItemDefinition";
 import { ItemResponse } from "./ItemResponse";
-import { extractPartitionKey } from "../../extractPartitionKey";
 
 function isChangeFeedOptions(options: unknown): options is ChangeFeedOptions {
   const optionsType = typeof options;

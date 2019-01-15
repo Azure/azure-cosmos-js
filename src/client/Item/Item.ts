@@ -1,10 +1,10 @@
 import { ClientContext } from "../../ClientContext";
 import { createDocumentUri, getIdFromLink, getPathFromLink, isResourceValid, ResourceType } from "../../common";
+import { extractPartitionKey } from "../../extractPartitionKey";
 import { RequestOptions } from "../../request";
 import { Container } from "../Container";
 import { ItemDefinition } from "./ItemDefinition";
 import { ItemResponse } from "./ItemResponse";
-import { extractPartitionKey } from "../../extractPartitionKey";
 
 /**
  * Used to perform operations on a specific item.

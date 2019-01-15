@@ -1,7 +1,7 @@
 import assert from "assert";
 import { Container } from "../../client";
-import { extractPartitionKey } from "../../extractPartitionKey";
 import { PartitionKind } from "../../documents";
+import { extractPartitionKey } from "../../extractPartitionKey";
 
 describe("extractPartitionKey", function() {
   describe("With undefined partitionKeyDefinition", function() {
