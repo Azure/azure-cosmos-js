@@ -19,7 +19,8 @@ describe("NodeJS CRUD Tests", function() {
         // create a container
         const containerDefinition: ContainerDefinition = {
           id: "sample container",
-          indexingPolicy: { indexingMode: IndexingMode.consistent }
+          indexingPolicy: { indexingMode: IndexingMode.consistent },
+          throughput: 400
         };
 
         if (hasPartitionKey) {

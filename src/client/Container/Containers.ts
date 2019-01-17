@@ -1,6 +1,6 @@
 import { ClientContext } from "../../ClientContext";
-import { getIdFromLink, getPathFromLink, isResourceValid, ResourceType, StatusCodes } from "../../common";
-import { mergeHeaders, SqlQuerySpec } from "../../queryExecutionContext";
+import { Constants, getIdFromLink, getPathFromLink, isResourceValid, ResourceType, StatusCodes } from "../../common";
+import { IHeaders, mergeHeaders, SqlQuerySpec } from "../../queryExecutionContext";
 import { QueryIterator } from "../../queryIterator";
 import { FeedOptions, RequestOptions } from "../../request";
 import { Database } from "../Database";
@@ -96,13 +96,19 @@ export class Containers {
     }
     const path = getPathFromLink(this.database.url, ResourceType.container);
     const id = getIdFromLink(this.database.url);
+    let initialHeaders: IHeaders;
+
+    if (body.throughput) {
+      initialHeaders = { [Constants.HttpHeaders.OfferThroughput]: body.throughput };
+      delete body.throughput;
+    }
 
     const response = await this.clientContext.create<ContainerDefinition>(
       body,
       path,
       ResourceType.container,
       id,
-      undefined,
+      initialHeaders,
       options
     );
     const ref = new Container(this.database, response.result.id, this.clientContext);

@@ -1,7 +1,8 @@
 import { ClientContext } from "../../ClientContext";
-import { isResourceValid, ResourceType, StatusCodes } from "../../common";
+import { Constants, isResourceValid, ResourceType, StatusCodes } from "../../common";
 import { CosmosClient } from "../../CosmosClient";
 import { FetchFunctionCallback, mergeHeaders, SqlQuerySpec } from "../../queryExecutionContext";
+import { IHeaders } from "../../queryExecutionContext/IHeaders";
 import { QueryIterator } from "../../queryIterator";
 import { FeedOptions, RequestOptions } from "../../request";
 import { Resource } from "../Resource";
@@ -94,13 +95,20 @@ export class Databases {
       throw err;
     }
 
+    let initialHeaders: IHeaders;
+
+    if (body.throughput) {
+      initialHeaders = { [Constants.HttpHeaders.OfferThroughput]: body.throughput };
+      delete body.throughput;
+    }
+
     const path = "/dbs"; // TODO: constant
     const response = await this.clientContext.create<DatabaseDefinition>(
       body,
       path,
       ResourceType.database,
       undefined,
-      undefined,
+      initialHeaders,
       options
     );
     const ref = new Database(this.client, body.id, this.clientContext);
