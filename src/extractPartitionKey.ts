@@ -2,7 +2,6 @@ import { parsePath } from "./common";
 import { PartitionKey, PartitionKeyDefinition } from "./documents";
 
 export function extractPartitionKey(document: any, partitionKeyDefinition: PartitionKeyDefinition): PartitionKey[] {
-  // TODO: any
   if (partitionKeyDefinition && partitionKeyDefinition.paths && partitionKeyDefinition.paths.length > 0) {
     const partitionKey: PartitionKey[] = [];
     partitionKeyDefinition.paths.forEach((path: string) => {
