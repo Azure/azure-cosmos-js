@@ -12,21 +12,7 @@ export interface RequestInfo {
   headers: IHeaders;
 }
 
-export type TokenProvider = (
-  verb: HTTPMethod,
-  path: string,
-  resourceId: string,
-  resourceType: ResourceType,
-  headers: IHeaders,
-  /** The default function for generating header tokens using the masterKey */
-  getAuthorizationTokenUsingMasterKey: (
-    verb: HTTPMethod,
-    resourceId: string,
-    resourceType: ResourceType,
-    headers: IHeaders,
-    masterKey: string
-  ) => void
-) => Promise<string>;
+export type TokenProvider = (requestInfo: RequestInfo) => Promise<string>;
 
 export interface AuthOptions {
   /** Account master key or read only key */
@@ -68,19 +54,20 @@ export async function setAuthorizationHeader(
 
   if (authOptions.masterKey || authOptions.key) {
     const key = authOptions.masterKey || authOptions.key;
-    getTokenUsingMasterKey(verb, resourceId, resourceType, headers, key);
+    setAuthorizationTokenHeaderUsingMasterKey(verb, resourceId, resourceType, headers, key);
   } else if (authOptions.resourceTokens) {
     headers[Constants.HttpHeaders.Authorization] = encodeURIComponent(
       getAuthorizationTokenUsingResourceTokens(authOptions.resourceTokens, path, resourceId)
     );
   } else if (authOptions.tokenProvider) {
     headers[Constants.HttpHeaders.Authorization] = encodeURIComponent(
-      await authOptions.tokenProvider(verb, path, resourceId, resourceType, headers, getTokenUsingMasterKey)
+      await authOptions.tokenProvider({ verb, path, resourceId, resourceType, headers })
     );
   }
 }
 
-function getTokenUsingMasterKey(
+/** The default function for setting header token using the masterKey */
+export function setAuthorizationTokenHeaderUsingMasterKey(
   verb: HTTPMethod,
   resourceId: string,
   resourceType: ResourceType,
