@@ -22,44 +22,12 @@ describe.only("NodeJS CRUD Tests", function() {
   });
 
   describe("Validate Offer CRUD", function() {
-    const offerReadAndQueryTest = async function(
-      isPartitionedCollection: boolean,
-      offerThroughput: number,
-      expectedCollectionSize: number
-    ) {
-      const collectionRequestOptions = { offerThroughput };
-      let collectionDefinition: any = "";
-      if (isPartitionedCollection) {
-        collectionDefinition = {
-          id: getEntropy(),
-          indexingPolicy: {
-            includedPaths: [
-              {
-                path: "/",
-                indexes: [
-                  {
-                    kind: "Range",
-                    dataType: "Number"
-                  },
-                  {
-                    kind: "Range",
-                    dataType: "String"
-                  }
-                ]
-              }
-            ]
-          },
-          partitionKey: {
-            paths: ["/id"],
-            kind: "Hash"
-          }
-        };
-      } else {
-        collectionDefinition = { id: "sample collection" };
-      }
+    it("nativeApi Should do offer read and query operations successfully name based single partition collection", async function() {
+      const mbInBytes = 1024 * 1024;
+      const offerThroughput = 400;
       const container = await getTestContainer("Validate Offer CRUD");
 
-      const { body: createdContainerDef, headers } = await container.read({ populateQuotaInfo: true });
+      const { headers } = await container.read({ populateQuotaInfo: true });
 
       // Validate the collection size quota
       assert.notEqual(headers[Constants.HttpHeaders.MaxResourceQuota], null);
@@ -71,15 +39,15 @@ describe.only("NodeJS CRUD Tests", function() {
           return map;
         }, {})[Constants.Quota.CollectionSize]
       );
-      assert.equal(collectionSize, expectedCollectionSize, "Collection size is unexpected");
+      assert.equal(collectionSize, 10 * mbInBytes, "Collection size is unexpected");
 
       const { result: offers } = await client.offers.readAll().toArray();
       assert.equal(offers.length, 1);
       const expectedOffer = offers[0];
       assert.equal(
         expectedOffer.content.offerThroughput,
-        collectionRequestOptions.offerThroughput,
-        "Expected offerThroughput to be " + collectionRequestOptions.offerThroughput
+        offerThroughput,
+        "Expected offerThroughput to be " + offerThroughput
       );
       validateOfferResponseBody(expectedOffer);
 
@@ -116,19 +84,6 @@ describe.only("NodeJS CRUD Tests", function() {
         const notFoundErrorCode = 404;
         assert.equal(err.code, notFoundErrorCode, "response should return error code 404");
       }
-    };
-
-    const mbInBytes = 1024 * 1024;
-    const offerThroughputSinglePartitionCollection = 400;
-    const minOfferThroughputPCollectionWithMultiPartitions = 400;
-    const maxOfferThroughputPCollectionWithSinglePartition = minOfferThroughputPCollectionWithMultiPartitions - 100;
-
-    it("nativeApi Should do offer read and query operations successfully name based single partition collection", async function() {
-      return offerReadAndQueryTest(false, offerThroughputSinglePartitionCollection, 10 * mbInBytes);
-    });
-
-    it("nativeApi Should do offer read and query operations successfully w/ name based p-Collection w/ multi partitions", async function() {
-      return offerReadAndQueryTest(true, minOfferThroughputPCollectionWithMultiPartitions, 10 * mbInBytes);
     });
 
     it("nativeApi Should do offer replace operations successfully name based", async function() {
