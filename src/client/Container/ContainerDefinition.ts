@@ -12,6 +12,4 @@ export interface ContainerDefinition {
   defaultTtl?: number;
   /** The conflict resolution policy used to resolve conflicts in a container. */
   conflictResolutionPolicy?: ConflictResolutionPolicy;
-  /** Throughput for this container. */
-  throughput?: number;
 }

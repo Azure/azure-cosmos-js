@@ -1,6 +1,7 @@
 import assert from "assert";
 import { Constants, PartitionKind } from "../..";
 import { ContainerDefinition, Database } from "../../client";
+import { ContainerCreateRequest } from "../../client/Container/ContainerCreateRequest";
 import { DataType, Index, IndexedPath, IndexingMode, IndexingPolicy, IndexKind } from "../../documents";
 import { getTestDatabase, removeAllDatabases } from "../common/TestHelpers";
 
@@ -17,7 +18,7 @@ describe("NodeJS CRUD Tests", function() {
         const database = await getTestDatabase("Validate Container CRUD");
 
         // create a container
-        const containerDefinition: ContainerDefinition = {
+        const containerDefinition: ContainerCreateRequest = {
           id: "sample container",
           indexingPolicy: { indexingMode: IndexingMode.consistent },
           throughput: 400

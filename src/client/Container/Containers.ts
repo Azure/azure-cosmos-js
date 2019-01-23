@@ -6,6 +6,7 @@ import { FeedOptions, RequestOptions } from "../../request";
 import { Database } from "../Database";
 import { Resource } from "../Resource";
 import { Container } from "./Container";
+import { ContainerCreateRequest } from "./ContainerCreateRequest";
 import { ContainerDefinition } from "./ContainerDefinition";
 import { ContainerResponse } from "./ContainerResponse";
 
@@ -89,7 +90,7 @@ export class Containers {
    * @param body Represents the body of the container.
    * @param options Use to set options like response page size, continuation tokens, etc.
    */
-  public async create(body: ContainerDefinition, options?: RequestOptions): Promise<ContainerResponse> {
+  public async create(body: ContainerCreateRequest, options?: RequestOptions): Promise<ContainerResponse> {
     const err = {};
     if (!isResourceValid(body, err)) {
       throw err;
@@ -103,7 +104,7 @@ export class Containers {
       delete body.throughput;
     }
 
-    const response = await this.clientContext.create<ContainerDefinition>(
+    const response = await this.clientContext.create<ContainerCreateRequest>(
       body,
       path,
       ResourceType.container,
@@ -139,7 +140,7 @@ export class Containers {
    * @param body Represents the body of the container.
    * @param options Use to set options like response page size, continuation tokens, etc.
    */
-  public async createIfNotExists(body: ContainerDefinition, options?: RequestOptions): Promise<ContainerResponse> {
+  public async createIfNotExists(body: ContainerCreateRequest, options?: RequestOptions): Promise<ContainerResponse> {
     if (!body || body.id === null || body.id === undefined) {
       throw new Error("body parameter must be an object with an id property");
     }
