@@ -1,5 +1,4 @@
 /// <reference lib="esnext.asynciterable" />
-import { ItemDefinition, Resource } from "./client";
 import { ClientContext } from "./ClientContext";
 import {
   FetchFunctionCallback,
@@ -16,7 +15,7 @@ import { Response } from "./request/request";
  * traversal and iterating over the response
  * in the Azure Cosmos DB database service.
  */
-export class QueryIterator<T = Resource & ItemDefinition> {
+export class QueryIterator<T> {
   private toArrayTempResources: T[]; // TODO
   private toArrayLastResHeaders: IHeaders;
   private queryExecutionContext: IExecutionContext;
