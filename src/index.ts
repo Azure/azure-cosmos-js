@@ -1,4 +1,6 @@
+
 export { extractPartitionKey } from "./extractPartitionKey";
+export { setAuthorizationTokenHeaderUsingMasterKey } from "./auth";
 export {
   ConnectionMode,
   ConsistencyLevel,
