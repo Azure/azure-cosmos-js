@@ -1,6 +1,6 @@
 import { ContainerDefinition } from "./ContainerDefinition";
 
-export interface ContainerCreateRequest extends ContainerDefinition {
+export interface ContainerRequest extends ContainerDefinition {
   /** Throughput for this container. */
   throughput?: number;
 }

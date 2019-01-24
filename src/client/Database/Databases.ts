@@ -7,7 +7,7 @@ import { QueryIterator } from "../../queryIterator";
 import { FeedOptions, RequestOptions } from "../../request";
 import { Resource } from "../Resource";
 import { Database } from "./Database";
-import { DatabaseCreateRequest } from "./DatabaseCreateRequest";
+import { DatabaseRequest } from "./DatabaseRequest";
 import { DatabaseDefinition } from "./DatabaseDefinition";
 import { DatabaseResponse } from "./DatabaseResponse";
 
@@ -90,7 +90,7 @@ export class Databases {
    * @param body The {@link DatabaseDefinition} that represents the {@link Database} to be created.
    * @param options Use to set options like response page size, continuation tokens, etc.
    */
-  public async create(body: DatabaseCreateRequest, options?: RequestOptions): Promise<DatabaseResponse> {
+  public async create(body: DatabaseRequest, options?: RequestOptions): Promise<DatabaseResponse> {
     const err = {};
     if (!isResourceValid(body, err)) {
       throw err;
@@ -104,7 +104,7 @@ export class Databases {
     }
 
     const path = "/dbs"; // TODO: constant
-    const response = await this.clientContext.create<DatabaseCreateRequest>(
+    const response = await this.clientContext.create<DatabaseRequest>(
       body,
       path,
       ResourceType.database,
@@ -136,7 +136,7 @@ export class Databases {
    * @param body The {@link DatabaseDefinition} that represents the {@link Database} to be created.
    * @param options
    */
-  public async createIfNotExists(body: DatabaseCreateRequest, options?: RequestOptions): Promise<DatabaseResponse> {
+  public async createIfNotExists(body: DatabaseRequest, options?: RequestOptions): Promise<DatabaseResponse> {
     if (!body || body.id === null || body.id === undefined) {
       throw new Error("body parameter must be an object with an id property");
     }
