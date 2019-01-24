@@ -6,8 +6,8 @@ import { FeedOptions, RequestOptions } from "../../request";
 import { Database } from "../Database";
 import { Resource } from "../Resource";
 import { Container } from "./Container";
-import { ContainerRequest } from "./ContainerRequest";
 import { ContainerDefinition } from "./ContainerDefinition";
+import { ContainerRequest } from "./ContainerRequest";
 import { ContainerResponse } from "./ContainerResponse";
 
 /**

@@ -7,8 +7,8 @@ import { QueryIterator } from "../../queryIterator";
 import { FeedOptions, RequestOptions } from "../../request";
 import { Resource } from "../Resource";
 import { Database } from "./Database";
-import { DatabaseRequest } from "./DatabaseRequest";
 import { DatabaseDefinition } from "./DatabaseDefinition";
+import { DatabaseRequest } from "./DatabaseRequest";
 import { DatabaseResponse } from "./DatabaseResponse";
 
 /**
