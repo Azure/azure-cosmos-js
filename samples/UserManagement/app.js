@@ -7,7 +7,7 @@ console.log("USER MANAGEMENT");
 console.log("================");
 console.log();
 
-const cosmos = require("../../lib/");
+const cosmos = require("../../lib/src");
 const CosmosClient = cosmos.CosmosClient;
 const config = require("../Shared/config");
 const databaseId = config.names.database;

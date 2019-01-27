@@ -8,7 +8,7 @@ console.log("INDEX MANAGEMENT");
 console.log("================");
 console.log();
 
-const cosmos = require("../../lib/");
+const cosmos = require("../../lib/src");
 const CosmosClient = cosmos.CosmosClient;
 const config = require("../Shared/config");
 const fs = require("fs");
@@ -518,7 +518,7 @@ async function sleep(timeMS) {
  * To figure out the progress of and index transform,
   do a container read and check the header property of the response.
   The headers container includes a header that indicates progress between 0 and 100
- * @param {cosmos.Container} container 
+ * @param {cosmos.Container} container
  */
 async function waitForIndexTransformToComplete(container) {
   // To figure out the progress of and index transform,
