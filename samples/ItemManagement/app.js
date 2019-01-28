@@ -1,4 +1,4 @@
-// @ts-check
+﻿// @ts-check
 
 console.log();
 console.log("Azure Cosmos DB Node.js Samples");
@@ -47,21 +47,15 @@ async function run() {
 
   //1.
   console.log(`\n1. insert items in to database '${databaseId}' and container '${containerId}'`);
-  const itemDefs = getItemDefinitions();
-  const p = [];
-  for (const itemDef of itemDefs) {
-    p.push(container.items.create(itemDef));
-  }
-  await Promise.all(p);
-  console.log(itemDefs.length + " items created");
+  const promises = getItemDefinitions().map(itemDef => container.items.create(itemDef));
+  const items = await Promise.all(promises);
+  console.log(`${items.length} items created`);
 
   //2.
   console.log(`\n2. list items in container '${container.id}'`);
   const { result: itemDefList } = await container.items.readAll().toArray();
 
-  for (const itemDef of itemDefList) {
-    console.log(itemDef.id);
-  }
+  itemDefList.forEach(({ id }) => console.log(id));
 
   //3.1
   const item = container.item(itemDefList[0].id);
