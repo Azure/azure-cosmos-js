@@ -141,8 +141,8 @@ async function init() {
 }
 
 async function handleError(error) {
-  console.log("\nAn error with code '" + error.code + "' has occurred:");
-  console.log("\t" + error);
+  console.log(`\nAn error with code '${error.code}' has occurred:`);
+  console.log(`\t${error}`);
 }
 
 async function finish(container) {

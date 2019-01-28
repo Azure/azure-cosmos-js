@@ -1,4 +1,4 @@
-﻿// @ts-check
+// @ts-check
 
 console.log();
 console.log("Azure Cosmos DB Node.js Samples");
@@ -46,7 +46,7 @@ async function run() {
   const { container, database } = await init();
 
   //1.
-  console.log("\n1. insert items in to database '" + databaseId + "' and container '" + containerId + "'");
+  console.log(`\n1. insert items in to database '${databaseId}' and container '${containerId}'`);
   const itemDefs = getItemDefinitions();
   const p = [];
   for (const itemDef of itemDefs) {
@@ -56,7 +56,7 @@ async function run() {
   console.log(itemDefs.length + " items created");
 
   //2.
-  console.log("\n2. list items in container '" + container.id + "'");
+  console.log(`\n2. list items in container '${container.id}'`);
   const { result: itemDefList } = await container.items.readAll().toArray();
 
   for (const itemDef of itemDefList) {
@@ -65,9 +65,9 @@ async function run() {
 
   //3.1
   const item = container.item(itemDefList[0].id);
-  console.log("\n3.1 read item '" + item.id + "'");
+  console.log(`\n3.1 read item '${item.id}'`);
   const { body: readDoc } = await item.read();
-  console.log("item with id '" + item.id + "' found");
+  console.log(`item with id '${item.id}' found`);
 
   //3.2
   console.log("\n3.2 read item with AccessCondition and no change to _etag");
@@ -104,7 +104,7 @@ async function run() {
     ]
   };
 
-  console.log("\n4. query items in container '" + container.id + "'");
+  console.log(`\n4. query items in container '${container.id}'`);
   const { result: results } = await container.items.query(querySpec).toArray();
 
   if (results.length == 0) {
@@ -114,8 +114,8 @@ async function run() {
   }
 
   const person = results[0];
-  console.log("The '" + person.id + "' family has lastName '" + person.lastName + "'");
-  console.log("The '" + person.id + "' family has " + person.children.length + " children '");
+  console.log(`The '${person.id}' family has lastName '${person.lastName}'`);
+  console.log(`The '${person.id}' family has ${person.children.length} children '`);
 
   //add a new child to this family, and change the family's lastName
   const childDef = {
@@ -129,11 +129,11 @@ async function run() {
   person.lastName = "Updated Family";
 
   //5.1
-  console.log("\n5.1 replace item with id '" + item.id + "'");
+  console.log(`\n5.1 replace item with id '${item.id}'`);
   const { body: updatedPerson } = await item.replace(person);
 
-  console.log("The '" + person.id + "' family has lastName '" + updatedPerson.lastName + "'");
-  console.log("The '" + person.id + "' family has " + updatedPerson.children.length + " children '");
+  console.log(`The '${person.id}' family has lastName '${updatedPerson.lastName}'`);
+  console.log(`The '${person.id}' family has ${updatedPerson.children.length} children '`);
 
   // 5.2
   console.log("\n5.2 trying to replace item when item has changed in the database");
@@ -190,7 +190,7 @@ async function init() {
 }
 
 async function handleError(error) {
-  console.log("\nAn error with code '" + error.code + "' has occurred:");
+  console.log(`\nAn error with code '${error.code}' has occurred:`);
   console.log("\t" + error.body || error);
 
   await finish();
