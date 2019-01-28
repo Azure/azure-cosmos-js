@@ -1,4 +1,4 @@
-﻿// @ts-check
+// @ts-check
 console.log();
 console.log("Azure Cosmos DB Node.js Samples");
 console.log("================================");
@@ -146,6 +146,7 @@ async function getResourceToken(container, permission) {
  * @param {cosmos.Permission} permission
  */
 async function attemptAdminOperations(container, user, permission) {
+  /** @type any */
   const resourceTokens = await getResourceToken(container, permission);
   const client = new CosmosClient({
     endpoint,
@@ -180,6 +181,7 @@ async function attemptAdminOperations(container, user, permission) {
  * @param {cosmos.Permission} permission
  */
 async function attemptWriteWithReadPermissionAsync(container, user, permission) {
+  /** @type any */
   const resourceTokens = await getResourceToken(container, permission);
   const client = new CosmosClient({
     endpoint,
