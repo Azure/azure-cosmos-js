@@ -30,8 +30,10 @@ describe("NodeJS CRUD Tests", function() {
         const container = database.container(containerDef.id);
         assert.equal(containerDefinition.id, containerDef.id);
         assert.equal("consistent", containerDef.indexingPolicy.indexingMode);
-        assert.equal(containerDef.partitionKey.kind, containerDefinition.partitionKey.kind);
-        assert.deepEqual(containerDef.partitionKey.paths, containerDefinition.partitionKey.paths);
+        if (containerDef.partitionKey) {
+          assert.equal(containerDef.partitionKey.kind, containerDefinition.partitionKey.kind);
+          assert.deepEqual(containerDef.partitionKey.paths, containerDefinition.partitionKey.paths);
+        }
         // read containers after creation
         const { result: containers } = await database.containers.readAll().toArray();
 
