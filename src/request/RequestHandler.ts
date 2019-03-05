@@ -21,8 +21,9 @@ export class RequestHandler {
     const response: any = await fetch("https://" + requestOptions.hostname + requestOptions.path, {
       method: requestOptions.method,
       headers: requestOptions.headers as any,
+      agent: requestOptions.agent,
       ...(body && { body })
-    });
+    } as any);
 
     const result = response.status === 204 ? null : await response.json();
 
