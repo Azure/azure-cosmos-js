@@ -1,3 +1,4 @@
+import fetch from "cross-fetch";
 import { Agent, OutgoingHttpHeaders } from "http";
 import { RequestOptions } from "https"; // TYPES ONLY
 import * as querystring from "querystring";
@@ -5,6 +6,7 @@ import { ConnectionPolicy } from "../documents";
 import { GlobalEndpointManager } from "../globalEndpointManager";
 import { Constants, IHeaders } from "../index";
 import * as RetryUtility from "../retry/retryUtility";
+import { ErrorResponse } from "./ErrorResponse";
 import { bodyFromData, createRequestObject, parse, Response } from "./request";
 import { RequestContext } from "./RequestContext";
 
@@ -15,12 +17,51 @@ export class RequestHandler {
     private connectionPolicy: ConnectionPolicy,
     private requestAgent: Agent
   ) {}
-  public static async createRequestObjectStub(
-    connectionPolicy: ConnectionPolicy,
-    requestOptions: RequestOptions,
-    body: Buffer
-  ) {
-    return createRequestObject(connectionPolicy, requestOptions, body);
+  public static async createRequestObjectStub(connectionPolicy: any, requestOptions: RequestOptions, body?: any) {
+    const response: any = await fetch("https://" + requestOptions.hostname + requestOptions.path, {
+      method: requestOptions.method,
+      headers: requestOptions.headers as any,
+      ...(body && { body })
+    });
+
+    const result = response.status === 204 ? null : await response.json();
+
+    const headers = {} as any;
+    response.headers.forEach((value: string, key: string) => {
+      headers[key] = value;
+    });
+
+    // TODO The SDK returns a entirely different object for errors. This is weird. Let's fix on SDK side
+    // TODO Also the gateway should not return a 400 for the initial query :/
+    if (response.status >= 400) {
+      const errorResponse: ErrorResponse = {
+        code: response.status,
+        // TODO Upstream code I can't change yet expects this as a string.
+        // So after parsing to JSON we convert it back to string if there is an error
+        // I am sorry
+        body: JSON.stringify(result),
+        headers
+      };
+
+      if (Constants.HttpHeaders.ActivityId in headers) {
+        errorResponse.activityId = headers[Constants.HttpHeaders.ActivityId];
+      }
+
+      if (Constants.HttpHeaders.SubStatus in headers) {
+        errorResponse.substatus = parseInt(headers[Constants.HttpHeaders.SubStatus], 10);
+      }
+
+      if (Constants.HttpHeaders.RetryAfterInMilliseconds in headers) {
+        errorResponse.retryAfterInMilliseconds = parseInt(headers[Constants.HttpHeaders.RetryAfterInMilliseconds], 10);
+      }
+
+      return Promise.reject(errorResponse);
+    }
+    return Promise.resolve({
+      headers,
+      result,
+      statusCode: response.status
+    });
   }
 
   /**
