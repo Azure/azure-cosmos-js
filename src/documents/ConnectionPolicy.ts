@@ -1,4 +1,4 @@
-import { RetryOptions } from "../retry";
+import { defaultRetryOptions, RetryOptions } from "../retry";
 import { ConnectionMode } from "./index";
 /**
  * Represents the Connection policy associated with a CosmosClient in the Azure Cosmos DB database service.
@@ -26,12 +26,12 @@ export interface ConnectionPolicy {
   UseMultipleWriteLocations?: boolean;
 }
 
-export const defaultConnectionPolicy: Readonly<ConnectionPolicy> = Object.freeze({
+export const defaultConnectionPolicy = Object.freeze({
   ConnectionMode: ConnectionMode.Gateway,
   RequestTimeout: 60000,
   EnableEndpointDiscovery: true,
   PreferredLocations: [],
-  RetryOptions: new RetryOptions(),
+  RetryOptions: defaultRetryOptions,
   DisableSSLVerification: false,
   UseMultipleWriteLocations: false
 });
