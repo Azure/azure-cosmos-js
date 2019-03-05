@@ -7,7 +7,7 @@ import { GlobalEndpointManager } from "../globalEndpointManager";
 import { Constants, IHeaders } from "../index";
 import * as RetryUtility from "../retry/retryUtility";
 import { ErrorResponse } from "./ErrorResponse";
-import { bodyFromData, createRequestObject, parse, Response } from "./request";
+import { bodyFromData, parse, Response } from "./request";
 import { RequestContext } from "./RequestContext";
 
 /** @hidden */

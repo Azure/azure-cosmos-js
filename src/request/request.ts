@@ -1,11 +1,8 @@
 import http from "http";
-import https from "https";
-import { Socket } from "net";
 import { Stream } from "stream";
 import * as url from "url";
 
 import { Constants, HTTPMethod, jsonStringifyAndEscapeNonASCII, ResourceType } from "../common";
-import { ConnectionPolicy, MediaReadMode } from "../documents";
 import { IHeaders } from "../queryExecutionContext";
 
 import { ErrorResponse } from "./ErrorResponse";
@@ -49,60 +46,6 @@ export function bodyFromData(data: Stream | Buffer | string | object) {
 /** @hidden */
 export function parse(urlString: string) {
   return url.parse(urlString);
-}
-
-/** @hidden */
-export function createRequestObject(
-  connectionPolicy: ConnectionPolicy,
-  requestOptions: https.RequestOptions,
-  body: Buffer
-): Promise<Response<any>> {
-  return new Promise<Response<any>>((resolve, reject) => {
-    function onTimeout() {
-      httpsRequest.abort();
-    }
-
-    const httpsRequest: http.ClientRequest = https.request(requestOptions, (response: http.IncomingMessage) => {
-      let data = "";
-      response.setEncoding("utf8");
-
-      response.on("data", (chunk: any) => {
-        data += chunk;
-      });
-      response.on("end", () => {
-        if (response.statusCode >= 400) {
-          return reject(getErrorBody(response, data, response.headers as IHeaders));
-        }
-
-        let result;
-        try {
-          result = data.length > 0 ? JSON.parse(data) : undefined;
-        } catch (exception) {
-          return reject(exception);
-        }
-
-        resolve({ result, headers: response.headers as IHeaders, statusCode: response.statusCode });
-      });
-    });
-
-    httpsRequest.once("socket", (socket: Socket) => {
-      socket.setTimeout(connectionPolicy.RequestTimeout);
-      socket.once("timeout", onTimeout);
-
-      httpsRequest.once("response", () => {
-        socket.removeListener("timeout", onTimeout);
-      });
-    });
-
-    httpsRequest.once("error", reject);
-
-    if (body) {
-      httpsRequest.write(body);
-      httpsRequest.end();
-    } else {
-      httpsRequest.end();
-    }
-  });
 }
 
 /**
