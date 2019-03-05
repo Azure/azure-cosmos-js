@@ -5,7 +5,7 @@ import { ContainerRequest } from "../../client/Container/ContainerRequest";
 import { DataType, Index, IndexedPath, IndexingMode, IndexingPolicy, IndexKind } from "../../documents";
 import { getTestDatabase, removeAllDatabases } from "../common/TestHelpers";
 
-describe.only("NodeJS CRUD Tests", function() {
+describe("NodeJS CRUD Tests", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 10000);
   beforeEach(async function() {
     await removeAllDatabases();
