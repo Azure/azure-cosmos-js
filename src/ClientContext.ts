@@ -4,7 +4,6 @@ import {
   getIdFromLink,
   getPathFromLink,
   HTTPMethod,
-  parseConnectionPolicy,
   parseLink,
   ResourceType,
   setIsUpsertHeader,
@@ -43,7 +42,7 @@ export class ClientContext {
     private cosmosClientOptions: CosmosClientOptions,
     private globalEndpointManager: GlobalEndpointManager
   ) {
-    this.connectionPolicy = parseConnectionPolicy(cosmosClientOptions.connectionPolicy);
+    this.connectionPolicy = cosmosClientOptions.connectionPolicy;
     this.sessionContainer = new SessionContainer();
     this.requestHandler = new RequestHandler(
       globalEndpointManager,

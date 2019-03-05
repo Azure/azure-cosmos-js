@@ -1,5 +1,5 @@
 import { CosmosClientOptions } from "../../CosmosClientOptions";
-import { ConnectionPolicy, DatabaseAccount, Location } from "../../documents";
+import { ConnectionPolicy, DatabaseAccount, Location, defaultConnectionPolicy } from "../../documents";
 import { LocationCache } from "../../LocationCache";
 
 import * as assert from "assert";
@@ -21,7 +21,7 @@ function getEndpointFromRegion(regionName?: string) {
 }
 
 function addScenario(options?: { numberOfRegions?: number; useMultipleWriteLocations?: boolean }) {
-  const connectionPolicy = new ConnectionPolicy();
+  const connectionPolicy: ConnectionPolicy = defaultConnectionPolicy;
   const databaseAccountConfig: {
     writableLocations?: Location[];
     readableLocations?: Location[];

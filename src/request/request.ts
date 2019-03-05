@@ -5,7 +5,7 @@ import { Stream } from "stream";
 import * as url from "url";
 
 import { Constants, HTTPMethod, jsonStringifyAndEscapeNonASCII, ResourceType } from "../common";
-import { ConnectionPolicy, MediaReadMode } from "../documents";
+import { ConnectionPolicy } from "../documents";
 import { IHeaders } from "../queryExecutionContext";
 
 import { ErrorResponse } from "./ErrorResponse";

@@ -1,11 +1,9 @@
-import { Agent, AgentOptions } from "https";
-import * as url from "url";
 import { Database, Databases } from "./client/Database";
 import { Offer, Offers } from "./client/Offer";
 import { ClientContext } from "./ClientContext";
-import { Constants, getPlatformDefaultHeaders, getUserAgent, parseConnectionPolicy } from "./common";
+import { Constants, getPlatformDefaultHeaders, getUserAgent } from "./common";
 import { CosmosClientOptions } from "./CosmosClientOptions";
-import { DatabaseAccount } from "./documents";
+import { DatabaseAccount, defaultConnectionPolicy } from "./documents";
 import { GlobalEndpointManager } from "./globalEndpointManager";
 import { CosmosResponse, RequestOptions } from "./request";
 
@@ -58,7 +56,7 @@ export class CosmosClient {
       options.auth.key = options.key;
     }
 
-    options.connectionPolicy = parseConnectionPolicy(options.connectionPolicy);
+    options.connectionPolicy = { ...defaultConnectionPolicy, ...options.connectionPolicy };
 
     options.defaultHeaders = options.defaultHeaders || {};
     options.defaultHeaders[Constants.HttpHeaders.CacheControl] = "no-cache";
