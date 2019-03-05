@@ -12,7 +12,7 @@ export interface ConnectionPolicy {
   EnableEndpointDiscovery?: boolean;
   /** List of azure regions to be used as preferred locations for read requests. */
   PreferredLocations?: string[];
-  /** RetryOptions instance which defines several configurable properties used during retry. */
+  /** RetryOptions object which defines several configurable properties used during retry. */
   RetryOptions?: RetryOptions;
   /**
    * Flag to disable SSL verification for the requests. SSL verification is enabled by default. Don't set this when targeting production endpoints.
