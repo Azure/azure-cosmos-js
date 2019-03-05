@@ -26,7 +26,7 @@ export interface ConnectionPolicy {
   UseMultipleWriteLocations?: boolean;
 }
 
-export const defaultConnectionPolicy: ConnectionPolicy = {
+export const defaultConnectionPolicy: ConnectionPolicy = Object.freeze({
   ConnectionMode: ConnectionMode.Gateway,
   RequestTimeout: 60000,
   EnableEndpointDiscovery: true,
@@ -34,4 +34,4 @@ export const defaultConnectionPolicy: ConnectionPolicy = {
   RetryOptions: new RetryOptions(),
   DisableSSLVerification: false,
   UseMultipleWriteLocations: false
-};
+});

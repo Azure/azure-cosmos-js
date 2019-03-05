@@ -69,7 +69,7 @@ addScenario({ numberOfRegions: 2, useMultipleWriteLocations: true });
 addScenario({ numberOfRegions: 3, useMultipleWriteLocations: true });
 addScenario({ numberOfRegions: 5, useMultipleWriteLocations: true });
 
-describe.only("Location Cache", function() {
+describe("Location Cache", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 2000);
   for (const scenario of scenarios) {
     describe(`when there is a DatabaseAccount refresh and ${
