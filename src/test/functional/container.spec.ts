@@ -187,11 +187,7 @@ describe("NodeJS CRUD Tests", function() {
       const { body: lazyContainerDef } = await database.containers.create(lazyContainerDefinition);
       const lazyContainer = database.container(lazyContainerDef.id);
 
-      assert.equal(
-        lazyContainerDef.indexingPolicy.indexingMode,
-        IndexingMode.lazy,
-        "indexing mode should be lazy"
-      );
+      assert.equal(lazyContainerDef.indexingPolicy.indexingMode, IndexingMode.lazy, "indexing mode should be lazy");
 
       await lazyContainer.delete();
 
@@ -257,10 +253,7 @@ describe("NodeJS CRUD Tests", function() {
       assert.equal("/", containerWithIndexingPolicyDef.indexingPolicy.includedPaths[0].path);
       // Backend adds a default index
       assert(containerWithIndexingPolicyDef.indexingPolicy.includedPaths[0].indexes.length > 1);
-      assert.equal(
-        IndexKind.Range,
-        containerWithIndexingPolicyDef.indexingPolicy.includedPaths[0].indexes[0].kind
-      );
+      assert.equal(IndexKind.Range, containerWithIndexingPolicyDef.indexingPolicy.includedPaths[0].indexes[0].kind);
       // The second included path is a timestamp index created by the server.
 
       // And two excluded paths.
