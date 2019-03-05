@@ -1,5 +1,5 @@
 import { CosmosClientOptions } from "../../CosmosClientOptions";
-import { ConnectionPolicy, DatabaseAccount, Location, defaultConnectionPolicy } from "../../documents";
+import { ConnectionPolicy, DatabaseAccount, defaultConnectionPolicy, Location } from "../../documents";
 import { LocationCache } from "../../LocationCache";
 
 import * as assert from "assert";
