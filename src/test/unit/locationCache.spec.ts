@@ -21,7 +21,7 @@ function getEndpointFromRegion(regionName?: string) {
 }
 
 function addScenario(options?: { numberOfRegions?: number; useMultipleWriteLocations?: boolean }) {
-  const connectionPolicy: ConnectionPolicy = defaultConnectionPolicy;
+  const connectionPolicy: ConnectionPolicy = Object.assign({}, defaultConnectionPolicy);
   const databaseAccountConfig: {
     writableLocations?: Location[];
     readableLocations?: Location[];
@@ -69,7 +69,7 @@ addScenario({ numberOfRegions: 2, useMultipleWriteLocations: true });
 addScenario({ numberOfRegions: 3, useMultipleWriteLocations: true });
 addScenario({ numberOfRegions: 5, useMultipleWriteLocations: true });
 
-describe("Location Cache", function() {
+describe.only("Location Cache", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 2000);
   for (const scenario of scenarios) {
     describe(`when there is a DatabaseAccount refresh and ${

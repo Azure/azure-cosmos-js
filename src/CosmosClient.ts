@@ -56,7 +56,7 @@ export class CosmosClient {
       options.auth.key = options.key;
     }
 
-    options.connectionPolicy = { ...defaultConnectionPolicy, ...options.connectionPolicy };
+    options.connectionPolicy = Object.assign({}, defaultConnectionPolicy, options.connectionPolicy);
 
     options.defaultHeaders = options.defaultHeaders || {};
     options.defaultHeaders[Constants.HttpHeaders.CacheControl] = "no-cache";
