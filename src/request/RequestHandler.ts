@@ -31,14 +31,11 @@ export class RequestHandler {
       headers[key] = value;
     });
 
-    // TODO The SDK returns a entirely different object for errors. This is weird. Let's fix on SDK side
-    // TODO Also the gateway should not return a 400 for the initial query :/
     if (response.status >= 400) {
       const errorResponse: ErrorResponse = {
         code: response.status,
-        // TODO Upstream code I can't change yet expects this as a string.
+        // TODO Upstream code expects this as a string.
         // So after parsing to JSON we convert it back to string if there is an error
-        // I am sorry
         body: JSON.stringify(result),
         headers
       };
