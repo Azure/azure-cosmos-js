@@ -22,8 +22,9 @@ export class RequestHandler {
       method: requestOptions.method,
       headers: requestOptions.headers as any,
       agent: requestOptions.agent,
+      timeout: requestOptions.timeout,
       ...(body && { body })
-    } as any);
+    } as any); // TODO Remove any. Upstream issue https://github.com/lquixada/cross-fetch/issues/42
 
     const result = response.status === 204 ? null : await response.json();
 
