@@ -9,7 +9,7 @@ export interface ConnectionPolicy {
   /** Request timeout (time to wait for response from network peer). Represented in milliseconds. */
   RequestTimeout?: number;
   /** Flag to enable/disable automatic redirecting of requests based on read/write operations. */
-  EnableEndpointDiscovery?: true;
+  EnableEndpointDiscovery?: boolean;
   /** List of azure regions to be used as preferred locations for read requests. */
   PreferredLocations?: string[];
   /** RetryOptions instance which defines several configurable properties used during retry. */
@@ -26,7 +26,7 @@ export interface ConnectionPolicy {
   UseMultipleWriteLocations?: boolean;
 }
 
-export const defaultConnectionPolicy: ConnectionPolicy = Object.freeze({
+export const defaultConnectionPolicy: Readonly<ConnectionPolicy> = Object.freeze({
   ConnectionMode: ConnectionMode.Gateway,
   RequestTimeout: 60000,
   EnableEndpointDiscovery: true,
