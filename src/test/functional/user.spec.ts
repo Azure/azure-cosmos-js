@@ -13,7 +13,7 @@ describe("NodeJS CRUD Tests", function() {
       const database = await getTestDatabase("Validate user CRUD");
 
       // list users
-      const { resources: users } = await database.users.readAll().toArray();
+      const { resources: users } = await database.users.readAll().fetchAll();
       assert.equal(users.constructor, Array, "Value should be an array");
       const beforeCreateCount = users.length;
 
@@ -23,7 +23,7 @@ describe("NodeJS CRUD Tests", function() {
       let user = database.user(userDef.id);
 
       // list users after creation
-      const { resources: usersAfterCreation } = await database.users.readAll().toArray();
+      const { resources: usersAfterCreation } = await database.users.readAll().fetchAll();
       assert.equal(usersAfterCreation.length, beforeCreateCount + 1);
 
       // query users
@@ -36,7 +36,7 @@ describe("NodeJS CRUD Tests", function() {
           }
         ]
       };
-      const { resources: results } = await database.users.query(querySpec).toArray();
+      const { resources: results } = await database.users.query(querySpec).fetchAll();
       assert(results.length > 0, "number of results for the query should be > 0");
 
       // replace user

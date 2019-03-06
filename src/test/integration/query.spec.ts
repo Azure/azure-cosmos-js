@@ -35,7 +35,7 @@ describe("ResourceLink Trimming of leading and trailing slashes", function() {
     const queryOptions = { partitionKey: "pk" };
     const queryIterator = container.items.query(query, queryOptions);
 
-    const { resources } = await queryIterator.toArray();
+    const { resources } = await queryIterator.fetchAll();
     assert.equal(resources[0]["id"], "myId");
   });
 });
@@ -64,7 +64,7 @@ describe("Test Query Metrics On Single Partition Collection", function() {
       const queryIterator = createdContainer.items.query(query, queryOptions);
 
       while (queryIterator.hasMoreResults()) {
-        const { resources: results, queryMetrics } = await queryIterator.executeNext();
+        const { resources: results, queryMetrics } = await queryIterator.fetchNext();
 
         if (results === undefined) {
           // no more results

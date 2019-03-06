@@ -240,7 +240,7 @@ describe("NodeJS CRUD Tests", function() {
       // the upserted Item should be gone now after 10 secs from the last write(upsert) of the Item
       await checkItemGone(container, upsertedItem);
       const query = "SELECT * FROM root r";
-      const { resources: results } = await container.items.query(query).toArray();
+      const { resources: results } = await container.items.query(query).fetchAll();
       assert.equal(results.length, 0);
 
       // Use a container definition without defaultTtl to disable ttl at container level

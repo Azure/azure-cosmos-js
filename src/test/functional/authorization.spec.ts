@@ -14,19 +14,19 @@ describe("NodeJS CRUD Tests", function() {
     it("should handle all the key options", async function() {
       const clientOptionsKey = new CosmosClient({ endpoint, key: masterKey });
       assert(
-        undefined !== (await clientOptionsKey.databases.readAll().toArray()),
+        undefined !== (await clientOptionsKey.databases.readAll().fetchAll()),
         "Should be able to fetch list of databases"
       );
 
       const clientOptionsAuthKey = new CosmosClient({ endpoint, auth: { key: masterKey } });
       assert(
-        undefined !== (await clientOptionsAuthKey.databases.readAll().toArray()),
+        undefined !== (await clientOptionsAuthKey.databases.readAll().fetchAll()),
         "Should be able to fetch list of databases"
       );
 
       const clientOptionsAuthMasterKey = new CosmosClient({ endpoint, auth: { masterKey } });
       assert(
-        undefined !== (await clientOptionsAuthMasterKey.databases.readAll().toArray()),
+        undefined !== (await clientOptionsAuthMasterKey.databases.readAll().fetchAll()),
         "Should be able to fetch list of databases"
       );
     });
@@ -111,7 +111,7 @@ describe("NodeJS CRUD Tests", function() {
     const authorizationCRUDTest = async function(isUpsertTest: boolean) {
       try {
         const badclient = new CosmosClient({ endpoint, auth: undefined });
-        const { resources: databases } = await badclient.databases.readAll().toArray();
+        const { resources: databases } = await badclient.databases.readAll().fetchAll();
         assert.fail("Must fail");
       } catch (err) {
         assert(err !== undefined, "error should not be undefined");
@@ -152,7 +152,7 @@ describe("NodeJS CRUD Tests", function() {
         .database(entities.database.id)
         .container(entities.coll1.id)
         .items.readAll()
-        .toArray();
+        .fetchAll();
       assert(successDocuments !== undefined, "error reading documents");
       assert.equal(successDocuments.length, 2, "Expected 2 Documents to be succesfully read");
 

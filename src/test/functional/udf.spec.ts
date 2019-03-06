@@ -25,7 +25,7 @@ describe("NodeJS CRUD Tests", function() {
       container = createPrivateContainer(await database.container(containerId));
     });
     it("nativeApi Should do UDF CRUD operations successfully", async function() {
-      const { resources: udfs } = await container.userDefinedFunctions.readAll().toArray();
+      const { resources: udfs } = await container.userDefinedFunctions.readAll().fetchAll();
 
       // create a udf
       const beforeCreateUdfsCount = udfs.length;
@@ -41,7 +41,7 @@ describe("NodeJS CRUD Tests", function() {
       assert.equal(udf.body, "function () { const x = 10; }");
 
       // read udfs after creation
-      const { resources: udfsAfterCreate } = await container.userDefinedFunctions.readAll().toArray();
+      const { resources: udfsAfterCreate } = await container.userDefinedFunctions.readAll().fetchAll();
       assert.equal(udfsAfterCreate.length, beforeCreateUdfsCount + 1, "create should increase the number of udfs");
 
       // query udfs
@@ -54,7 +54,7 @@ describe("NodeJS CRUD Tests", function() {
           }
         ]
       };
-      const { resources: results } = await container.userDefinedFunctions.query(querySpec).toArray();
+      const { resources: results } = await container.userDefinedFunctions.query(querySpec).fetchAll();
       assert(results.length > 0, "number of results for the query should be > 0");
 
       // replace udf
@@ -83,7 +83,7 @@ describe("NodeJS CRUD Tests", function() {
     });
 
     it("nativeApi Should do UDF CRUD operations successfully", async function() {
-      const { resources: udfs } = await container.userDefinedFunctions.readAll().toArray();
+      const { resources: udfs } = await container.userDefinedFunctions.readAll().fetchAll();
 
       // create a udf
       const beforeCreateUdfsCount = udfs.length;
@@ -98,7 +98,7 @@ describe("NodeJS CRUD Tests", function() {
       assert.equal(udf.body, "function () { const x = 10; }");
 
       // read udfs after creation
-      const { resources: udfsAfterCreate } = await container.userDefinedFunctions.readAll().toArray();
+      const { resources: udfsAfterCreate } = await container.userDefinedFunctions.readAll().fetchAll();
       assert.equal(udfsAfterCreate.length, beforeCreateUdfsCount + 1, "create should increase the number of udfs");
 
       // query udfs
@@ -111,7 +111,7 @@ describe("NodeJS CRUD Tests", function() {
           }
         ]
       };
-      const { resources: results } = await container.userDefinedFunctions.query(querySpec).toArray();
+      const { resources: results } = await container.userDefinedFunctions.query(querySpec).fetchAll();
       assert(results.length > 0, "number of results for the query should be > 0");
 
       // replace udf

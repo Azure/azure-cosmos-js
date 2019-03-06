@@ -37,7 +37,7 @@ describe("NodeJS CRUD Tests", function() {
           assert.deepEqual(containerDef.partitionKey.paths, containerDefinition.partitionKey.paths);
         }
         // read containers after creation
-        const { resources: containers } = await database.containers.readAll().toArray();
+        const { resources: containers } = await database.containers.readAll().fetchAll();
 
         assert.equal(containers.length, 1, "create should increase the number of containers");
         // query containers
@@ -50,10 +50,10 @@ describe("NodeJS CRUD Tests", function() {
             }
           ]
         };
-        const { resources: results } = await database.containers.query(querySpec).toArray();
+        const { resources: results } = await database.containers.query(querySpec).fetchAll();
         assert(results.length > 0, "number of results for the query should be > 0");
 
-        const { resources: ranges } = await container.readPartitionKeyRanges().toArray();
+        const { resources: ranges } = await container.readPartitionKeyRanges().fetchAll();
         assert(ranges.length > 0, "container should have at least 1 partition");
 
         // Replacing indexing policy is allowed.

@@ -41,7 +41,7 @@ describe("NodeJS CRUD Tests", function() {
       );
       assert.equal(collectionSize, 10 * mbInBytes, "Collection size is unexpected");
 
-      const { resources: offers } = await client.offers.readAll().toArray();
+      const { resources: offers } = await client.offers.readAll().fetchAll();
       assert.equal(offers.length, 1);
       const expectedOffer = offers[0];
       assert.equal(
@@ -70,7 +70,7 @@ describe("NodeJS CRUD Tests", function() {
           }
         ]
       };
-      const { resources: offers2 } = await client.offers.query(querySpec).toArray();
+      const { resources: offers2 } = await client.offers.query(querySpec).fetchAll();
       assert.equal(offers2.length, 1);
       const oneOffer = offers2[0];
       validateOfferResponseBody(oneOffer);
@@ -88,7 +88,7 @@ describe("NodeJS CRUD Tests", function() {
 
     it("nativeApi Should do offer replace operations successfully name based", async function() {
       const container = await getTestContainer("Validate Offer CRUD");
-      const { resources: offers } = await client.offers.readAll().toArray();
+      const { resources: offers } = await client.offers.readAll().fetchAll();
       assert.equal(offers.length, 1);
       const expectedOffer = offers[0];
       validateOfferResponseBody(expectedOffer);

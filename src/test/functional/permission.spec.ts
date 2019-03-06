@@ -23,7 +23,7 @@ describe("NodeJS CRUD Tests", function() {
         const { resource: userDef } = await container.database.users.create({ id: "new user" });
         const user = container.database.user(userDef.id);
         // list permissions
-        const { resources: permissions } = await user.permissions.readAll().toArray();
+        const { resources: permissions } = await user.permissions.readAll().fetchAll();
         assert.equal(permissions.constructor, Array, "Value should be an array");
         const beforeCreateCount = permissions.length;
         const permissionDef: PermissionDefinition = {
@@ -43,7 +43,7 @@ describe("NodeJS CRUD Tests", function() {
         assert.equal(createdPermission.id, "new permission", "permission name error");
 
         // list permissions after creation
-        const { resources: permissionsAfterCreation } = await user.permissions.readAll().toArray();
+        const { resources: permissionsAfterCreation } = await user.permissions.readAll().fetchAll();
         assert.equal(permissionsAfterCreation.length, beforeCreateCount + 1);
 
         // query permissions
@@ -56,7 +56,7 @@ describe("NodeJS CRUD Tests", function() {
             }
           ]
         };
-        const { resources: results } = await user.permissions.query(querySpec).toArray();
+        const { resources: results } = await user.permissions.query(querySpec).fetchAll();
         assert(results.length > 0, "number of results for the query should be > 0");
 
         permissionDef.permissionMode = PermissionMode.All;
@@ -116,7 +116,7 @@ describe("NodeJS CRUD Tests", function() {
         const user = container.database.user(userDef.id);
 
         // list permissions
-        const { resources: permissions } = await user.permissions.readAll().toArray();
+        const { resources: permissions } = await user.permissions.readAll().fetchAll();
         assert(Array.isArray(permissions), "Value should be an array");
         const beforeCreateCount = permissions.length;
         const permissionDefinition = {
@@ -138,7 +138,7 @@ describe("NodeJS CRUD Tests", function() {
         );
 
         // list permissions after creation
-        const { resources: permissionsAfterCreation } = await user.permissions.readAll().toArray();
+        const { resources: permissionsAfterCreation } = await user.permissions.readAll().fetchAll();
         assert.equal(permissionsAfterCreation.length, beforeCreateCount + 1);
 
         // query permissions
@@ -151,7 +151,7 @@ describe("NodeJS CRUD Tests", function() {
             }
           ]
         };
-        const { resources: results } = await user.permissions.query(querySpec).toArray();
+        const { resources: results } = await user.permissions.query(querySpec).fetchAll();
         assert(results.length > 0, "number of results for the query should be > 0");
 
         // Replace permission

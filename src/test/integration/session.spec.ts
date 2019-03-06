@@ -229,7 +229,7 @@ describe("Session Token", function() {
       resourceAddress: container.url,
       resourceType: "docs"
     });
-    await queryIterator.toArray();
+    await queryIterator.fetchAll();
     assert.equal(postSpy.lastCall.args[3][Constants.HttpHeaders.SessionToken], queryToken);
 
     collRid2SessionToken = getCollection2TokenMap(sessionContainer);

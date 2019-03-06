@@ -16,8 +16,8 @@ import { FeedResponse } from "./request/FeedResponse";
  * in the Azure Cosmos DB database service.
  */
 export class QueryIterator<T> {
-  private toArrayTempResources: T[]; // TODO
-  private toArrayLastResHeaders: CosmosHeaders;
+  private fetchAllTempResources: T[]; // TODO
+  private fetchAllLastResHeaders: CosmosHeaders;
   private queryExecutionContext: IExecutionContext;
   /**
    * @hidden
@@ -123,19 +123,23 @@ export class QueryIterator<T> {
   }
 
   /**
-   * Retrieve all the elements of the feed and pass them as an array to a function
+   * Fetch all pages for the query and return a single FeedResponse.
    */
 
-  public async toArray(): Promise<FeedResponse<T>> {
+  public async fetchAll(): Promise<FeedResponse<T>> {
     this.reset();
-    this.toArrayTempResources = [];
+    this.fetchAllTempResources = [];
     return this.toArrayImplementation();
   }
 
   /**
-   * Retrieve the next batch of the feed and pass them as an array to a function
+   * Retrieve the next batch from the feed.
+   *
+   * This may or may not fetch more pages from the backend depending on your settings
+   * and the type of query. Aggregate queries will generally fetch all backend pages
+   * before returning the first batch of responses.
    */
-  public async executeNext(): Promise<FeedResponse<T>> {
+  public async fetchNext(): Promise<FeedResponse<T>> {
     const response = await this.queryExecutionContext.fetchMore();
     return new FeedResponse<T>(response.result, response.headers, this.queryExecutionContext.hasMoreResults());
   }
@@ -151,18 +155,18 @@ export class QueryIterator<T> {
     while (this.queryExecutionContext.hasMoreResults()) {
       const { result, headers } = await this.queryExecutionContext.nextItem();
       // concatinate the results and fetch more
-      this.toArrayLastResHeaders = headers;
+      this.fetchAllLastResHeaders = headers;
 
       if (result === undefined) {
         // no more results
         break;
       }
 
-      this.toArrayTempResources.push(result);
+      this.fetchAllTempResources.push(result);
     }
     return new FeedResponse(
-      this.toArrayTempResources,
-      this.toArrayLastResHeaders,
+      this.fetchAllTempResources,
+      this.fetchAllLastResHeaders,
       this.queryExecutionContext.hasMoreResults()
     );
   }

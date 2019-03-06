@@ -33,15 +33,15 @@ describe("NodeJS CRUD Tests", function() {
             }
           ]
         };
-        const { resources: results } = await client.databases.query(querySpec0).toArray();
+        const { resources: results } = await client.databases.query(querySpec0).fetchAll();
         assert(results.length > 0, "number of results for the query should be > 0");
         const querySpec1 = {
           query: "SELECT * FROM root r WHERE r.id='" + database.id + "'"
         };
-        const { resources: results2 } = await client.databases.query(querySpec1).toArray();
+        const { resources: results2 } = await client.databases.query(querySpec1).fetchAll();
         assert(results2.length > 0, "number of results for the query should be > 0");
         const querySpec2 = "SELECT * FROM root r WHERE r.id='" + database.id + "'";
-        const { resources: results3 } = await client.databases.query(querySpec2).toArray();
+        const { resources: results3 } = await client.databases.query(querySpec2).fetchAll();
         assert(results3.length > 0, "number of results for the query should be > 0");
       } catch (err) {
         throw err;
@@ -99,7 +99,7 @@ describe("NodeJS CRUD Tests", function() {
 
     const queryIteratorToArrayTest = async function() {
       const queryIterator = resources.container.items.readAll({ maxItemCount: 2 });
-      const { resources: docs } = await queryIterator.toArray();
+      const { resources: docs } = await queryIterator.fetchAll();
       assert.equal(docs.length, 3, "queryIterator should return all documents using continuation");
       assert.equal(docs[0].id, resources.doc1.id);
       assert.equal(docs[1].id, resources.doc2.id);
@@ -139,13 +139,13 @@ describe("NodeJS CRUD Tests", function() {
 
     const queryIteratorExecuteNextTest = async function() {
       let queryIterator = resources.container.items.readAll({ maxItemCount: 2 });
-      const firstResponse = await queryIterator.executeNext();
+      const firstResponse = await queryIterator.fetchNext();
 
       assert(firstResponse.requestCharge > 0, "RequestCharge has to be non-zero");
       assert.equal(firstResponse.resources.length, 2, "first batch size should be 2");
       assert.equal(firstResponse.resources[0].id, resources.doc1.id, "first batch first document should be doc1");
       assert.equal(firstResponse.resources[1].id, resources.doc2.id, "batch first second document should be doc2");
-      const { resources: docs2 } = await queryIterator.executeNext();
+      const { resources: docs2 } = await queryIterator.fetchNext();
       assert.equal(docs2.length, 1, "second batch size is unexpected");
       assert.equal(docs2[0].id, resources.doc3.id, "second batch element should be doc3");
 
@@ -154,7 +154,7 @@ describe("NodeJS CRUD Tests", function() {
         maxItemCount: 2,
         continuation: firstResponse.continuation as string
       });
-      const secondResponse = await queryIterator.executeNext();
+      const secondResponse = await queryIterator.fetchNext();
       assert(secondResponse.requestCharge > 0, "RequestCharge has to be non-zero");
       assert.equal(secondResponse.resources.length, 1, "second batch size with continuation token is unexpected");
       assert.equal(secondResponse.resources[0].id, resources.doc3.id, "second batch element should be doc3");

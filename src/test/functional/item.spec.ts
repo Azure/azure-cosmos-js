@@ -40,7 +40,7 @@ describe("NodeJS CRUD Tests", function() {
       const container: Container = database.container(containerdef.id);
 
       // read items
-      const { resources: items } = await container.items.readAll().toArray();
+      const { resources: items } = await container.items.readAll().fetchAll();
       assert(Array.isArray(items), "Value should be an array");
 
       // create an item
@@ -61,7 +61,7 @@ describe("NodeJS CRUD Tests", function() {
       assert.equal(document.name, itemDefinition.name);
       assert(document.id !== undefined);
       // read documents after creation
-      const { resources: documents2 } = await container.items.readAll().toArray();
+      const { resources: documents2 } = await container.items.readAll().fetchAll();
       assert.equal(documents2.length, beforeCreateDocumentsCount + 1, "create should increase the number of documents");
       // query documents
       const querySpec = {
@@ -73,9 +73,9 @@ describe("NodeJS CRUD Tests", function() {
           }
         ]
       };
-      const { resources: results } = await container.items.query(querySpec).toArray();
+      const { resources: results } = await container.items.query(querySpec).fetchAll();
       assert(results.length > 0, "number of results for the query should be > 0");
-      const { resources: results2 } = await container.items.query(querySpec, { enableScanInQuery: true }).toArray();
+      const { resources: results2 } = await container.items.query(querySpec, { enableScanInQuery: true }).fetchAll();
       assert(results2.length > 0, "number of results for the query should be > 0");
 
       // replace document
@@ -133,7 +133,7 @@ describe("NodeJS CRUD Tests", function() {
         return doc1.id.localeCompare(doc2.id);
       });
       await bulkReadItems(container, returnedDocuments, partitionKey);
-      const { resources: successDocuments } = await container.items.readAll().toArray();
+      const { resources: successDocuments } = await container.items.readAll().fetchAll();
       assert(successDocuments !== undefined, "error reading documents");
       assert.equal(
         successDocuments.length,
@@ -159,7 +159,7 @@ describe("NodeJS CRUD Tests", function() {
         query: "SELECT * FROM Root"
       };
       try {
-        const { resources: badUpdate } = await container.items.query(querySpec, { enableScanInQuery: true }).toArray();
+        const { resources: badUpdate } = await container.items.query(querySpec, { enableScanInQuery: true }).fetchAll();
         assert.fail("Must fail");
       } catch (err) {
         const badRequestErrorCode = 400;
@@ -167,7 +167,7 @@ describe("NodeJS CRUD Tests", function() {
       }
       const { resources: results } = await container.items
         .query<ItemDefinition>(querySpec, { enableScanInQuery: true, enableCrossPartitionQuery: true })
-        .toArray();
+        .fetchAll();
       assert(results !== undefined, "error querying documents");
       results.sort(function(doc1, doc2) {
         return doc1.id.localeCompare(doc2.id);

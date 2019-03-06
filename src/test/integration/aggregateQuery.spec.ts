@@ -69,7 +69,7 @@ describe("NodeJS Aggregate Query Tests", async function() {
 
     const validateToArray = async function(queryIterator: QueryIterator<any>, expectedResults: any) {
       try {
-        const { resources: results } = await queryIterator.toArray();
+        const { resources: results } = await queryIterator.fetchAll();
         assert.equal(results.length, expectedResults.length, "invalid number of results");
         assert.equal(queryIterator.hasMoreResults(), false, "hasMoreResults: no more results is left");
       } catch (err) {
@@ -91,7 +91,7 @@ describe("NodeJS Aggregate Query Tests", async function() {
 
       try {
         while (totalFetchedResults.length <= expectedResults.length) {
-          const { resources: results } = await queryIterator.executeNext();
+          const { resources: results } = await queryIterator.fetchNext();
           listOfResultPages.push(results);
 
           if (results === undefined || totalFetchedResults.length === expectedResults.length) {

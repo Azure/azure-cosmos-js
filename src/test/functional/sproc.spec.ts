@@ -19,7 +19,7 @@ describe("NodeJS CRUD Tests", function() {
 
     it("nativeApi Should do sproc CRUD operations successfully with create/replace", async function() {
       // read sprocs
-      const { resources: sprocs } = await container.storedProcedures.readAll().toArray();
+      const { resources: sprocs } = await container.storedProcedures.readAll().fetchAll();
       assert.equal(sprocs.constructor, Array, "Value should be an array");
 
       // create a sproc
@@ -35,7 +35,7 @@ describe("NodeJS CRUD Tests", function() {
       assert.equal(sproc.body, "function () { const x = 10; }");
 
       // read sprocs after creation
-      const { resources: sprocsAfterCreation } = await container.storedProcedures.readAll().toArray();
+      const { resources: sprocsAfterCreation } = await container.storedProcedures.readAll().fetchAll();
       assert.equal(
         sprocsAfterCreation.length,
         beforeCreateSprocsCount + 1,
@@ -46,7 +46,7 @@ describe("NodeJS CRUD Tests", function() {
       const querySpec = {
         query: "SELECT * FROM root r"
       };
-      const { resources: queriedSprocs } = await container.storedProcedures.query(querySpec).toArray();
+      const { resources: queriedSprocs } = await container.storedProcedures.query(querySpec).fetchAll();
       assert(queriedSprocs.length > 0, "number of sprocs for the query should be > 0");
 
       // replace sproc
@@ -76,7 +76,7 @@ describe("NodeJS CRUD Tests", function() {
 
     it("nativeApi Should do sproc CRUD operations successfully name based with upsert", async function() {
       // read sprocs
-      const { resources: sprocs } = await container.storedProcedures.readAll().toArray();
+      const { resources: sprocs } = await container.storedProcedures.readAll().fetchAll();
       assert.equal(sprocs.constructor, Array, "Value should be an array");
 
       // create a sproc
@@ -93,7 +93,7 @@ describe("NodeJS CRUD Tests", function() {
       assert.equal(sproc.body, "function () { const x = 10; }");
 
       // read sprocs after creation
-      const { resources: sprocsAfterCreation } = await container.storedProcedures.readAll().toArray();
+      const { resources: sprocsAfterCreation } = await container.storedProcedures.readAll().fetchAll();
       assert.equal(
         sprocsAfterCreation.length,
         beforeCreateSprocsCount + 1,
@@ -104,7 +104,7 @@ describe("NodeJS CRUD Tests", function() {
       const querySpec = {
         query: "SELECT * FROM root r"
       };
-      const { resources: queriedSprocs } = await container.storedProcedures.query(querySpec).toArray();
+      const { resources: queriedSprocs } = await container.storedProcedures.query(querySpec).fetchAll();
       assert(queriedSprocs.length > 0, "number of sprocs for the query should be > 0");
 
       // replace sproc

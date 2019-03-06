@@ -27,7 +27,7 @@ export function getEntropy(): string {
 
 export async function removeAllDatabases(client: CosmosClient = defaultClient) {
   try {
-    const { resources: databases } = await client.databases.readAll().toArray();
+    const { resources: databases } = await client.databases.readAll().fetchAll();
     const length = databases.length;
 
     if (length === 0) {
@@ -167,7 +167,7 @@ export async function bulkQueryItemsWithPartitionKey(
         ]
       };
 
-      const { resources } = await container.items.query(querySpec).toArray();
+      const { resources } = await container.items.query(querySpec).fetchAll();
       assert.equal(resources.length, 1, "Expected exactly 1 document");
       assert.equal(JSON.stringify(resources[0]), JSON.stringify(document));
     } catch (err) {

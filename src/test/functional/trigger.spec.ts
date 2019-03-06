@@ -21,7 +21,7 @@ describe("NodeJS CRUD Tests", function() {
   describe("Validate Trigger CRUD", function() {
     it("nativeApi Should do trigger CRUD operations successfully name based", async function() {
       // read triggers
-      const { resources: triggers } = await container.triggers.readAll().toArray();
+      const { resources: triggers } = await container.triggers.readAll().fetchAll();
       assert.equal(Array.isArray(triggers), true);
 
       // create a trigger
@@ -43,7 +43,7 @@ describe("NodeJS CRUD Tests", function() {
       assert.equal(trigger.body, "serverScript() { var x = 10; }");
 
       // read triggers after creation
-      const { resources: triggersAfterCreation } = await container.triggers.readAll().toArray();
+      const { resources: triggersAfterCreation } = await container.triggers.readAll().fetchAll();
       assert.equal(
         triggersAfterCreation.length,
         beforeCreateTriggersCount + 1,
@@ -60,7 +60,7 @@ describe("NodeJS CRUD Tests", function() {
           }
         ]
       };
-      const { resources: results } = await container.triggers.query(querySpec).toArray();
+      const { resources: results } = await container.triggers.query(querySpec).fetchAll();
       assert(results.length > 0, "number of results for the query should be > 0");
 
       // replace trigger
@@ -89,7 +89,7 @@ describe("NodeJS CRUD Tests", function() {
 
     it("nativeApi Should do trigger CRUD operations successfully name based with upsert", async function() {
       // read triggers
-      const { resources: triggers } = await container.triggers.readAll().toArray();
+      const { resources: triggers } = await container.triggers.readAll().fetchAll();
       assert.equal(Array.isArray(triggers), true);
 
       // create a trigger
@@ -111,7 +111,7 @@ describe("NodeJS CRUD Tests", function() {
       assert.equal(trigger.body, "serverScript() { var x = 10; }");
 
       // read triggers after creation
-      const { resources: triggersAfterCreation } = await container.triggers.readAll().toArray();
+      const { resources: triggersAfterCreation } = await container.triggers.readAll().fetchAll();
       assert.equal(
         triggersAfterCreation.length,
         beforeCreateTriggersCount + 1,
@@ -128,7 +128,7 @@ describe("NodeJS CRUD Tests", function() {
           }
         ]
       };
-      const { resources: results } = await container.triggers.query(querySpec).toArray();
+      const { resources: results } = await container.triggers.query(querySpec).fetchAll();
       assert(results.length > 0, "number of results for the query should be > 0");
 
       // replace trigger

@@ -109,7 +109,7 @@ describe("Cross Partition", function() {
       ////////////////////////////////
       options.continuation = undefined;
       try {
-        const { resources: results } = await queryIterator.toArray();
+        const { resources: results } = await queryIterator.fetchAll();
         assert.equal(results.length, expectedOrderIds.length, "invalid number of results");
         assert.equal(queryIterator.hasMoreResults(), false, "hasMoreResults: no more results is left");
 
@@ -137,7 +137,7 @@ describe("Cross Partition", function() {
 
       try {
         while (totalFetchedResults.length <= expectedOrderIds.length) {
-          const { resources: results } = await queryIterator.executeNext();
+          const { resources: results } = await queryIterator.fetchNext();
           listOfResultPages.push(results);
 
           if (results === undefined || totalFetchedResults.length === expectedOrderIds.length) {
@@ -203,7 +203,7 @@ describe("Cross Partition", function() {
     const validateQueryMetrics = async function(queryIterator: QueryIterator<any>) {
       try {
         while (queryIterator.hasMoreResults()) {
-          const { resources: results, queryMetrics } = await queryIterator.executeNext();
+          const { resources: results, queryMetrics } = await queryIterator.fetchNext();
           if (results === undefined) {
             break;
           }
@@ -243,7 +243,7 @@ describe("Cross Partition", function() {
       let totalRequestCharge = 0;
 
       while (queryIterator.hasMoreResults()) {
-        const { resources: results, requestCharge } = await queryIterator.executeNext();
+        const { resources: results, requestCharge } = await queryIterator.fetchNext();
 
         if (counter === 0) {
           assert(requestCharge > 0);
@@ -605,7 +605,7 @@ describe("Cross Partition", function() {
       // prepare expected behaviour verifier
       const queryIterator = container.items.query(query, options);
 
-      const { resources: results } = await queryIterator.toArray();
+      const { resources: results } = await queryIterator.fetchAll();
       assert.equal(results.length, topCount);
 
       // select unique ids
@@ -632,7 +632,7 @@ describe("Cross Partition", function() {
       // prepare expected behaviour verifier
       const queryIterator = container.items.query(query, options);
 
-      const { resources: results } = await queryIterator.toArray();
+      const { resources: results } = await queryIterator.fetchAll();
       assert.equal(results.length, topCount);
 
       // select unique ids
@@ -659,7 +659,7 @@ describe("Cross Partition", function() {
       // prepare expected behaviour verifier
       const queryIterator = container.items.query(query, options);
 
-      const { resources: results } = await queryIterator.toArray();
+      const { resources: results } = await queryIterator.fetchAll();
       assert.equal(results.length, topCount);
 
       // select unique ids
@@ -690,7 +690,7 @@ describe("Cross Partition", function() {
       // prepare expected behaviour verifier
       const queryIterator = container.items.query(querySpec, options);
 
-      const { resources: results } = await queryIterator.toArray();
+      const { resources: results } = await queryIterator.fetchAll();
       assert.equal(results.length, topCount);
 
       // select unique ids
@@ -765,7 +765,7 @@ describe("Cross Partition", function() {
       // prepare expected behaviour verifier
       try {
         const queryIterator = container.items.query(query, options);
-        await queryIterator.toArray();
+        await queryIterator.fetchAll();
       } catch (err) {
         assert.notEqual(err, undefined);
       }
@@ -812,7 +812,7 @@ describe("Cross Partition", function() {
       };
 
       const queryIterator = container.items.query(query, options);
-      const { resources: results } = await queryIterator.toArray();
+      const { resources: results } = await queryIterator.fetchAll();
       assert.equal(results.length, documentDefinitions.length);
 
       let index = 0;
@@ -848,7 +848,7 @@ describe("Cross Partition", function() {
 
       let firstTime = true;
 
-      await queryIterator.executeNext();
+      await queryIterator.fetchNext();
 
       if (firstTime) {
         firstTime = false;
