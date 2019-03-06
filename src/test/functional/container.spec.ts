@@ -169,7 +169,7 @@ describe("NodeJS CRUD Tests", function() {
       const database = await getTestDatabase("container test database");
 
       // create container
-      const { body: containerDef } = await database.containers.create({ id: "container test container" });
+      const { resource: containerDef } = await database.containers.create({ id: "container test container" });
       const container = database.container(containerDef.id);
 
       assert.equal(
@@ -184,7 +184,7 @@ describe("NodeJS CRUD Tests", function() {
         indexingPolicy: { indexingMode: IndexingMode.lazy }
       };
 
-      const { body: lazyContainerDef } = await database.containers.create(lazyContainerDefinition);
+      const { resource: lazyContainerDef } = await database.containers.create(lazyContainerDefinition);
       const lazyContainer = database.container(lazyContainerDef.id);
 
       assert.equal(lazyContainerDef.indexingPolicy.indexingMode, IndexingMode.lazy, "indexing mode should be lazy");
@@ -196,7 +196,7 @@ describe("NodeJS CRUD Tests", function() {
         uniqueKeyPolicy: { uniqueKeys: [{ paths: ["/foo"] }] }
       };
 
-      const { body: uniqueKeysContainerDef } = await database.containers.create(uniqueKeysContainerDefinition);
+      const { resource: uniqueKeysContainerDef } = await database.containers.create(uniqueKeysContainerDefinition);
       const uniqueKeysContainer = database.container(uniqueKeysContainerDef.id);
 
       assert.equal(uniqueKeysContainerDef.uniqueKeyPolicy.uniqueKeys[0].paths, "/foo");
@@ -207,7 +207,7 @@ describe("NodeJS CRUD Tests", function() {
         id: "lazy container",
         indexingPolicy: { indexingMode: "consistent" } // tests the type flexibility
       };
-      const { body: consistentContainerDef } = await database.containers.create(consistentcontainerDefinition);
+      const { resource: consistentContainerDef } = await database.containers.create(consistentcontainerDefinition);
       const consistentContainer = database.container(consistentContainerDef.id);
       assert.equal(
         containerDef.indexingPolicy.indexingMode,
@@ -241,7 +241,7 @@ describe("NodeJS CRUD Tests", function() {
         }
       };
 
-      const { body: containerWithIndexingPolicyDef } = await database.containers.create(containerDefinition);
+      const { resource: containerWithIndexingPolicyDef } = await database.containers.create(containerDefinition);
 
       // Two included paths.
       assert.equal(
