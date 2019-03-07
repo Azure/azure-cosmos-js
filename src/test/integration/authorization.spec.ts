@@ -4,7 +4,7 @@ import { Database } from "../../client";
 import { endpoint } from "../common/_testConfig";
 import { getTestContainer, removeAllDatabases } from "../common/TestHelpers";
 
-describe.only("Authorization", function() {
+describe("Authorization", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 10000);
 
   // TODO: should have types for all these things
