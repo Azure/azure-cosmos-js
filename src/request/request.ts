@@ -3,7 +3,8 @@ import { Stream } from "stream";
 import * as url from "url";
 
 import { Constants, HTTPMethod, jsonStringifyAndEscapeNonASCII, ResourceType } from "../common";
-import { IHeaders } from "../queryExecutionContext";
+import { ConnectionPolicy, MediaReadMode } from "../documents";
+import { CosmosHeaders } from "../queryExecutionContext";
 
 import { ErrorResponse } from "./ErrorResponse";
 export { ErrorResponse }; // Should refactor this out
@@ -54,7 +55,7 @@ export function parse(urlString: string) {
  * @param {object} data - the data body returned from the executon of a request.
  * @hidden
  */
-function getErrorBody(response: http.IncomingMessage, data: string, headers: IHeaders): ErrorResponse {
+function getErrorBody(response: http.IncomingMessage, data: string, headers: CosmosHeaders): ErrorResponse {
   const errorBody: ErrorResponse = {
     code: response.statusCode,
     body: data,
@@ -81,7 +82,7 @@ function getErrorBody(response: http.IncomingMessage, data: string, headers: IHe
 
 export async function getHeaders(
   authOptions: AuthOptions,
-  defaultHeaders: IHeaders,
+  defaultHeaders: CosmosHeaders,
   verb: HTTPMethod,
   path: string,
   resourceId: string,
@@ -89,8 +90,8 @@ export async function getHeaders(
   options: RequestOptions | FeedOptions | MediaOptions,
   partitionKeyRangeId?: string,
   useMultipleWriteLocations?: boolean
-): Promise<IHeaders> {
-  const headers: IHeaders = { ...defaultHeaders };
+): Promise<CosmosHeaders> {
+  const headers: CosmosHeaders = { ...defaultHeaders };
   const opts: RequestOptions & FeedOptions & MediaOptions = (options || {}) as any; // TODO: this is dirty
 
   if (useMultipleWriteLocations) {
@@ -135,8 +136,8 @@ export async function getHeaders(
     }
   }
 
-  if (opts.a_im) {
-    headers[Constants.HttpHeaders.A_IM] = opts.a_im;
+  if (opts.useIncrementalFeed) {
+    headers[Constants.HttpHeaders.A_IM] = "Incremental Feed";
   }
 
   if (opts.indexingDirective) {
