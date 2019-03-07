@@ -1,28 +1,16 @@
 import { PartitionKeyRange } from "./client/Container/PartitionKeyRange";
 import { Resource } from "./client/Resource";
-import {
-  getIdFromLink,
-  getPathFromLink,
-  HTTPMethod,
-  parseLink,
-  ResourceType,
-  setIsUpsertHeader,
-  StatusCodes,
-  SubStatusCodes
-} from "./common";
 import { ConnectionPolicy, ConsistencyLevel, DatabaseAccount, QueryCompatibilityMode } from "./documents";
 import { GlobalEndpointManager } from "./globalEndpointManager";
-import {
-  Constants,
-  CosmosClientOptions,
-  IHeaders,
-  QueryIterator,
-  RequestOptions,
-  Response,
-  SqlQuerySpec
-} from "./index";
-import { FetchFunctionCallback } from "./queryExecutionContext";
-import { FeedOptions, RequestHandler } from "./request";
+
+import { Constants, HTTPMethod, ResourceType } from "./common/constants";
+import { getIdFromLink, getPathFromLink, parseLink, setIsUpsertHeader } from "./common/helper";
+import { StatusCodes, SubStatusCodes } from "./common/statusCodes";
+import { CosmosClientOptions } from "./CosmosClientOptions";
+import { FetchFunctionCallback, SqlQuerySpec } from "./queryExecutionContext";
+import { CosmosHeaders } from "./queryExecutionContext/CosmosHeaders";
+import { QueryIterator } from "./queryIterator";
+import { FeedOptions, RequestHandler, RequestOptions, Response } from "./request";
 import { ErrorResponse, getHeaders } from "./request/request";
 import { RequestContext } from "./request/RequestContext";
 import { SessionContainer } from "./session/sessionContainer";
@@ -56,7 +44,7 @@ export class ClientContext {
     path: string,
     type: ResourceType,
     id: string,
-    initialHeaders: IHeaders,
+    initialHeaders: CosmosHeaders,
     options?: RequestOptions
   ): Promise<Response<T & Resource>> {
     try {
@@ -180,7 +168,7 @@ export class ClientContext {
     path: string,
     type: ResourceType,
     id: string,
-    initialHeaders: IHeaders,
+    initialHeaders: CosmosHeaders,
     options?: RequestOptions
   ): Promise<Response<T & Resource>> {
     try {
@@ -225,7 +213,7 @@ export class ClientContext {
     path: string,
     type: ResourceType,
     id: string,
-    initialHeaders: IHeaders,
+    initialHeaders: CosmosHeaders,
     options?: RequestOptions
   ): Promise<Response<T & Resource>>;
 
@@ -235,7 +223,7 @@ export class ClientContext {
     path: string,
     type: ResourceType,
     id: string,
-    initialHeaders: IHeaders,
+    initialHeaders: CosmosHeaders,
     options?: RequestOptions
   ): Promise<Response<T & U & Resource>>;
   public async create<T, U>(
@@ -243,7 +231,7 @@ export class ClientContext {
     path: string,
     type: ResourceType,
     id: string,
-    initialHeaders: IHeaders,
+    initialHeaders: CosmosHeaders,
     options?: RequestOptions
   ): Promise<Response<T & U & Resource>> {
     try {
@@ -292,14 +280,14 @@ export class ClientContext {
     }
   }
 
-  private applySessionToken(path: string, reqHeaders: IHeaders) {
+  private applySessionToken(path: string, reqHeaders: CosmosHeaders) {
     const request = this.getSessionParams(path);
 
     if (reqHeaders && reqHeaders[Constants.HttpHeaders.SessionToken]) {
       return;
     }
 
-    const sessionConsistency: ConsistencyLevel = reqHeaders[Constants.HttpHeaders.ConsistencyLevel];
+    const sessionConsistency: ConsistencyLevel = reqHeaders[Constants.HttpHeaders.ConsistencyLevel] as ConsistencyLevel;
     if (!sessionConsistency) {
       return;
     }
@@ -321,7 +309,7 @@ export class ClientContext {
     path: string,
     type: ResourceType,
     id: string,
-    initialHeaders: IHeaders,
+    initialHeaders: CosmosHeaders,
     options?: RequestOptions
   ): Promise<Response<T & Resource>> {
     try {
@@ -362,7 +350,7 @@ export class ClientContext {
     path: string,
     type: ResourceType,
     id: string,
-    initialHeaders: IHeaders,
+    initialHeaders: CosmosHeaders,
     options?: RequestOptions
   ): Promise<Response<T & Resource>>;
   public async upsert<T, U>(
@@ -370,7 +358,7 @@ export class ClientContext {
     path: string,
     type: ResourceType,
     id: string,
-    initialHeaders: IHeaders,
+    initialHeaders: CosmosHeaders,
     options?: RequestOptions
   ): Promise<Response<T & U & Resource>>;
   public async upsert<T>(
@@ -378,7 +366,7 @@ export class ClientContext {
     path: string,
     type: ResourceType,
     id: string,
-    initialHeaders: IHeaders,
+    initialHeaders: CosmosHeaders,
     options?: RequestOptions
   ): Promise<Response<T & Resource>> {
     try {
@@ -496,7 +484,7 @@ export class ClientContext {
     return this.globalEndpointManager.getReadEndpoint();
   }
 
-  private captureSessionToken(err: ErrorResponse, path: string, opType: string, resHeaders: IHeaders) {
+  private captureSessionToken(err: ErrorResponse, path: string, opType: string, resHeaders: CosmosHeaders) {
     const request = this.getSessionParams(path); // TODO: any request
     request.operationType = opType;
     if (

@@ -1,5 +1,5 @@
-import { defaultRetryOptions, RetryOptions } from "../retry";
-import { ConnectionMode } from "./index";
+import { defaultRetryOptions, RetryOptions } from "../retry/retryOptions";
+import { ConnectionMode } from "./ConnectionMode";
 /**
  * Represents the Connection policy associated with a CosmosClient in the Azure Cosmos DB database service.
  */
