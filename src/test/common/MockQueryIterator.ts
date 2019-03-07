@@ -1,7 +1,7 @@
 /** @hidden */
 export class MockedQueryIterator {
   constructor(private results: any) {}
-  public async toArray() {
+  public async fetchAll() {
     return { resources: this.results };
   }
 }
