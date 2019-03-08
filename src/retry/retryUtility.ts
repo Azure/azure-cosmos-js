@@ -39,16 +39,13 @@ export async function execute(
   requestOptions: RequestOptions,
   request: RequestContext
 ): Promise<Response<any>> {
-  // TODO: any request
-  const r: RequestContext = typeof request !== "string" ? request : { path: "", operationType: "nonReadOps" };
-
-  const endpointDiscoveryRetryPolicy = new EndpointDiscoveryRetryPolicy(globalEndpointManager, r);
+  const endpointDiscoveryRetryPolicy = new EndpointDiscoveryRetryPolicy(globalEndpointManager, request);
   const resourceThrottleRetryPolicy = new ResourceThrottleRetryPolicy(
     connectionPolicy.RetryOptions.MaxRetryAttemptCount,
     connectionPolicy.RetryOptions.FixedRetryIntervalInMilliseconds,
     connectionPolicy.RetryOptions.MaxWaitTimeInSeconds
   );
-  const sessionReadRetryPolicy = new SessionRetryPolicy(globalEndpointManager, r, connectionPolicy);
+  const sessionReadRetryPolicy = new SessionRetryPolicy(globalEndpointManager, request, connectionPolicy);
   const defaultRetryPolicy = new DefaultRetryPolicy(request.operationType);
 
   return apply(

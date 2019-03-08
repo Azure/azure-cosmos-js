@@ -2,7 +2,7 @@ import fetch from "cross-fetch";
 import { Agent, OutgoingHttpHeaders } from "http";
 import { RequestOptions } from "https"; // TYPES ONLY
 import { parse } from "url";
-import { Constants } from "../common/constants";
+import { Constants, HTTPMethod } from "../common/constants";
 import { ConnectionPolicy } from "../documents";
 import { GlobalEndpointManager } from "../globalEndpointManager";
 import { CosmosHeaders } from "../queryExecutionContext/CosmosHeaders";
@@ -84,7 +84,7 @@ export class RequestHandler {
     globalEndpointManager: GlobalEndpointManager,
     connectionPolicy: ConnectionPolicy,
     requestAgent: Agent,
-    method: string,
+    method: HTTPMethod,
     hostname: string,
     request: RequestContext,
     data: string | Buffer,
@@ -134,7 +134,7 @@ export class RequestHandler {
       this.globalEndpointManager,
       this.connectionPolicy,
       this.requestAgent,
-      "GET",
+      HTTPMethod.get,
       urlString,
       request,
       undefined,
@@ -149,7 +149,7 @@ export class RequestHandler {
       this.globalEndpointManager,
       this.connectionPolicy,
       this.requestAgent,
-      "POST",
+      HTTPMethod.post,
       urlString,
       request,
       body,
@@ -164,25 +164,10 @@ export class RequestHandler {
       this.globalEndpointManager,
       this.connectionPolicy,
       this.requestAgent,
-      "PUT",
+      HTTPMethod.put,
       urlString,
       request,
       body,
-      headers
-    );
-  }
-
-  /** @ignore */
-  public head(urlString: string, request: any, headers: CosmosHeaders) {
-    // TODO: any
-    return RequestHandler.request(
-      this.globalEndpointManager,
-      this.connectionPolicy,
-      this.requestAgent,
-      "HEAD",
-      urlString,
-      request,
-      undefined,
       headers
     );
   }
@@ -193,7 +178,7 @@ export class RequestHandler {
       this.globalEndpointManager,
       this.connectionPolicy,
       this.requestAgent,
-      "DELETE",
+      HTTPMethod.delete,
       urlString,
       request,
       undefined,
