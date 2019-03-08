@@ -10,9 +10,9 @@ import { LocationRouting } from "../request/LocationRouting";
 import { RequestContext } from "../request/RequestContext";
 import { DefaultRetryPolicy } from "./defaultRetryPolicy";
 import { EndpointDiscoveryRetryPolicy } from "./endpointDiscoveryRetryPolicy";
-import { IRetryPolicy } from "./IRetryPolicy";
 import { ResourceThrottleRetryPolicy } from "./resourceThrottleRetryPolicy";
 import { RetryContext } from "./RetryContext";
+import { RetryPolicy } from "./RetryPolicy";
 import { SessionRetryPolicy } from "./sessionRetryPolicy";
 
 /** @hidden */
@@ -115,7 +115,7 @@ export async function apply(
     return { result, headers };
   } catch (err) {
     // TODO: any error
-    let retryPolicy: IRetryPolicy = null;
+    let retryPolicy: RetryPolicy = null;
     const headers = err.headers || {};
     if (err.code === StatusCodes.Forbidden && err.substatus === SubStatusCodes.WriteForbidden) {
       retryPolicy = endpointDiscoveryRetryPolicy;

@@ -1,16 +1,16 @@
-﻿import { isReadRequest } from "../common";
+import { isReadRequest } from "../common";
 import { ConnectionPolicy } from "../documents";
 import { GlobalEndpointManager } from "../globalEndpointManager";
 import { ErrorResponse } from "../request/request";
 import { RequestContext } from "../request/RequestContext";
-import { IRetryPolicy } from "./IRetryPolicy";
 import { RetryContext } from "./RetryContext";
+import { RetryPolicy } from "./RetryPolicy";
 
 /**
  * This class implements the retry policy for session consistent reads.
  * @hidden
  */
-export class SessionRetryPolicy implements IRetryPolicy {
+export class SessionRetryPolicy implements RetryPolicy {
   /** Current retry attempt count. */
   public currentRetryAttemptCount = 0;
   /** Retry interval in milliseconds. */

@@ -1,15 +1,15 @@
-﻿import { isReadRequest } from "../common/helper";
+import { isReadRequest } from "../common/helper";
 import { GlobalEndpointManager } from "../globalEndpointManager";
 import { ErrorResponse } from "../request/request";
 import { RequestContext } from "../request/RequestContext";
-import { IRetryPolicy } from "./IRetryPolicy";
 import { RetryContext } from "./RetryContext";
+import { RetryPolicy } from "./RetryPolicy";
 
 /**
  * This class implements the retry policy for endpoint discovery.
  * @hidden
  */
-export class EndpointDiscoveryRetryPolicy implements IRetryPolicy {
+export class EndpointDiscoveryRetryPolicy implements RetryPolicy {
   /** Current retry attempt count. */
   public currentRetryAttemptCount: number;
   /** Retry interval in milliseconds. */
