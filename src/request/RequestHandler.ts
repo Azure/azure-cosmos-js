@@ -37,7 +37,8 @@ export class RequestHandler {
     let response: any;
 
     try {
-      response = await fetch("https://" + requestOptions.hostname + requestOptions.path, {
+      // TODO Remove any
+      response = await fetch((requestOptions as any).href + requestOptions.path, {
         method: requestOptions.method,
         headers: requestOptions.headers as any,
         agent: requestOptions.agent,
