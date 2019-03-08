@@ -43,19 +43,16 @@ export class RequestHandler {
         body: JSON.stringify(result),
         headers
       };
-      if (Constants.HttpHeaders.ActivityId in response.headers) {
-        errorResponse.activityId = response.headers[Constants.HttpHeaders.ActivityId];
+      if (Constants.HttpHeaders.ActivityId in headers) {
+        errorResponse.activityId = headers[Constants.HttpHeaders.ActivityId];
       }
 
-      if (Constants.HttpHeaders.SubStatus in response.headers) {
-        errorResponse.substatus = parseInt(response.headers[Constants.HttpHeaders.SubStatus], 10);
+      if (Constants.HttpHeaders.SubStatus in headers) {
+        errorResponse.substatus = parseInt(headers[Constants.HttpHeaders.SubStatus], 10);
       }
 
-      if (Constants.HttpHeaders.RetryAfterInMilliseconds in response.headers) {
-        errorResponse.retryAfterInMilliseconds = parseInt(
-          response.headers[Constants.HttpHeaders.RetryAfterInMilliseconds],
-          10
-        );
+      if (Constants.HttpHeaders.RetryAfterInMilliseconds in headers) {
+        errorResponse.retryAfterInMilliseconds = parseInt(headers[Constants.HttpHeaders.RetryAfterInMilliseconds], 10);
       }
 
       return Promise.reject(errorResponse);
