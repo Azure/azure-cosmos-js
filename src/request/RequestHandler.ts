@@ -1,3 +1,4 @@
+import { AbortController } from "abort-controller";
 import fetch from "cross-fetch";
 import { Agent, OutgoingHttpHeaders } from "http";
 import { RequestOptions } from "https"; // TYPES ONLY
@@ -11,6 +12,7 @@ import { ErrorResponse } from "./ErrorResponse";
 import { bodyFromData } from "./request";
 import { RequestContext } from "./RequestContext";
 import { Response } from "./Response";
+import { TimeoutError } from "./TimeoutError";
 
 /** @hidden */
 export class RequestHandler {
@@ -19,14 +21,40 @@ export class RequestHandler {
     private connectionPolicy: ConnectionPolicy,
     private requestAgent: Agent
   ) {}
-  public static async createRequestObjectStub(connectionPolicy: any, requestOptions: RequestOptions, body?: any) {
-    const response: any = await fetch("https://" + requestOptions.hostname + requestOptions.path, {
-      method: requestOptions.method,
-      headers: requestOptions.headers as any,
-      agent: requestOptions.agent,
-      timeout: requestOptions.timeout,
-      ...(body && { body })
-    } as any); // TODO Remove any. Upstream issue https://github.com/lquixada/cross-fetch/issues/42
+  public static async createRequestObjectStub(
+    connectionPolicy: ConnectionPolicy,
+    requestOptions: RequestOptions,
+    body?: any
+  ) {
+    let didTimeout: boolean;
+    const controller = new AbortController();
+    const signal = controller.signal;
+    const timeout = setTimeout(() => {
+      didTimeout = true;
+      controller.abort();
+    }, connectionPolicy.RequestTimeout);
+
+    let response: any;
+
+    try {
+      response = await fetch("https://" + requestOptions.hostname + requestOptions.path, {
+        method: requestOptions.method,
+        headers: requestOptions.headers as any,
+        agent: requestOptions.agent,
+        signal,
+        ...(body && { body })
+      } as any); // TODO Remove any. Upstream issue https://github.com/lquixada/cross-fetch/issues/42
+    } catch (error) {
+      if (error.name === "AbortError") {
+        if (didTimeout === true) {
+          throw new TimeoutError();
+        }
+        // TODO handle user requested cancellation here
+      }
+      throw error;
+    }
+
+    clearTimeout(timeout);
 
     const result = response.status === 204 ? null : await response.json();
 
