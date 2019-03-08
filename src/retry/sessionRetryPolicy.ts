@@ -1,7 +1,7 @@
 import { isReadRequest } from "../common";
 import { ConnectionPolicy } from "../documents";
 import { GlobalEndpointManager } from "../globalEndpointManager";
-import { ErrorResponse } from "../request/request";
+import { ErrorResponse } from "../request";
 import { RequestContext } from "../request/RequestContext";
 import { RetryContext } from "./RetryContext";
 import { RetryPolicy } from "./RetryPolicy";

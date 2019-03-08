@@ -1,18 +1,7 @@
-import http from "http";
-import { Stream } from "stream";
-import * as url from "url";
-
-import { Constants, HTTPMethod, jsonStringifyAndEscapeNonASCII, ResourceType } from "../common";
-import { ConnectionPolicy, MediaReadMode } from "../documents";
-import { CosmosHeaders } from "../queryExecutionContext";
-
-import { ErrorResponse } from "./ErrorResponse";
-export { ErrorResponse }; // Should refactor this out
-
 import { AuthOptions, setAuthorizationHeader } from "../auth";
+import { Constants, HTTPMethod, jsonStringifyAndEscapeNonASCII, ResourceType } from "../common";
+import { CosmosHeaders } from "../queryExecutionContext";
 import { FeedOptions, MediaOptions, RequestOptions } from "./index";
-import { Response } from "./Response";
-export { Response }; // Should refactor this out
 
 // ----------------------------------------------------------------------------
 // Utility methods
@@ -28,56 +17,11 @@ function javaScriptFriendlyJSONStringify(s: object) {
 }
 
 /** @hidden */
-export function bodyFromData(data: Stream | Buffer | string | object) {
-  if ((data as Stream).pipe) {
-    return data;
-  }
-  if (Buffer.isBuffer(data)) {
-    return data;
-  }
-  if (typeof data === "string") {
-    return data;
-  }
+export function bodyFromData(data: Buffer | string | object) {
   if (typeof data === "object") {
     return javaScriptFriendlyJSONStringify(data);
   }
-  return undefined;
-}
-
-/** @hidden */
-export function parse(urlString: string) {
-  return url.parse(urlString);
-}
-
-/**
- *  Constructs the error body from the response and the data returned from the request.
- * @param {object} response - response object returned from the executon of a request.
- * @param {object} data - the data body returned from the executon of a request.
- * @hidden
- */
-function getErrorBody(response: http.IncomingMessage, data: string, headers: CosmosHeaders): ErrorResponse {
-  const errorBody: ErrorResponse = {
-    code: response.statusCode,
-    body: data,
-    headers
-  };
-
-  if (Constants.HttpHeaders.ActivityId in response.headers) {
-    errorBody.activityId = response.headers[Constants.HttpHeaders.ActivityId] as string;
-  }
-
-  if (Constants.HttpHeaders.SubStatus in response.headers) {
-    errorBody.substatus = parseInt(response.headers[Constants.HttpHeaders.SubStatus] as string, 10);
-  }
-
-  if (Constants.HttpHeaders.RetryAfterInMilliseconds in response.headers) {
-    errorBody.retryAfterInMilliseconds = parseInt(
-      response.headers[Constants.HttpHeaders.RetryAfterInMilliseconds] as string,
-      10
-    );
-  }
-
-  return errorBody;
+  return data;
 }
 
 export async function getHeaders(

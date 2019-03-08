@@ -1,15 +1,16 @@
 import fetch from "cross-fetch";
 import { Agent, OutgoingHttpHeaders } from "http";
 import { RequestOptions } from "https"; // TYPES ONLY
-import * as querystring from "querystring";
+import { parse } from "url";
 import { Constants } from "../common/constants";
 import { ConnectionPolicy } from "../documents";
 import { GlobalEndpointManager } from "../globalEndpointManager";
 import { CosmosHeaders } from "../queryExecutionContext/CosmosHeaders";
 import * as RetryUtility from "../retry/retryUtility";
 import { ErrorResponse } from "./ErrorResponse";
-import { bodyFromData, parse, Response } from "./request";
+import { bodyFromData } from "./request";
 import { RequestContext } from "./RequestContext";
+import { Response } from "./Response";
 
 /** @hidden */
 export class RequestHandler {
@@ -42,17 +43,19 @@ export class RequestHandler {
         body: JSON.stringify(result),
         headers
       };
-
-      if (Constants.HttpHeaders.ActivityId in headers) {
-        errorResponse.activityId = headers[Constants.HttpHeaders.ActivityId];
+      if (Constants.HttpHeaders.ActivityId in response.headers) {
+        errorResponse.activityId = response.headers[Constants.HttpHeaders.ActivityId];
       }
 
-      if (Constants.HttpHeaders.SubStatus in headers) {
-        errorResponse.substatus = parseInt(headers[Constants.HttpHeaders.SubStatus], 10);
+      if (Constants.HttpHeaders.SubStatus in response.headers) {
+        errorResponse.substatus = parseInt(response.headers[Constants.HttpHeaders.SubStatus], 10);
       }
 
-      if (Constants.HttpHeaders.RetryAfterInMilliseconds in headers) {
-        errorResponse.retryAfterInMilliseconds = parseInt(headers[Constants.HttpHeaders.RetryAfterInMilliseconds], 10);
+      if (Constants.HttpHeaders.RetryAfterInMilliseconds in response.headers) {
+        errorResponse.retryAfterInMilliseconds = parseInt(
+          response.headers[Constants.HttpHeaders.RetryAfterInMilliseconds],
+          10
+        );
       }
 
       return Promise.reject(errorResponse);
@@ -85,7 +88,6 @@ export class RequestHandler {
     hostname: string,
     request: RequestContext,
     data: string | Buffer,
-    queryParams: any, // TODO: any query params types
     headers: CosmosHeaders
   ): Promise<Response<any>> {
     // TODO: any
@@ -104,22 +106,6 @@ export class RequestHandler {
       }
     }
 
-    let buffer;
-    if (body) {
-      if (Buffer.isBuffer(body)) {
-        buffer = body;
-      } else if (typeof body === "string") {
-        buffer = Buffer.from(body, "utf8");
-      } else {
-        return {
-          result: {
-            message: "body must be string or Buffer"
-          },
-          headers: undefined
-        };
-      }
-    }
-
     const requestOptions: RequestOptions = parse(hostname);
     requestOptions.method = method;
     requestOptions.path += path;
@@ -131,30 +117,14 @@ export class RequestHandler {
       requestOptions.rejectUnauthorized = false;
     }
 
-    if (queryParams) {
-      requestOptions.path += "?" + querystring.stringify(queryParams);
-    }
-
-    if (buffer) {
-      requestOptions.headers[Constants.HttpHeaders.ContentLength] = buffer.length;
-      return RetryUtility.execute(
-        globalEndpointManager,
-        buffer,
-        this.createRequestObjectStub,
-        connectionPolicy,
-        requestOptions,
-        request
-      );
-    } else {
-      return RetryUtility.execute(
-        globalEndpointManager,
-        null,
-        this.createRequestObjectStub,
-        connectionPolicy,
-        requestOptions,
-        request
-      );
-    }
+    return RetryUtility.execute(
+      globalEndpointManager,
+      null,
+      this.createRequestObjectStub,
+      connectionPolicy,
+      requestOptions,
+      request
+    );
   }
 
   /** @ignore */
@@ -168,7 +138,6 @@ export class RequestHandler {
       urlString,
       request,
       undefined,
-      "",
       headers
     );
   }
@@ -184,7 +153,6 @@ export class RequestHandler {
       urlString,
       request,
       body,
-      "",
       headers
     );
   }
@@ -200,7 +168,6 @@ export class RequestHandler {
       urlString,
       request,
       body,
-      "",
       headers
     );
   }
@@ -216,7 +183,6 @@ export class RequestHandler {
       urlString,
       request,
       undefined,
-      "",
       headers
     );
   }
@@ -231,7 +197,6 @@ export class RequestHandler {
       urlString,
       request,
       undefined,
-      "",
       headers
     );
   }
