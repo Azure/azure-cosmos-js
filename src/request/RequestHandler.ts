@@ -117,14 +117,14 @@ export class RequestHandler {
       requestOptions.rejectUnauthorized = false;
     }
 
-    return RetryUtility.execute(
+    return RetryUtility.execute({
       globalEndpointManager,
-      null,
-      this.createRequestObjectStub,
+      body,
+      createRequestObjectFunc: this.createRequestObjectStub,
       connectionPolicy,
       requestOptions,
       request
-    );
+    });
   }
 
   /** @ignore */

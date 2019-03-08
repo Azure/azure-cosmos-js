@@ -22,23 +22,23 @@ export type CreateRequestObjectStubFunction = (
   body: Buffer
 ) => Promise<Response<any>>; // TODO: any response
 
-/**
- * Executes the retry policy for the created request object.
- * @param {object} globalEndpointManager - an instance of GlobalEndpointManager class.
- * @param {object} body - request body. A buffer or a string.
- * @param {function} createRequestObjectStub - stub function that creates the request object.
- * @param {object} connectionPolicy - an instance of ConnectionPolicy that has the connection configs.
- * @param {RequestOptions} requestOptions - The request options.
- * @param {function} callback - the callback that will be called when the request is finished executing.
- */
-export async function execute(
-  globalEndpointManager: GlobalEndpointManager,
-  body: Buffer,
-  createRequestObjectFunc: CreateRequestObjectStubFunction,
-  connectionPolicy: ConnectionPolicy,
-  requestOptions: RequestOptions,
-  request: RequestContext
-): Promise<Response<any>> {
+interface ExecuteArgs {
+  globalEndpointManager: GlobalEndpointManager;
+  body: Buffer;
+  createRequestObjectFunc: CreateRequestObjectStubFunction;
+  connectionPolicy: ConnectionPolicy;
+  requestOptions: RequestOptions;
+  request: RequestContext;
+}
+
+export async function execute({
+  globalEndpointManager,
+  body,
+  createRequestObjectFunc,
+  connectionPolicy,
+  requestOptions,
+  request
+}: ExecuteArgs): Promise<Response<any>> {
   const endpointDiscoveryRetryPolicy = new EndpointDiscoveryRetryPolicy(globalEndpointManager, request);
   const resourceThrottleRetryPolicy = new ResourceThrottleRetryPolicy(
     connectionPolicy.RetryOptions.MaxRetryAttemptCount,
