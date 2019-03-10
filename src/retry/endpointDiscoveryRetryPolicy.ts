@@ -1,7 +1,7 @@
+import { OperationType } from "../common";
 import { isReadRequest } from "../common/helper";
 import { GlobalEndpointManager } from "../globalEndpointManager";
 import { ErrorResponse } from "../request";
-import { RequestContext } from "../request/RequestContext";
 import { RetryContext } from "./RetryContext";
 import { RetryPolicy } from "./RetryPolicy";
 
@@ -24,7 +24,7 @@ export class EndpointDiscoveryRetryPolicy implements RetryPolicy {
    * @constructor EndpointDiscoveryRetryPolicy
    * @param {object} globalEndpointManager The GlobalEndpointManager instance.
    */
-  constructor(private globalEndpointManager: GlobalEndpointManager, private request: RequestContext) {
+  constructor(private globalEndpointManager: GlobalEndpointManager, private operationType: OperationType) {
     this.maxRetryAttemptCount = EndpointDiscoveryRetryPolicy.maxRetryAttemptCount;
     this.currentRetryAttemptCount = 0;
     this.retryAfterInMilliseconds = EndpointDiscoveryRetryPolicy.retryAfterInMilliseconds;
@@ -57,7 +57,7 @@ export class EndpointDiscoveryRetryPolicy implements RetryPolicy {
 
     this.currentRetryAttemptCount++;
 
-    if (isReadRequest(this.request)) {
+    if (isReadRequest(this.operationType)) {
       this.globalEndpointManager.markCurrentLocationUnavailableForRead(locationEndpoint);
     } else {
       this.globalEndpointManager.markCurrentLocationUnavailableForWrite(locationEndpoint);

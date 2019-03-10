@@ -1,8 +1,7 @@
-import { isReadRequest } from "../common";
+import { isReadRequest, OperationType, ResourceType } from "../common";
 import { ConnectionPolicy } from "../documents";
 import { GlobalEndpointManager } from "../globalEndpointManager";
 import { ErrorResponse } from "../request";
-import { RequestContext } from "../request/RequestContext";
 import { RetryContext } from "./RetryContext";
 import { RetryPolicy } from "./RetryPolicy";
 
@@ -23,7 +22,8 @@ export class SessionRetryPolicy implements RetryPolicy {
    */
   constructor(
     private globalEndpointManager: GlobalEndpointManager,
-    private request: RequestContext,
+    private resourceType: ResourceType,
+    private operationType: OperationType,
     private connectionPolicy: ConnectionPolicy
   ) {}
 
@@ -46,9 +46,9 @@ export class SessionRetryPolicy implements RetryPolicy {
       return false;
     }
 
-    if (this.globalEndpointManager.canUseMultipleWriteLocations(this.request)) {
+    if (this.globalEndpointManager.canUseMultipleWriteLocations(this.resourceType, this.operationType)) {
       // If we can write to multiple locations, we should against every write endpoint until we succeed
-      const endpoints = isReadRequest(this.request)
+      const endpoints = isReadRequest(this.operationType)
         ? await this.globalEndpointManager.getReadEndpoints()
         : await this.globalEndpointManager.getWriteEndpoints();
       if (this.currentRetryAttemptCount > endpoints.length) {

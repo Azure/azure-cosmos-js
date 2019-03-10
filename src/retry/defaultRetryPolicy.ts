@@ -1,3 +1,4 @@
+import { OperationType } from "../common";
 import { ErrorResponse } from "../request";
 
 /**
@@ -53,7 +54,7 @@ export class DefaultRetryPolicy {
    * @constructor ResourceThrottleRetryPolicy
    * @param {string} operationType - The type of operation being performed.
    */
-  constructor(private operationType: string) {}
+  constructor(private operationType: OperationType) {}
   /**
    * Determines whether the request should be retried or not.
    * @param {object} err - Error returned by the request.
@@ -72,7 +73,7 @@ export class DefaultRetryPolicy {
 
   private needs_retry(code: number | string) {
     if (
-      (this.operationType === "read" || this.operationType === "query") &&
+      (this.operationType === OperationType.Read || this.operationType === OperationType.Query) &&
       this.CONNECTION_ERROR_CODES.indexOf(code) !== -1
     ) {
       return true;

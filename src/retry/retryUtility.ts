@@ -39,13 +39,20 @@ export async function execute({
   requestOptions,
   request
 }: ExecuteArgs): Promise<Response<any>> {
-  const endpointDiscoveryRetryPolicy = new EndpointDiscoveryRetryPolicy(globalEndpointManager, request);
+  const endpointDiscoveryRetryPolicy = new EndpointDiscoveryRetryPolicy(globalEndpointManager, request.operationType);
   const resourceThrottleRetryPolicy = new ResourceThrottleRetryPolicy(
     connectionPolicy.RetryOptions.MaxRetryAttemptCount,
     connectionPolicy.RetryOptions.FixedRetryIntervalInMilliseconds,
     connectionPolicy.RetryOptions.MaxWaitTimeInSeconds
   );
-  const sessionReadRetryPolicy = new SessionRetryPolicy(globalEndpointManager, request, connectionPolicy);
+
+  const sessionReadRetryPolicy = new SessionRetryPolicy(
+    globalEndpointManager,
+    request.resourceType,
+    request.operationType,
+    connectionPolicy
+  );
+
   const defaultRetryPolicy = new DefaultRetryPolicy(request.operationType);
 
   return apply(
@@ -72,7 +79,6 @@ export async function execute({
  * @param {EndpointDiscoveryRetryPolicy} endpointDiscoveryRetryPolicy - The endpoint discovery retry policy \
  * instance.
  * @param {ResourceThrottleRetryPolicy} resourceThrottleRetryPolicy - The resource throttle retry policy instance.
- * @param {function} callback - the callback that will be called when the response is retrieved and processed.
  */
 export async function apply(
   body: Buffer,
@@ -131,7 +137,6 @@ export async function apply(
       throw err;
     } else {
       request.retryCount++;
-      const newUrl = (results as any)[1]; // TODO: any hack
       await sleep(retryPolicy.retryAfterInMilliseconds);
       return apply(
         body,
