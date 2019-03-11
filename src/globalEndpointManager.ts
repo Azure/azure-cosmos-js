@@ -35,7 +35,7 @@ export class GlobalEndpointManager {
     private readDatabaseAccount: (opts: RequestOptions) => Promise<ResourceResponse<DatabaseAccount>>
   ) {
     this.defaultEndpoint = options.endpoint;
-    this.enableEndpointDiscovery = options.connectionPolicy.EnableEndpointDiscovery;
+    this.enableEndpointDiscovery = options.connectionPolicy.enableEndpointDiscovery;
     this.isEndpointCacheInitialized = false;
     this.locationCache = new LocationCache(options);
     this.isRefreshing = false;

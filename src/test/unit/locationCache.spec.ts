@@ -31,13 +31,13 @@ function addScenario(options?: { numberOfRegions?: number; useMultipleWriteLocat
 
   if (options) {
     if (options.numberOfRegions) {
-      connectionPolicy.PreferredLocations = regions.slice(0, options.numberOfRegions);
-      databaseAccountConfig.readableLocations = connectionPolicy.PreferredLocations.map(locationName => {
+      connectionPolicy.preferredLocations = regions.slice(0, options.numberOfRegions);
+      databaseAccountConfig.readableLocations = connectionPolicy.preferredLocations.map(locationName => {
         return { name: locationName, databaseAccountEndpoint: getEndpointFromRegion(locationName) };
       });
       if (options.useMultipleWriteLocations) {
-        connectionPolicy.UseMultipleWriteLocations = options.useMultipleWriteLocations;
-        databaseAccountConfig.writableLocations = connectionPolicy.PreferredLocations.map(locationName => {
+        connectionPolicy.useMultipleWriteLocations = options.useMultipleWriteLocations;
+        databaseAccountConfig.writableLocations = connectionPolicy.preferredLocations.map(locationName => {
           return { name: locationName, databaseAccountEndpoint: getEndpointFromRegion(locationName) };
         }).sort((a, b) => (a.name > b.name ? 1 : -1));
         databaseAccountConfig.enableMultipleWriteLocations = options.useMultipleWriteLocations;
@@ -73,8 +73,8 @@ describe("Location Cache", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 2000);
   for (const scenario of scenarios) {
     describe(`when there is a DatabaseAccount refresh and ${
-      scenario.connectionPolicy.PreferredLocations.length
-    } preferred region and multi-region write is ${scenario.connectionPolicy.UseMultipleWriteLocations}.`, function() {
+      scenario.connectionPolicy.preferredLocations.length
+    } preferred region and multi-region write is ${scenario.connectionPolicy.useMultipleWriteLocations}.`, function() {
       const connectionPolicy: ConnectionPolicy = scenario.connectionPolicy;
       const endpoint = scenario.defaultEndpoint;
       const cosmosClientOptions: CosmosClientOptions = { auth: {}, endpoint, connectionPolicy };
@@ -93,7 +93,7 @@ describe("Location Cache", function() {
         const preferredLocations = locationCache.prefferredLocations;
         assert.equal(
           preferredLocations.length,
-          scenario.connectionPolicy.PreferredLocations.length,
+          scenario.connectionPolicy.preferredLocations.length,
           "preffered locations size should match"
         );
       });
@@ -102,7 +102,7 @@ describe("Location Cache", function() {
         const readEndpoint = locationCache.getReadEndpoint();
         assert.equal(
           readEndpoint,
-          scenario.connectionPolicy.PreferredLocations.length > 0 ? getEndpointFromRegion(regions[0]) : endpoint,
+          scenario.connectionPolicy.preferredLocations.length > 0 ? getEndpointFromRegion(regions[0]) : endpoint,
           "read endpoint should match most preferred endpoint after database account info refresh"
         );
       });
@@ -110,8 +110,8 @@ describe("Location Cache", function() {
       it("write endpoint should match default endpoint", function() {
         const writeEndpoint = locationCache.getWriteEndpoint();
         const expectedEndpoint =
-          scenario.connectionPolicy.PreferredLocations.length > 0
-            ? getEndpointFromRegion(scenario.connectionPolicy.PreferredLocations[0])
+          scenario.connectionPolicy.preferredLocations.length > 0
+            ? getEndpointFromRegion(scenario.connectionPolicy.preferredLocations[0])
             : endpoint;
         assert.equal(
           writeEndpoint,
@@ -144,8 +144,8 @@ describe("Location Cache", function() {
 
       // After this, there are side effects. All the "markUnavailable" ones will remove locations from the list.
       // It's probably best to not add new "it"s below here to avoid unreliable tests.
-      if (scenario.connectionPolicy.PreferredLocations.length > 0) {
-        if (!scenario.connectionPolicy.UseMultipleWriteLocations) {
+      if (scenario.connectionPolicy.preferredLocations.length > 0) {
+        if (!scenario.connectionPolicy.useMultipleWriteLocations) {
           it("write endpoint should match default endpoint even after being marked unavailable", function() {
             locationCache.markCurrentLocationUnavailableForWrite(locationCache.getWriteEndpoint());
             const writeEndpoint = locationCache.getWriteEndpoint();
@@ -166,7 +166,7 @@ describe("Location Cache", function() {
           });
         }
       } else {
-        if (!scenario.connectionPolicy.UseMultipleWriteLocations) {
+        if (!scenario.connectionPolicy.useMultipleWriteLocations) {
           it("write endpoint should match default endpoint even after being marked unavailable", function() {
             locationCache.markCurrentLocationUnavailableForWrite(locationCache.getWriteEndpoint());
             const writeEndpoint = locationCache.getWriteEndpoint();
@@ -185,14 +185,14 @@ describe("Location Cache", function() {
             const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
             assert.equal(
               shouldRefresh,
-              scenario.connectionPolicy.PreferredLocations.length > 0,
+              scenario.connectionPolicy.preferredLocations.length > 0,
               "should need to refresh"
             );
           });
         }
       }
 
-      if (scenario.connectionPolicy.PreferredLocations.length > 1) {
+      if (scenario.connectionPolicy.preferredLocations.length > 1) {
         it("read endpoint should return next endpoint after being marked unavailable", function() {
           locationCache.markCurrentLocationUnavailableForRead(locationCache.getReadEndpoint());
           const readEndpoint = locationCache.getReadEndpoint();
@@ -211,7 +211,7 @@ describe("Location Cache", function() {
           assert.equal(shouldRefresh, true, "should need to refresh");
         });
 
-        if (scenario.connectionPolicy.UseMultipleWriteLocations) {
+        if (scenario.connectionPolicy.useMultipleWriteLocations) {
           it("write endpoint should return next endpoint after being marked unavailable", function() {
             locationCache.markCurrentLocationUnavailableForWrite(locationCache.getWriteEndpoint());
             const writeEndpoint = locationCache.getWriteEndpoint();
@@ -230,7 +230,7 @@ describe("Location Cache", function() {
             const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
             assert.equal(
               shouldRefresh,
-              scenario.connectionPolicy.PreferredLocations.length > 0,
+              scenario.connectionPolicy.preferredLocations.length > 0,
               "should need to refresh"
             );
           });
@@ -254,12 +254,12 @@ describe("Location Cache", function() {
           const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
           assert.equal(
             shouldRefresh,
-            scenario.connectionPolicy.PreferredLocations.length > 0,
+            scenario.connectionPolicy.preferredLocations.length > 0,
             "shouldn't need to refresh"
           );
         });
 
-        if (scenario.connectionPolicy.UseMultipleWriteLocations) {
+        if (scenario.connectionPolicy.useMultipleWriteLocations) {
           it("write endpoint should match default endpoint even after being marked unavailable", function() {
             locationCache.markCurrentLocationUnavailableForWrite(locationCache.getWriteEndpoint());
             const writeEndpoint = locationCache.getWriteEndpoint();
@@ -283,14 +283,14 @@ describe("Location Cache", function() {
     });
 
     describe(`when there is not a DatabaseAccount refresh and ${
-      scenario.connectionPolicy.PreferredLocations.length
-    } preferred regions and multi-region write is ${scenario.connectionPolicy.UseMultipleWriteLocations}.`, function() {
+      scenario.connectionPolicy.preferredLocations.length
+    } preferred regions and multi-region write is ${scenario.connectionPolicy.useMultipleWriteLocations}.`, function() {
       const connectionPolicy: ConnectionPolicy = scenario.connectionPolicy;
       const endpoint = scenario.defaultEndpoint;
       const cosmosClientOptions: CosmosClientOptions = { auth: {}, endpoint, connectionPolicy };
       const locationCache = new LocationCache(cosmosClientOptions);
 
-      if (!scenario.connectionPolicy.UseMultipleWriteLocations) {
+      if (!scenario.connectionPolicy.useMultipleWriteLocations) {
         it("shouldn't refresh", function() {
           const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
           assert.equal(shouldRefresh, false, "shouldn't need to refresh");
@@ -306,7 +306,7 @@ describe("Location Cache", function() {
         const preferredLocations = locationCache.prefferredLocations;
         assert.equal(
           preferredLocations.length,
-          scenario.connectionPolicy.PreferredLocations.length,
+          scenario.connectionPolicy.preferredLocations.length,
           "preffered locations size should match"
         );
       });

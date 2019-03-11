@@ -24,7 +24,7 @@ import { endpoint, masterKey } from "../common/_testConfig";
   });
 
   it("Preferred locations should be honored for readEndpoint", async function() {
-    const client = new CosmosClient({ endpoint, auth: { masterKey }, connectionPolicy: { PreferredLocations } });
+    const client = new CosmosClient({ endpoint, auth: { masterKey }, connectionPolicy: { preferredLocations: PreferredLocations } });
     const currentReadEndpoint = await client.getReadEndpoint();
     assert(
       currentReadEndpoint.includes(PreferredLocations[0].toLowerCase().replace(/ /g, "")),
@@ -41,8 +41,8 @@ import { endpoint, masterKey } from "../common/_testConfig";
       endpoint,
       auth: { masterKey },
       connectionPolicy: {
-        PreferredLocations,
-        UseMultipleWriteLocations: true
+        preferredLocations: PreferredLocations,
+        useMultipleWriteLocations: true
       }
     });
     const currentWriteEndpoint = await client.getWriteEndpoint();

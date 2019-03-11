@@ -26,7 +26,7 @@ describe.skip("Validate SSL verification check for emulator", function() {
       endpoint,
       auth: { masterKey },
       connectionPolicy: {
-        DisableSSLVerification: true
+        disableSSLVerification: true
       }
     });
 

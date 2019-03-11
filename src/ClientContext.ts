@@ -57,7 +57,7 @@ export class ClientContext {
         type,
         options,
         undefined,
-        this.cosmosClientOptions.connectionPolicy.UseMultipleWriteLocations
+        this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
       );
       this.applySessionToken(path, requestHeaders);
 
@@ -112,7 +112,7 @@ export class ClientContext {
         type,
         options,
         partitionKeyRangeId,
-        this.cosmosClientOptions.connectionPolicy.UseMultipleWriteLocations
+        this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
       );
       this.applySessionToken(path, reqHeaders);
 
@@ -144,7 +144,7 @@ export class ClientContext {
         type,
         options,
         partitionKeyRangeId,
-        this.cosmosClientOptions.connectionPolicy.UseMultipleWriteLocations
+        this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
       );
       this.applySessionToken(path, reqHeaders);
 
@@ -181,7 +181,7 @@ export class ClientContext {
         type,
         options,
         undefined,
-        this.cosmosClientOptions.connectionPolicy.UseMultipleWriteLocations
+        this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
       );
 
       const request: RequestContext = {
@@ -244,7 +244,7 @@ export class ClientContext {
         type,
         options,
         undefined,
-        this.cosmosClientOptions.connectionPolicy.UseMultipleWriteLocations
+        this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
       );
 
       const request: RequestContext = {
@@ -322,7 +322,7 @@ export class ClientContext {
         type,
         options,
         undefined,
-        this.cosmosClientOptions.connectionPolicy.UseMultipleWriteLocations
+        this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
       );
 
       const request: RequestContext = {
@@ -379,7 +379,7 @@ export class ClientContext {
         type,
         options,
         undefined,
-        this.cosmosClientOptions.connectionPolicy.UseMultipleWriteLocations
+        this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
       );
 
       const request: RequestContext = {
@@ -427,7 +427,7 @@ export class ClientContext {
       ResourceType.sproc,
       options,
       undefined,
-      this.cosmosClientOptions.connectionPolicy.UseMultipleWriteLocations
+      this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
     );
 
     const request: RequestContext = {
@@ -459,7 +459,7 @@ export class ClientContext {
       ResourceType.none,
       {},
       undefined,
-      this.cosmosClientOptions.connectionPolicy.UseMultipleWriteLocations
+      this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
     );
 
     const request: RequestContext = {

@@ -86,7 +86,7 @@ export function createRequestObject(
     });
 
     httpsRequest.once("socket", (socket: Socket) => {
-      socket.setTimeout(connectionPolicy.RequestTimeout);
+      socket.setTimeout(connectionPolicy.requestTimeout);
       socket.once("timeout", onTimeout);
 
       httpsRequest.once("response", () => {

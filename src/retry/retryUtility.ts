@@ -44,9 +44,9 @@ export async function execute(
 
   const endpointDiscoveryRetryPolicy = new EndpointDiscoveryRetryPolicy(globalEndpointManager, r);
   const resourceThrottleRetryPolicy = new ResourceThrottleRetryPolicy(
-    connectionPolicy.RetryOptions.MaxRetryAttemptCount,
-    connectionPolicy.RetryOptions.FixedRetryIntervalInMilliseconds,
-    connectionPolicy.RetryOptions.MaxWaitTimeInSeconds
+    connectionPolicy.retryOptions.maxRetryAttemptCount,
+    connectionPolicy.retryOptions.fixedRetryIntervalInMilliseconds,
+    connectionPolicy.retryOptions.maxWaitTimeInSeconds
   );
   const sessionReadRetryPolicy = new SessionRetryPolicy(globalEndpointManager, r, connectionPolicy);
   const defaultRetryPolicy = new DefaultRetryPolicy(request.operationType);

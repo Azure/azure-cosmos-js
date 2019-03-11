@@ -11,7 +11,7 @@ describe("NodeJS CRUD Tests", function() {
     it("nativeApi Client Should throw exception", async function() {
       // making timeout 1 ms to make sure it will throw
       // (create database request takes 10ms-15ms to finish on emulator)
-      const client = new CosmosClient({ endpoint, auth: { masterKey }, connectionPolicy: { RequestTimeout: 1 } });
+      const client = new CosmosClient({ endpoint, auth: { masterKey }, connectionPolicy: { requestTimeout: 1 } });
       // create database
       try {
         await getTestDatabase("request timeout", client);
@@ -28,7 +28,7 @@ describe("NodeJS CRUD Tests", function() {
         endpoint: "https://faaaaaake.com",
         auth: { masterKey: "" },
         connectionPolicy: {
-          RequestTimeout: 10000
+          requestTimeout: 10000
         }
       });
       assert.ok(client !== undefined, "client shouldn't be undefined if it succeeded");

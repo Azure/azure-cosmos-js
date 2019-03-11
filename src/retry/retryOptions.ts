@@ -3,15 +3,15 @@
  */
 export interface RetryOptions {
   /** Max number of retries to be performed for a request. Default value 9. */
-  MaxRetryAttemptCount: number;
+  maxRetryAttemptCount: number;
   /** Fixed retry interval in milliseconds to wait between each retry ignoring the retryAfter returned as part of the response. */
-  FixedRetryIntervalInMilliseconds: number;
+  fixedRetryIntervalInMilliseconds: number;
   /** Max wait time in seconds to wait for a request while the retries are happening. Default value 30 seconds. */
-  MaxWaitTimeInSeconds: number;
+  maxWaitTimeInSeconds: number;
 }
 
 export const defaultRetryOptions = Object.freeze({
-  MaxRetryAttemptCount: 9,
-  FixedRetryIntervalInMilliseconds: 0,
-  MaxWaitTimeInSeconds: 30
+  maxRetryAttemptCount: 9,
+  fixedRetryIntervalInMilliseconds: 0,
+  maxWaitTimeInSeconds: 30
 });
