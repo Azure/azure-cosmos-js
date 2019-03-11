@@ -117,6 +117,7 @@ export async function execute({
       throw err;
     } else {
       request.retryCount++;
+      const newUrl = (results as any)[1]; // TODO: any hack
       await sleep(retryPolicy.retryAfterInMilliseconds);
       return execute({
         body,
