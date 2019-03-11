@@ -133,6 +133,9 @@ export class RetryUtility {
       } else {
         request.retryCount++;
         const newUrl = (results as any)[1]; // TODO: any hack
+        if (newUrl !== undefined) {
+          RetryUtility.modifyRequestOptions(requestOptions, newUrl);
+        }
         await Helper.sleep(retryPolicy.retryAfterInMilliseconds);
         return this.apply(
           body,
