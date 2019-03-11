@@ -1,5 +1,6 @@
 import { OperationType } from "../common";
 import { ErrorResponse } from "../request";
+import { TimeoutErrorCode } from "../request/TimeoutError";
 import { RetryPolicy } from "./RetryPolicy";
 
 // Windows Socket Error Codes
@@ -38,7 +39,8 @@ const CONNECTION_ERROR_CODES = [
   WindowsNameTooLong,
   WindowsHostIsDown,
   WindowsNoRouteTohost,
-  LinuxConnectionReset
+  LinuxConnectionReset,
+  TimeoutErrorCode
 ];
 
 function needsRetry(operationType: OperationType, code: number | string) {
