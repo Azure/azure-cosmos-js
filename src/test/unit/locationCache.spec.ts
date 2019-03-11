@@ -37,9 +37,11 @@ function addScenario(options?: { numberOfRegions?: number; useMultipleWriteLocat
       });
       if (options.useMultipleWriteLocations) {
         connectionPolicy.useMultipleWriteLocations = options.useMultipleWriteLocations;
-        databaseAccountConfig.writableLocations = connectionPolicy.preferredLocations.map(locationName => {
-          return { name: locationName, databaseAccountEndpoint: getEndpointFromRegion(locationName) };
-        }).sort((a, b) => (a.name > b.name ? 1 : -1));
+        databaseAccountConfig.writableLocations = connectionPolicy.preferredLocations
+          .map(locationName => {
+            return { name: locationName, databaseAccountEndpoint: getEndpointFromRegion(locationName) };
+          })
+          .sort((a, b) => (a.name > b.name ? 1 : -1));
         databaseAccountConfig.enableMultipleWriteLocations = options.useMultipleWriteLocations;
       } else {
         databaseAccountConfig.writableLocations = regions
