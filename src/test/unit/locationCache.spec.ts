@@ -3,7 +3,7 @@ import { ConnectionPolicy, DatabaseAccount, defaultConnectionPolicy, Location } 
 import { LocationCache } from "../../LocationCache";
 
 import * as assert from "assert";
-import { Constants, ResourceType } from "../../common";
+import { OperationType, ResourceType } from "../../common";
 
 const scenarios: Scenario[] = [];
 const regions = ["westus", "East US", "eastus2", "south Centralus", "sEasIa"];
@@ -124,7 +124,7 @@ describe("Location Cache", function() {
 
       it(`read request for resolve endpoint, retry count 0, should match read endpoint`, function() {
         const resolveEndpoint = locationCache.resolveServiceEndpoint({
-          operationType: Constants.OperationTypes.Read,
+          operationType: OperationType.Read,
           resourceType: ResourceType.item,
           retryCount: 0
         });
@@ -135,7 +135,7 @@ describe("Location Cache", function() {
 
       it(`write request for resolve endpoint, retry count 0, should match write endpoint`, function() {
         const resolveEndpoint = locationCache.resolveServiceEndpoint({
-          operationType: Constants.OperationTypes.Replace,
+          operationType: OperationType.Replace,
           resourceType: ResourceType.item,
           retryCount: 0
         });
@@ -157,7 +157,7 @@ describe("Location Cache", function() {
               "write endpoint should match default endpoint prior to any database account info"
             );
             const resolveEndpoint = locationCache.resolveServiceEndpoint({
-              operationType: Constants.OperationTypes.Replace,
+              operationType: OperationType.Replace,
               resourceType: ResourceType.item,
               retryCount: 1
             });
@@ -178,7 +178,7 @@ describe("Location Cache", function() {
               "write endpoint should match default endpoint prior to any database account info"
             );
             const resolveEndpoint = locationCache.resolveServiceEndpoint({
-              operationType: Constants.OperationTypes.Replace,
+              operationType: OperationType.Replace,
               resourceType: ResourceType.item,
               retryCount: 1
             });
@@ -204,7 +204,7 @@ describe("Location Cache", function() {
             "read endpoint should match default endpoint prior to any database account info even if unavailable"
           );
           const resolveEndpoint = locationCache.resolveServiceEndpoint({
-            operationType: Constants.OperationTypes.Read,
+            operationType: OperationType.Read,
             resourceType: ResourceType.item,
             retryCount: 1
           });
@@ -223,7 +223,7 @@ describe("Location Cache", function() {
               "write endpoint should match default endpoint prior to any database account info"
             );
             const resolveEndpoint = locationCache.resolveServiceEndpoint({
-              operationType: Constants.OperationTypes.Replace,
+              operationType: OperationType.Replace,
               resourceType: ResourceType.item,
               retryCount: 1
             });
@@ -248,7 +248,7 @@ describe("Location Cache", function() {
           );
 
           const resolveEndpoint = locationCache.resolveServiceEndpoint({
-            operationType: Constants.OperationTypes.Read,
+            operationType: OperationType.Read,
             resourceType: ResourceType.item,
             retryCount: 1
           });
@@ -271,7 +271,7 @@ describe("Location Cache", function() {
               "write endpoint should match default endpoint prior to any database account info"
             );
             const resolveEndpoint = locationCache.resolveServiceEndpoint({
-              operationType: Constants.OperationTypes.Replace,
+              operationType: OperationType.Replace,
               resourceType: ResourceType.item,
               retryCount: 1
             });
@@ -333,7 +333,7 @@ describe("Location Cache", function() {
 
       it(`read request for resolve endpoint, retry count 0, should match read endpoint`, function() {
         const resolveEndpoint = locationCache.resolveServiceEndpoint({
-          operationType: Constants.OperationTypes.Read,
+          operationType: OperationType.Read,
           resourceType: ResourceType.item,
           retryCount: 0
         });
@@ -344,7 +344,7 @@ describe("Location Cache", function() {
 
       it(`write request for resolve endpoint, retry count 0, should match write endpoint`, function() {
         const resolveEndpoint = locationCache.resolveServiceEndpoint({
-          operationType: Constants.OperationTypes.Replace,
+          operationType: OperationType.Replace,
           resourceType: ResourceType.item,
           retryCount: 0
         });
@@ -364,7 +364,7 @@ describe("Location Cache", function() {
           "read endpoint should match default endpoint prior to any database account info even if unavailable"
         );
         const resolveEndpoint = locationCache.resolveServiceEndpoint({
-          operationType: Constants.OperationTypes.Read,
+          operationType: OperationType.Read,
           resourceType: ResourceType.item,
           retryCount: 1
         });
@@ -380,7 +380,7 @@ describe("Location Cache", function() {
           "write endpoint should match default endpoint prior to any database account info"
         );
         const resolveEndpoint = locationCache.resolveServiceEndpoint({
-          operationType: Constants.OperationTypes.Replace,
+          operationType: OperationType.Replace,
           resourceType: ResourceType.item,
           retryCount: 1
         });

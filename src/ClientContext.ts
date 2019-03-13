@@ -1,17 +1,17 @@
 import { PartitionKeyRange } from "./client/Container/PartitionKeyRange";
 import { Resource } from "./client/Resource";
-import { ConnectionPolicy, ConsistencyLevel, DatabaseAccount, QueryCompatibilityMode } from "./documents";
-import { GlobalEndpointManager } from "./globalEndpointManager";
-
-import { Constants, HTTPMethod, ResourceType } from "./common/constants";
+import { Constants, HTTPMethod, OperationType, ResourceType } from "./common/constants";
 import { getIdFromLink, getPathFromLink, parseLink, setIsUpsertHeader } from "./common/helper";
 import { StatusCodes, SubStatusCodes } from "./common/statusCodes";
 import { CosmosClientOptions } from "./CosmosClientOptions";
+import { ConnectionPolicy, ConsistencyLevel, DatabaseAccount, QueryCompatibilityMode } from "./documents";
+import { GlobalEndpointManager } from "./globalEndpointManager";
 import { FetchFunctionCallback, SqlQuerySpec } from "./queryExecutionContext";
 import { CosmosHeaders } from "./queryExecutionContext/CosmosHeaders";
 import { QueryIterator } from "./queryIterator";
 import { FeedOptions, RequestHandler, RequestOptions, Response } from "./request";
-import { ErrorResponse, getHeaders } from "./request/request";
+import { ErrorResponse } from "./request";
+import { getHeaders } from "./request/request";
 import { RequestContext } from "./request/RequestContext";
 import { SessionContainer } from "./session/sessionContainer";
 import { SessionContext } from "./session/SessionContext";
@@ -64,17 +64,17 @@ export class ClientContext {
       const request: any = {
         // TODO: any
         path,
-        operationType: Constants.OperationTypes.Read,
+        operationType: OperationType.Read,
         client: this,
         endpointOverride: null
       };
       // read will use ReadEndpoint since it uses GET operation
       const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
       const response = await this.requestHandler.get(endpoint, request, requestHeaders);
-      this.captureSessionToken(undefined, path, Constants.OperationTypes.Read, response.headers);
+      this.captureSessionToken(undefined, path, OperationType.Read, response.headers);
       return response;
     } catch (err) {
-      this.captureSessionToken(err, path, Constants.OperationTypes.Upsert, (err as ErrorResponse).headers);
+      this.captureSessionToken(err, path, OperationType.Upsert, (err as ErrorResponse).headers);
       throw err;
     }
   }
@@ -94,7 +94,7 @@ export class ClientContext {
     const request: any = {
       // TODO: any request
       path,
-      operationType: Constants.OperationTypes.Query,
+      operationType: OperationType.Query,
       client: this,
       endpointOverride: null
     };
@@ -117,7 +117,7 @@ export class ClientContext {
       this.applySessionToken(path, reqHeaders);
 
       const { result, headers: resHeaders } = await this.requestHandler.get(endpoint, request, reqHeaders);
-      this.captureSessionToken(undefined, path, Constants.OperationTypes.Query, resHeaders);
+      this.captureSessionToken(undefined, path, OperationType.Query, resHeaders);
       return this.processQueryFeedResponse({ result, headers: resHeaders }, !!query, resultFn);
     } else {
       initialHeaders[Constants.HttpHeaders.IsQuery] = "true";
@@ -150,7 +150,7 @@ export class ClientContext {
 
       const response = await this.requestHandler.post(endpoint, request, query, reqHeaders);
       const { result, headers: resHeaders } = response;
-      this.captureSessionToken(undefined, path, Constants.OperationTypes.Query, resHeaders);
+      this.captureSessionToken(undefined, path, OperationType.Query, resHeaders);
       return this.processQueryFeedResponse({ result, headers: resHeaders }, !!query, resultFn);
     }
   }
@@ -186,7 +186,7 @@ export class ClientContext {
 
       const request: RequestContext = {
         client: this,
-        operationType: Constants.OperationTypes.Delete,
+        operationType: OperationType.Delete,
         path,
         resourceType: type
       };
@@ -196,13 +196,13 @@ export class ClientContext {
       const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
       const response = await this.requestHandler.delete(endpoint, request, reqHeaders);
       if (parseLink(path).type !== "colls") {
-        this.captureSessionToken(undefined, path, Constants.OperationTypes.Delete, response.headers);
+        this.captureSessionToken(undefined, path, OperationType.Delete, response.headers);
       } else {
         this.clearSessionToken(path);
       }
       return response;
     } catch (err) {
-      this.captureSessionToken(err, path, Constants.OperationTypes.Upsert, (err as ErrorResponse).headers);
+      this.captureSessionToken(err, path, OperationType.Upsert, (err as ErrorResponse).headers);
       throw err;
     }
   }
@@ -249,7 +249,7 @@ export class ClientContext {
 
       const request: RequestContext = {
         client: this,
-        operationType: Constants.OperationTypes.Create,
+        operationType: OperationType.Create,
         path,
         resourceType: type
       };
@@ -259,10 +259,10 @@ export class ClientContext {
 
       const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
       const response = await this.requestHandler.post(endpoint, request, body, requestHeaders);
-      this.captureSessionToken(undefined, path, Constants.OperationTypes.Create, response.headers);
+      this.captureSessionToken(undefined, path, OperationType.Create, response.headers);
       return response;
     } catch (err) {
-      this.captureSessionToken(err, path, Constants.OperationTypes.Upsert, (err as ErrorResponse).headers);
+      this.captureSessionToken(err, path, OperationType.Upsert, (err as ErrorResponse).headers);
       throw err;
     }
   }
@@ -327,7 +327,7 @@ export class ClientContext {
 
       const request: RequestContext = {
         client: this,
-        operationType: Constants.OperationTypes.Replace,
+        operationType: OperationType.Replace,
         path,
         resourceType: type
       };
@@ -337,10 +337,10 @@ export class ClientContext {
       // replace will use WriteEndpoint since it uses PUT operation
       const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(reqHeaders);
       const response = await this.requestHandler.put(endpoint, request, resource, reqHeaders);
-      this.captureSessionToken(undefined, path, Constants.OperationTypes.Replace, response.headers);
+      this.captureSessionToken(undefined, path, OperationType.Replace, response.headers);
       return response;
     } catch (err) {
-      this.captureSessionToken(err, path, Constants.OperationTypes.Upsert, (err as ErrorResponse).headers);
+      this.captureSessionToken(err, path, OperationType.Upsert, (err as ErrorResponse).headers);
       throw err;
     }
   }
@@ -384,7 +384,7 @@ export class ClientContext {
 
       const request: RequestContext = {
         client: this,
-        operationType: Constants.OperationTypes.Upsert,
+        operationType: OperationType.Upsert,
         path,
         resourceType: type
       };
@@ -395,10 +395,10 @@ export class ClientContext {
       // upsert will use WriteEndpoint since it uses POST operation
       const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
       const response = await this.requestHandler.post(endpoint, request, body, requestHeaders);
-      this.captureSessionToken(undefined, path, Constants.OperationTypes.Upsert, response.headers);
+      this.captureSessionToken(undefined, path, OperationType.Upsert, response.headers);
       return response;
     } catch (err) {
-      this.captureSessionToken(err, path, Constants.OperationTypes.Upsert, (err as ErrorResponse).headers);
+      this.captureSessionToken(err, path, OperationType.Upsert, (err as ErrorResponse).headers);
       throw err;
     }
   }
@@ -432,7 +432,7 @@ export class ClientContext {
 
     const request: RequestContext = {
       client: this,
-      operationType: Constants.OperationTypes.Execute,
+      operationType: OperationType.Execute,
       path,
       resourceType: ResourceType.sproc
     };
@@ -464,9 +464,9 @@ export class ClientContext {
 
     const request: RequestContext = {
       client: this,
-      operationType: Constants.OperationTypes.Read,
+      operationType: OperationType.Read,
       path: "",
-      resourceType: "DatabaseAccount"
+      resourceType: ResourceType.none
     };
 
     const { result, headers } = await this.requestHandler.get(urlConnection, request, requestHeaders);
@@ -484,9 +484,14 @@ export class ClientContext {
     return this.globalEndpointManager.getReadEndpoint();
   }
 
-  private captureSessionToken(err: ErrorResponse, path: string, opType: string, resHeaders: CosmosHeaders) {
+  private captureSessionToken(
+    err: ErrorResponse,
+    path: string,
+    operationType: OperationType,
+    resHeaders: CosmosHeaders
+  ) {
     const request = this.getSessionParams(path); // TODO: any request
-    request.operationType = opType;
+    request.operationType = operationType;
     if (
       !err ||
       (!this.isMasterResource(request.resourceType) &&
@@ -496,22 +501,6 @@ export class ClientContext {
     ) {
       this.sessionContainer.set(request, resHeaders);
     }
-  }
-
-  // TODO: some session tests are using this, but I made them use type coercsion to call this method because I don't think it should be public.
-  private getSessionToken(collectionLink: string) {
-    if (!collectionLink) {
-      throw new Error("collectionLink cannot be null");
-    }
-
-    const paths = parseLink(collectionLink);
-
-    if (paths === undefined) {
-      return "";
-    }
-
-    const request = this.getSessionParams(collectionLink);
-    return this.sessionContainer.get(request);
   }
 
   public clearSessionToken(path: string) {
