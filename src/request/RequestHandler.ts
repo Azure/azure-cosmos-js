@@ -32,7 +32,7 @@ export class RequestHandler {
     const timeout = setTimeout(() => {
       didTimeout = true;
       controller.abort();
-    }, connectionPolicy.RequestTimeout);
+    }, connectionPolicy.requestTimeout);
 
     let response: any;
 
