@@ -75,10 +75,10 @@ export class ChangeFeedIterator<T> {
    * Gets an async iterator which will yield pages of results from Azure Cosmos DB.
    */
   public async *getAsyncIterator(): AsyncIterable<ChangeFeedResponse<Array<T & Resource>>> {
-    while (this.hasMoreResults) {
+    do {
       const result = await this.executeNext();
       yield result;
-    }
+    } while (this.hasMoreResults);
   }
 
   /**
