@@ -77,7 +77,9 @@ export class ChangeFeedIterator<T> {
   public async *getAsyncIterator(): AsyncIterable<ChangeFeedResponse<Array<T & Resource>>> {
     do {
       const result = await this.executeNext();
-      yield result;
+      if (result.count > 0) {
+        yield result;
+      }
     } while (this.hasMoreResults);
   }
 

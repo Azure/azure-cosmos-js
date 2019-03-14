@@ -166,6 +166,12 @@ describe("Change Feed Iterator", function() {
         assert.equal(shouldHaveNoItems.length, 0, "there should be 0 results");
         const hasMoreResults = iterator.hasMoreResults;
         assert.equal(hasMoreResults, false, "hasMoreResults should be false when we read the whole page");
+
+        let count = 0;
+        for await (const page of iterator.getAsyncIterator()) {
+          ++count;
+        }
+        assert.equal(count, 0, "async iterator should return any results if there are none left to serve");
       });
     });
 
