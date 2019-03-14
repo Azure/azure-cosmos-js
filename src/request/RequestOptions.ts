@@ -53,4 +53,5 @@ export interface RequestOptions {
   skipGetPartitionKeyDefinition?: boolean;
   /** Disable automatic id generation (will cause creates to fail if id isn't on the definition) */
   disableAutomaticIdGeneration?: boolean;
+  abortSignal?: AbortSignal
 }
