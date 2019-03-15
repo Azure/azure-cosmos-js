@@ -124,7 +124,7 @@ export class RetryUtility {
       } else {
         retryPolicy = defaultRetryPolicy;
       }
-      const results = await retryPolicy.shouldRetry(err, retryContext, requestOptions.hostname);
+      const results = await retryPolicy.shouldRetry(err, retryContext, locationEndpoint);
       if (!results) {
         headers[Constants.ThrottleRetryCount] = resourceThrottleRetryPolicy.currentRetryAttemptCount;
         headers[Constants.ThrottleRetryWaitTimeInMs] = resourceThrottleRetryPolicy.cummulativeWaitTimeinMilliseconds;
@@ -134,7 +134,7 @@ export class RetryUtility {
         request.retryCount++;
         const newUrl = (results as any)[1]; // TODO: any hack
         if (newUrl !== undefined) {
-          RetryUtility.modifyRequestOptions(requestOptions, newUrl);
+          RetryUtility.modifyRequestOptions(requestOptions, url.parse(newUrl));
         }
         await Helper.sleep(retryPolicy.retryAfterInMilliseconds);
         return this.apply(
@@ -161,7 +161,7 @@ export class RetryUtility {
     // TODO: any hack is bad
     const properties = Object.keys(newUrl);
     for (const index in properties) {
-      if (properties[index] !== "hostname") {
+      if (properties[index] !== "path") {
         oldRequestOptions[properties[index]] = newUrl[properties[index]];
       }
     }
