@@ -7,7 +7,7 @@ if (!process.env.SKIP_LATEST) {
 }
 
 async function exec(cmd) {
-  const command = execa.shell(cmd, { cwd: "./ts-test" });
+  const command = execa.shell(cmd, { cwd: "./consumer-test" });
   command.stderr.pipe(process.stderr);
   command.stdout.pipe(process.stdout);
   return command;
