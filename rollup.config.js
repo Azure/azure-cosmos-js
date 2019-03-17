@@ -1,8 +1,4 @@
 import resolve from "rollup-plugin-local-resolve";
-import replace from "rollup-plugin-replace";
-
-const version = require("./package.json").version;
-
 export default [
   {
     input: "dist-esm/index.js",
@@ -12,11 +8,6 @@ export default [
       name: "Microsoft.Azure.Cosmos",
       sourcemap: true
     },
-    plugins: [
-      resolve(),
-      replace({
-        REPALCE_WITH_SDK_VERSION: version
-      })
-    ]
+    plugins: [resolve()]
   }
 ];
