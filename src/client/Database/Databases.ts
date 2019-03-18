@@ -90,7 +90,7 @@ export class Databases {
    * @param body The {@link DatabaseDefinition} that represents the {@link Database} to be created.
    * @param options Use to set options like response page size, continuation tokens, etc.
    */
-  public async create(body: DatabaseRequest, options?: RequestOptions): Promise<DatabaseResponse> {
+  public async create(body: DatabaseRequest, options: RequestOptions = {}): Promise<DatabaseResponse> {
     const err = {};
     if (!isResourceValid(body, err)) {
       throw err;
