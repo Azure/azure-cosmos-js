@@ -24,17 +24,29 @@ export function bodyFromData(data: Buffer | string | object) {
   return data;
 }
 
-export async function getHeaders(
-  authOptions: AuthOptions,
-  defaultHeaders: CosmosHeaders,
-  verb: HTTPMethod,
-  path: string,
-  resourceId: string,
-  resourceType: ResourceType,
-  options: RequestOptions | FeedOptions,
-  partitionKeyRangeId?: string,
-  useMultipleWriteLocations?: boolean
-): Promise<CosmosHeaders> {
+interface GetHeadersOptions {
+  authOptions: AuthOptions;
+  defaultHeaders: CosmosHeaders;
+  verb: HTTPMethod;
+  path: string;
+  resourceId: string;
+  resourceType: ResourceType;
+  options: RequestOptions | FeedOptions;
+  partitionKeyRangeId?: string;
+  useMultipleWriteLocations?: boolean;
+}
+
+export async function getHeaders({
+  authOptions,
+  defaultHeaders,
+  verb,
+  path,
+  resourceId,
+  resourceType,
+  options,
+  partitionKeyRangeId,
+  useMultipleWriteLocations
+}: GetHeadersOptions): Promise<CosmosHeaders> {
   const headers: CosmosHeaders = { ...defaultHeaders };
   const opts: RequestOptions & FeedOptions = (options || {}) as any; // TODO: this is dirty
 

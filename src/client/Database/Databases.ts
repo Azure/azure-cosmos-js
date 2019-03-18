@@ -96,10 +96,10 @@ export class Databases {
       throw err;
     }
 
-    let initialHeaders: CosmosHeaders;
-
     if (body.throughput) {
-      initialHeaders = { [Constants.HttpHeaders.OfferThroughput]: body.throughput };
+      options.initialHeaders = Object.assign({}, options.initialHeaders, {
+        [Constants.HttpHeaders.OfferThroughput]: body.throughput
+      });
       delete body.throughput;
     }
 
@@ -109,7 +109,6 @@ export class Databases {
       path,
       ResourceType.database,
       undefined,
-      initialHeaders,
       options
     );
     const ref = new Database(this.client, body.id, this.clientContext);

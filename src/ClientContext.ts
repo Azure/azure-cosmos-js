@@ -44,29 +44,25 @@ export class ClientContext {
     path: string,
     type: ResourceType,
     id: string,
-    initialHeaders: CosmosHeaders,
-    options?: RequestOptions
+    options: RequestOptions = {}
   ): Promise<Response<T & Resource>> {
     try {
-      const requestHeaders = await getHeaders(
-        this.cosmosClientOptions.auth,
-        { ...initialHeaders, ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
-        HTTPMethod.get,
+      const requestHeaders = await getHeaders({
+        authOptions: this.cosmosClientOptions.auth,
+        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
+        verb: HTTPMethod.get,
         path,
-        id,
-        type,
+        resourceId: id,
+        resourceType: type,
         options,
-        undefined,
-        this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
-      );
+        useMultipleWriteLocations: this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
+      });
       this.applySessionToken(path, requestHeaders);
 
-      const request: any = {
-        // TODO: any
+      const request: RequestContext = {
         path,
         operationType: OperationType.Read,
-        client: this,
-        endpointOverride: null
+        client: this
       };
       // read will use ReadEndpoint since it uses GET operation
       const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
@@ -91,29 +87,27 @@ export class ClientContext {
     // Query operations will use ReadEndpoint even though it uses
     // GET(for queryFeed) and POST(for regular query operations)
 
-    const request: any = {
-      // TODO: any request
+    const request: RequestContext = {
       path,
       operationType: OperationType.Query,
-      client: this,
-      endpointOverride: null
+      client: this
     };
 
     const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
 
     const initialHeaders = { ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) };
     if (query === undefined) {
-      const reqHeaders = await getHeaders(
-        this.cosmosClientOptions.auth,
-        initialHeaders,
-        HTTPMethod.get,
+      const reqHeaders = await getHeaders({
+        authOptions: this.cosmosClientOptions.auth,
+        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
+        verb: HTTPMethod.get,
         path,
-        id,
-        type,
+        resourceId: id,
+        resourceType: type,
         options,
         partitionKeyRangeId,
-        this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
-      );
+        useMultipleWriteLocations: this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
+      });
       this.applySessionToken(path, reqHeaders);
 
       const response = await this.requestHandler.get(endpoint, request, reqHeaders);
@@ -135,17 +129,17 @@ export class ClientContext {
           break;
       }
 
-      const reqHeaders = await getHeaders(
-        this.cosmosClientOptions.auth,
-        initialHeaders,
-        HTTPMethod.post,
+      const reqHeaders = await getHeaders({
+        authOptions: this.cosmosClientOptions.auth,
+        defaultHeaders: initialHeaders,
+        verb: HTTPMethod.post,
         path,
-        id,
-        type,
+        resourceId: id,
+        resourceType: type,
         options,
         partitionKeyRangeId,
-        this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
-      );
+        useMultipleWriteLocations: this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
+      });
       this.applySessionToken(path, reqHeaders);
 
       const response = await this.requestHandler.post(endpoint, request, query, reqHeaders);
@@ -167,21 +161,19 @@ export class ClientContext {
     path: string,
     type: ResourceType,
     id: string,
-    initialHeaders: CosmosHeaders,
-    options?: RequestOptions
+    options: RequestOptions = {}
   ): Promise<Response<T & Resource>> {
     try {
-      const reqHeaders = await getHeaders(
-        this.cosmosClientOptions.auth,
-        { ...initialHeaders, ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
-        HTTPMethod.delete,
+      const reqHeaders = await getHeaders({
+        authOptions: this.cosmosClientOptions.auth,
+        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
+        verb: HTTPMethod.delete,
         path,
-        id,
-        type,
+        resourceId: id,
+        resourceType: type,
         options,
-        undefined,
-        this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
-      );
+        useMultipleWriteLocations: this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
+      });
 
       const request: RequestContext = {
         client: this,
@@ -212,8 +204,7 @@ export class ClientContext {
     path: string,
     type: ResourceType,
     id: string,
-    initialHeaders: CosmosHeaders,
-    options?: RequestOptions
+    options: RequestOptions
   ): Promise<Response<T & Resource>>;
 
   // But a few cases, like permissions, there is additional junk added to the response that isn't in system resource props
@@ -222,29 +213,26 @@ export class ClientContext {
     path: string,
     type: ResourceType,
     id: string,
-    initialHeaders: CosmosHeaders,
-    options?: RequestOptions
+    options: RequestOptions
   ): Promise<Response<T & U & Resource>>;
   public async create<T, U>(
     body: T,
     path: string,
     type: ResourceType,
     id: string,
-    initialHeaders: CosmosHeaders,
-    options?: RequestOptions
+    options: RequestOptions = {}
   ): Promise<Response<T & U & Resource>> {
     try {
-      const requestHeaders = await getHeaders(
-        this.cosmosClientOptions.auth,
-        { ...initialHeaders, ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
-        HTTPMethod.post,
+      const requestHeaders = await getHeaders({
+        authOptions: this.cosmosClientOptions.auth,
+        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
+        verb: HTTPMethod.post,
         path,
-        id,
-        type,
+        resourceId: id,
+        resourceType: type,
         options,
-        undefined,
-        this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
-      );
+        useMultipleWriteLocations: this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
+      });
 
       const request: RequestContext = {
         client: this,
@@ -308,21 +296,19 @@ export class ClientContext {
     path: string,
     type: ResourceType,
     id: string,
-    initialHeaders: CosmosHeaders,
-    options?: RequestOptions
+    options: RequestOptions = {}
   ): Promise<Response<T & Resource>> {
     try {
-      const reqHeaders = await getHeaders(
-        this.cosmosClientOptions.auth,
-        { ...initialHeaders, ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
-        HTTPMethod.put,
+      const requestHeaders = await getHeaders({
+        authOptions: this.cosmosClientOptions.auth,
+        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
+        verb: HTTPMethod.put,
         path,
-        id,
-        type,
+        resourceId: id,
+        resourceType: type,
         options,
-        undefined,
-        this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
-      );
+        useMultipleWriteLocations: this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
+      });
 
       const request: RequestContext = {
         client: this,
@@ -331,11 +317,11 @@ export class ClientContext {
         resourceType: type
       };
 
-      this.applySessionToken(path, reqHeaders);
+      this.applySessionToken(path, requestHeaders);
 
       // replace will use WriteEndpoint since it uses PUT operation
-      const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(reqHeaders);
-      const response = await this.requestHandler.put(endpoint, request, resource, reqHeaders);
+      const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(requestHeaders);
+      const response = await this.requestHandler.put(endpoint, request, resource, requestHeaders);
       this.captureSessionToken(undefined, path, OperationType.Replace, response.headers);
       return response;
     } catch (err) {
@@ -349,37 +335,33 @@ export class ClientContext {
     path: string,
     type: ResourceType,
     id: string,
-    initialHeaders: CosmosHeaders,
-    options?: RequestOptions
+    options: RequestOptions
   ): Promise<Response<T & Resource>>;
   public async upsert<T, U>(
     body: T,
     path: string,
     type: ResourceType,
     id: string,
-    initialHeaders: CosmosHeaders,
-    options?: RequestOptions
+    options: RequestOptions
   ): Promise<Response<T & U & Resource>>;
   public async upsert<T>(
     body: T,
     path: string,
     type: ResourceType,
     id: string,
-    initialHeaders: CosmosHeaders,
-    options?: RequestOptions
+    options: RequestOptions = {}
   ): Promise<Response<T & Resource>> {
     try {
-      const requestHeaders = await getHeaders(
-        this.cosmosClientOptions.auth,
-        { ...initialHeaders, ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
-        HTTPMethod.post,
+      const requestHeaders = await getHeaders({
+        authOptions: this.cosmosClientOptions.auth,
+        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
+        verb: HTTPMethod.post,
         path,
-        id,
-        type,
+        resourceId: id,
+        resourceType: type,
         options,
-        undefined,
-        this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
-      );
+        useMultipleWriteLocations: this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
+      });
 
       const request: RequestContext = {
         client: this,
@@ -405,10 +387,8 @@ export class ClientContext {
   public async execute<T>(
     sprocLink: string,
     params?: any[], // TODO: any
-    options?: RequestOptions
+    options: RequestOptions = {}
   ): Promise<Response<T>> {
-    const initialHeaders = { ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) };
-
     // Accept a single parameter or an array of parameters.
     // Didn't add type annotation for this because we should legacy this behavior
     if (params !== null && params !== undefined && !Array.isArray(params)) {
@@ -417,17 +397,16 @@ export class ClientContext {
     const path = getPathFromLink(sprocLink);
     const id = getIdFromLink(sprocLink);
 
-    const headers = await getHeaders(
-      this.cosmosClientOptions.auth,
-      initialHeaders,
-      HTTPMethod.post,
+    const headers = await getHeaders({
+      authOptions: this.cosmosClientOptions.auth,
+      defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
+      verb: HTTPMethod.post,
       path,
-      id,
-      ResourceType.sproc,
+      resourceId: id,
+      resourceType: ResourceType.sproc,
       options,
-      undefined,
-      this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
-    );
+      useMultipleWriteLocations: this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
+    });
 
     const request: RequestContext = {
       client: this,
@@ -449,17 +428,16 @@ export class ClientContext {
   public async getDatabaseAccount(options: RequestOptions = {}): Promise<Response<DatabaseAccount>> {
     const urlConnection = options.urlConnection || this.cosmosClientOptions.endpoint;
 
-    const requestHeaders = await getHeaders(
-      this.cosmosClientOptions.auth,
-      this.cosmosClientOptions.defaultHeaders,
-      HTTPMethod.get,
-      "",
-      "",
-      ResourceType.none,
-      {},
-      undefined,
-      this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
-    );
+    const requestHeaders = await getHeaders({
+      authOptions: this.cosmosClientOptions.auth,
+      defaultHeaders: this.cosmosClientOptions.defaultHeaders,
+      verb: HTTPMethod.get,
+      path: "",
+      resourceId: "",
+      resourceType: ResourceType.none,
+      options: {},
+      useMultipleWriteLocations: this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
+    });
 
     const request: RequestContext = {
       client: this,
@@ -489,7 +467,7 @@ export class ClientContext {
     operationType: OperationType,
     resHeaders: CosmosHeaders
   ) {
-    const request = this.getSessionParams(path); // TODO: any request
+    const request = this.getSessionParams(path);
     request.operationType = operationType;
     if (
       !err ||
