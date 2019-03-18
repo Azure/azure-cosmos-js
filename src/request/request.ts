@@ -137,11 +137,10 @@ export async function getHeaders({
   }
 
   if (opts.partitionKey !== undefined) {
-    let partitionKey: string[] | string = opts.partitionKey;
-    if (partitionKey === null || !Array.isArray(partitionKey)) {
-      partitionKey = [partitionKey as string];
+    if (options.partitionKey === null || !Array.isArray(options.partitionKey)) {
+      options.partitionKey = [options.partitionKey as string];
     }
-    headers[Constants.HttpHeaders.PartitionKey] = jsonStringifyAndEscapeNonASCII(partitionKey);
+    headers[Constants.HttpHeaders.PartitionKey] = jsonStringifyAndEscapeNonASCII(options.partitionKey);
   }
 
   if (authOptions.masterKey || authOptions.key || authOptions.tokenProvider) {
@@ -164,10 +163,6 @@ export async function getHeaders({
 
   if (opts.enableScriptLogging) {
     headers[Constants.HttpHeaders.EnableScriptLogging] = opts.enableScriptLogging;
-  }
-
-  if (opts.offerEnableRUPerMinuteThroughput) {
-    headers[Constants.HttpHeaders.OfferIsRUPerMinuteThroughputEnabled] = true;
   }
 
   if (opts.disableRUPerMinuteUsage) {

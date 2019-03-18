@@ -292,7 +292,7 @@ describe("Session Token", function() {
       const oldTokens = getCollection2TokenMap(sessionContainer);
       reqHeaders[Constants.HttpHeaders.SessionToken] = increaseLSN(oldTokens);
     });
-    const applySessionTokenStub = sinon.stub(clientContext as any, "applySessionToken").callsFake(callbackSpy);
+    const applySessionTokenStub = sinon.stub(clientContext as any, "applySessionToken").callsFake(callbackSpy as any);
     try {
       await container.item("1").read({ partitionKey: "1" });
       assert.fail("readDocument must throw");

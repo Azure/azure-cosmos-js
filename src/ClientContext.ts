@@ -426,7 +426,7 @@ export class ClientContext {
    * If not present, current client's url will be used.
    */
   public async getDatabaseAccount(options: RequestOptions = {}): Promise<Response<DatabaseAccount>> {
-    const urlConnection = options.urlConnection || this.cosmosClientOptions.endpoint;
+    const endpoint = options.urlConnection || this.cosmosClientOptions.endpoint;
 
     const requestHeaders = await getHeaders({
       authOptions: this.cosmosClientOptions.auth,
@@ -446,7 +446,8 @@ export class ClientContext {
       resourceType: ResourceType.none
     };
 
-    const { result, headers } = await this.requestHandler.get(urlConnection, request, requestHeaders);
+    await options.beforeOperation({ endpoint, request, headers: requestHeaders });
+    const { result, headers } = await this.requestHandler.get(endpoint, request, requestHeaders);
 
     const databaseAccount = new DatabaseAccount(result, headers);
 
