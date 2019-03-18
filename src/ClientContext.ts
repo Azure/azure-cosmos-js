@@ -55,7 +55,7 @@ export class ClientContext {
         resourceId: id,
         resourceType: type,
         options,
-        useMultipleWriteLocations: this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
+        useMultipleWriteLocations: this.connectionPolicy.useMultipleWriteLocations
       });
       this.applySessionToken(path, requestHeaders);
 
@@ -106,7 +106,7 @@ export class ClientContext {
         resourceType: type,
         options,
         partitionKeyRangeId,
-        useMultipleWriteLocations: this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
+        useMultipleWriteLocations: this.connectionPolicy.useMultipleWriteLocations
       });
       this.applySessionToken(path, reqHeaders);
 
@@ -138,7 +138,7 @@ export class ClientContext {
         resourceType: type,
         options,
         partitionKeyRangeId,
-        useMultipleWriteLocations: this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
+        useMultipleWriteLocations: this.connectionPolicy.useMultipleWriteLocations
       });
       this.applySessionToken(path, reqHeaders);
 
@@ -172,7 +172,7 @@ export class ClientContext {
         resourceId: id,
         resourceType: type,
         options,
-        useMultipleWriteLocations: this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
+        useMultipleWriteLocations: this.connectionPolicy.useMultipleWriteLocations
       });
 
       const request: RequestContext = {
@@ -231,7 +231,7 @@ export class ClientContext {
         resourceId: id,
         resourceType: type,
         options,
-        useMultipleWriteLocations: this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
+        useMultipleWriteLocations: this.connectionPolicy.useMultipleWriteLocations
       });
 
       const request: RequestContext = {
@@ -307,7 +307,7 @@ export class ClientContext {
         resourceId: id,
         resourceType: type,
         options,
-        useMultipleWriteLocations: this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
+        useMultipleWriteLocations: this.connectionPolicy.useMultipleWriteLocations
       });
 
       const request: RequestContext = {
@@ -360,7 +360,7 @@ export class ClientContext {
         resourceId: id,
         resourceType: type,
         options,
-        useMultipleWriteLocations: this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
+        useMultipleWriteLocations: this.connectionPolicy.useMultipleWriteLocations
       });
 
       const request: RequestContext = {
@@ -405,7 +405,7 @@ export class ClientContext {
       resourceId: id,
       resourceType: ResourceType.sproc,
       options,
-      useMultipleWriteLocations: this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
+      useMultipleWriteLocations: this.connectionPolicy.useMultipleWriteLocations
     });
 
     const request: RequestContext = {
@@ -436,7 +436,7 @@ export class ClientContext {
       resourceId: "",
       resourceType: ResourceType.none,
       options: {},
-      useMultipleWriteLocations: this.cosmosClientOptions.connectionPolicy.useMultipleWriteLocations
+      useMultipleWriteLocations: this.connectionPolicy.useMultipleWriteLocations
     });
 
     const request: RequestContext = {
