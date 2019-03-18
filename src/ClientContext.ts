@@ -49,7 +49,7 @@ export class ClientContext {
     try {
       const requestHeaders = await getHeaders({
         authOptions: this.cosmosClientOptions.auth,
-        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
+        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...options.initialHeaders },
         verb: HTTPMethod.get,
         path,
         resourceId: id,
@@ -95,11 +95,11 @@ export class ClientContext {
 
     const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
 
-    const initialHeaders = { ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) };
+    const initialHeaders = { ...this.cosmosClientOptions.defaultHeaders, ...options.initialHeaders };
     if (query === undefined) {
       const reqHeaders = await getHeaders({
         authOptions: this.cosmosClientOptions.auth,
-        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
+        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...options.initialHeaders },
         verb: HTTPMethod.get,
         path,
         resourceId: id,
@@ -166,7 +166,7 @@ export class ClientContext {
     try {
       const reqHeaders = await getHeaders({
         authOptions: this.cosmosClientOptions.auth,
-        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
+        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...options.initialHeaders },
         verb: HTTPMethod.delete,
         path,
         resourceId: id,
@@ -225,7 +225,7 @@ export class ClientContext {
     try {
       const requestHeaders = await getHeaders({
         authOptions: this.cosmosClientOptions.auth,
-        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
+        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...options.initialHeaders },
         verb: HTTPMethod.post,
         path,
         resourceId: id,
@@ -301,7 +301,7 @@ export class ClientContext {
     try {
       const requestHeaders = await getHeaders({
         authOptions: this.cosmosClientOptions.auth,
-        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
+        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...options.initialHeaders },
         verb: HTTPMethod.put,
         path,
         resourceId: id,
@@ -354,7 +354,7 @@ export class ClientContext {
     try {
       const requestHeaders = await getHeaders({
         authOptions: this.cosmosClientOptions.auth,
-        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
+        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...options.initialHeaders },
         verb: HTTPMethod.post,
         path,
         resourceId: id,
@@ -399,7 +399,7 @@ export class ClientContext {
 
     const headers = await getHeaders({
       authOptions: this.cosmosClientOptions.auth,
-      defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...(options && options.initialHeaders) },
+      defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...options.initialHeaders },
       verb: HTTPMethod.post,
       path,
       resourceId: id,
