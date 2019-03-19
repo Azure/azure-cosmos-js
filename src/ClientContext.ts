@@ -1,11 +1,10 @@
-import { Agent } from "https";
 import { PartitionKeyRange } from "./client/Container/PartitionKeyRange";
 import { Resource } from "./client/Resource";
 import { Constants, HTTPMethod, OperationType, ResourceType } from "./common/constants";
 import { getIdFromLink, getPathFromLink, parseLink, setIsUpsertHeader } from "./common/helper";
 import { StatusCodes, SubStatusCodes } from "./common/statusCodes";
-import { CosmosClientOptions } from "./CosmosClientOptions";
-import { ConnectionPolicy, ConsistencyLevel, DatabaseAccount, QueryCompatibilityMode } from "./documents";
+import { Agent, CosmosClientOptions } from "./CosmosClientOptions";
+import { ConnectionPolicy, ConsistencyLevel, DatabaseAccount } from "./documents";
 import { GlobalEndpointManager } from "./globalEndpointManager";
 import { FetchFunctionCallback, SqlQuerySpec } from "./queryExecutionContext";
 import { CosmosHeaders } from "./queryExecutionContext/CosmosHeaders";
@@ -99,36 +98,18 @@ export class ClientContext {
     await this.globalEndpointManager.setServiceEndpoint(request);
 
     const initialHeaders = { ...this.cosmosClientOptions.defaultHeaders, ...options.initialHeaders };
-    if (query === undefined) {
-      await this.setHeaders(request);
-      this.applySessionToken(request);
-
-      const response = await executeRequest(request);
-      this.captureSessionToken(undefined, path, OperationType.Query, response.headers);
-      return this.processQueryFeedResponse(response, !!query, resultFn);
-    } else {
+    if (query !== undefined) {
       initialHeaders[Constants.HttpHeaders.IsQuery] = "true";
-      switch (this.cosmosClientOptions.queryCompatibilityMode) {
-        case QueryCompatibilityMode.SqlQuery:
-          initialHeaders[Constants.HttpHeaders.ContentType] = Constants.MediaTypes.SQL;
-          break;
-        case QueryCompatibilityMode.Query:
-        case QueryCompatibilityMode.Default:
-        default:
-          if (typeof query === "string") {
-            query = { query }; // Converts query text to query object.
-          }
-          initialHeaders[Constants.HttpHeaders.ContentType] = Constants.MediaTypes.QueryJson;
-          break;
+      initialHeaders[Constants.HttpHeaders.ContentType] = Constants.MediaTypes.QueryJson;
+      if (typeof query === "string") {
+        query = { query }; // Converts query text to query object.
       }
-
-      await this.setHeaders(request);
-      this.applySessionToken(request);
-
-      const response = await executeRequest(request);
-      this.captureSessionToken(undefined, path, OperationType.Query, response.headers);
-      return this.processQueryFeedResponse(response, !!query, resultFn);
     }
+    await this.setHeaders(request);
+    this.applySessionToken(request);
+    const response = await executeRequest(request);
+    this.captureSessionToken(undefined, path, OperationType.Query, response.headers);
+    return this.processQueryFeedResponse(response, !!query, resultFn);
   }
 
   public queryPartitionKeyRanges(collectionLink: string, query?: string | SqlQuerySpec, options?: FeedOptions) {
