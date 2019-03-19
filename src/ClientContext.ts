@@ -1,3 +1,4 @@
+import { Agent } from "https";
 import { PartitionKeyRange } from "./client/Container/PartitionKeyRange";
 import { Resource } from "./client/Resource";
 import { Constants, HTTPMethod, OperationType, ResourceType } from "./common/constants";
@@ -9,10 +10,11 @@ import { GlobalEndpointManager } from "./globalEndpointManager";
 import { FetchFunctionCallback, SqlQuerySpec } from "./queryExecutionContext";
 import { CosmosHeaders } from "./queryExecutionContext/CosmosHeaders";
 import { QueryIterator } from "./queryIterator";
-import { FeedOptions, RequestHandler, RequestOptions, Response } from "./request";
+import { FeedOptions, RequestOptions, Response } from "./request";
 import { ErrorResponse } from "./request";
 import { getHeaders } from "./request/request";
 import { RequestContext } from "./request/RequestContext";
+import { request as executeRequest } from "./request/RequestHandler";
 import { SessionContainer } from "./session/sessionContainer";
 import { SessionContext } from "./session/SessionContext";
 
@@ -23,7 +25,7 @@ import { SessionContext } from "./session/SessionContext";
 export class ClientContext {
   private readonly sessionContainer: SessionContainer;
   private connectionPolicy: ConnectionPolicy;
-  private requestHandler: RequestHandler;
+  private agent: Agent;
 
   public partitionKeyDefinitionCache: { [containerUrl: string]: any }; // TODO: ParitionKeyDefinitionCache
   public constructor(
@@ -32,41 +34,35 @@ export class ClientContext {
   ) {
     this.connectionPolicy = cosmosClientOptions.connectionPolicy;
     this.sessionContainer = new SessionContainer();
-    this.requestHandler = new RequestHandler(
-      globalEndpointManager,
-      this.connectionPolicy,
-      this.cosmosClientOptions.agent
-    );
     this.partitionKeyDefinitionCache = {};
   }
   /** @ignore */
   public async read<T>(
     path: string,
-    type: ResourceType,
-    id: string,
+    resourceType: ResourceType,
+    resourceId: string,
     options: RequestOptions = {}
   ): Promise<Response<T & Resource>> {
     try {
-      const requestHeaders = await getHeaders({
-        authOptions: this.cosmosClientOptions.auth,
-        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...options.initialHeaders },
-        verb: HTTPMethod.get,
-        path,
-        resourceId: id,
-        resourceType: type,
-        options,
-        useMultipleWriteLocations: this.connectionPolicy.useMultipleWriteLocations
-      });
-      this.applySessionToken(path, requestHeaders);
-
       const request: RequestContext = {
+        globalEndpointManager: this.globalEndpointManager,
+        requestAgent: this.agent,
+        connectionPolicy: this.connectionPolicy,
+        method: HTTPMethod.get,
         path,
         operationType: OperationType.Read,
-        client: this
+        client: this,
+        resourceId,
+        options,
+        resourceType
       };
+
+      await this.setHeaders(request);
+      this.applySessionToken(request);
+
       // read will use ReadEndpoint since it uses GET operation
-      const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
-      const response = await this.requestHandler.get(endpoint, request, requestHeaders);
+      await this.globalEndpointManager.setServiceEndpoint(request);
+      const response = await executeRequest(request);
       this.captureSessionToken(undefined, path, OperationType.Read, response.headers);
       return response;
     } catch (err) {
@@ -77,8 +73,8 @@ export class ClientContext {
 
   public async queryFeed<T>(
     path: string,
-    type: ResourceType,
-    id: string,
+    resourceType: ResourceType,
+    resourceId: string,
     resultFn: (result: { [key: string]: any }) => any[], // TODO: any
     query: SqlQuerySpec | string,
     options: FeedOptions,
@@ -88,29 +84,26 @@ export class ClientContext {
     // GET(for queryFeed) and POST(for regular query operations)
 
     const request: RequestContext = {
+      globalEndpointManager: this.globalEndpointManager,
+      requestAgent: this.agent,
+      connectionPolicy: this.connectionPolicy,
+      method: HTTPMethod.post,
       path,
       operationType: OperationType.Query,
-      client: this
+      client: this,
+      partitionKeyRangeId,
+      resourceId,
+      resourceType
     };
 
-    const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
+    await this.globalEndpointManager.setServiceEndpoint(request);
 
     const initialHeaders = { ...this.cosmosClientOptions.defaultHeaders, ...options.initialHeaders };
     if (query === undefined) {
-      const reqHeaders = await getHeaders({
-        authOptions: this.cosmosClientOptions.auth,
-        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...options.initialHeaders },
-        verb: HTTPMethod.get,
-        path,
-        resourceId: id,
-        resourceType: type,
-        options,
-        partitionKeyRangeId,
-        useMultipleWriteLocations: this.connectionPolicy.useMultipleWriteLocations
-      });
-      this.applySessionToken(path, reqHeaders);
+      await this.setHeaders(request);
+      this.applySessionToken(request);
 
-      const response = await this.requestHandler.get(endpoint, request, reqHeaders);
+      const response = await executeRequest(request);
       this.captureSessionToken(undefined, path, OperationType.Query, response.headers);
       return this.processQueryFeedResponse(response, !!query, resultFn);
     } else {
@@ -129,20 +122,10 @@ export class ClientContext {
           break;
       }
 
-      const reqHeaders = await getHeaders({
-        authOptions: this.cosmosClientOptions.auth,
-        defaultHeaders: initialHeaders,
-        verb: HTTPMethod.post,
-        path,
-        resourceId: id,
-        resourceType: type,
-        options,
-        partitionKeyRangeId,
-        useMultipleWriteLocations: this.connectionPolicy.useMultipleWriteLocations
-      });
-      this.applySessionToken(path, reqHeaders);
+      await this.setHeaders(request);
+      this.applySessionToken(request);
 
-      const response = await this.requestHandler.post(endpoint, request, query, reqHeaders);
+      const response = await executeRequest(request);
       this.captureSessionToken(undefined, path, OperationType.Query, response.headers);
       return this.processQueryFeedResponse(response, !!query, resultFn);
     }
@@ -159,33 +142,29 @@ export class ClientContext {
 
   public async delete<T>(
     path: string,
-    type: ResourceType,
-    id: string,
+    resourceType: ResourceType,
+    resourceId: string,
     options: RequestOptions = {}
   ): Promise<Response<T & Resource>> {
     try {
-      const reqHeaders = await getHeaders({
-        authOptions: this.cosmosClientOptions.auth,
-        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...options.initialHeaders },
-        verb: HTTPMethod.delete,
-        path,
-        resourceId: id,
-        resourceType: type,
-        options,
-        useMultipleWriteLocations: this.connectionPolicy.useMultipleWriteLocations
-      });
-
       const request: RequestContext = {
+        globalEndpointManager: this.globalEndpointManager,
+        requestAgent: this.agent,
+        connectionPolicy: this.connectionPolicy,
+        method: HTTPMethod.delete,
         client: this,
         operationType: OperationType.Delete,
         path,
-        resourceType: type
+        resourceType,
+        options,
+        resourceId
       };
 
-      this.applySessionToken(path, reqHeaders);
+      await this.setHeaders(request);
+      this.applySessionToken(request);
       // deleteResource will use WriteEndpoint since it uses DELETE operation
-      const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
-      const response = await this.requestHandler.delete(endpoint, request, reqHeaders);
+      await this.globalEndpointManager.setServiceEndpoint(request);
+      const response = await executeRequest(request);
       if (parseLink(path).type !== "colls") {
         this.captureSessionToken(undefined, path, OperationType.Delete, response.headers);
       } else {
@@ -202,8 +181,8 @@ export class ClientContext {
   public async create<T>(
     body: T,
     path: string,
-    type: ResourceType,
-    id: string,
+    resourceType: ResourceType,
+    resourceId: string,
     options: RequestOptions
   ): Promise<Response<T & Resource>>;
 
@@ -211,41 +190,38 @@ export class ClientContext {
   public async create<T, U>(
     body: T,
     path: string,
-    type: ResourceType,
-    id: string,
+    resourceType: ResourceType,
+    resourceId: string,
     options: RequestOptions
   ): Promise<Response<T & U & Resource>>;
   public async create<T, U>(
     body: T,
     path: string,
-    type: ResourceType,
-    id: string,
+    resourceType: ResourceType,
+    resourceId: string,
     options: RequestOptions = {}
   ): Promise<Response<T & U & Resource>> {
     try {
-      const requestHeaders = await getHeaders({
-        authOptions: this.cosmosClientOptions.auth,
-        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...options.initialHeaders },
-        verb: HTTPMethod.post,
-        path,
-        resourceId: id,
-        resourceType: type,
-        options,
-        useMultipleWriteLocations: this.connectionPolicy.useMultipleWriteLocations
-      });
-
       const request: RequestContext = {
+        globalEndpointManager: this.globalEndpointManager,
+        requestAgent: this.agent,
+        connectionPolicy: this.connectionPolicy,
+        method: HTTPMethod.post,
         client: this,
         operationType: OperationType.Create,
         path,
-        resourceType: type
+        resourceType,
+        resourceId,
+        body,
+        options
       };
 
+      await this.setHeaders(request);
       // create will use WriteEndpoint since it uses POST operation
-      this.applySessionToken(path, requestHeaders);
+      this.applySessionToken(request);
 
-      const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
-      const response = await this.requestHandler.post(endpoint, request, body, requestHeaders);
+      await this.globalEndpointManager.setServiceEndpoint(request);
+      const response = await executeRequest(request);
       this.captureSessionToken(undefined, path, OperationType.Create, response.headers);
       return response;
     } catch (err) {
@@ -267,14 +243,16 @@ export class ClientContext {
     }
   }
 
-  private applySessionToken(path: string, reqHeaders: CosmosHeaders) {
-    const request = this.getSessionParams(path);
+  private applySessionToken(requestContext: RequestContext) {
+    const request = this.getSessionParams(requestContext.path);
 
-    if (reqHeaders && reqHeaders[Constants.HttpHeaders.SessionToken]) {
+    if (requestContext.headers && requestContext.headers[Constants.HttpHeaders.SessionToken]) {
       return;
     }
 
-    const sessionConsistency: ConsistencyLevel = reqHeaders[Constants.HttpHeaders.ConsistencyLevel] as ConsistencyLevel;
+    const sessionConsistency: ConsistencyLevel = requestContext.headers[
+      Constants.HttpHeaders.ConsistencyLevel
+    ] as ConsistencyLevel;
     if (!sessionConsistency) {
       return;
     }
@@ -286,42 +264,39 @@ export class ClientContext {
     if (request.resourceAddress) {
       const sessionToken = this.sessionContainer.get(request);
       if (sessionToken) {
-        reqHeaders[Constants.HttpHeaders.SessionToken] = sessionToken;
+        requestContext.headers[Constants.HttpHeaders.SessionToken] = sessionToken;
       }
     }
   }
 
   public async replace<T>(
-    resource: any,
+    body: any,
     path: string,
-    type: ResourceType,
-    id: string,
+    resourceType: ResourceType,
+    resourceId: string,
     options: RequestOptions = {}
   ): Promise<Response<T & Resource>> {
     try {
-      const requestHeaders = await getHeaders({
-        authOptions: this.cosmosClientOptions.auth,
-        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...options.initialHeaders },
-        verb: HTTPMethod.put,
-        path,
-        resourceId: id,
-        resourceType: type,
-        options,
-        useMultipleWriteLocations: this.connectionPolicy.useMultipleWriteLocations
-      });
-
       const request: RequestContext = {
+        globalEndpointManager: this.globalEndpointManager,
+        requestAgent: this.agent,
+        connectionPolicy: this.connectionPolicy,
+        method: HTTPMethod.put,
         client: this,
         operationType: OperationType.Replace,
         path,
-        resourceType: type
+        resourceType,
+        body,
+        resourceId,
+        options
       };
 
-      this.applySessionToken(path, requestHeaders);
+      await this.setHeaders(request);
+      this.applySessionToken(request);
 
       // replace will use WriteEndpoint since it uses PUT operation
-      const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(requestHeaders);
-      const response = await this.requestHandler.put(endpoint, request, resource, requestHeaders);
+      await this.globalEndpointManager.setServiceEndpoint(request);
+      const response = await executeRequest(request);
       this.captureSessionToken(undefined, path, OperationType.Replace, response.headers);
       return response;
     } catch (err) {
@@ -333,49 +308,46 @@ export class ClientContext {
   public async upsert<T>(
     body: T,
     path: string,
-    type: ResourceType,
-    id: string,
+    resourceType: ResourceType,
+    resourceId: string,
     options: RequestOptions
   ): Promise<Response<T & Resource>>;
   public async upsert<T, U>(
     body: T,
     path: string,
-    type: ResourceType,
-    id: string,
+    resourceType: ResourceType,
+    resourceId: string,
     options: RequestOptions
   ): Promise<Response<T & U & Resource>>;
   public async upsert<T>(
     body: T,
     path: string,
-    type: ResourceType,
-    id: string,
+    resourceType: ResourceType,
+    resourceId: string,
     options: RequestOptions = {}
   ): Promise<Response<T & Resource>> {
     try {
-      const requestHeaders = await getHeaders({
-        authOptions: this.cosmosClientOptions.auth,
-        defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...options.initialHeaders },
-        verb: HTTPMethod.post,
-        path,
-        resourceId: id,
-        resourceType: type,
-        options,
-        useMultipleWriteLocations: this.connectionPolicy.useMultipleWriteLocations
-      });
-
       const request: RequestContext = {
+        globalEndpointManager: this.globalEndpointManager,
+        requestAgent: this.agent,
+        connectionPolicy: this.connectionPolicy,
+        method: HTTPMethod.post,
         client: this,
         operationType: OperationType.Upsert,
         path,
-        resourceType: type
+        resourceType,
+        body,
+        resourceId,
+        options
       };
 
-      setIsUpsertHeader(requestHeaders);
-      this.applySessionToken(path, requestHeaders);
+      this.setHeaders(request);
+      setIsUpsertHeader(request);
+      this.applySessionToken(request);
 
       // upsert will use WriteEndpoint since it uses POST operation
-      const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
-      const response = await this.requestHandler.post(endpoint, request, body, requestHeaders);
+      await this.globalEndpointManager.setServiceEndpoint(request);
+      const response = await executeRequest(request);
       this.captureSessionToken(undefined, path, OperationType.Upsert, response.headers);
       return response;
     } catch (err) {
@@ -397,27 +369,23 @@ export class ClientContext {
     const path = getPathFromLink(sprocLink);
     const id = getIdFromLink(sprocLink);
 
-    const headers = await getHeaders({
-      authOptions: this.cosmosClientOptions.auth,
-      defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...options.initialHeaders },
-      verb: HTTPMethod.post,
-      path,
-      resourceId: id,
-      resourceType: ResourceType.sproc,
-      options,
-      useMultipleWriteLocations: this.connectionPolicy.useMultipleWriteLocations
-    });
-
     const request: RequestContext = {
+      globalEndpointManager: this.globalEndpointManager,
+      requestAgent: this.agent,
+      connectionPolicy: this.connectionPolicy,
+      method: HTTPMethod.post,
       client: this,
       operationType: OperationType.Execute,
       path,
-      resourceType: ResourceType.sproc
+      resourceType: ResourceType.sproc,
+      options,
+      resourceId: id
     };
 
+    await this.setHeaders(request);
     // executeStoredProcedure will use WriteEndpoint since it uses POST operation
-    const endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
-    return this.requestHandler.post(endpoint, request, params, headers);
+    await this.globalEndpointManager.setServiceEndpoint(request);
+    return executeRequest(request);
   }
 
   /**
@@ -427,27 +395,22 @@ export class ClientContext {
    */
   public async getDatabaseAccount(options: RequestOptions = {}): Promise<Response<DatabaseAccount>> {
     const endpoint = options.urlConnection || this.cosmosClientOptions.endpoint;
-
-    const requestHeaders = await getHeaders({
-      authOptions: this.cosmosClientOptions.auth,
-      defaultHeaders: this.cosmosClientOptions.defaultHeaders,
-      verb: HTTPMethod.get,
-      path: "",
-      resourceId: "",
-      resourceType: ResourceType.none,
-      options: {},
-      useMultipleWriteLocations: this.connectionPolicy.useMultipleWriteLocations
-    });
-
     const request: RequestContext = {
+      endpoint,
+      globalEndpointManager: this.globalEndpointManager,
+      requestAgent: this.agent,
+      connectionPolicy: this.connectionPolicy,
+      method: HTTPMethod.get,
       client: this,
       operationType: OperationType.Read,
       path: "",
-      resourceType: ResourceType.none
+      resourceType: ResourceType.none,
+      options
     };
 
-    await options.beforeOperation({ endpoint, request, headers: requestHeaders });
-    const { result, headers } = await this.requestHandler.get(endpoint, request, requestHeaders);
+    await this.setHeaders(request);
+    // await options.beforeOperation({ endpoint, request, headers: requestHeaders });
+    const { result, headers } = await executeRequest(request);
 
     const databaseAccount = new DatabaseAccount(result, headers);
 
@@ -517,5 +480,19 @@ export class ClientContext {
     }
 
     return false;
+  }
+
+  private async setHeaders(requestContext: RequestContext) {
+    requestContext.headers = await getHeaders({
+      authOptions: this.cosmosClientOptions.auth,
+      defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...requestContext.options.initialHeaders },
+      verb: requestContext.method,
+      path: requestContext.path,
+      resourceId: requestContext.resourceId,
+      resourceType: requestContext.resourceType,
+      options: requestContext.options,
+      partitionKeyRangeId: requestContext.partitionKeyRangeId,
+      useMultipleWriteLocations: this.connectionPolicy.useMultipleWriteLocations
+    });
   }
 }

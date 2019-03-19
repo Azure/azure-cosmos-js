@@ -4,6 +4,7 @@ import { LocationCache } from "../../dist-esm/LocationCache";
 
 import * as assert from "assert";
 import { OperationType, ResourceType } from "../../dist-esm/common";
+import { RequestContext } from "../../dist-esm/request/RequestContext";
 
 const scenarios: Scenario[] = [];
 const regions = ["westus", "East US", "eastus2", "south Centralus", "sEasIa"];
@@ -127,7 +128,7 @@ describe("Location Cache", function() {
           operationType: OperationType.Read,
           resourceType: ResourceType.item,
           retryCount: 0
-        });
+        } as RequestContext);
 
         const readEndpoint = locationCache.getReadEndpoint();
         assert.equal(resolveEndpoint, readEndpoint, "resolve endpoint should match read endpoint");
@@ -138,7 +139,7 @@ describe("Location Cache", function() {
           operationType: OperationType.Replace,
           resourceType: ResourceType.item,
           retryCount: 0
-        });
+        } as RequestContext);
 
         const writeEndpoint = locationCache.getWriteEndpoint();
         assert.equal(resolveEndpoint, writeEndpoint, "resolve endpoint should match write endpoint");
@@ -160,7 +161,7 @@ describe("Location Cache", function() {
               operationType: OperationType.Replace,
               resourceType: ResourceType.item,
               retryCount: 1
-            });
+            } as RequestContext);
 
             assert.equal(resolveEndpoint, writeEndpoint, "resolve endpoint should match write endpoint");
             const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
@@ -181,7 +182,7 @@ describe("Location Cache", function() {
               operationType: OperationType.Replace,
               resourceType: ResourceType.item,
               retryCount: 1
-            });
+            } as RequestContext);
 
             assert.equal(resolveEndpoint, writeEndpoint, "resolve endpoint should match write endpoint");
             const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
@@ -207,7 +208,7 @@ describe("Location Cache", function() {
             operationType: OperationType.Read,
             resourceType: ResourceType.item,
             retryCount: 1
-          });
+          } as RequestContext);
           assert.equal(resolveEndpoint, readEndpoint, "resolve endpoint should match read endpoint");
           const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
           assert.equal(shouldRefresh, true, "should need to refresh");
@@ -226,7 +227,7 @@ describe("Location Cache", function() {
               operationType: OperationType.Replace,
               resourceType: ResourceType.item,
               retryCount: 1
-            });
+            } as RequestContext);
 
             assert.equal(resolveEndpoint, writeEndpoint, "resolve endpoint should match write endpoint");
             const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
@@ -251,7 +252,7 @@ describe("Location Cache", function() {
             operationType: OperationType.Read,
             resourceType: ResourceType.item,
             retryCount: 1
-          });
+          } as RequestContext);
           assert.equal(resolveEndpoint, readEndpoint, "resolve endpoint should match read endpoint");
           const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
           assert.equal(
@@ -274,7 +275,7 @@ describe("Location Cache", function() {
               operationType: OperationType.Replace,
               resourceType: ResourceType.item,
               retryCount: 1
-            });
+            } as RequestContext);
 
             assert.equal(resolveEndpoint, writeEndpoint, "resolve endpoint should match write endpoint");
             const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
@@ -336,7 +337,7 @@ describe("Location Cache", function() {
           operationType: OperationType.Read,
           resourceType: ResourceType.item,
           retryCount: 0
-        });
+        } as RequestContext);
 
         const readEndpoint = locationCache.getReadEndpoint();
         assert.equal(resolveEndpoint, readEndpoint, "resolve endpoint should match read endpoint");
@@ -347,7 +348,7 @@ describe("Location Cache", function() {
           operationType: OperationType.Replace,
           resourceType: ResourceType.item,
           retryCount: 0
-        });
+        } as RequestContext);
 
         const writeEndpoint = locationCache.getWriteEndpoint();
         assert.equal(resolveEndpoint, writeEndpoint, "resolve endpoint should match write endpoint");
@@ -367,7 +368,7 @@ describe("Location Cache", function() {
           operationType: OperationType.Read,
           resourceType: ResourceType.item,
           retryCount: 1
-        });
+        } as RequestContext);
         assert.equal(resolveEndpoint, readEndpoint, "resolve endpoint should match read endpoint");
       });
 
@@ -383,7 +384,7 @@ describe("Location Cache", function() {
           operationType: OperationType.Replace,
           resourceType: ResourceType.item,
           retryCount: 1
-        });
+        } as RequestContext);
 
         assert.equal(resolveEndpoint, writeEndpoint, "resolve endpoint should match write endpoint");
       });

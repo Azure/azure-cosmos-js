@@ -1,6 +1,7 @@
 import assert from "assert";
 import { CosmosHeaders } from "../../dist-esm";
 import { Constants, isResourceValid, setIsUpsertHeader } from "../../dist-esm/common";
+import { RequestContext } from "../../dist-esm/request/RequestContext";
 
 describe("Helper methods", function() {
   describe("isResourceValid Unit Tests", function() {
@@ -18,7 +19,7 @@ describe("Helper methods", function() {
     it("Should add is-upsert header.", function(done) {
       const headers: any = {};
       assert.equal(undefined, headers[Constants.HttpHeaders.IsUpsert]);
-      setIsUpsertHeader(headers);
+      setIsUpsertHeader({ headers } as RequestContext);
       assert.equal(true, headers[Constants.HttpHeaders.IsUpsert]);
       done();
     });
@@ -27,21 +28,21 @@ describe("Helper methods", function() {
       const headers: CosmosHeaders = {};
       headers[Constants.HttpHeaders.IsUpsert] = false;
       assert.equal(false, headers[Constants.HttpHeaders.IsUpsert]);
-      setIsUpsertHeader(headers);
+      setIsUpsertHeader({ headers } as RequestContext);
       assert.equal(true, headers[Constants.HttpHeaders.IsUpsert]);
       done();
     });
 
     it("Should throw on undefined headers", function(done) {
       assert.throws(function() {
-        setIsUpsertHeader(undefined);
+        setIsUpsertHeader({ headers: undefined } as RequestContext);
       }, /The "headers" parameter must not be null or undefined/);
       done();
     });
 
     it("Should throw on null headers", function(done) {
       assert.throws(function() {
-        setIsUpsertHeader(null);
+        setIsUpsertHeader({ headers: null } as RequestContext);
       }, /The "headers" parameter must not be null or undefined/);
       done();
     });

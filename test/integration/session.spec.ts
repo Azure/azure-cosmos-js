@@ -4,7 +4,6 @@ import { ClientContext } from "../../dist-esm/ClientContext";
 import { OperationType, ResourceType, trimSlashes } from "../../dist-esm/common";
 import { ConsistencyLevel, PartitionKind } from "../../dist-esm/documents";
 import { Constants, CosmosClient, CosmosHeaders } from "../../dist-esm/index";
-import { RequestHandler } from "../../dist-esm/request";
 import { SessionContainer } from "../../dist-esm/session/sessionContainer";
 import { VectorSessionToken } from "../../dist-esm/session/VectorSessionToken";
 import { endpoint, masterKey } from "../common/_testConfig";
@@ -35,7 +34,8 @@ describe("Session Token", function() {
   const containerOptions = { offerThroughput: 25100 };
 
   const clientContext: ClientContext = (client as any).clientContext;
-  const requestHandler: RequestHandler = (clientContext as any).requestHandler;
+  // TODO. Fix. this is wrong
+  const requestHandler: any = (clientContext as any).requestHandler;
   const sessionContainer: SessionContainer = (clientContext as any).sessionContainer;
 
   const getSpy = sinon.spy(requestHandler, "get");

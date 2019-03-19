@@ -95,6 +95,10 @@ export class GlobalEndpointManager {
     return this.locationCache.resolveServiceEndpoint(request);
   }
 
+  public async setServiceEndpoint(request: RequestContext) {
+    request.endpoint = await this.resolveServiceEndpoint(request);
+  }
+
   /**
    * Refreshes the endpoint list by retrieving the writable and readable locations
    *  from the geo-replicated database account and then updating the locations cache.

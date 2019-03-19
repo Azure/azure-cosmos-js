@@ -96,7 +96,7 @@ export function getHexaDigit() {
   return Math.floor(Math.random() * 16).toString(16);
 }
 
-export function setIsUpsertHeader(headers: CosmosHeaders) {
+export function setIsUpsertHeader(requstContext: RequestContext) {
   if (headers === undefined || headers === null) {
     throw new Error('The "headers" parameter must not be null or undefined');
   }
@@ -105,7 +105,7 @@ export function setIsUpsertHeader(headers: CosmosHeaders) {
     throw new Error('The "headers" parameter must be an instance of "Object". Actual type is: "string".');
   }
 
-  headers[Constants.HttpHeaders.IsUpsert] = true;
+  requstContext.headers[Constants.HttpHeaders.IsUpsert] = true;
 }
 
 // TODO: replace with well known library?
