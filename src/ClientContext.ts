@@ -24,7 +24,6 @@ import { SessionContext } from "./session/SessionContext";
 export class ClientContext {
   private readonly sessionContainer: SessionContainer;
   private connectionPolicy: ConnectionPolicy;
-  private agent: Agent;
 
   public partitionKeyDefinitionCache: { [containerUrl: string]: any }; // TODO: ParitionKeyDefinitionCache
   public constructor(
@@ -45,7 +44,7 @@ export class ClientContext {
     try {
       const request: RequestContext = {
         globalEndpointManager: this.globalEndpointManager,
-        requestAgent: this.agent,
+        requestAgent: this.cosmosClientOptions.agent,
         connectionPolicy: this.connectionPolicy,
         method: HTTPMethod.get,
         path,
@@ -84,7 +83,7 @@ export class ClientContext {
 
     const request: RequestContext = {
       globalEndpointManager: this.globalEndpointManager,
-      requestAgent: this.agent,
+      requestAgent: this.cosmosClientOptions.agent,
       connectionPolicy: this.connectionPolicy,
       method: HTTPMethod.get,
       path,
@@ -134,7 +133,7 @@ export class ClientContext {
     try {
       const request: RequestContext = {
         globalEndpointManager: this.globalEndpointManager,
-        requestAgent: this.agent,
+        requestAgent: this.cosmosClientOptions.agent,
         connectionPolicy: this.connectionPolicy,
         method: HTTPMethod.delete,
         client: this,
@@ -189,7 +188,7 @@ export class ClientContext {
     try {
       const request: RequestContext = {
         globalEndpointManager: this.globalEndpointManager,
-        requestAgent: this.agent,
+        requestAgent: this.cosmosClientOptions.agent,
         connectionPolicy: this.connectionPolicy,
         method: HTTPMethod.post,
         client: this,
@@ -264,7 +263,7 @@ export class ClientContext {
     try {
       const request: RequestContext = {
         globalEndpointManager: this.globalEndpointManager,
-        requestAgent: this.agent,
+        requestAgent: this.cosmosClientOptions.agent,
         connectionPolicy: this.connectionPolicy,
         method: HTTPMethod.put,
         client: this,
@@ -314,7 +313,7 @@ export class ClientContext {
     try {
       const request: RequestContext = {
         globalEndpointManager: this.globalEndpointManager,
-        requestAgent: this.agent,
+        requestAgent: this.cosmosClientOptions.agent,
         connectionPolicy: this.connectionPolicy,
         method: HTTPMethod.post,
         client: this,
@@ -356,7 +355,7 @@ export class ClientContext {
 
     const request: RequestContext = {
       globalEndpointManager: this.globalEndpointManager,
-      requestAgent: this.agent,
+      requestAgent: this.cosmosClientOptions.agent,
       connectionPolicy: this.connectionPolicy,
       method: HTTPMethod.post,
       client: this,
@@ -384,7 +383,7 @@ export class ClientContext {
     const request: RequestContext = {
       endpoint,
       globalEndpointManager: this.globalEndpointManager,
-      requestAgent: this.agent,
+      requestAgent: this.cosmosClientOptions.agent,
       connectionPolicy: this.connectionPolicy,
       method: HTTPMethod.get,
       client: this,
