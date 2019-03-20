@@ -105,7 +105,7 @@ export class ClientContext {
       initialHeaders[Constants.HttpHeaders.IsQuery] = "true";
       initialHeaders[Constants.HttpHeaders.ContentType] = Constants.MediaTypes.QueryJson;
       if (typeof query === "string") {
-        query = { query }; // Converts query text to query object.
+        request.body = { query }; // Converts query text to query object.
       }
     }
     await this.setHeaders(request);
