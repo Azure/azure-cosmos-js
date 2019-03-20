@@ -8,7 +8,7 @@ import { addEntropy } from "../common/TestHelpers";
 
 const isBrowser = new Function("try {return this===window;}catch(e){ return false;}");
 if (!isBrowser()) {
-  describe.only("Validate http proxy setting in environment variable", function() {
+  describe("Validate http proxy setting in environment variable", function() {
     const proxy = http.createServer((req, resp) => {
       resp.writeHead(200, { "Content-Type": "text/plain" });
       resp.end();
