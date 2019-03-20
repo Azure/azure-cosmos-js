@@ -86,7 +86,7 @@ export class ClientContext {
       globalEndpointManager: this.globalEndpointManager,
       requestAgent: this.agent,
       connectionPolicy: this.connectionPolicy,
-      method: HTTPMethod.post,
+      method: HTTPMethod.get,
       path,
       operationType: OperationType.Query,
       client: this,
@@ -97,12 +97,11 @@ export class ClientContext {
       body: query
     };
 
-    console.log(request.body, request.method, request.path);
-
     await this.globalEndpointManager.setServiceEndpoint(request);
 
     const initialHeaders = { ...this.cosmosClientOptions.defaultHeaders, ...options.initialHeaders };
     if (query !== undefined) {
+      request.method = HTTPMethod.post;
       initialHeaders[Constants.HttpHeaders.IsQuery] = "true";
       initialHeaders[Constants.HttpHeaders.ContentType] = Constants.MediaTypes.QueryJson;
       if (typeof query === "string") {

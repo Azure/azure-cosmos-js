@@ -5,7 +5,7 @@ import { removeAllDatabases } from "../common/TestHelpers";
 
 const client = new CosmosClient({ endpoint, auth: { masterKey } });
 
-describe.only("NodeJS CRUD Tests", function() {
+describe("NodeJS CRUD Tests", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 10000);
   beforeEach(async function() {
     this.timeout(process.env.MOCHA_TIMEOUT || 10000);

@@ -31,13 +31,13 @@ export async function createRequestObjectStub(
 
   try {
     // TODO Remove any
-    console.log(
-      requestContext.path,
-      (requestOptions as any).href + requestContext.path,
-      requestContext.method,
-      requestContext.headers,
-      requestContext.body
-    );
+    // console.log(
+    //   requestContext.path,
+    //   (requestOptions as any).href + requestContext.path,
+    //   requestContext.method,
+    //   requestContext.headers,
+    //   requestContext.body
+    // );
     response = await fetch((requestOptions as any).href + requestContext.path, {
       method: requestContext.method,
       headers: requestContext.headers as any,
