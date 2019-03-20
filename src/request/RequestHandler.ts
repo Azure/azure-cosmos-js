@@ -26,15 +26,19 @@ export async function createRequestObjectStub(connectionPolicy: ConnectionPolicy
 
   let response: any;
 
+  if (requestContext.body) {
+    requestContext.body = bodyFromData(requestContext.body);
+  }
+
   try {
     // TODO Remove any
-    // console.log(
-    //   requestContext.path,
-    //   (requestOptions as any).href + requestContext.path,
-    //   requestContext.method,
-    //   requestContext.headers,
-    //   requestContext.body
-    // );
+    console.log(
+      requestContext.endpoint + requestContext.path,
+      requestContext.method,
+      // requestContext.headers,
+      requestContext.body,
+      requestContext.operationType
+    );
     response = await fetch(trimSlashes(requestContext.endpoint) + requestContext.path, {
       method: requestContext.method,
       headers: requestContext.headers as any,
@@ -62,6 +66,13 @@ export async function createRequestObjectStub(connectionPolicy: ConnectionPolicy
   });
 
   if (response.status >= 400) {
+    console.log(
+      requestContext.endpoint + requestContext.path,
+      requestContext.method,
+      // requestContext.headers,
+      requestContext.body,
+      requestContext.operationType
+    );
     const errorResponse: ErrorResponse = {
       code: response.status,
       // TODO Upstream code expects this as a string.
@@ -91,7 +102,7 @@ export async function createRequestObjectStub(connectionPolicy: ConnectionPolicy
 }
 
 export async function request(requestContext: RequestContext): Promise<Response<any>> {
-  const { globalEndpointManager, connectionPolicy, requestAgent, path, body, endpoint } = requestContext;
+  const { globalEndpointManager, connectionPolicy, body, endpoint } = requestContext;
 
   let parsedBody: any; // TODO: any
 
@@ -106,8 +117,6 @@ export async function request(requestContext: RequestContext): Promise<Response<
       };
     }
   }
-
-  const url: UrlWithStringQuery = parse(endpoint);
 
   // console.log();
   // console.log({
