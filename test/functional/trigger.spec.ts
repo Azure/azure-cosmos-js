@@ -9,7 +9,7 @@ const notFoundErrorCode = 404;
 // Mock for trigger function bodies
 declare var getContext: any;
 
-describe("NodeJS CRUD Tests", function() {
+describe.only("NodeJS CRUD Tests", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 10000);
   let container: PrivateContainer;
 

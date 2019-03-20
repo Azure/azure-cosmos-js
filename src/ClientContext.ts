@@ -1,7 +1,7 @@
 import { PartitionKeyRange } from "./client/Container/PartitionKeyRange";
 import { Resource } from "./client/Resource";
 import { Constants, HTTPMethod, OperationType, ResourceType } from "./common/constants";
-import { getIdFromLink, getPathFromLink, parseLink, setIsUpsertHeader } from "./common/helper";
+import { getIdFromLink, getPathFromLink, parseLink } from "./common/helper";
 import { StatusCodes, SubStatusCodes } from "./common/statusCodes";
 import { Agent, CosmosClientOptions } from "./CosmosClientOptions";
 import { ConnectionPolicy, ConsistencyLevel, DatabaseAccount } from "./documents";
@@ -326,8 +326,8 @@ export class ClientContext {
         options
       };
 
-      this.setHeaders(request);
-      setIsUpsertHeader(request);
+      await this.setHeaders(request);
+      request.headers[Constants.HttpHeaders.IsUpsert] = true;
       this.applySessionToken(request);
 
       // upsert will use WriteEndpoint since it uses POST operation
