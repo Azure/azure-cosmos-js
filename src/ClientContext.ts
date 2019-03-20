@@ -97,18 +97,19 @@ export class ClientContext {
       body: query
     };
 
-    await this.globalEndpointManager.setServiceEndpoint(request);
-
-    const initialHeaders = { ...this.cosmosClientOptions.defaultHeaders, ...options.initialHeaders };
     if (query !== undefined) {
       request.method = HTTPMethod.post;
-      initialHeaders[Constants.HttpHeaders.IsQuery] = "true";
-      initialHeaders[Constants.HttpHeaders.ContentType] = Constants.MediaTypes.QueryJson;
+    }
+
+    await this.globalEndpointManager.setServiceEndpoint(request);
+    await this.setHeaders(request);
+    if (query !== undefined) {
+      request.headers[Constants.HttpHeaders.IsQuery] = "true";
+      request.headers[Constants.HttpHeaders.ContentType] = Constants.MediaTypes.QueryJson;
       if (typeof query === "string") {
         request.body = { query }; // Converts query text to query object.
       }
     }
-    await this.setHeaders(request);
     this.applySessionToken(request);
     const response = await executeRequest(request);
     this.captureSessionToken(undefined, path, OperationType.Query, response.headers);

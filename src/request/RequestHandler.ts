@@ -35,7 +35,7 @@ export async function createRequestObjectStub(connectionPolicy: ConnectionPolicy
     // console.log(
     //   requestContext.endpoint + requestContext.path,
     //   requestContext.method,
-    //   // requestContext.headers,
+    //   requestContext.headers,
     //   requestContext.body,
     //   requestContext.operationType
     // );
