@@ -246,15 +246,15 @@ export function getPathFromLink(resourceLink: string, resourceType?: string, isN
   if (isNameBased) {
     resourceLink = trimSlashes(resourceLink);
     if (resourceType) {
-      return encodeURI(resourceLink) + "/" + resourceType;
+      return "/" + encodeURI(resourceLink) + "/" + resourceType;
     } else {
-      return encodeURI(resourceLink);
+      return "/" + encodeURI(resourceLink);
     }
   } else {
     if (resourceType) {
-      return resourceLink + resourceType + "/";
+      return "/" + resourceLink + resourceType + "/";
     } else {
-      return resourceLink;
+      return "/" + resourceLink;
     }
   }
 }

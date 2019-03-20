@@ -3,6 +3,7 @@ import fetch from "cross-fetch";
 import { OutgoingHttpHeaders } from "http";
 import { RequestOptions } from "https"; // TYPES ONLY
 import { parse, UrlWithStringQuery } from "url";
+import { trimSlashes } from "../common";
 import { Constants } from "../common/constants";
 import { ConnectionPolicy } from "../documents";
 import * as RetryUtility from "../retry/retryUtility";
@@ -34,7 +35,7 @@ export async function createRequestObjectStub(connectionPolicy: ConnectionPolicy
     //   requestContext.headers,
     //   requestContext.body
     // );
-    response = await fetch(requestContext.endpoint + requestContext.path, {
+    response = await fetch(trimSlashes(requestContext.endpoint) + requestContext.path, {
       method: requestContext.method,
       headers: requestContext.headers as any,
       agent: requestContext.requestAgent,
