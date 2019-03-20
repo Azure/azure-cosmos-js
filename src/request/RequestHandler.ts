@@ -32,13 +32,13 @@ export async function createRequestObjectStub(connectionPolicy: ConnectionPolicy
 
   try {
     // TODO Remove any
-    console.log(
-      requestContext.endpoint + requestContext.path,
-      requestContext.method,
-      // requestContext.headers,
-      requestContext.body,
-      requestContext.operationType
-    );
+    // console.log(
+    //   requestContext.endpoint + requestContext.path,
+    //   requestContext.method,
+    //   // requestContext.headers,
+    //   requestContext.body,
+    //   requestContext.operationType
+    // );
     response = await fetch(trimSlashes(requestContext.endpoint) + requestContext.path, {
       method: requestContext.method,
       headers: requestContext.headers as any,
@@ -66,13 +66,13 @@ export async function createRequestObjectStub(connectionPolicy: ConnectionPolicy
   });
 
   if (response.status >= 400) {
-    console.log(
-      requestContext.endpoint + requestContext.path,
-      requestContext.method,
-      // requestContext.headers,
-      requestContext.body,
-      requestContext.operationType
-    );
+    // console.log(
+    //   requestContext.endpoint + requestContext.path,
+    //   requestContext.method,
+    //   // requestContext.headers,
+    //   requestContext.body,
+    //   requestContext.operationType
+    // );
     const errorResponse: ErrorResponse = {
       code: response.status,
       // TODO Upstream code expects this as a string.
