@@ -27,7 +27,6 @@ interface ExecuteArgs {
   globalEndpointManager: GlobalEndpointManager;
   body: Buffer;
   connectionPolicy: ConnectionPolicy;
-  requestOptions: RequestOptions;
   retryContext?: RetryContext;
   retryPolicies?: RetryPolicies;
   requestContext: RequestContext;
@@ -43,7 +42,6 @@ interface RetryPolicies {
 export async function execute({
   body,
   connectionPolicy,
-  requestOptions,
   globalEndpointManager,
   retryContext,
   retryPolicies,
@@ -74,7 +72,7 @@ export async function execute({
       defaultRetryPolicy: new DefaultRetryPolicy(requestContext.operationType)
     };
   }
-  const httpsRequest = createRequestObjectStub(connectionPolicy, requestOptions, requestContext);
+  const httpsRequest = createRequestObjectStub(connectionPolicy, requestContext);
   if (!requestContext.locationRouting) {
     requestContext.locationRouting = new LocationRouting();
   }
@@ -89,7 +87,7 @@ export async function execute({
     }
   }
   const locationEndpoint = await globalEndpointManager.resolveServiceEndpoint(requestContext);
-  requestOptions = modifyRequestOptions(requestOptions, url.parse(locationEndpoint));
+  requestContext.endpoint = locationEndpoint;
   requestContext.locationRouting.routeToLocation(locationEndpoint);
   try {
     const response = await (httpsRequest as Promise<Response<any>>);
@@ -121,13 +119,12 @@ export async function execute({
       requestContext.retryCount++;
       const newUrl = (results as any)[1]; // TODO: any hack
       if (newUrl !== undefined) {
-        modifyRequestOptions(requestOptions, url.parse(newUrl));
+        requestContext.endpoint = newUrl;
       }
       await sleep(retryPolicy.retryAfterInMilliseconds);
       return execute({
         body,
         connectionPolicy,
-        requestOptions,
         globalEndpointManager,
         requestContext,
         retryContext,
@@ -135,18 +132,4 @@ export async function execute({
       });
     }
   }
-}
-
-function modifyRequestOptions(
-  oldRequestOptions: RequestOptions | any, // TODO: any hack is bad
-  newUrl: url.UrlWithStringQuery | any
-) {
-  // TODO: any hack is bad
-  const properties = Object.keys(newUrl);
-  for (const index in properties) {
-    if (properties[index] !== "path") {
-      oldRequestOptions[properties[index]] = newUrl[properties[index]];
-    }
-  }
-  return oldRequestOptions;
 }

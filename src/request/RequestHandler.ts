@@ -2,7 +2,7 @@ import { AbortController } from "abort-controller";
 import fetch from "cross-fetch";
 import { OutgoingHttpHeaders } from "http";
 import { RequestOptions } from "https"; // TYPES ONLY
-import { parse } from "url";
+import { parse, UrlWithStringQuery } from "url";
 import { Constants } from "../common/constants";
 import { ConnectionPolicy } from "../documents";
 import * as RetryUtility from "../retry/retryUtility";
@@ -14,11 +14,7 @@ import { TimeoutError } from "./TimeoutError";
 
 /** @hidden */
 
-export async function createRequestObjectStub(
-  connectionPolicy: ConnectionPolicy,
-  requestOptions: RequestOptions,
-  requestContext: RequestContext
-) {
+export async function createRequestObjectStub(connectionPolicy: ConnectionPolicy, requestContext: RequestContext) {
   let didTimeout: boolean;
   const controller = new AbortController();
   const signal = controller.signal;
@@ -38,7 +34,7 @@ export async function createRequestObjectStub(
     //   requestContext.headers,
     //   requestContext.body
     // );
-    response = await fetch((requestOptions as any).href + requestContext.path, {
+    response = await fetch(requestContext.endpoint + requestContext.path, {
       method: requestContext.method,
       headers: requestContext.headers as any,
       agent: requestContext.requestAgent,
@@ -110,11 +106,7 @@ export async function request(requestContext: RequestContext): Promise<Response<
     }
   }
 
-  const requestOptions: RequestOptions = parse(endpoint);
-  requestOptions.method = requestContext.method;
-  requestOptions.path += path;
-  requestOptions.headers = requestContext.headers as OutgoingHttpHeaders;
-  requestOptions.agent = requestAgent;
+  const url: UrlWithStringQuery = parse(endpoint);
 
   // console.log();
   // console.log({
@@ -132,7 +124,6 @@ export async function request(requestContext: RequestContext): Promise<Response<
     globalEndpointManager,
     body: parsedBody,
     connectionPolicy,
-    requestOptions,
     requestContext
   });
 }
