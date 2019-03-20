@@ -364,7 +364,8 @@ export class ClientContext {
       path,
       resourceType: ResourceType.sproc,
       options,
-      resourceId: id
+      resourceId: id,
+      body: params
     };
 
     await this.setHeaders(request);

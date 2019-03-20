@@ -32,13 +32,6 @@ export async function createRequestObjectStub(connectionPolicy: ConnectionPolicy
 
   try {
     // TODO Remove any
-    // console.log(
-    //   requestContext.endpoint + requestContext.path,
-    //   requestContext.method,
-    //   requestContext.headers,
-    //   requestContext.body,
-    //   requestContext.operationType
-    // );
     response = await fetch(trimSlashes(requestContext.endpoint) + requestContext.path, {
       method: requestContext.method,
       headers: requestContext.headers as any,
