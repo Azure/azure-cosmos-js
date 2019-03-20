@@ -1,11 +1,7 @@
 import { AbortController } from "abort-controller";
 import fetch from "cross-fetch";
-import { OutgoingHttpHeaders } from "http";
-import { RequestOptions } from "https"; // TYPES ONLY
-import { parse, UrlWithStringQuery } from "url";
 import { trimSlashes } from "../common";
 import { Constants } from "../common/constants";
-import { ConnectionPolicy } from "../documents";
 import * as RetryUtility from "../retry/retryUtility";
 import { ErrorResponse } from "./ErrorResponse";
 import { bodyFromData } from "./request";
@@ -15,14 +11,14 @@ import { TimeoutError } from "./TimeoutError";
 
 /** @hidden */
 
-export async function createRequestObjectStub(connectionPolicy: ConnectionPolicy, requestContext: RequestContext) {
+export async function executeFetch(requestContext: RequestContext) {
   let didTimeout: boolean;
   const controller = new AbortController();
   const signal = controller.signal;
   const timeout = setTimeout(() => {
     didTimeout = true;
     controller.abort();
-  }, connectionPolicy.requestTimeout);
+  }, requestContext.connectionPolicy.requestTimeout);
 
   let response: any;
 
@@ -59,13 +55,6 @@ export async function createRequestObjectStub(connectionPolicy: ConnectionPolicy
   });
 
   if (response.status >= 400) {
-    // console.log(
-    //   requestContext.endpoint + requestContext.path,
-    //   requestContext.method,
-    //   // requestContext.headers,
-    //   requestContext.body,
-    //   requestContext.operationType
-    // );
     const errorResponse: ErrorResponse = {
       code: response.status,
       // TODO Upstream code expects this as a string.
@@ -110,18 +99,6 @@ export async function request(requestContext: RequestContext): Promise<Response<
       };
     }
   }
-
-  // console.log();
-  // console.log({
-  //   globalEndpointManager,
-  //   body: parsedBody,
-  //   createRequestObjectFunc: createRequestObjectStub,
-  //   connectionPolicy,
-  //   requestOptions,
-  //   request: requestContext
-  // });
-
-  // console.log(body, requestOptions);
 
   return RetryUtility.execute({
     globalEndpointManager,

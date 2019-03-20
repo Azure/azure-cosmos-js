@@ -1,5 +1,4 @@
 import { RequestOptions } from "https";
-import * as url from "url";
 import { Constants } from "../common/constants";
 import { sleep } from "../common/helper";
 import { StatusCodes, SubStatusCodes } from "../common/statusCodes";
@@ -8,7 +7,7 @@ import { GlobalEndpointManager } from "../globalEndpointManager";
 import { Response } from "../request";
 import { LocationRouting } from "../request/LocationRouting";
 import { RequestContext } from "../request/RequestContext";
-import { createRequestObjectStub } from "../request/RequestHandler";
+import { executeFetch } from "../request/RequestHandler";
 import { DefaultRetryPolicy } from "./defaultRetryPolicy";
 import { EndpointDiscoveryRetryPolicy } from "./endpointDiscoveryRetryPolicy";
 import { ResourceThrottleRetryPolicy } from "./resourceThrottleRetryPolicy";
@@ -72,7 +71,7 @@ export async function execute({
       defaultRetryPolicy: new DefaultRetryPolicy(requestContext.operationType)
     };
   }
-  const httpsRequest = createRequestObjectStub(connectionPolicy, requestContext);
+  const httpsRequest = executeFetch(requestContext);
   if (!requestContext.locationRouting) {
     requestContext.locationRouting = new LocationRouting();
   }
