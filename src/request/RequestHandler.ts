@@ -17,7 +17,7 @@ import { TimeoutError } from "./TimeoutError";
 export async function createRequestObjectStub(
   connectionPolicy: ConnectionPolicy,
   requestOptions: RequestOptions,
-  body?: any
+  requestContext: RequestContext
 ) {
   let didTimeout: boolean;
   const controller = new AbortController();
@@ -31,12 +31,19 @@ export async function createRequestObjectStub(
 
   try {
     // TODO Remove any
-    response = await fetch((requestOptions as any).href + requestOptions.path, {
-      method: requestOptions.method,
-      headers: requestOptions.headers as any,
-      agent: requestOptions.agent,
+    console.log(
+      requestContext.path,
+      (requestOptions as any).href + requestContext.path,
+      requestContext.method,
+      requestContext.headers,
+      requestContext.body
+    );
+    response = await fetch((requestOptions as any).href + requestContext.path, {
+      method: requestContext.method,
+      headers: requestContext.headers as any,
+      agent: requestContext.requestAgent,
       signal,
-      ...(body && { body })
+      body: requestContext.body
     } as any); // TODO Remove any. Upstream issue https://github.com/lquixada/cross-fetch/issues/42
   } catch (error) {
     if (error.name === "AbortError") {
@@ -108,18 +115,24 @@ export async function request(requestContext: RequestContext): Promise<Response<
   requestOptions.path += path;
   requestOptions.headers = requestContext.headers as OutgoingHttpHeaders;
   requestOptions.agent = requestAgent;
-  requestOptions.secureProtocol = "TLSv1_client_method"; // TODO: Should be a constant
 
-  if (connectionPolicy.disableSSLVerification === true) {
-    requestOptions.rejectUnauthorized = false;
-  }
+  // console.log();
+  // console.log({
+  //   globalEndpointManager,
+  //   body: parsedBody,
+  //   createRequestObjectFunc: createRequestObjectStub,
+  //   connectionPolicy,
+  //   requestOptions,
+  //   request: requestContext
+  // });
+
+  // console.log(body, requestOptions);
 
   return RetryUtility.execute({
     globalEndpointManager,
     body: parsedBody,
-    createRequestObjectFunc: createRequestObjectStub,
     connectionPolicy,
     requestOptions,
-    request: requestContext
+    requestContext
   });
 }

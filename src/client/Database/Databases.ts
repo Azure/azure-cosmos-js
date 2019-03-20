@@ -65,7 +65,7 @@ export class Databases {
   public query<T>(query: string | SqlQuerySpec, options?: FeedOptions): QueryIterator<T> {
     const cb: FetchFunctionCallback = innerOptions => {
       return this.clientContext.queryFeed(
-        "/dbs",
+        "dbs",
         ResourceType.database,
         "",
         result => result.Databases,
@@ -103,7 +103,7 @@ export class Databases {
       delete body.throughput;
     }
 
-    const path = "/dbs"; // TODO: constant
+    const path = "dbs"; // TODO: constant
     const response = await this.clientContext.create<DatabaseRequest>(
       body,
       path,

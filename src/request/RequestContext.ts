@@ -24,5 +24,5 @@ export interface RequestContext {
   endpoint?: string;
   method: HTTPMethod;
   partitionKeyRangeId?: string;
-  options?: FeedOptions | RequestOptions;
+  options: FeedOptions | RequestOptions;
 }

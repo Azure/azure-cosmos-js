@@ -92,8 +92,12 @@ export class ClientContext {
       client: this,
       partitionKeyRangeId,
       resourceId,
-      resourceType
+      resourceType,
+      options,
+      body: query
     };
+
+    console.log(request.body, request.method, request.path);
 
     await this.globalEndpointManager.setServiceEndpoint(request);
 
