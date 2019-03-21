@@ -18,7 +18,7 @@ function compare(key: string) {
   };
 }
 
-describe.only("Cross Partition", function() {
+describe("Cross Partition", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || "30000");
   const generateDocuments = function(docSize: number) {
     const docs = [];
