@@ -69,7 +69,7 @@ export class Item {
   public read<T extends ItemDefinition>(options?: RequestOptions): Promise<ItemResponse<T>>;
   public async read<T extends ItemDefinition>(options?: RequestOptions): Promise<ItemResponse<T>> {
     options = options || {};
-    if ((!options || !options.partitionKey) && this.partitionKey === undefined) {
+    if ((!options || !options.partitionKey) && this.partitionKey !== undefined) {
       options.partitionKey = this.partitionKey;
     }
     const path = getPathFromLink(this.url);
@@ -102,7 +102,7 @@ export class Item {
   public replace<T extends ItemDefinition>(body: T, options?: RequestOptions): Promise<ItemResponse<T>>;
   public async replace<T extends ItemDefinition>(body: T, options?: RequestOptions): Promise<ItemResponse<T>> {
     options = options || {};
-    if ((!options || !options.partitionKey) && this.partitionKey === undefined) {
+    if ((!options || !options.partitionKey) && this.partitionKey !== undefined) {
       options.partitionKey = this.partitionKey;
     }
     if (options.partitionKey === undefined && options.skipGetPartitionKeyDefinition !== true) {
@@ -138,7 +138,7 @@ export class Item {
   public delete<T extends ItemDefinition>(options?: RequestOptions): Promise<ItemResponse<T>>;
   public async delete<T extends ItemDefinition>(options?: RequestOptions): Promise<ItemResponse<T>> {
     options = options || {};
-    if ((!options || !options.partitionKey) && this.partitionKey === undefined) {
+    if ((!options || !options.partitionKey) && this.partitionKey !== undefined) {
       options.partitionKey = this.partitionKey;
     }
     const path = getPathFromLink(this.url);
