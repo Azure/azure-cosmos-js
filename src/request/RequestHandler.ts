@@ -38,6 +38,7 @@ export class RequestHandler {
 
     try {
       // TODO Remove any
+      // console.log((requestOptions as any).href + requestOptions.path, requestOptions.method);
       response = await fetch((requestOptions as any).href + requestOptions.path, {
         method: requestOptions.method,
         headers: requestOptions.headers as any,
