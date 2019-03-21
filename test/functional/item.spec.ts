@@ -161,7 +161,6 @@ describe("NodeJS CRUD Tests", function() {
       returnedDocuments.forEach(function(document) {
         ++document.prop;
       });
-      console.log("REPLACE ITEMS");
       const newReturnedDocuments = await bulkReplaceItems(container, returnedDocuments);
       returnedDocuments = newReturnedDocuments;
       await bulkQueryItemsWithPartitionKey(container, returnedDocuments, partitionKey);
