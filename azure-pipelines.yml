@@ -26,3 +26,5 @@ steps:
   env:
     ACCOUNT_HOST: $(stagingEndpoint)
     ACCOUNT_KEY: $(stagingKey)
+    MOCHA_TIMEOUT: $(mochaTimeout)
+    TESTS_MULTIREGION: $(testsMultiRegion)
