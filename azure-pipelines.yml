@@ -6,25 +6,48 @@
 trigger:
 - master
 
-pool:
-  vmImage: 'Ubuntu-16.04'
+jobs:
+  - job: Staging
+    pool:
+      vmImage: ubuntu-16.04
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '10.x'
+      displayName: 'Install Node.js'
 
-steps:
-- task: NodeTool@0
-  inputs:
-    versionSpec: '10.x'
-  displayName: 'Install Node.js'
+    - script: |
+        npm install
+        npm run build
+      displayName: 'npm install and build'
 
-- script: |
-    npm install
-    npm run build
-  displayName: 'npm install and build'
+    - script: |
+        npm run test
+      displayName: 'npm run test'
+      env:
+        ACCOUNT_HOST: $(stagingEndpoint)
+        ACCOUNT_KEY: $(stagingKey)
+        MOCHA_TIMEOUT: 10000
+        TESTS_MULTIREGION: true
+  - job: Emulator
+    pool:
+      vmImage: windows-2019
+    steps:
+    - task: azure-cosmosdb.emulator-public-preview.run-cosmosdbemulatorcontainer.CosmosDbEmulator@2
+      displayName: 'Run Azure Cosmos DB Emulator container'
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '10.x'
+      displayName: 'Install Node.js'
 
-- script: |
-    npm run test
-  displayName: 'npm run test'
-  env:
-    ACCOUNT_HOST: $(stagingEndpoint)
-    ACCOUNT_KEY: $(stagingKey)
-    MOCHA_TIMEOUT: $(mochaTimeout)
-    TESTS_MULTIREGION: $(testsMultiRegion)
+    - script: |
+        npm install
+        npm run build
+      displayName: 'npm install and build'
+
+    - script: |
+        npm run test
+      displayName: 'npm run test'
+      env:
+        MOCHA_TIMEOUT: 10000
+        TESTS_MULTIREGION: true
