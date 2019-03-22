@@ -23,3 +23,6 @@ steps:
 - script: |
     npm run test
   displayName: 'npm run test'
+  env:
+    ACCOUNT_HOST: $(stagingEndpoint)
+    ACCOUNT_KEY: $(stagingKey)
