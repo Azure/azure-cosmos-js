@@ -11,7 +11,7 @@ import { TimeoutError } from "./TimeoutError";
 
 /** @hidden */
 
-export async function executeFetch(requestContext: RequestContext) {
+export async function executeRequest(requestContext: RequestContext) {
   let didTimeout: boolean;
   const controller = new AbortController();
   const signal = controller.signal;
@@ -73,7 +73,7 @@ export async function executeFetch(requestContext: RequestContext) {
       errorResponse.retryAfterInMilliseconds = parseInt(headers[Constants.HttpHeaders.RetryAfterInMilliseconds], 10);
     }
 
-    return Promise.reject(errorResponse);
+    throw errorResponse;
   }
   return {
     headers,
@@ -83,7 +83,7 @@ export async function executeFetch(requestContext: RequestContext) {
 }
 
 export async function request(requestContext: RequestContext): Promise<CosmosResponse<any>> {
-  const { globalEndpointManager, connectionPolicy, body, endpoint } = requestContext;
+  const { globalEndpointManager, connectionPolicy, body } = requestContext;
 
   let parsedBody: any; // TODO: any
 
