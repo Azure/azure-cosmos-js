@@ -370,7 +370,7 @@ export class ClientContext {
     await this.setHeaders(request);
     // executeStoredProcedure will use WriteEndpoint since it uses POST operation
     await this.globalEndpointManager.setServiceEndpoint(request);
-    return executeRequest(request);
+    return executeRequest<T>(request);
   }
 
   /**

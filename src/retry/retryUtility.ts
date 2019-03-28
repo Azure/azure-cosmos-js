@@ -7,7 +7,7 @@ import { GlobalEndpointManager } from "../globalEndpointManager";
 import { Response } from "../request";
 import { LocationRouting } from "../request/LocationRouting";
 import { RequestContext } from "../request/RequestContext";
-import { executeFetch } from "../request/RequestHandler";
+import { executeRequest } from "../request/RequestHandler";
 import { DefaultRetryPolicy } from "./defaultRetryPolicy";
 import { EndpointDiscoveryRetryPolicy } from "./endpointDiscoveryRetryPolicy";
 import { ResourceThrottleRetryPolicy } from "./resourceThrottleRetryPolicy";
@@ -71,7 +71,7 @@ export async function execute({
       defaultRetryPolicy: new DefaultRetryPolicy(requestContext.operationType)
     };
   }
-  const httpsRequest = executeFetch(requestContext);
+  const httpsRequest = executeRequest(requestContext);
   if (!requestContext.locationRouting) {
     requestContext.locationRouting = new LocationRouting();
   }
