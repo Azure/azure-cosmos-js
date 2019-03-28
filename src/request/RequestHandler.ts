@@ -1,5 +1,5 @@
 import { AbortController } from "abort-controller";
-import fetch from "cross-fetch";
+import fetch from "node-fetch";
 import { trimSlashes } from "../common";
 import { Constants } from "../common/constants";
 import * as RetryUtility from "../retry/retryUtility";
