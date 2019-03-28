@@ -6,10 +6,17 @@ interface ErrorBody {
   additionalErrorInfo?: AdditionalErrorInfo;
 }
 
-interface AdditionalErrorInfo {
+export interface AdditionalErrorInfo {
   partitionedQueryExecutionInfoVersion: number;
-  queryInfo: any; // TODO add types
+  queryInfo: QueryInfo;
   queryRanges: any[]; // TODO add types
+}
+
+interface QueryInfo {
+  top?: any;
+  orderBy?: any;
+  aggregates?: any;
+  rewrittenQuery?: any;
 }
 
 export interface ErrorResponse {
