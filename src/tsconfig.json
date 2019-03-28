@@ -12,7 +12,6 @@
     "preserveConstEnums": true,
     "removeComments": false,
     "target": "es6",
-    "lib": ["es6"],
     "sourceMap": true,
     "newLine": "LF",
     "resolveJsonModule": true,
