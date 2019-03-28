@@ -1,12 +1,12 @@
 import { AbortController } from "abort-controller";
-import fetch from "node-fetch";
+import fetch, { RequestInit, Response } from "node-fetch";
 import { trimSlashes } from "../common";
 import { Constants } from "../common/constants";
 import * as RetryUtility from "../retry/retryUtility";
 import { ErrorResponse } from "./ErrorResponse";
 import { bodyFromData } from "./request";
 import { RequestContext } from "./RequestContext";
-import { Response } from "./Response";
+import { Response as CosmosResponse } from "./Response";
 import { TimeoutError } from "./TimeoutError";
 
 /** @hidden */
@@ -20,21 +20,20 @@ export async function executeFetch(requestContext: RequestContext) {
     controller.abort();
   }, requestContext.connectionPolicy.requestTimeout);
 
-  let response: any;
+  let response: Response;
 
   if (requestContext.body) {
     requestContext.body = bodyFromData(requestContext.body);
   }
 
   try {
-    // TODO Remove any
     response = await fetch(trimSlashes(requestContext.endpoint) + requestContext.path, {
       method: requestContext.method,
       headers: requestContext.headers as any,
       agent: requestContext.requestAgent,
       signal,
       body: requestContext.body
-    } as any); // TODO Remove any. Upstream issue https://github.com/lquixada/cross-fetch/issues/42
+    } as RequestInit);
   } catch (error) {
     if (error.name === "AbortError") {
       if (didTimeout === true) {
@@ -83,7 +82,7 @@ export async function executeFetch(requestContext: RequestContext) {
   });
 }
 
-export async function request(requestContext: RequestContext): Promise<Response<any>> {
+export async function request(requestContext: RequestContext): Promise<CosmosResponse<any>> {
   const { globalEndpointManager, connectionPolicy, body, endpoint } = requestContext;
 
   let parsedBody: any; // TODO: any
