@@ -1,5 +1,5 @@
 import { ClientContext } from "../ClientContext";
-import { AdditionalErrorInfo } from "../request/ErrorResponse";
+import { PartitionedQueryExecutionInfo } from "../request/ErrorResponse";
 import { DocumentProducer } from "./documentProducer";
 import { IExecutionContext } from "./IExecutionContext";
 import { OrderByDocumentProducerComparator } from "./orderByDocumentProducerComparator";
@@ -27,7 +27,7 @@ export class OrderByQueryExecutionContext extends ParallelQueryExecutionContextB
     collectionLink: string,
     query: any, // TODO: any query
     options: any, // TODO: any options
-    partitionedQueryExecutionInfo: AdditionalErrorInfo
+    partitionedQueryExecutionInfo: PartitionedQueryExecutionInfo
   ) {
     // Calling on base class constructor
     super(clientContext, collectionLink, query, options, partitionedQueryExecutionInfo);

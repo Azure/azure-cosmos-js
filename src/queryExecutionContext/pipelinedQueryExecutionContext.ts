@@ -1,6 +1,6 @@
 import { ClientContext } from "../ClientContext";
 import { Response } from "../request";
-import { AdditionalErrorInfo } from "../request/ErrorResponse";
+import { PartitionedQueryExecutionInfo } from "../request/ErrorResponse";
 import { CosmosHeaders } from "./CosmosHeaders";
 import {
   AggregateEndpointComponent,
@@ -25,7 +25,7 @@ export class PipelinedQueryExecutionContext implements IExecutionContext {
     private collectionLink: string,
     private query: any, // TODO: any query
     private options: any, // TODO: any options
-    private partitionedQueryExecutionInfo: AdditionalErrorInfo
+    private partitionedQueryExecutionInfo: PartitionedQueryExecutionInfo
   ) {
     this.endpoint = null;
     this.pageSize = options["maxItemCount"];

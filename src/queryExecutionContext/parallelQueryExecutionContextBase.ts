@@ -4,7 +4,7 @@ import semaphore from "semaphore";
 import { ClientContext } from "../ClientContext";
 import { StatusCodes, SubStatusCodes } from "../common/statusCodes";
 import { Response } from "../request";
-import { AdditionalErrorInfo } from "../request/ErrorResponse";
+import { PartitionedQueryExecutionInfo } from "../request/ErrorResponse";
 import { QueryRange } from "../routing/QueryRange";
 import { PARITIONKEYRANGE, SmartRoutingMapProvider } from "../routing/smartRoutingMapProvider";
 import { CosmosHeaders } from "./CosmosHeaders";
@@ -53,7 +53,7 @@ export abstract class ParallelQueryExecutionContextBase implements IExecutionCon
     private collectionLink: string,
     private query: any, // TODO: any - It's not SQLQuerySpec
     private options: any,
-    private partitionedQueryExecutionInfo: AdditionalErrorInfo
+    private partitionedQueryExecutionInfo: PartitionedQueryExecutionInfo
   ) {
     this.clientContext = clientContext;
     this.collectionLink = collectionLink;

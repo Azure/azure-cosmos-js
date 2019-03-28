@@ -3,10 +3,10 @@ import { CosmosHeaders } from "../index";
 interface ErrorBody {
   code: string;
   message: string;
-  additionalErrorInfo?: AdditionalErrorInfo;
+  additionalErrorInfo?: PartitionedQueryExecutionInfo;
 }
 
-export interface AdditionalErrorInfo {
+export interface PartitionedQueryExecutionInfo {
   partitionedQueryExecutionInfoVersion: number;
   queryInfo: QueryInfo;
   queryRanges: any[]; // TODO add types

@@ -1,5 +1,5 @@
 import { ClientContext } from "../ClientContext";
-import { AdditionalErrorInfo } from "../request/ErrorResponse";
+import { PartitionedQueryExecutionInfo } from "../request/ErrorResponse";
 import { DocumentProducer } from "./documentProducer";
 import { IExecutionContext } from "./IExecutionContext";
 import { ParallelQueryExecutionContextBase } from "./parallelQueryExecutionContextBase";
@@ -22,7 +22,7 @@ export class ParallelQueryExecutionContext extends ParallelQueryExecutionContext
     collectionLink: string,
     query: any,
     options: any,
-    partitionedQueryExecutionInfo: AdditionalErrorInfo
+    partitionedQueryExecutionInfo: PartitionedQueryExecutionInfo
   ) {
     // Calling on base class constructor
     super(clientContext, collectionLink, query, options, partitionedQueryExecutionInfo);

@@ -1,7 +1,7 @@
 import { ClientContext } from "../ClientContext";
 import { StatusCodes, SubStatusCodes } from "../common/statusCodes";
 import { ErrorResponse, Response } from "../request";
-import { AdditionalErrorInfo } from "../request/ErrorResponse";
+import { PartitionedQueryExecutionInfo } from "../request/ErrorResponse";
 import { DefaultQueryExecutionContext, FetchFunctionCallback } from "./defaultQueryExecutionContext";
 import { IExecutionContext } from "./IExecutionContext";
 import { PipelinedQueryExecutionContext } from "./pipelinedQueryExecutionContext";
@@ -53,7 +53,7 @@ export class ProxyQueryExecutionContext implements IExecutionContext {
     }
   }
 
-  private _createPipelinedExecutionContext(partitionedExecutionInfo: AdditionalErrorInfo) {
+  private _createPipelinedExecutionContext(partitionedExecutionInfo: PartitionedQueryExecutionInfo) {
     if (!this.resourceLink) {
       throw new Error("for top/orderby resourceLink is required");
     }
