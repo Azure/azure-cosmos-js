@@ -60,7 +60,7 @@ export class ClientContext {
 
       // read will use ReadEndpoint since it uses GET operation
       await this.globalEndpointManager.setServiceEndpoint(request);
-      const response = await executeRequest(request);
+      const response = await executeRequest<T & Resource>(request);
       this.captureSessionToken(undefined, path, OperationType.Read, response.headers);
       return response;
     } catch (err) {
@@ -148,7 +148,7 @@ export class ClientContext {
       this.applySessionToken(request);
       // deleteResource will use WriteEndpoint since it uses DELETE operation
       await this.globalEndpointManager.setServiceEndpoint(request);
-      const response = await executeRequest(request);
+      const response = await executeRequest<T & Resource>(request);
       if (parseLink(path).type !== "colls") {
         this.captureSessionToken(undefined, path, OperationType.Delete, response.headers);
       } else {
@@ -205,7 +205,7 @@ export class ClientContext {
       this.applySessionToken(request);
 
       await this.globalEndpointManager.setServiceEndpoint(request);
-      const response = await executeRequest(request);
+      const response = await executeRequest<T & U & Resource>(request);
       this.captureSessionToken(undefined, path, OperationType.Create, response.headers);
       return response;
     } catch (err) {
@@ -280,7 +280,7 @@ export class ClientContext {
 
       // replace will use WriteEndpoint since it uses PUT operation
       await this.globalEndpointManager.setServiceEndpoint(request);
-      const response = await executeRequest(request);
+      const response = await executeRequest<T & Resource>(request);
       this.captureSessionToken(undefined, path, OperationType.Replace, response.headers);
       return response;
     } catch (err) {
@@ -331,7 +331,7 @@ export class ClientContext {
 
       // upsert will use WriteEndpoint since it uses POST operation
       await this.globalEndpointManager.setServiceEndpoint(request);
-      const response = await executeRequest(request);
+      const response = await executeRequest<T & Resource>(request);
       this.captureSessionToken(undefined, path, OperationType.Upsert, response.headers);
       return response;
     } catch (err) {

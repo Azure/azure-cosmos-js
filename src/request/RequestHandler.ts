@@ -82,7 +82,7 @@ export async function executeRequest(requestContext: RequestContext) {
   };
 }
 
-export async function request(requestContext: RequestContext): Promise<CosmosResponse<any>> {
+export async function request<T>(requestContext: RequestContext): Promise<CosmosResponse<T>> {
   const { globalEndpointManager, connectionPolicy, body } = requestContext;
 
   let parsedBody: any; // TODO: any
@@ -90,12 +90,7 @@ export async function request(requestContext: RequestContext): Promise<CosmosRes
   if (body) {
     parsedBody = bodyFromData(body);
     if (!body) {
-      return {
-        result: {
-          message: "parameter data must be a javascript object, string, or Buffer"
-        },
-        headers: undefined
-      };
+      throw new Error("parameter data must be a javascript object, string, or Buffer");
     }
   }
 
