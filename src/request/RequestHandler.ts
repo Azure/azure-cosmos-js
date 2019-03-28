@@ -75,11 +75,11 @@ export async function executeFetch(requestContext: RequestContext) {
 
     return Promise.reject(errorResponse);
   }
-  return Promise.resolve({
+  return {
     headers,
     result,
     statusCode: response.status
-  });
+  };
 }
 
 export async function request(requestContext: RequestContext): Promise<CosmosResponse<any>> {
