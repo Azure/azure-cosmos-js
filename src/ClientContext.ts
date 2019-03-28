@@ -55,7 +55,7 @@ export class ClientContext {
         resourceType
       };
 
-      await this.setHeaders(request);
+      request.headers = await this.buildHeaders(request);
       this.applySessionToken(request);
 
       // read will use ReadEndpoint since it uses GET operation
@@ -100,7 +100,7 @@ export class ClientContext {
       request.method = HTTPMethod.post;
     }
     request.endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
-    await this.setHeaders(request);
+    request.headers = await this.buildHeaders(request);
     if (query !== undefined) {
       request.headers[Constants.HttpHeaders.IsQuery] = "true";
       request.headers[Constants.HttpHeaders.ContentType] = Constants.MediaTypes.QueryJson;
@@ -143,7 +143,7 @@ export class ClientContext {
         resourceId
       };
 
-      await this.setHeaders(request);
+      request.headers = await this.buildHeaders(request);
       this.applySessionToken(request);
       // deleteResource will use WriteEndpoint since it uses DELETE operation
       request.endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
@@ -199,7 +199,7 @@ export class ClientContext {
         options
       };
 
-      await this.setHeaders(request);
+      request.headers = await this.buildHeaders(request);
       // create will use WriteEndpoint since it uses POST operation
       this.applySessionToken(request);
 
@@ -274,7 +274,7 @@ export class ClientContext {
         options
       };
 
-      await this.setHeaders(request);
+      request.headers = await this.buildHeaders(request);
       this.applySessionToken(request);
 
       // replace will use WriteEndpoint since it uses PUT operation
@@ -324,7 +324,7 @@ export class ClientContext {
         options
       };
 
-      await this.setHeaders(request);
+      request.headers = await this.buildHeaders(request);
       request.headers[Constants.HttpHeaders.IsUpsert] = true;
       this.applySessionToken(request);
 
@@ -366,7 +366,7 @@ export class ClientContext {
       body: params
     };
 
-    await this.setHeaders(request);
+    request.headers = await this.buildHeaders(request);
     // executeStoredProcedure will use WriteEndpoint since it uses POST operation
     request.endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
     return executeRequest<T>(request);
@@ -392,7 +392,7 @@ export class ClientContext {
       options
     };
 
-    await this.setHeaders(request);
+    request.headers = await this.buildHeaders(request);
     // await options.beforeOperation({ endpoint, request, headers: requestHeaders });
     const { result, headers } = await executeRequest(request);
 
@@ -466,8 +466,8 @@ export class ClientContext {
     return false;
   }
 
-  private async setHeaders(requestContext: RequestContext) {
-    requestContext.headers = await getHeaders({
+  private buildHeaders(requestContext: RequestContext) {
+    return getHeaders({
       authOptions: this.cosmosClientOptions.auth,
       defaultHeaders: { ...this.cosmosClientOptions.defaultHeaders, ...requestContext.options.initialHeaders },
       verb: requestContext.method,
