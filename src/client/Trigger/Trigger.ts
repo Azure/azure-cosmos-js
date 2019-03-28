@@ -1,6 +1,5 @@
 import { ClientContext } from "../../ClientContext";
 import { createTriggerUri, getIdFromLink, getPathFromLink, isResourceValid, ResourceType } from "../../common";
-import { CosmosClient } from "../../CosmosClient";
 import { RequestOptions } from "../../request";
 import { Container } from "../Container";
 import { TriggerDefinition } from "./TriggerDefinition";
@@ -19,8 +18,6 @@ export class Trigger {
     return createTriggerUri(this.container.database.id, this.container.id, this.id);
   }
 
-  private client: CosmosClient;
-
   /**
    * @hidden
    * @param container The parent {@link Container}.
@@ -30,9 +27,7 @@ export class Trigger {
     public readonly container: Container,
     public readonly id: string,
     private readonly clientContext: ClientContext
-  ) {
-    this.client = this.container.database.client;
-  }
+  ) {}
 
   /**
    * Read the {@link TriggerDefinition} for the given {@link Trigger}.
@@ -42,13 +37,7 @@ export class Trigger {
     const path = getPathFromLink(this.url);
     const id = getIdFromLink(this.url);
 
-    const response = await this.clientContext.read<TriggerDefinition>(
-      path,
-      ResourceType.trigger,
-      id,
-      undefined,
-      options
-    );
+    const response = await this.clientContext.read<TriggerDefinition>(path, ResourceType.trigger, id, options);
     return new TriggerResponse(response.result, response.headers, response.statusCode, this);
   }
 
@@ -70,14 +59,7 @@ export class Trigger {
     const path = getPathFromLink(this.url);
     const id = getIdFromLink(this.url);
 
-    const response = await this.clientContext.replace<TriggerDefinition>(
-      body,
-      path,
-      ResourceType.trigger,
-      id,
-      undefined,
-      options
-    );
+    const response = await this.clientContext.replace<TriggerDefinition>(body, path, ResourceType.trigger, id, options);
     return new TriggerResponse(response.result, response.headers, response.statusCode, this);
   }
 
@@ -89,13 +71,7 @@ export class Trigger {
     const path = getPathFromLink(this.url);
     const id = getIdFromLink(this.url);
 
-    const response = await this.clientContext.delete<TriggerDefinition>(
-      path,
-      ResourceType.trigger,
-      id,
-      undefined,
-      options
-    );
+    const response = await this.clientContext.delete<TriggerDefinition>(path, ResourceType.trigger, id, options);
     return new TriggerResponse(response.result, response.headers, response.statusCode, this);
   }
 }
