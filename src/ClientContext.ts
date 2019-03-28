@@ -59,7 +59,7 @@ export class ClientContext {
       this.applySessionToken(request);
 
       // read will use ReadEndpoint since it uses GET operation
-      await this.globalEndpointManager.setServiceEndpoint(request);
+      request.endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
       const response = await executeRequest<T & Resource>(request);
       this.captureSessionToken(undefined, path, OperationType.Read, response.headers);
       return response;
@@ -99,8 +99,7 @@ export class ClientContext {
     if (query !== undefined) {
       request.method = HTTPMethod.post;
     }
-
-    await this.globalEndpointManager.setServiceEndpoint(request);
+    request.endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
     await this.setHeaders(request);
     if (query !== undefined) {
       request.headers[Constants.HttpHeaders.IsQuery] = "true";
@@ -147,7 +146,7 @@ export class ClientContext {
       await this.setHeaders(request);
       this.applySessionToken(request);
       // deleteResource will use WriteEndpoint since it uses DELETE operation
-      await this.globalEndpointManager.setServiceEndpoint(request);
+      request.endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
       const response = await executeRequest<T & Resource>(request);
       if (parseLink(path).type !== "colls") {
         this.captureSessionToken(undefined, path, OperationType.Delete, response.headers);
@@ -204,7 +203,7 @@ export class ClientContext {
       // create will use WriteEndpoint since it uses POST operation
       this.applySessionToken(request);
 
-      await this.globalEndpointManager.setServiceEndpoint(request);
+      request.endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
       const response = await executeRequest<T & U & Resource>(request);
       this.captureSessionToken(undefined, path, OperationType.Create, response.headers);
       return response;
@@ -279,7 +278,7 @@ export class ClientContext {
       this.applySessionToken(request);
 
       // replace will use WriteEndpoint since it uses PUT operation
-      await this.globalEndpointManager.setServiceEndpoint(request);
+      request.endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
       const response = await executeRequest<T & Resource>(request);
       this.captureSessionToken(undefined, path, OperationType.Replace, response.headers);
       return response;
@@ -330,7 +329,7 @@ export class ClientContext {
       this.applySessionToken(request);
 
       // upsert will use WriteEndpoint since it uses POST operation
-      await this.globalEndpointManager.setServiceEndpoint(request);
+      request.endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
       const response = await executeRequest<T & Resource>(request);
       this.captureSessionToken(undefined, path, OperationType.Upsert, response.headers);
       return response;
@@ -369,7 +368,7 @@ export class ClientContext {
 
     await this.setHeaders(request);
     // executeStoredProcedure will use WriteEndpoint since it uses POST operation
-    await this.globalEndpointManager.setServiceEndpoint(request);
+    request.endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
     return executeRequest<T>(request);
   }
 
