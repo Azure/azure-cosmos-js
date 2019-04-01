@@ -3,11 +3,11 @@ import { ClientContext } from "./ClientContext";
 import {
   CosmosHeaders,
   FetchFunctionCallback,
+  getInitialHeader,
   IExecutionContext,
   mergeHeaders,
   ProxyQueryExecutionContext,
-  SqlQuerySpec,
-  getInitialHeader
+  SqlQuerySpec
 } from "./queryExecutionContext";
 import { FeedOptions } from "./request/FeedOptions";
 import { FeedResponse } from "./request/FeedResponse";
