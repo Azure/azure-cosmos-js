@@ -1,7 +1,7 @@
 import { CosmosHeaders } from "../index";
 
 export interface Response<T> {
-  headers?: CosmosHeaders;
+  headers: NonNullable<CosmosHeaders>;
   result?: T;
   statusCode?: number;
 }

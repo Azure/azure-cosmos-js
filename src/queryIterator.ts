@@ -4,8 +4,10 @@ import {
   CosmosHeaders,
   FetchFunctionCallback,
   IExecutionContext,
+  mergeHeaders,
   ProxyQueryExecutionContext,
-  SqlQuerySpec
+  SqlQuerySpec,
+  getInitialHeader
 } from "./queryExecutionContext";
 import { FeedOptions } from "./request/FeedOptions";
 import { FeedResponse } from "./request/FeedResponse";
@@ -34,6 +36,7 @@ export class QueryIterator<T> {
     this.options = options;
     this.resourceLink = resourceLink;
     this.queryExecutionContext = this.createQueryExecutionContext();
+    this.fetchAllLastResHeaders = getInitialHeader();
   }
 
   /**
@@ -154,8 +157,8 @@ export class QueryIterator<T> {
   private async toArrayImplementation(): Promise<FeedResponse<T>> {
     while (this.queryExecutionContext.hasMoreResults()) {
       const { result, headers } = await this.queryExecutionContext.nextItem();
-      // concatinate the results and fetch more
-      this.fetchAllLastResHeaders = headers;
+      // concatenate the results and fetch more
+      mergeHeaders(this.fetchAllLastResHeaders, headers);
 
       if (result === undefined) {
         // no more results
