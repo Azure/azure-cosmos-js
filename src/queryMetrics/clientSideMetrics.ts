@@ -13,7 +13,7 @@ export class ClientSideMetrics {
         throw new Error("clientSideMetrics has null or undefined item(s)");
       }
 
-      requestCharge += getRequestChargeIfAny(clientSideMetrics.requestCharge); // clientSideMetrics.requestCharge;
+      requestCharge += getRequestChargeIfAny(clientSideMetrics.requestCharge);
     }
 
     return new ClientSideMetrics(requestCharge);
