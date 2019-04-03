@@ -187,14 +187,16 @@ describe("NodeJS CRUD Tests", function() {
       // tslint:enable:object-literal-shorthand
 
       const { resource: retrievedSproc } = await container.scripts.storedProcedures.create(sproc1);
-      const { resource: result } = await container.storedProcedure(retrievedSproc.id).execute();
+      const { resource: result } = await container.scripts.storedProcedure(retrievedSproc.id).execute();
       assert.equal(result, 999);
 
       const { resource: retrievedSproc2 } = await container.scripts.storedProcedures.create(sproc2);
-      const { resource: result2 } = await container.storedProcedure(retrievedSproc2.id).execute();
+      const { resource: result2 } = await container.scripts.storedProcedure(retrievedSproc2.id).execute();
       assert.equal(result2, 123456789);
       const { resource: retrievedSproc3 } = await container.scripts.storedProcedures.create(sproc3);
-      const { resource: result3 } = await container.storedProcedure(retrievedSproc3.id).execute([{ temp: "so" }]);
+      const { resource: result3 } = await container.scripts
+        .storedProcedure(retrievedSproc3.id)
+        .execute([{ temp: "so" }]);
       assert.equal(result3, "aso");
     });
 
@@ -246,14 +248,16 @@ describe("NodeJS CRUD Tests", function() {
       // tslint:enable:object-literal-shorthand
 
       const { resource: retrievedSproc } = await container.scripts.storedProcedures.upsert(sproc1);
-      const { resource: result } = await container.storedProcedure(retrievedSproc.id).execute();
+      const { resource: result } = await container.scripts.storedProcedure(retrievedSproc.id).execute();
       assert.equal(result, 999);
 
       const { resource: retrievedSproc2 } = await container.scripts.storedProcedures.upsert(sproc2);
-      const { resource: result2 } = await container.storedProcedure(retrievedSproc2.id).execute();
+      const { resource: result2 } = await container.scripts.storedProcedure(retrievedSproc2.id).execute();
       assert.equal(result2, 123456789);
       const { resource: retrievedSproc3 } = await container.scripts.storedProcedures.upsert(sproc3);
-      const { resource: result3 } = await container.storedProcedure(retrievedSproc3.id).execute([{ temp: "so" }]);
+      const { resource: result3 } = await container.scripts
+        .storedProcedure(retrievedSproc3.id)
+        .execute([{ temp: "so" }]);
       assert.equal(result3, "aso");
     });
   });
@@ -318,12 +322,12 @@ describe("NodeJS CRUD Tests", function() {
 
     const returnedDocuments = await bulkInsertItems(container, documents);
     const { resource: sproc } = await container.scripts.storedProcedures.create(querySproc);
-    const { resource: result } = await container.storedProcedure(sproc.id).execute([], { partitionKey: null });
+    const { resource: result } = await container.scripts.storedProcedure(sproc.id).execute([], { partitionKey: null });
     assert(result !== undefined);
     assert.equal(result.length, 1);
     assert.equal(JSON.stringify(result[0]), JSON.stringify(documents[1]));
 
-    const { resource: result2 } = await container.storedProcedure(sproc.id).execute(null, { partitionKey: 1 });
+    const { resource: result2 } = await container.scripts.storedProcedure(sproc.id).execute(null, { partitionKey: 1 });
     assert(result2 !== undefined);
     assert.equal(result2.length, 1);
     assert.equal(JSON.stringify(result2[0]), JSON.stringify(documents[4]));
@@ -367,19 +371,21 @@ describe("NodeJS CRUD Tests", function() {
     // tslint:enable:object-literal-shorthand
 
     const { resource: retrievedSproc } = await container.scripts.storedProcedures.create(sproc1);
-    const { resource: result1, headers: headers1 } = await container.storedProcedure(retrievedSproc.id).execute();
+    const { resource: result1, headers: headers1 } = await container.scripts
+      .storedProcedure(retrievedSproc.id)
+      .execute();
     assert.equal(result1, "Success!");
     assert.equal(headers1[Constants.HttpHeaders.ScriptLogResults], undefined);
 
     let requestOptions = { enableScriptLogging: true };
-    const { resource: result2, headers: headers2 } = await container
+    const { resource: result2, headers: headers2 } = await container.scripts
       .storedProcedure(retrievedSproc.id)
       .execute([], requestOptions);
     assert.equal(result2, "Success!");
     assert.equal(headers2[Constants.HttpHeaders.ScriptLogResults], encodeURIComponent("The value of x is 1."));
 
     requestOptions = { enableScriptLogging: false };
-    const { resource: result3, headers: headers3 } = await container
+    const { resource: result3, headers: headers3 } = await container.scripts
       .storedProcedure(retrievedSproc.id)
       .execute([], requestOptions);
     assert.equal(result3, "Success!");

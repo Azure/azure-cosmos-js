@@ -302,6 +302,6 @@ export function replaceOrUpsertStoredProcedure(
   if (isUpsertTest) {
     return container.scripts.storedProcedures.upsert(body, options);
   } else {
-    return container.storedProcedure(body.id).replace(body, options);
+    return container.scripts.storedProcedure(body.id).replace(body, options);
   }
 }
