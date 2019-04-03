@@ -53,7 +53,7 @@ jobs:
 
       - bash: printenv | sort
 
-      - bash: ACCOUNT_HOST="$(COSMOSDBEMULATOR_ENDPOINT)" NODE_TLS_REJECT_UNAUTHORIZED="0" npm run test
+      - bash: ACCOUNT_HOST=$COSMOSDBEMULATOR_ENDPOINT NODE_TLS_REJECT_UNAUTHORIZED="0" npm run test
         failOnStderr: true
         displayName: "npm test"
         env:
