@@ -35,6 +35,8 @@ jobs:
     steps:
       - task: azure-cosmosdb.emulator-public-preview.run-cosmosdbemulatorcontainer.CosmosDbEmulator@2
         displayName: "Run Azure Cosmos DB Emulator container"
+        inputs:
+          defaultPartitionCount: 25
       - task: NodeTool@0
         inputs:
           versionSpec: "10.x"
@@ -51,12 +53,16 @@ jobs:
         displayName: "npm test"
         env:
           MOCHA_TIMEOUT: 100000
-  - job: Nightly_Emulator
+  - job: NightlyEmulator
     pool:
       vmImage: vs2017-win2016
     steps:
       - task: azure-cosmosdb.emulator-internal-preview.run-cosmosdbemulatorcontainer.CosmosDbEmulator@2
         displayName: "Run Azure Cosmos DB Emulator container"
+        inputs:
+          username: "$(cosmosdb.azurecr.io.Username)"
+          password: "$(cosmosdb.azurecr.io.Password)"
+          defaultPartitionCount: 25
       - task: NodeTool@0
         inputs:
           versionSpec: "10.x"
