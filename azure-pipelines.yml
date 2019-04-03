@@ -27,7 +27,7 @@ jobs:
       env:
         ACCOUNT_HOST: $(stagingEndpoint)
         ACCOUNT_KEY: $(stagingKey)
-        MOCHA_TIMEOUT: 10000
+        MOCHA_TIMEOUT: 100000
         TESTS_MULTIREGION: true
   - job: Emulator
     pool:
@@ -49,5 +49,5 @@ jobs:
         npm run test
       displayName: 'npm run test'
       env:
-        MOCHA_TIMEOUT: 10000
+        MOCHA_TIMEOUT: 100000
         TESTS_MULTIREGION: true
