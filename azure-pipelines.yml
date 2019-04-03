@@ -58,7 +58,7 @@ jobs:
         displayName: "npm test"
         env:
           MOCHA_TIMEOUT: 100000
-  - job: Nightly Emulator
+  - job: Nightly_Emulator
     pool:
       vmImage: vs2017-win2016
     steps:
