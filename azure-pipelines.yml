@@ -61,7 +61,7 @@ jobs:
         env:
           MOCHA_TIMEOUT: 100000
           TESTS_MULTIREGION: true
-- job: Nightly Emulator
+- job: Nightly-Emulator
     pool:
       vmImage: vs2017-win2016
     steps:
