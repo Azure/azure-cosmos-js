@@ -55,6 +55,7 @@ jobs:
           $env:ACCOUNT_HOST="https://$($env:COSMOS_IPADDRESS):8081/"
           $env:NODE_TLS_REJECT_UNAUTHORIZED="0"
           npm run test
+        failOnStderr: true
         displayName: "npm test"
         env:
           MOCHA_TIMEOUT: 100000
