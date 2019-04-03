@@ -21,7 +21,7 @@ jobs:
         displayName: "npm install"
 
       - script: |
-          npm build
+          npm run build
         displayName: "npm run build"
 
       - script: |
@@ -48,7 +48,7 @@ jobs:
         displayName: "npm install"
 
       - script: |
-          npm build
+          npm run build
         displayName: "npm run build"
 
       - script: |
