@@ -51,10 +51,7 @@ jobs:
           npm run build
         displayName: "npm run build"
 
-      - powershell: |
-          $env:ACCOUNT_HOST="https://$env:COSMOS_IPADDRESS:8081/"
-          $env:NODE_TLS_REJECT_UNAUTHORIZED="0"
-          npm run test
+      - bash: ACCOUNT_HOST="https://$(cosmos.IPAddress):8081/" NODE_TLS_REJECT_UNAUTHORIZED="0" npm run test
         failOnStderr: true
         displayName: "npm test"
         env:
