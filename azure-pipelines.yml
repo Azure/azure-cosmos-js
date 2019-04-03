@@ -51,7 +51,9 @@ jobs:
           npm run build
         displayName: "npm run build"
 
-      - bash: ACCOUNT_HOST="https://$(cosmos.IPAddress):8081/" NODE_TLS_REJECT_UNAUTHORIZED="0" npm run test
+      - bash: printenv | sort
+
+      - bash: ACCOUNT_HOST="https://$(CosmosDbEmulator.Endpoint):8081/" NODE_TLS_REJECT_UNAUTHORIZED="0" npm run test
         failOnStderr: true
         displayName: "npm test"
         env:
