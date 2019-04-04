@@ -9,9 +9,9 @@
       "request": "launch",
       "name": "Mocha Tests",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "outFiles": ["${workspaceFolder}/dist-esm/**/*.js"],
+      "outFiles": ["${workspaceFolder}/dist-test/**/*.js"],
       "preLaunchTask": "npm: compile",
-      "args": ["-r", "esm", "-r", "test/common/setup.js", "${workspaceFolder}/test/**/*.spec.js"],
+      "args": ["-r", "esm", "-r", "dist-test/common/setup.js", "${workspaceFolder}/dist-test/**/*.spec.js"],
       "internalConsoleOptions": "openOnSessionStart",
       "env": {
         "MOCHA_TIMEOUT": "999999"

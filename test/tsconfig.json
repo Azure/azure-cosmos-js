@@ -7,6 +7,7 @@
     "noImplicitAny": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "outDir": "../dist-test",
     "preserveConstEnums": true,
     "removeComments": false,
     "target": "es6",
