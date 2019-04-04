@@ -30,6 +30,7 @@ export async function execute({
   retryPolicies,
   requestContext
 }: ExecuteArgs): Promise<Response<any>> {
+  const opStats = requestContext.operationStatistics.createChildOperation();
   // TODO: any response
   if (!retryPolicies) {
     retryPolicies = {
@@ -72,18 +73,27 @@ export async function execute({
     response.headers[Constants.ThrottleRetryCount] = retryPolicies.resourceThrottleRetryPolicy.currentRetryAttemptCount;
     response.headers[Constants.ThrottleRetryWaitTimeInMs] =
       retryPolicies.resourceThrottleRetryPolicy.cummulativeWaitTimeinMilliseconds;
-    return response;
+    opStats.complete();
+    return { ...response, operationStatistics: requestContext.operationStatistics };
   } catch (err) {
     // TODO: any error
     let retryPolicy: RetryPolicy = null;
     const headers = err.headers || {};
     if (err.code === StatusCodes.Forbidden && err.substatus === SubStatusCodes.WriteForbidden) {
       retryPolicy = retryPolicies.endpointDiscoveryRetryPolicy;
+      opStats.unavailable(err);
     } else if (err.code === StatusCodes.TooManyRequests) {
       retryPolicy = retryPolicies.resourceThrottleRetryPolicy;
+      opStats.throttled(err);
     } else if (err.code === StatusCodes.NotFound && err.substatus === SubStatusCodes.ReadSessionNotAvailable) {
       retryPolicy = retryPolicies.sessionReadRetryPolicy;
+      opStats.unavailable(err);
+    } else if (err.code === "ECONNRESET") {
+      // TODO: constant
+      opStats.networkingFailure(err);
+      retryPolicy = retryPolicies.defaultRetryPolicy;
     } else {
+      opStats.fail(err);
       retryPolicy = retryPolicies.defaultRetryPolicy;
     }
     const results = await retryPolicy.shouldRetry(err, retryContext, locationEndpoint);

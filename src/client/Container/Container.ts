@@ -4,11 +4,13 @@ import {
   getIdFromLink,
   getPathFromLink,
   isResourceValid,
+  OperationType,
   ResourceType
 } from "../../common";
 import { PartitionKeyDefinition } from "../../documents";
 import { QueryIterator } from "../../queryIterator";
 import { FeedOptions, RequestOptions, ResourceResponse } from "../../request";
+import { InternalOperationStats } from "../../request/OperationStatistics";
 import { Conflict, Conflicts } from "../Conflict";
 import { Database } from "../Database";
 import { Item, Items } from "../Item";
@@ -120,7 +122,13 @@ export class Container {
 
     const response = await this.clientContext.read<ContainerDefinition>(path, ResourceType.container, id, options);
     this.clientContext.partitionKeyDefinitionCache[this.url] = response.result.partitionKey;
-    return new ContainerResponse(response.result, response.headers, response.statusCode, this);
+    return new ContainerResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      this,
+      response.operationStatistics
+    );
   }
 
   /** Replace the container's definition */
@@ -140,7 +148,13 @@ export class Container {
       id,
       options
     );
-    return new ContainerResponse(response.result, response.headers, response.statusCode, this);
+    return new ContainerResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      this,
+      response.operationStatistics
+    );
   }
 
   /** Delete the container */
@@ -149,7 +163,13 @@ export class Container {
     const id = getIdFromLink(this.url);
 
     const response = await this.clientContext.delete<ContainerDefinition>(path, ResourceType.container, id, options);
-    return new ContainerResponse(response.result, response.headers, response.statusCode, this);
+    return new ContainerResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      this,
+      response.operationStatistics
+    );
   }
 
   /**
@@ -163,18 +183,21 @@ export class Container {
     // $ISSUE-felixfan-2016-03-17: Make name based path and link based path use the same key
     // $ISSUE-felixfan-2016-03-17: Refresh partitionKeyDefinitionCache when necessary
     if (this.url in this.clientContext.partitionKeyDefinitionCache) {
+      const opStats = new InternalOperationStats(ResourceType.container, OperationType.Read, this.url, ""); // TODO: activity id
       return new ResourceResponse<PartitionKeyDefinition>(
         this.clientContext.partitionKeyDefinitionCache[this.url],
         {},
-        0
+        0,
+        opStats
       );
     }
 
-    const { headers, statusCode } = await this.read();
+    const { headers, statusCode, operationStatistics } = await this.read();
     return new ResourceResponse<PartitionKeyDefinition>(
       this.clientContext.partitionKeyDefinitionCache[this.url],
       headers,
-      statusCode
+      statusCode,
+      operationStatistics
     );
   }
 

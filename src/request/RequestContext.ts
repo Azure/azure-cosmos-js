@@ -7,6 +7,7 @@ import { PluginConfig } from "../plugins/Plugin";
 import { CosmosHeaders } from "../queryExecutionContext/CosmosHeaders";
 import { FeedOptions } from "./FeedOptions";
 import { LocationRouting } from "./LocationRouting";
+import { InternalOperationStats } from "./OperationStatistics";
 import { RequestOptions } from "./RequestOptions";
 
 export interface RequestContext {
@@ -27,4 +28,5 @@ export interface RequestContext {
   partitionKeyRangeId?: string;
   options: FeedOptions | RequestOptions;
   plugins: PluginConfig[];
+  operationStatistics: InternalOperationStats;
 }

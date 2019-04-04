@@ -104,6 +104,7 @@ export class GlobalEndpointManager {
     if (!this.isRefreshing && this.enableEndpointDiscovery) {
       this.isRefreshing = true;
       let shouldRefresh = false;
+      // TODO: track this and pass request context through?
       const databaseAccount = await this.getDatabaseAccountFromAnyEndpoint();
       if (databaseAccount) {
         this.locationCache.onDatabaseAccountRead(databaseAccount);

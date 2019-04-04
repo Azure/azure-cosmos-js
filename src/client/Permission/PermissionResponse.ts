@@ -1,5 +1,6 @@
 import { CosmosHeaders } from "../../queryExecutionContext";
 import { ResourceResponse } from "../../request";
+import { OperationStats } from "../../request/OperationStatistics";
 import { Resource } from "../Resource";
 import { Permission } from "./Permission";
 import { PermissionBody } from "./PermissionBody";
@@ -10,9 +11,10 @@ export class PermissionResponse extends ResourceResponse<PermissionDefinition & 
     resource: PermissionDefinition & PermissionBody & Resource,
     headers: CosmosHeaders,
     statusCode: number,
-    permission: Permission
+    permission: Permission,
+    operationStatistics: OperationStats
   ) {
-    super(resource, headers, statusCode);
+    super(resource, headers, statusCode, operationStatistics);
     this.permission = permission;
   }
   /** A reference to the {@link Permission} corresponding to the returned {@link PermissionDefinition}. */

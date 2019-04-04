@@ -6,6 +6,7 @@ import { extractPartitionKey } from "../../extractPartitionKey";
 import { FetchFunctionCallback, SqlQuerySpec } from "../../queryExecutionContext";
 import { QueryIterator } from "../../queryIterator";
 import { FeedOptions, RequestOptions } from "../../request";
+import { Response } from "../../request/Response";
 import { Container } from "../Container";
 import { Item } from "./Item";
 import { ItemDefinition } from "./ItemDefinition";
@@ -220,7 +221,7 @@ export class Items {
       (options && options.partitionKey) as string,
       this.clientContext
     );
-    return new ItemResponse(response.result, response.headers, response.statusCode, ref);
+    return new ItemResponse(response.result, response.headers, response.statusCode, ref, response.operationStatistics);
   }
 
   /**
@@ -272,6 +273,6 @@ export class Items {
       (options && options.partitionKey) as string,
       this.clientContext
     );
-    return new ItemResponse(response.result, response.headers, response.statusCode, ref);
+    return new ItemResponse(response.result, response.headers, response.statusCode, ref, response.operationStatistics);
   }
 }

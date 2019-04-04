@@ -1,4 +1,5 @@
 import { CosmosHeaders } from "../../queryExecutionContext";
+import { OperationStats } from "../../request/OperationStatistics";
 import { ResourceResponse } from "../../request/ResourceResponse";
 import { Resource } from "../Resource";
 import { ContainerDefinition } from "./ContainerDefinition";
@@ -10,9 +11,10 @@ export class ContainerResponse extends ResourceResponse<ContainerDefinition & Re
     resource: ContainerDefinition & Resource,
     headers: CosmosHeaders,
     statusCode: number,
-    container: Container
+    container: Container,
+    operationStatistics: OperationStats
   ) {
-    super(resource, headers, statusCode);
+    super(resource, headers, statusCode, operationStatistics);
     this.container = container;
   }
   /** A reference to the {@link Container} that the returned {@link ContainerDefinition} corresponds to. */

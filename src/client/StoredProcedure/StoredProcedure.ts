@@ -37,7 +37,13 @@ export class StoredProcedure {
     const path = getPathFromLink(this.url);
     const id = getIdFromLink(this.url);
     const response = await this.clientContext.read<StoredProcedureDefinition>(path, ResourceType.sproc, id, options);
-    return new StoredProcedureResponse(response.result, response.headers, response.statusCode, this);
+    return new StoredProcedureResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      this,
+      response.operationStatistics
+    );
   }
 
   /**
@@ -65,7 +71,13 @@ export class StoredProcedure {
       id,
       options
     );
-    return new StoredProcedureResponse(response.result, response.headers, response.statusCode, this);
+    return new StoredProcedureResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      this,
+      response.operationStatistics
+    );
   }
 
   /**
@@ -77,7 +89,13 @@ export class StoredProcedure {
     const id = getIdFromLink(this.url);
 
     const response = await this.clientContext.delete<StoredProcedureDefinition>(path, ResourceType.sproc, id, options);
-    return new StoredProcedureResponse(response.result, response.headers, response.statusCode, this);
+    return new StoredProcedureResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      this,
+      response.operationStatistics
+    );
   }
 
   /**
@@ -98,6 +116,11 @@ export class StoredProcedure {
   public async execute<T>(params?: any[], options?: RequestOptions): Promise<ResourceResponse<T>>;
   public async execute<T>(params?: any[], options?: RequestOptions): Promise<ResourceResponse<T>> {
     const response = await this.clientContext.execute<T>(this.url, params, options);
-    return new ResourceResponse<T>(response.result, response.headers, response.statusCode);
+    return new ResourceResponse<T>(
+      response.result,
+      response.headers,
+      response.statusCode,
+      response.operationStatistics
+    );
   }
 }

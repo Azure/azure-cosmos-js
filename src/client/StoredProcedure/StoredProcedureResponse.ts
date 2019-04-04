@@ -1,5 +1,6 @@
 import { CosmosHeaders } from "../../queryExecutionContext";
 import { ResourceResponse } from "../../request";
+import { OperationStats } from "../../request/OperationStatistics";
 import { Resource } from "../Resource";
 import { StoredProcedure } from "./StoredProcedure";
 import { StoredProcedureDefinition } from "./StoredProcedureDefinition";
@@ -9,9 +10,10 @@ export class StoredProcedureResponse extends ResourceResponse<StoredProcedureDef
     resource: StoredProcedureDefinition & Resource,
     headers: CosmosHeaders,
     statusCode: number,
-    storedProcedure: StoredProcedure
+    storedProcedure: StoredProcedure,
+    operationStatistics: OperationStats
   ) {
-    super(resource, headers, statusCode);
+    super(resource, headers, statusCode, operationStatistics);
     this.storedProcedure = storedProcedure;
   }
   /**

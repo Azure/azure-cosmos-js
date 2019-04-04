@@ -12,6 +12,7 @@ import { CosmosHeaders } from "./queryExecutionContext/CosmosHeaders";
 import { QueryIterator } from "./queryIterator";
 import { FeedOptions, RequestOptions, Response } from "./request";
 import { ErrorResponse } from "./request";
+import { InternalOperationStats } from "./request/OperationStatistics";
 import { getHeaders } from "./request/request";
 import { RequestContext } from "./request/RequestContext";
 import { request as executeRequest } from "./request/RequestHandler";
@@ -42,21 +43,21 @@ export class ClientContext {
     resourceId: string,
     options: RequestOptions = {}
   ): Promise<Response<T & Resource>> {
+    const request: RequestContext = {
+      globalEndpointManager: this.globalEndpointManager,
+      requestAgent: this.cosmosClientOptions.agent,
+      connectionPolicy: this.connectionPolicy,
+      method: HTTPMethod.get,
+      path,
+      operationType: OperationType.Read,
+      client: this,
+      resourceId,
+      options,
+      resourceType,
+      operationStatistics: new InternalOperationStats(resourceType, OperationType.Read, path, ""), // TODO: activity id
+      plugins: this.cosmosClientOptions.plugins
+    };
     try {
-      const request: RequestContext = {
-        globalEndpointManager: this.globalEndpointManager,
-        requestAgent: this.cosmosClientOptions.agent,
-        connectionPolicy: this.connectionPolicy,
-        method: HTTPMethod.get,
-        path,
-        operationType: OperationType.Read,
-        client: this,
-        resourceId,
-        options,
-        resourceType,
-        plugins: this.cosmosClientOptions.plugins
-      };
-
       request.headers = await this.buildHeaders(request);
       this.applySessionToken(request);
 
@@ -64,8 +65,10 @@ export class ClientContext {
       request.endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
       const response = await executePlugins(request, executeRequest, PluginOn.operation);
       this.captureSessionToken(undefined, path, OperationType.Read, response.headers);
+      request.operationStatistics.complete();
       return response;
     } catch (err) {
+      request.operationStatistics.fail();
       this.captureSessionToken(err, path, OperationType.Upsert, (err as ErrorResponse).headers);
       throw err;
     }
@@ -96,7 +99,8 @@ export class ClientContext {
       resourceType,
       options,
       body: query,
-      plugins: this.cosmosClientOptions.plugins
+      plugins: this.cosmosClientOptions.plugins,
+      operationStatistics: undefined // TODO: design doesn't really make sense for query as much...
     };
 
     if (query !== undefined) {
@@ -132,21 +136,21 @@ export class ClientContext {
     resourceId: string,
     options: RequestOptions = {}
   ): Promise<Response<T & Resource>> {
+    const request: RequestContext = {
+      globalEndpointManager: this.globalEndpointManager,
+      requestAgent: this.cosmosClientOptions.agent,
+      connectionPolicy: this.connectionPolicy,
+      method: HTTPMethod.delete,
+      client: this,
+      operationType: OperationType.Delete,
+      path,
+      resourceType,
+      options,
+      resourceId,
+      plugins: this.cosmosClientOptions.plugins,
+      operationStatistics: new InternalOperationStats(resourceType, OperationType.Delete, path, "") // TODO: activity id
+    };
     try {
-      const request: RequestContext = {
-        globalEndpointManager: this.globalEndpointManager,
-        requestAgent: this.cosmosClientOptions.agent,
-        connectionPolicy: this.connectionPolicy,
-        method: HTTPMethod.delete,
-        client: this,
-        operationType: OperationType.Delete,
-        path,
-        resourceType,
-        options,
-        resourceId,
-        plugins: this.cosmosClientOptions.plugins
-      };
-
       request.headers = await this.buildHeaders(request);
       this.applySessionToken(request);
       // deleteResource will use WriteEndpoint since it uses DELETE operation
@@ -157,8 +161,10 @@ export class ClientContext {
       } else {
         this.clearSessionToken(path);
       }
+      request.operationStatistics.complete();
       return response;
     } catch (err) {
+      request.operationStatistics.fail();
       this.captureSessionToken(err, path, OperationType.Upsert, (err as ErrorResponse).headers);
       throw err;
     }
@@ -171,22 +177,22 @@ export class ClientContext {
     resourceId: string,
     options: RequestOptions = {}
   ): Promise<Response<T & U & Resource>> {
+    const request: RequestContext = {
+      globalEndpointManager: this.globalEndpointManager,
+      requestAgent: this.cosmosClientOptions.agent,
+      connectionPolicy: this.connectionPolicy,
+      method: HTTPMethod.post,
+      client: this,
+      operationType: OperationType.Create,
+      path,
+      resourceType,
+      resourceId,
+      body,
+      options,
+      plugins: this.cosmosClientOptions.plugins,
+      operationStatistics: new InternalOperationStats(resourceType, OperationType.Create, path, "") // TODO: activity id
+    };
     try {
-      const request: RequestContext = {
-        globalEndpointManager: this.globalEndpointManager,
-        requestAgent: this.cosmosClientOptions.agent,
-        connectionPolicy: this.connectionPolicy,
-        method: HTTPMethod.post,
-        client: this,
-        operationType: OperationType.Create,
-        path,
-        resourceType,
-        resourceId,
-        body,
-        options,
-        plugins: this.cosmosClientOptions.plugins
-      };
-
       request.headers = await this.buildHeaders(request);
       // create will use WriteEndpoint since it uses POST operation
       this.applySessionToken(request);
@@ -194,8 +200,10 @@ export class ClientContext {
       request.endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
       const response = await executePlugins(request, executeRequest, PluginOn.operation);
       this.captureSessionToken(undefined, path, OperationType.Create, response.headers);
+      request.operationStatistics.complete();
       return response;
     } catch (err) {
+      request.operationStatistics.fail();
       this.captureSessionToken(err, path, OperationType.Upsert, (err as ErrorResponse).headers);
       throw err;
     }
@@ -207,10 +215,20 @@ export class ClientContext {
     resultFn: (result: { [key: string]: any }) => any[]
   ): Response<any> {
     if (isQuery) {
-      return { result: resultFn(res.result), headers: res.headers, statusCode: res.statusCode };
+      return {
+        result: resultFn(res.result),
+        headers: res.headers,
+        statusCode: res.statusCode,
+        operationStatistics: res.operationStatistics
+      };
     } else {
       const newResult = resultFn(res.result).map((body: any) => body);
-      return { result: newResult, headers: res.headers, statusCode: res.statusCode };
+      return {
+        result: newResult,
+        headers: res.headers,
+        statusCode: res.statusCode,
+        operationStatistics: res.operationStatistics
+      };
     }
   }
 
@@ -247,22 +265,22 @@ export class ClientContext {
     resourceId: string,
     options: RequestOptions = {}
   ): Promise<Response<T & Resource>> {
+    const request: RequestContext = {
+      globalEndpointManager: this.globalEndpointManager,
+      requestAgent: this.cosmosClientOptions.agent,
+      connectionPolicy: this.connectionPolicy,
+      method: HTTPMethod.put,
+      client: this,
+      operationType: OperationType.Replace,
+      path,
+      resourceType,
+      body,
+      resourceId,
+      options,
+      plugins: this.cosmosClientOptions.plugins,
+      operationStatistics: new InternalOperationStats(resourceType, OperationType.Replace, path, "") // TODO: activity id
+    };
     try {
-      const request: RequestContext = {
-        globalEndpointManager: this.globalEndpointManager,
-        requestAgent: this.cosmosClientOptions.agent,
-        connectionPolicy: this.connectionPolicy,
-        method: HTTPMethod.put,
-        client: this,
-        operationType: OperationType.Replace,
-        path,
-        resourceType,
-        body,
-        resourceId,
-        options,
-        plugins: this.cosmosClientOptions.plugins
-      };
-
       request.headers = await this.buildHeaders(request);
       this.applySessionToken(request);
 
@@ -270,8 +288,10 @@ export class ClientContext {
       request.endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
       const response = await executePlugins(request, executeRequest, PluginOn.operation);
       this.captureSessionToken(undefined, path, OperationType.Replace, response.headers);
+      request.operationStatistics.complete();
       return response;
     } catch (err) {
+      request.operationStatistics.fail();
       this.captureSessionToken(err, path, OperationType.Upsert, (err as ErrorResponse).headers);
       throw err;
     }
@@ -284,22 +304,22 @@ export class ClientContext {
     resourceId: string,
     options: RequestOptions = {}
   ): Promise<Response<T & U & Resource>> {
+    const request: RequestContext = {
+      globalEndpointManager: this.globalEndpointManager,
+      requestAgent: this.cosmosClientOptions.agent,
+      connectionPolicy: this.connectionPolicy,
+      method: HTTPMethod.post,
+      client: this,
+      operationType: OperationType.Upsert,
+      path,
+      resourceType,
+      body,
+      resourceId,
+      options,
+      plugins: this.cosmosClientOptions.plugins,
+      operationStatistics: new InternalOperationStats(resourceType, OperationType.Upsert, path, "") // TODO: activity id
+    };
     try {
-      const request: RequestContext = {
-        globalEndpointManager: this.globalEndpointManager,
-        requestAgent: this.cosmosClientOptions.agent,
-        connectionPolicy: this.connectionPolicy,
-        method: HTTPMethod.post,
-        client: this,
-        operationType: OperationType.Upsert,
-        path,
-        resourceType,
-        body,
-        resourceId,
-        options,
-        plugins: this.cosmosClientOptions.plugins
-      };
-
       request.headers = await this.buildHeaders(request);
       request.headers[Constants.HttpHeaders.IsUpsert] = true;
       this.applySessionToken(request);
@@ -308,8 +328,10 @@ export class ClientContext {
       request.endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
       const response = await executePlugins(request, executeRequest, PluginOn.operation);
       this.captureSessionToken(undefined, path, OperationType.Upsert, response.headers);
+      request.operationStatistics.complete();
       return response;
     } catch (err) {
+      request.operationStatistics.fail();
       this.captureSessionToken(err, path, OperationType.Upsert, (err as ErrorResponse).headers);
       throw err;
     }
@@ -340,13 +362,20 @@ export class ClientContext {
       options,
       resourceId: id,
       body: params,
-      plugins: this.cosmosClientOptions.plugins
+      plugins: this.cosmosClientOptions.plugins,
+      operationStatistics: new InternalOperationStats(ResourceType.sproc, OperationType.Execute, path, "") // TODO: activity id
     };
-
-    request.headers = await this.buildHeaders(request);
-    // executeStoredProcedure will use WriteEndpoint since it uses POST operation
-    request.endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
-    return executePlugins(request, executeRequest, PluginOn.operation);
+    try {
+      request.headers = await this.buildHeaders(request);
+      // executeStoredProcedure will use WriteEndpoint since it uses POST operation
+      request.endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
+      const response = executePlugins(request, executeRequest, PluginOn.operation);
+      request.operationStatistics.complete();
+      return response;
+    } catch (err) {
+      request.operationStatistics.fail();
+      throw err;
+    }
   }
 
   /**
@@ -367,16 +396,26 @@ export class ClientContext {
       path: "",
       resourceType: ResourceType.none,
       options,
-      plugins: this.cosmosClientOptions.plugins
+      plugins: this.cosmosClientOptions.plugins,
+      operationStatistics: new InternalOperationStats(ResourceType.none, OperationType.Read, "", "") // TODO: activity id
     };
 
-    request.headers = await this.buildHeaders(request);
-    // await options.beforeOperation({ endpoint, request, headers: requestHeaders });
-    const { result, headers } = await executePlugins(request, executeRequest, PluginOn.operation);
+    try {
+      request.headers = await this.buildHeaders(request);
+      // await options.beforeOperation({ endpoint, request, headers: requestHeaders });
+      const { result, headers, statusCode, operationStatistics } = await executePlugins(
+        request,
+        executeRequest,
+        PluginOn.operation
+      );
 
-    const databaseAccount = new DatabaseAccount(result, headers);
-
-    return { result: databaseAccount, headers };
+      const databaseAccount = new DatabaseAccount(result, headers);
+      request.operationStatistics.complete();
+      return { result: databaseAccount, headers, statusCode, operationStatistics };
+    } catch (err) {
+      request.operationStatistics.fail();
+      throw err;
+    }
   }
 
   public getWriteEndpoint(): Promise<string> {
