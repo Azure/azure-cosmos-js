@@ -6,6 +6,7 @@ import { StatusCodes, SubStatusCodes } from "./common/statusCodes";
 import { CosmosClientOptions } from "./CosmosClientOptions";
 import { ConnectionPolicy, ConsistencyLevel, DatabaseAccount } from "./documents";
 import { GlobalEndpointManager } from "./globalEndpointManager";
+import { executePlugins, PluginOn } from "./plugins/Plugin";
 import { FetchFunctionCallback, SqlQuerySpec } from "./queryExecutionContext";
 import { CosmosHeaders } from "./queryExecutionContext/CosmosHeaders";
 import { QueryIterator } from "./queryIterator";
@@ -52,7 +53,8 @@ export class ClientContext {
         client: this,
         resourceId,
         options,
-        resourceType
+        resourceType,
+        plugins: this.cosmosClientOptions.plugins
       };
 
       request.headers = await this.buildHeaders(request);
@@ -60,7 +62,7 @@ export class ClientContext {
 
       // read will use ReadEndpoint since it uses GET operation
       request.endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
-      const response = await executeRequest<T & Resource>(request);
+      const response = await executePlugins(request, executeRequest, PluginOn.operation);
       this.captureSessionToken(undefined, path, OperationType.Read, response.headers);
       return response;
     } catch (err) {
@@ -93,7 +95,8 @@ export class ClientContext {
       resourceId,
       resourceType,
       options,
-      body: query
+      body: query,
+      plugins: this.cosmosClientOptions.plugins
     };
 
     if (query !== undefined) {
@@ -140,14 +143,15 @@ export class ClientContext {
         path,
         resourceType,
         options,
-        resourceId
+        resourceId,
+        plugins: this.cosmosClientOptions.plugins
       };
 
       request.headers = await this.buildHeaders(request);
       this.applySessionToken(request);
       // deleteResource will use WriteEndpoint since it uses DELETE operation
       request.endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
-      const response = await executeRequest<T & Resource>(request);
+      const response = await executePlugins(request, executeRequest, PluginOn.operation);
       if (parseLink(path).type !== "colls") {
         this.captureSessionToken(undefined, path, OperationType.Delete, response.headers);
       } else {
@@ -196,7 +200,8 @@ export class ClientContext {
         resourceType,
         resourceId,
         body,
-        options
+        options,
+        plugins: this.cosmosClientOptions.plugins
       };
 
       request.headers = await this.buildHeaders(request);
@@ -204,7 +209,7 @@ export class ClientContext {
       this.applySessionToken(request);
 
       request.endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
-      const response = await executeRequest<T & U & Resource>(request);
+      const response = await executePlugins(request, executeRequest, PluginOn.operation);
       this.captureSessionToken(undefined, path, OperationType.Create, response.headers);
       return response;
     } catch (err) {
@@ -271,7 +276,8 @@ export class ClientContext {
         resourceType,
         body,
         resourceId,
-        options
+        options,
+        plugins: this.cosmosClientOptions.plugins
       };
 
       request.headers = await this.buildHeaders(request);
@@ -279,7 +285,7 @@ export class ClientContext {
 
       // replace will use WriteEndpoint since it uses PUT operation
       request.endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
-      const response = await executeRequest<T & Resource>(request);
+      const response = await executePlugins(request, executeRequest, PluginOn.operation);
       this.captureSessionToken(undefined, path, OperationType.Replace, response.headers);
       return response;
     } catch (err) {
@@ -321,7 +327,8 @@ export class ClientContext {
         resourceType,
         body,
         resourceId,
-        options
+        options,
+        plugins: this.cosmosClientOptions.plugins
       };
 
       request.headers = await this.buildHeaders(request);
@@ -330,7 +337,7 @@ export class ClientContext {
 
       // upsert will use WriteEndpoint since it uses POST operation
       request.endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
-      const response = await executeRequest<T & Resource>(request);
+      const response = await executePlugins(request, executeRequest, PluginOn.operation);
       this.captureSessionToken(undefined, path, OperationType.Upsert, response.headers);
       return response;
     } catch (err) {
@@ -363,13 +370,14 @@ export class ClientContext {
       resourceType: ResourceType.sproc,
       options,
       resourceId: id,
-      body: params
+      body: params,
+      plugins: this.cosmosClientOptions.plugins
     };
 
     request.headers = await this.buildHeaders(request);
     // executeStoredProcedure will use WriteEndpoint since it uses POST operation
     request.endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
-    return executeRequest<T>(request);
+    return executePlugins(request, executeRequest, PluginOn.operation);
   }
 
   /**
@@ -389,12 +397,13 @@ export class ClientContext {
       operationType: OperationType.Read,
       path: "",
       resourceType: ResourceType.none,
-      options
+      options,
+      plugins: this.cosmosClientOptions.plugins
     };
 
     request.headers = await this.buildHeaders(request);
     // await options.beforeOperation({ endpoint, request, headers: requestHeaders });
-    const { result, headers } = await executeRequest(request);
+    const { result, headers } = await executePlugins(request, executeRequest, PluginOn.operation);
 
     const databaseAccount = new DatabaseAccount(result, headers);
 
