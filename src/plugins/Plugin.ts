@@ -11,10 +11,9 @@ export interface PluginConfig {
   plugin: Plugin<any>;
 }
 
-export type Plugin<T> = (
-  context: RequestContext,
-  next: (context: RequestContext) => Promise<Response<T>>
-) => Promise<Response<T>>;
+export type Plugin<T> = (context: RequestContext, next: Next<T>) => Promise<Response<T>>;
+
+export type Next<T> = (context: RequestContext) => Promise<Response<T>>;
 
 export async function executePlugins(
   requestContext: RequestContext,
@@ -25,7 +24,7 @@ export async function executePlugins(
     return next(requestContext, undefined);
   }
   let level = 0;
-  function _(inner: RequestContext): Promise<Response<any>> {
+  const _: Next<any> = (inner: RequestContext): Promise<Response<any>> => {
     if (++level >= inner.plugins.length) {
       return next(requestContext, undefined);
     } else if (inner.plugins[level].on !== on) {
@@ -33,7 +32,7 @@ export async function executePlugins(
     } else {
       return inner.plugins[level].plugin(inner, _);
     }
-  }
+  };
   if (requestContext.plugins[level].on !== on) {
     return _(requestContext);
   } else {
