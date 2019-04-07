@@ -13,7 +13,7 @@ jobs:
     steps:
       - task: NodeTool@0
         inputs:
-          versionSpec: "10.x"
+          versionSpec: "6.x"
         displayName: "Install Node.js"
 
       - script: npm install
@@ -39,7 +39,7 @@ jobs:
           defaultPartitionCount: 25
       - task: NodeTool@0
         inputs:
-          versionSpec: "10.x"
+          versionSpec: "6.x"
         displayName: "Install Node.js"
 
       - script: npm install
@@ -65,7 +65,7 @@ jobs:
           defaultPartitionCount: 25
       - task: NodeTool@0
         inputs:
-          versionSpec: "10.x"
+          versionSpec: "6.x"
         displayName: "Install Node.js"
 
       - script: npm install
