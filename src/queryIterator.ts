@@ -144,6 +144,7 @@ export class QueryIterator<T> {
    */
   public async fetchNext(): Promise<FeedResponse<T>> {
     const response = await this.queryExecutionContext.fetchMore();
+    console.log(response.headers);
     return new FeedResponse<T>(response.result, response.headers, this.queryExecutionContext.hasMoreResults());
   }
 

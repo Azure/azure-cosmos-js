@@ -124,9 +124,8 @@ describe("Cross Partition", function() {
       try {
         const expectedLength = (expectedOrderIds && expectedOrderIds.length) || documentDefinitions.length;
         while (totalFetchedResults.length <= expectedLength) {
-          const { resources: results, activityId, requestCharge } = await queryIterator.fetchNext();
-          assert(activityId, "activityId must exist");
-          assert(requestCharge, "requestCharge must exist");
+          const { resources: results } = await queryIterator.fetchNext();
+
           listOfResultPages.push(results);
 
           if (results === undefined || totalFetchedResults.length === expectedLength) {
