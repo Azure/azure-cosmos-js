@@ -117,6 +117,10 @@ describe("Cross Partition", function() {
     ) {
       const pageSize = options["maxItemCount"];
 
+      ////////////////////////////////
+      // validate executeNext()
+      ////////////////////////////////
+
       const listOfResultPages: any[] = [];
 
       let totalFetchedResults: any[] = [];
@@ -125,7 +129,6 @@ describe("Cross Partition", function() {
         const expectedLength = (expectedOrderIds && expectedOrderIds.length) || documentDefinitions.length;
         while (totalFetchedResults.length <= expectedLength) {
           const { resources: results } = await queryIterator.fetchNext();
-
           listOfResultPages.push(results);
 
           if (results === undefined || totalFetchedResults.length === expectedLength) {
