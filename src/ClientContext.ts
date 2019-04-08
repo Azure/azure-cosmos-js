@@ -164,24 +164,7 @@ export class ClientContext {
     }
   }
 
-  // Most cases, things return the definition + the system resource props
-  public async create<T>(
-    body: T,
-    path: string,
-    resourceType: ResourceType,
-    resourceId: string,
-    options: RequestOptions
-  ): Promise<Response<T & Resource>>;
-
-  // But a few cases, like permissions, there is additional junk added to the response that isn't in system resource props
-  public async create<T, U>(
-    body: T,
-    path: string,
-    resourceType: ResourceType,
-    resourceId: string,
-    options: RequestOptions
-  ): Promise<Response<T & U & Resource>>;
-  public async create<T, U>(
+  public async create<T, U = T>(
     body: T,
     path: string,
     resourceType: ResourceType,
@@ -294,27 +277,13 @@ export class ClientContext {
     }
   }
 
-  public async upsert<T>(
-    body: T,
-    path: string,
-    resourceType: ResourceType,
-    resourceId: string,
-    options: RequestOptions
-  ): Promise<Response<T & Resource>>;
-  public async upsert<T, U>(
-    body: T,
-    path: string,
-    resourceType: ResourceType,
-    resourceId: string,
-    options: RequestOptions
-  ): Promise<Response<T & U & Resource>>;
-  public async upsert<T>(
+  public async upsert<T, U = T>(
     body: T,
     path: string,
     resourceType: ResourceType,
     resourceId: string,
     options: RequestOptions = {}
-  ): Promise<Response<T & Resource>> {
+  ): Promise<Response<T & U & Resource>> {
     try {
       const request: RequestContext = {
         globalEndpointManager: this.globalEndpointManager,
