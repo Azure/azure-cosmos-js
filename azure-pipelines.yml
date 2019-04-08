@@ -8,6 +8,8 @@ trigger:
 
 jobs:
   - job: Staging
+    strategy:
+      maxParallel: 1
     pool:
       vmImage: ubuntu-16.04
     steps:
