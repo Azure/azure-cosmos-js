@@ -16,7 +16,7 @@ export class FeedResponse<TResource> {
   public get requestCharge(): number {
     return this.headers[Constants.HttpHeaders.RequestCharge];
   }
-  public get activityId(): string{
+  public get activityId(): string {
     return this.headers[Constants.HttpHeaders.ActivityId];
   }
 }
