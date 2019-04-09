@@ -8,7 +8,8 @@ import {
   Resource,
   TriggerResponse,
   User,
-  UserDefinedFunctionResponse
+  UserDefinedFunctionResponse,
+  DatabaseResponse
 } from "../../dist-esm/client";
 import { StoredProcedureResponse } from "../../dist-esm/client/StoredProcedure/StoredProcedureResponse";
 import { UserResponse } from "../../dist-esm/client/User/UserResponse";
@@ -35,7 +36,7 @@ export async function removeAllDatabases(client: CosmosClient = defaultClient) {
 
     const count = 0;
     await Promise.all(
-      databases.map<Promise<Response<DatabaseDefinition>>>(async (database: DatabaseDefinition) =>
+      databases.map<Promise<DatabaseResponse>>(async (database: DatabaseDefinition) =>
         client.database(database.id).delete()
       )
     );

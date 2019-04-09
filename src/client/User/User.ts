@@ -57,7 +57,7 @@ export class User {
     const path = getPathFromLink(this.url);
     const id = getIdFromLink(this.url);
     const response = await this.clientContext.read<UserDefinition>(path, ResourceType.user, id, options);
-    return new UserResponse(response.result, response.headers, response.statusCode, this);
+    return new UserResponse(response.result, response.headers, response.statusCode, this, response.operationStatistics);
   }
 
   /**
@@ -75,7 +75,7 @@ export class User {
     const id = getIdFromLink(this.url);
 
     const response = await this.clientContext.replace<UserDefinition>(body, path, ResourceType.user, id, options);
-    return new UserResponse(response.result, response.headers, response.statusCode, this);
+    return new UserResponse(response.result, response.headers, response.statusCode, this, response.operationStatistics);
   }
 
   /**
@@ -87,6 +87,6 @@ export class User {
     const id = getIdFromLink(this.url);
 
     const response = await this.clientContext.delete<UserDefinition>(path, ResourceType.user, id, options);
-    return new UserResponse(response.result, response.headers, response.statusCode, this);
+    return new UserResponse(response.result, response.headers, response.statusCode, this, response.operationStatistics);
   }
 }

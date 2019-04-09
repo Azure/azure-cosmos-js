@@ -37,7 +37,13 @@ export class Conflict {
     const id = getIdFromLink(this.url);
 
     const response = await this.clientContext.read<ConflictDefinition>(path, ResourceType.user, id, options);
-    return new ConflictResponse(response.result, response.headers, response.statusCode, this);
+    return new ConflictResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      this,
+      response.operationStatistics
+    );
   }
 
   /**
@@ -49,6 +55,12 @@ export class Conflict {
     const id = getIdFromLink(this.url);
 
     const response = await this.clientContext.delete<ConflictDefinition>(path, ResourceType.conflicts, id, options);
-    return new ConflictResponse(response.result, response.headers, response.statusCode, this);
+    return new ConflictResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      this,
+      response.operationStatistics
+    );
   }
 }

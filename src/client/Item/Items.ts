@@ -6,7 +6,6 @@ import { extractPartitionKey } from "../../extractPartitionKey";
 import { FetchFunctionCallback, SqlQuerySpec } from "../../queryExecutionContext";
 import { QueryIterator } from "../../queryIterator";
 import { FeedOptions, RequestOptions } from "../../request";
-import { Response } from "../../request/Response";
 import { Container } from "../Container";
 import { Item } from "./Item";
 import { ItemDefinition } from "./ItemDefinition";

@@ -107,7 +107,13 @@ export class Containers {
 
     const response = await this.clientContext.create<ContainerRequest>(body, path, ResourceType.container, id, options);
     const ref = new Container(this.database, response.result.id, this.clientContext);
-    return new ContainerResponse(response.result, response.headers, response.statusCode, ref);
+    return new ContainerResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      ref,
+      response.operationStatistics
+    );
   }
 
   /**

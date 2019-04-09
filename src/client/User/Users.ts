@@ -69,7 +69,7 @@ export class Users {
     const id = getIdFromLink(this.database.url);
     const response = await this.clientContext.create<UserDefinition>(body, path, ResourceType.user, id, options);
     const ref = new User(this.database, response.result.id, this.clientContext);
-    return new UserResponse(response.result, response.headers, response.statusCode, ref);
+    return new UserResponse(response.result, response.headers, response.statusCode, ref, response.operationStatistics);
   }
 
   /**
@@ -88,6 +88,6 @@ export class Users {
 
     const response = await this.clientContext.upsert<UserDefinition>(body, path, ResourceType.user, id, options);
     const ref = new User(this.database, response.result.id, this.clientContext);
-    return new UserResponse(response.result, response.headers, response.statusCode, ref);
+    return new UserResponse(response.result, response.headers, response.statusCode, ref, response.operationStatistics);
   }
 }

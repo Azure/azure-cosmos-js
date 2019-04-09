@@ -39,7 +39,13 @@ export class Permission {
       id,
       options
     );
-    return new PermissionResponse(response.result, response.headers, response.statusCode, this);
+    return new PermissionResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      this,
+      response.operationStatistics
+    );
   }
 
   /**
@@ -63,7 +69,13 @@ export class Permission {
       id,
       options
     );
-    return new PermissionResponse(response.result, response.headers, response.statusCode, this);
+    return new PermissionResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      this,
+      response.operationStatistics
+    );
   }
 
   /**
@@ -80,6 +92,12 @@ export class Permission {
       id,
       options
     );
-    return new PermissionResponse(response.result, response.headers, response.statusCode, this);
+    return new PermissionResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      this,
+      response.operationStatistics
+    );
   }
 }

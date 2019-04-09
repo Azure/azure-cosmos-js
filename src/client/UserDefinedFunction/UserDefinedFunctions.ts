@@ -93,7 +93,13 @@ export class UserDefinedFunctions {
       options
     );
     const ref = new UserDefinedFunction(this.container, response.result.id, this.clientContext);
-    return new UserDefinedFunctionResponse(response.result, response.headers, response.statusCode, ref);
+    return new UserDefinedFunctionResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      ref,
+      response.operationStatistics
+    );
   }
 
   /**
@@ -128,6 +134,12 @@ export class UserDefinedFunctions {
       options
     );
     const ref = new UserDefinedFunction(this.container, response.result.id, this.clientContext);
-    return new UserDefinedFunctionResponse(response.result, response.headers, response.statusCode, ref);
+    return new UserDefinedFunctionResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      ref,
+      response.operationStatistics
+    );
   }
 }

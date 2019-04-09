@@ -80,7 +80,13 @@ export class Database {
     const path = getPathFromLink(this.url);
     const id = getIdFromLink(this.url);
     const response = await this.clientContext.read<DatabaseDefinition>(path, ResourceType.database, id, options);
-    return new DatabaseResponse(response.result, response.headers, response.statusCode, this);
+    return new DatabaseResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      this,
+      response.operationStatistics
+    );
   }
 
   /** Delete the given Database. */
@@ -88,6 +94,12 @@ export class Database {
     const path = getPathFromLink(this.url);
     const id = getIdFromLink(this.url);
     const response = await this.clientContext.delete<DatabaseDefinition>(path, ResourceType.database, id, options);
-    return new DatabaseResponse(response.result, response.headers, response.statusCode, this);
+    return new DatabaseResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      this,
+      response.operationStatistics
+    );
   }
 }

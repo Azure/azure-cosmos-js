@@ -76,7 +76,7 @@ export class Item {
     const id = getIdFromLink(this.url);
     const response = await this.clientContext.read<T>(path, ResourceType.item, id, options);
 
-    return new ItemResponse(response.result, response.headers, response.statusCode, this);
+    return new ItemResponse(response.result, response.headers, response.statusCode, this, response.operationStatistics);
   }
 
   /**
@@ -119,7 +119,7 @@ export class Item {
     const id = getIdFromLink(this.url);
 
     const response = await this.clientContext.replace<T>(body, path, ResourceType.item, id, options);
-    return new ItemResponse(response.result, response.headers, response.statusCode, this);
+    return new ItemResponse(response.result, response.headers, response.statusCode, this, response.operationStatistics);
   }
 
   /**
@@ -145,6 +145,6 @@ export class Item {
     const id = getIdFromLink(this.url);
 
     const response = await this.clientContext.delete<T>(path, ResourceType.item, id, options);
-    return new ItemResponse(response.result, response.headers, response.statusCode, this);
+    return new ItemResponse(response.result, response.headers, response.statusCode, this, response.operationStatistics);
   }
 }

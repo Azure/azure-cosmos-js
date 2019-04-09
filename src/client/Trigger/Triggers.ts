@@ -85,7 +85,13 @@ export class Triggers {
 
     const response = await this.clientContext.create<TriggerDefinition>(body, path, ResourceType.trigger, id, options);
     const ref = new Trigger(this.container, response.result.id, this.clientContext);
-    return new TriggerResponse(response.result, response.headers, response.statusCode, ref);
+    return new TriggerResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      ref,
+      response.operationStatistics
+    );
   }
 
   /**
@@ -113,6 +119,12 @@ export class Triggers {
 
     const response = await this.clientContext.upsert<TriggerDefinition>(body, path, ResourceType.trigger, id, options);
     const ref = new Trigger(this.container, response.result.id, this.clientContext);
-    return new TriggerResponse(response.result, response.headers, response.statusCode, ref);
+    return new TriggerResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      ref,
+      response.operationStatistics
+    );
   }
 }

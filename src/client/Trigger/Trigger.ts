@@ -38,7 +38,13 @@ export class Trigger {
     const id = getIdFromLink(this.url);
 
     const response = await this.clientContext.read<TriggerDefinition>(path, ResourceType.trigger, id, options);
-    return new TriggerResponse(response.result, response.headers, response.statusCode, this);
+    return new TriggerResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      this,
+      response.operationStatistics
+    );
   }
 
   /**
@@ -60,7 +66,13 @@ export class Trigger {
     const id = getIdFromLink(this.url);
 
     const response = await this.clientContext.replace<TriggerDefinition>(body, path, ResourceType.trigger, id, options);
-    return new TriggerResponse(response.result, response.headers, response.statusCode, this);
+    return new TriggerResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      this,
+      response.operationStatistics
+    );
   }
 
   /**
@@ -72,6 +84,12 @@ export class Trigger {
     const id = getIdFromLink(this.url);
 
     const response = await this.clientContext.delete<TriggerDefinition>(path, ResourceType.trigger, id, options);
-    return new TriggerResponse(response.result, response.headers, response.statusCode, this);
+    return new TriggerResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      this,
+      response.operationStatistics
+    );
   }
 }

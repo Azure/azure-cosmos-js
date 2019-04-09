@@ -43,7 +43,13 @@ export class UserDefinedFunction {
     const id = getIdFromLink(this.url);
 
     const response = await this.clientContext.read<UserDefinedFunctionDefinition>(path, ResourceType.udf, id, options);
-    return new UserDefinedFunctionResponse(response.result, response.headers, response.statusCode, this);
+    return new UserDefinedFunctionResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      this,
+      response.operationStatistics
+    );
   }
 
   /**
@@ -74,7 +80,13 @@ export class UserDefinedFunction {
       id,
       options
     );
-    return new UserDefinedFunctionResponse(response.result, response.headers, response.statusCode, this);
+    return new UserDefinedFunctionResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      this,
+      response.operationStatistics
+    );
   }
 
   /**
@@ -86,6 +98,12 @@ export class UserDefinedFunction {
     const id = getIdFromLink(this.url);
 
     const response = await this.clientContext.delete(path, ResourceType.udf, id, options);
-    return new UserDefinedFunctionResponse(response.result, response.headers, response.statusCode, this);
+    return new UserDefinedFunctionResponse(
+      response.result,
+      response.headers,
+      response.statusCode,
+      this,
+      response.operationStatistics
+    );
   }
 }
