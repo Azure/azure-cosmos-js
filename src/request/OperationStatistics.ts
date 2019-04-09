@@ -1,4 +1,3 @@
-import { __extends } from "tslib";
 import { OperationType, ResourceType } from "../common";
 
 export interface OperationStats {
