@@ -100,7 +100,7 @@ export class ClientContext {
       options,
       body: query,
       plugins: this.cosmosClientOptions.plugins,
-      operationStatistics: undefined // TODO: design doesn't really make sense for query as much...
+      operationStatistics: new InternalOperationStats(resourceType, OperationType.Query, path, "") // TODO: Activity Id // TODO: design doesn't really make sense for query as much...
     };
 
     if (query !== undefined) {
