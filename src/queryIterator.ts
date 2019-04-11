@@ -1,14 +1,17 @@
 /// <reference lib="esnext.asynciterable" />
 import { ClientContext } from "./ClientContext";
+import { StatusCodes, SubStatusCodes } from "./common";
 import {
   CosmosHeaders,
+  DefaultQueryExecutionContext,
   FetchFunctionCallback,
   getInitialHeader,
   IExecutionContext,
   mergeHeaders,
-  ProxyQueryExecutionContext,
+  PipelinedQueryExecutionContext,
   SqlQuerySpec
 } from "./queryExecutionContext";
+import { ErrorResponse, PartitionedQueryExecutionInfo } from "./request/ErrorResponse";
 import { FeedOptions } from "./request/FeedOptions";
 import { FeedResponse } from "./request/FeedResponse";
 
@@ -35,8 +38,8 @@ export class QueryIterator<T> {
     this.fetchFunctions = fetchFunctions;
     this.options = options;
     this.resourceLink = resourceLink;
-    this.queryExecutionContext = this.createQueryExecutionContext();
     this.fetchAllLastResHeaders = getInitialHeader();
+    this.reset();
   }
 
   /**
@@ -64,7 +67,7 @@ export class QueryIterator<T> {
     this.reset();
     let index = 0;
     while (this.queryExecutionContext.hasMoreResults()) {
-      const result = await this.queryExecutionContext.nextItem();
+      const result = await this.executeMethod("nextItem");
       if (result.result === undefined) {
         return;
       }
@@ -103,7 +106,7 @@ export class QueryIterator<T> {
   public async *getAsyncIterator(): AsyncIterable<FeedResponse<T>> {
     this.reset();
     while (this.queryExecutionContext.hasMoreResults()) {
-      const result = await this.queryExecutionContext.fetchMore();
+      const result = await this.executeMethod("fetchMore");
       const feedResponse = new FeedResponse<T>(
         result.result,
         result.headers,
@@ -143,7 +146,7 @@ export class QueryIterator<T> {
    * before returning the first batch of responses.
    */
   public async fetchNext(): Promise<FeedResponse<T>> {
-    const response = await this.queryExecutionContext.fetchMore();
+    const response = await this.executeMethod("fetchMore");
     return new FeedResponse<T>(response.result, response.headers, this.queryExecutionContext.hasMoreResults());
   }
 
@@ -151,12 +154,12 @@ export class QueryIterator<T> {
    * Reset the QueryIterator to the beginning and clear all the resources inside it
    */
   public reset() {
-    this.queryExecutionContext = this.createQueryExecutionContext();
+    this.queryExecutionContext = new DefaultQueryExecutionContext(this.options, this.fetchFunctions);
   }
 
   private async toArrayImplementation(): Promise<FeedResponse<T>> {
     while (this.queryExecutionContext.hasMoreResults()) {
-      const { result, headers } = await this.queryExecutionContext.nextItem();
+      const { result, headers } = await this.executeMethod("nextItem");
       // concatenate the results and fetch more
       mergeHeaders(this.fetchAllLastResHeaders, headers);
 
@@ -174,13 +177,50 @@ export class QueryIterator<T> {
     );
   }
 
-  private createQueryExecutionContext() {
-    return new ProxyQueryExecutionContext(
+  private createPipelinedExecutionContext(partitionedExecutionInfo: PartitionedQueryExecutionInfo) {
+    if (!this.resourceLink) {
+      throw new Error("for top/orderby resourceLink is required");
+    }
+    if (Array.isArray(this.resourceLink) && this.resourceLink.length !== 1) {
+      throw new Error("for top/orderby exactly one collectionLink is required");
+    }
+
+    const collectionLink = Array.isArray(this.resourceLink) ? this.resourceLink[0] : this.resourceLink;
+
+    return new PipelinedQueryExecutionContext(
       this.clientContext,
+      collectionLink,
       this.query,
       this.options,
-      this.fetchFunctions,
-      this.resourceLink
+      partitionedExecutionInfo
     );
+  }
+
+  private isPartitionedExecutionError(error: any): error is ErrorResponse {
+    return (
+      error.code === StatusCodes.BadRequest &&
+      "substatus" in error &&
+      error["substatus"] === SubStatusCodes.CrossPartitionQueryNotServable
+    );
+  }
+
+  private async executeMethod(methodName: Exclude<keyof IExecutionContext, "hasMoreResults">) {
+    try {
+      return await this.queryExecutionContext[methodName]();
+    } catch (err) {
+      if (this.isPartitionedExecutionError(err)) {
+        // if this's a partitioned execution info switches the execution context
+        const partitionedExecutionInfo = err.body.additionalErrorInfo;
+        this.queryExecutionContext = this.createPipelinedExecutionContext(partitionedExecutionInfo);
+        try {
+          // retry call with same method
+          return this.queryExecutionContext[methodName]();
+        } catch (e) {
+          throw e;
+        }
+      } else {
+        throw err;
+      }
+    }
   }
 }
