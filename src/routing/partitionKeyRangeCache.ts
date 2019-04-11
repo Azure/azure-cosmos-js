@@ -14,7 +14,7 @@ export class PartitionKeyRangeCache {
     this.collectionRoutingMapByCollectionId = {};
   }
   /**
-   * Finds or Instantiates the requested Collection Routing Map and invokes callback
+   * Finds or Instantiates the requested Collection Routing Map
    * @param {string} collectionLink            - Requested collectionLink
    * @ignore
    */
