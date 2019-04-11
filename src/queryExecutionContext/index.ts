@@ -11,4 +11,3 @@ export * from "./parallelQueryExecutionContextBase";
 export * from "./parallelQueryExecutionContext";
 export * from "./orderByQueryExecutionContext";
 export * from "./pipelinedQueryExecutionContext";
-export * from "./proxyQueryExecutionContext";
