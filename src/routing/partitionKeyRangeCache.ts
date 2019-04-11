@@ -20,11 +20,10 @@ export class PartitionKeyRangeCache {
    */
   public async onCollectionRoutingMap(collectionLink: string): Promise<InMemoryCollectionRoutingMap> {
     const collectionId = getIdFromLink(collectionLink);
-    const collectionRoutingMap = this.collectionRoutingMapByCollectionId[collectionId];
-    if (collectionRoutingMap === undefined) {
+    if (this.collectionRoutingMapByCollectionId[collectionId] === undefined) {
       this.collectionRoutingMapByCollectionId[collectionId] = this.requestCollectionRoutingMap(collectionLink);
     }
-    return collectionRoutingMap;
+    return this.collectionRoutingMapByCollectionId[collectionId];
   }
 
   /**
