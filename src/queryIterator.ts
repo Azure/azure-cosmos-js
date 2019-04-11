@@ -178,18 +178,9 @@ export class QueryIterator<T> {
   }
 
   private createPipelinedExecutionContext(partitionedExecutionInfo: PartitionedQueryExecutionInfo) {
-    if (!this.resourceLink) {
-      throw new Error("for top/orderby resourceLink is required");
-    }
-    if (Array.isArray(this.resourceLink) && this.resourceLink.length !== 1) {
-      throw new Error("for top/orderby exactly one collectionLink is required");
-    }
-
-    const collectionLink = Array.isArray(this.resourceLink) ? this.resourceLink[0] : this.resourceLink;
-
     return new PipelinedQueryExecutionContext(
       this.clientContext,
-      collectionLink,
+      this.resourceLink,
       this.query,
       this.options,
       partitionedExecutionInfo
