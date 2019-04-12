@@ -1,53 +1,49 @@
 import { Response } from "../../request";
+import { ExecutionContext } from "../ExecutionContext";
 import { getInitialHeader } from "../headerUtils";
-import { IExecutionContext } from "../IExecutionContext";
-import { IEndpointComponent } from "./IEndpointComponent";
 
 /** @hidden */
-export class TopEndpointComponent implements IEndpointComponent {
+export class OffsetLimitEndpointComponent implements ExecutionContext {
   /**
    * Represents an endpoint in handling top query. It only returns as many results as top arg specified.
    * @constructor TopEndpointComponent
    * @param { object } executionContext - Underlying Execution Context
    * @ignore
    */
-  constructor(private executionContext: IExecutionContext, private topCount: number) {}
+  constructor(private executionContext: ExecutionContext, private limit: number, private offset: number) {}
 
   /**
    * Execute a provided function on the next element in the TopEndpointComponent.
    * @memberof TopEndpointComponent
    * @instance
-   * @param {callback} callback - Function to execute for each element. \
-   * the function takes two parameters error, element.
    */
   public async nextItem(): Promise<Response<any>> {
-    if (this.topCount <= 0) {
-      return { result: undefined, headers: getInitialHeader() };
+    if (this.offset > 0) {
+      // Grab next item but ignore the result. We only need the headers
+      const { headers } = await this.executionContext.nextItem();
+      this.offset--;
+      return { result: undefined, headers };
     }
-    this.topCount--;
-    try {
-      return this.executionContext.nextItem();
-    } catch (err) {
-      throw err;
+    if (this.limit > 0) {
+      const response = await this.executionContext.nextItem();
+      this.limit--;
+      return response;
     }
+    // If both limit and offset are 0, return nothing
+    return { result: undefined, headers: getInitialHeader() };
   }
 
   /**
    * Retrieve the current element on the TopEndpointComponent.
    * @memberof TopEndpointComponent
    * @instance
-   * @param {callback} callback - Function to execute for the current element. \
-   * the function takes two parameters error, element.
    */
   public async current(): Promise<Response<any>> {
-    if (this.topCount <= 0) {
-      return { result: undefined, headers: getInitialHeader() };
+    if (this.offset > 0) {
+      const current = await this.executionContext.current();
+      return { result: undefined, headers: current.headers };
     }
-    try {
-      return this.executionContext.current();
-    } catch (err) {
-      throw err;
-    }
+    return this.executionContext.current();
   }
 
   /**
@@ -57,6 +53,6 @@ export class TopEndpointComponent implements IEndpointComponent {
    * @returns {Boolean} true if there is other elements to process in the TopEndpointComponent.
    */
   public hasMoreResults() {
-    return this.topCount > 0 && this.executionContext.hasMoreResults();
+    return (this.offset > 0 || this.limit > 0) && this.executionContext.hasMoreResults();
   }
 }
