@@ -203,12 +203,7 @@ export class QueryIterator<T> {
         // if this's a partitioned execution info switches the execution context
         const partitionedExecutionInfo = err.body.additionalErrorInfo;
         this.queryExecutionContext = this.createPipelinedExecutionContext(partitionedExecutionInfo);
-        try {
-          // retry call with same method
-          return this.queryExecutionContext[methodName]();
-        } catch (e) {
-          throw e;
-        }
+        return this.queryExecutionContext[methodName]();
       } else {
         throw err;
       }
