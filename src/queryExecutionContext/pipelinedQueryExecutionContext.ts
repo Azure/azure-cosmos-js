@@ -75,7 +75,7 @@ export class PipelinedQueryExecutionContext implements ExecutionContext {
       this.endpoint = new OffsetLimitEndpointComponent(this.endpoint, offset, limit);
     }
 
-    // If offset+limit then add that to the pipeline
+    // If distinct then add that to the pipeline
     const distinctType = partitionedQueryExecutionInfo.queryInfo.distinctType;
     if (distinctType === "Ordered") {
       this.endpoint = new OrderedDistinctEndpointComponent(this.endpoint);
