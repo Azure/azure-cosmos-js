@@ -1,5 +1,6 @@
 /// <reference lib="esnext.asynciterable" />
 import { ClientContext } from "./ClientContext";
+import { generateGuidId, OperationType, ResourceType } from "./common";
 import {
   CosmosHeaders,
   FetchFunctionCallback,
@@ -9,8 +10,10 @@ import {
   ProxyQueryExecutionContext,
   SqlQuerySpec
 } from "./queryExecutionContext";
+import { isErrorResponse } from "./request/ErrorResponse";
 import { FeedOptions } from "./request/FeedOptions";
 import { FeedResponse } from "./request/FeedResponse";
+import { InternalOperationStats } from "./request/OperationStatistics";
 
 /**
  * Represents a QueryIterator Object, an implmenetation of feed or query response that enables
@@ -29,7 +32,8 @@ export class QueryIterator<T> {
     private query: SqlQuerySpec | string,
     private options: FeedOptions,
     private fetchFunctions: FetchFunctionCallback | FetchFunctionCallback[],
-    private resourceLink?: string
+    private resourceLink?: string,
+    private resourceType?: ResourceType
   ) {
     this.query = query;
     this.fetchFunctions = fetchFunctions;
@@ -143,8 +147,32 @@ export class QueryIterator<T> {
    * before returning the first batch of responses.
    */
   public async fetchNext(): Promise<FeedResponse<T>> {
-    const response = await this.queryExecutionContext.fetchMore();
-    return new FeedResponse<T>(response.result, response.headers, this.queryExecutionContext.hasMoreResults());
+    const opstats = new InternalOperationStats(
+      this.resourceType,
+      OperationType.Query,
+      this.resourceLink,
+      generateGuidId()
+    );
+    try {
+      const response = await this.queryExecutionContext.fetchMore();
+      opstats.mergeChildOperation(response.operationStatistics);
+      opstats.complete();
+      return new FeedResponse<T>(
+        response.result,
+        response.headers,
+        this.queryExecutionContext.hasMoreResults(),
+        opstats
+      );
+    } catch (err) {
+      opstats.fail();
+      if (isErrorResponse(err)) {
+        if (err.operationStatistics) {
+          opstats.mergeChildOperation(err.operationStatistics as InternalOperationStats);
+        }
+        err.operationStatistics = opstats;
+      }
+      throw err;
+    }
   }
 
   /**

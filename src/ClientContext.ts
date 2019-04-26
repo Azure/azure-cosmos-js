@@ -1,7 +1,7 @@
 import { PartitionKeyRange } from "./client/Container/PartitionKeyRange";
 import { Resource } from "./client/Resource";
 import { Constants, HTTPMethod, OperationType, ResourceType } from "./common/constants";
-import { getIdFromLink, getPathFromLink, parseLink } from "./common/helper";
+import { generateGuidId, getIdFromLink, getPathFromLink, parseLink } from "./common/helper";
 import { StatusCodes, SubStatusCodes } from "./common/statusCodes";
 import { CosmosClientOptions } from "./CosmosClientOptions";
 import { ConnectionPolicy, ConsistencyLevel, DatabaseAccount } from "./documents";
@@ -54,7 +54,7 @@ export class ClientContext {
       resourceId,
       options,
       resourceType,
-      operationStatistics: new InternalOperationStats(resourceType, OperationType.Read, path, ""), // TODO: activity id
+      operationStatistics: new InternalOperationStats(resourceType, OperationType.Read, path, generateGuidId()),
       plugins: this.cosmosClientOptions.plugins
     };
     try {
@@ -100,7 +100,7 @@ export class ClientContext {
       options,
       body: query,
       plugins: this.cosmosClientOptions.plugins,
-      operationStatistics: new InternalOperationStats(resourceType, OperationType.Query, path, "") // TODO: Activity Id // TODO: design doesn't really make sense for query as much...
+      operationStatistics: new InternalOperationStats(resourceType, OperationType.Query, path, generateGuidId()) // TODO: design doesn't really make sense for query as much...
     };
 
     if (query !== undefined) {
@@ -148,7 +148,7 @@ export class ClientContext {
       options,
       resourceId,
       plugins: this.cosmosClientOptions.plugins,
-      operationStatistics: new InternalOperationStats(resourceType, OperationType.Delete, path, "") // TODO: activity id
+      operationStatistics: new InternalOperationStats(resourceType, OperationType.Delete, path, generateGuidId())
     };
     try {
       request.headers = await this.buildHeaders(request);
@@ -190,7 +190,7 @@ export class ClientContext {
       body,
       options,
       plugins: this.cosmosClientOptions.plugins,
-      operationStatistics: new InternalOperationStats(resourceType, OperationType.Create, path, "") // TODO: activity id
+      operationStatistics: new InternalOperationStats(resourceType, OperationType.Create, path, generateGuidId())
     };
     try {
       request.headers = await this.buildHeaders(request);
@@ -278,7 +278,7 @@ export class ClientContext {
       resourceId,
       options,
       plugins: this.cosmosClientOptions.plugins,
-      operationStatistics: new InternalOperationStats(resourceType, OperationType.Replace, path, "") // TODO: activity id
+      operationStatistics: new InternalOperationStats(resourceType, OperationType.Replace, path, generateGuidId())
     };
     try {
       request.headers = await this.buildHeaders(request);
@@ -317,7 +317,7 @@ export class ClientContext {
       resourceId,
       options,
       plugins: this.cosmosClientOptions.plugins,
-      operationStatistics: new InternalOperationStats(resourceType, OperationType.Upsert, path, "") // TODO: activity id
+      operationStatistics: new InternalOperationStats(resourceType, OperationType.Upsert, path, generateGuidId())
     };
     try {
       request.headers = await this.buildHeaders(request);
@@ -363,7 +363,7 @@ export class ClientContext {
       resourceId: id,
       body: params,
       plugins: this.cosmosClientOptions.plugins,
-      operationStatistics: new InternalOperationStats(ResourceType.sproc, OperationType.Execute, path, "") // TODO: activity id
+      operationStatistics: new InternalOperationStats(ResourceType.sproc, OperationType.Execute, path, generateGuidId())
     };
     try {
       request.headers = await this.buildHeaders(request);
@@ -397,12 +397,11 @@ export class ClientContext {
       resourceType: ResourceType.none,
       options,
       plugins: this.cosmosClientOptions.plugins,
-      operationStatistics: new InternalOperationStats(ResourceType.none, OperationType.Read, "", "") // TODO: activity id
+      operationStatistics: new InternalOperationStats(ResourceType.none, OperationType.Read, "", generateGuidId())
     };
 
     try {
       request.headers = await this.buildHeaders(request);
-      // await options.beforeOperation({ endpoint, request, headers: requestHeaders });
       const { result, headers, statusCode, operationStatistics } = await executePlugins(
         request,
         executeRequest,
@@ -493,7 +492,8 @@ export class ClientContext {
       resourceType: requestContext.resourceType,
       options: requestContext.options,
       partitionKeyRangeId: requestContext.partitionKeyRangeId,
-      useMultipleWriteLocations: this.connectionPolicy.useMultipleWriteLocations
+      useMultipleWriteLocations: this.connectionPolicy.useMultipleWriteLocations,
+      activityId: requestContext.operationStatistics.activityId
     });
   }
 }

@@ -34,6 +34,7 @@ interface GetHeadersOptions {
   options: RequestOptions & FeedOptions;
   partitionKeyRangeId?: string;
   useMultipleWriteLocations?: boolean;
+  activityId?: string;
 }
 
 export async function getHeaders({
@@ -45,9 +46,14 @@ export async function getHeaders({
   resourceType,
   options,
   partitionKeyRangeId,
-  useMultipleWriteLocations
+  useMultipleWriteLocations,
+  activityId
 }: GetHeadersOptions): Promise<CosmosHeaders> {
   const headers: CosmosHeaders = { ...defaultHeaders };
+
+  if (activityId) {
+    headers[Constants.HttpHeaders.ActivityId] = activityId;
+  }
 
   if (useMultipleWriteLocations) {
     headers[Constants.HttpHeaders.ALLOW_MULTIPLE_WRITES] = true;

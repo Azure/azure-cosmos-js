@@ -142,6 +142,8 @@ describe("NodeJS CRUD Tests", function() {
       const firstResponse = await queryIterator.fetchNext();
 
       assert(firstResponse.requestCharge > 0, "RequestCharge has to be non-zero");
+      assert(firstResponse.operationStats, "Request should have operation stats");
+      assert(firstResponse.operationStats.toString(), "Operation stats toString should return a string");
       assert.equal(firstResponse.resources.length, 2, "first batch size should be 2");
       assert.equal(firstResponse.resources[0].id, resources.doc1.id, "first batch first document should be doc1");
       assert.equal(firstResponse.resources[1].id, resources.doc2.id, "batch first second document should be doc2");

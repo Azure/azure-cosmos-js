@@ -1,4 +1,5 @@
 import { CosmosHeaders } from "../index";
+import { OperationStats } from "./OperationStatistics";
 
 interface ErrorBody {
   code: string;
@@ -26,5 +27,13 @@ export interface ErrorResponse {
   headers?: CosmosHeaders;
   activityId?: string;
   retryAfterInMilliseconds?: number;
+  operationStatistics?: OperationStats;
   [key: string]: any;
+}
+
+export function isErrorResponse(err: any): err is ErrorResponse {
+  if (err && err.code) {
+    return true;
+  }
+  return false;
 }

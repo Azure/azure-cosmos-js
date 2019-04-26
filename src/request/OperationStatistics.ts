@@ -32,6 +32,9 @@ export class InternalOperationStats implements OperationStats {
   public get retryInfo(): RetryInfo {
     const retryInfo: RetryInfo = { ...this.$retryInfo };
     for (const child of this.childOperationStats) {
+      if (!child) {
+        continue;
+      }
       const childRetryInfo = child.retryInfo;
       retryInfo.networkingErrorCount += childRetryInfo.networkingErrorCount;
       retryInfo.throttledCount += childRetryInfo.throttledCount;
@@ -67,6 +70,13 @@ export class InternalOperationStats implements OperationStats {
     return child;
   }
 
+  public mergeChildOperation(child: InternalOperationStats) {
+    if (child) {
+      this.childOperationStats.push(child);
+    }
+    return child;
+  }
+
   public complete() {
     this.end = new Date();
     this.success = true;
@@ -95,38 +105,8 @@ export class InternalOperationStats implements OperationStats {
     this.fail(e);
   }
 
-  public toString(prefix?: string): string {
-    let val =
-      "ActivityId: " +
-      this.activityId +
-      ", OperationType: " +
-      this.operation +
-      ", ResourceType: " +
-      this.resource +
-      ", resourcePath: " +
-      this.path +
-      ", Success: " +
-      this.success +
-      ", StartTime: " +
-      this.start.toUTCString() +
-      ", EndTime: " +
-      (this.end !== undefined ? this.end.toUTCString() : undefined) +
-      ", Duration: " +
-      this.duration +
-      ", RetryInfo: " +
-      JSON.stringify(this.retryInfo);
-
-    for (const [k, v] of this.details) {
-      val += ", " + k + ": " + v;
-    }
-    if (this.childOperationStats.length > 0) {
-      val += ", child operations: [";
-      for (const child of this.childOperationStats) {
-        val += "\n" + (prefix || "- ") + child.toString("-" + (prefix || "- "));
-      }
-      val += "]";
-    }
-    return val;
+  public toString(): string {
+    return this.toJSON();
   }
 
   public toJSON() {
@@ -134,6 +114,7 @@ export class InternalOperationStats implements OperationStats {
       activityId: this.activityId,
       operationType: this.operation,
       resourceType: this.resource,
+      path: this.path,
       success: this.success,
       startTime: this.start,
       endTime: this.end,
