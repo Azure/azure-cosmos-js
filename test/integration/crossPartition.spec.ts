@@ -80,10 +80,10 @@ describe("Cross Partition", function() {
       await bulkInsertItems(container, documentDefinitions);
     });
 
-    const validateResults = function(actualResults: any[], expectedOrderIds: string[]) {
+    const validateResults = function(actualResults: any[], expectedOrderIds: string[], expectedCount: number) {
       assert.equal(
         actualResults.length,
-        (expectedOrderIds && expectedOrderIds.length) || documentDefinitions.length,
+        expectedCount || (expectedOrderIds && expectedOrderIds.length) || documentDefinitions.length,
         "actual results length doesn't match with expected results length."
       );
       if (expectedOrderIds) assert.deepStrictEqual(actualResults.map(doc => doc.id), expectedOrderIds);
@@ -92,19 +92,20 @@ describe("Cross Partition", function() {
     const validateFetchAll = async function(
       queryIterator: QueryIterator<any>,
       options: any,
-      expectedOrderIds: string[]
+      expectedOrderIds: string[],
+      expectedCount: number
     ) {
       options.continuation = undefined;
       const response = await queryIterator.fetchAll();
       const { resources: results } = response;
       assert.equal(
         results.length,
-        (expectedOrderIds && expectedOrderIds.length) || documentDefinitions.length,
+        expectedCount || (expectedOrderIds && expectedOrderIds.length) || documentDefinitions.length,
         "invalid number of results"
       );
       assert.equal(queryIterator.hasMoreResults(), false, "hasMoreResults: no more results is left");
 
-      validateResults(results, expectedOrderIds);
+      validateResults(results, expectedOrderIds, expectedCount);
       return response;
     };
 
@@ -112,12 +113,14 @@ describe("Cross Partition", function() {
       options: any,
       queryIterator: QueryIterator<any>,
       expectedOrderIds: string[],
-      fetchAllResponse: FeedResponse<any>
+      fetchAllResponse: FeedResponse<any>,
+      expectedCount: number
     ) {
       const pageSize = options["maxItemCount"];
       let totalExecuteNextRequestCharge = 0;
       let totalFetchedResults: any[] = [];
-      const expectedLength = (expectedOrderIds && expectedOrderIds.length) || documentDefinitions.length;
+      const expectedLength =
+        expectedCount || (expectedOrderIds && expectedOrderIds.length) || documentDefinitions.length;
 
       while (queryIterator.hasMoreResults()) {
         const { resources: results, queryMetrics, requestCharge } = await queryIterator.fetchNext();
@@ -144,7 +147,7 @@ describe("Cross Partition", function() {
       }
 
       // no more results
-      validateResults(totalFetchedResults, expectedOrderIds);
+      validateResults(totalFetchedResults, expectedOrderIds, expectedCount);
       assert.equal(queryIterator.hasMoreResults(), false, "hasMoreResults: no more results is left");
       assert(totalExecuteNextRequestCharge > 0);
       const percentDifference =
@@ -155,8 +158,13 @@ describe("Cross Partition", function() {
       );
     };
 
-    const validateForEach = async function(queryIterator: QueryIterator<any>, expectedOrderIds: any[]) {
-      const expectedLength = (expectedOrderIds && expectedOrderIds.length) || documentDefinitions.length;
+    const validateForEach = async function(
+      queryIterator: QueryIterator<any>,
+      expectedOrderIds: any[],
+      expecetedCount: number
+    ) {
+      const expectedLength =
+        expecetedCount || (expectedOrderIds && expectedOrderIds.length) || documentDefinitions.length;
       const results: any[] = [];
       let completed = false;
       // forEach uses callbacks still, so just wrap in a promise
@@ -169,26 +177,34 @@ describe("Cross Partition", function() {
         }
       }
       assert.equal(completed, true, "AsyncIterator should see all expected results");
-      validateResults(results, expectedOrderIds);
+      validateResults(results, expectedOrderIds, expecetedCount);
     };
 
     const executeQueryAndValidateResults = async function({
       query,
       options,
-      expectedOrderIds
+      expectedOrderIds,
+      expectedCount
     }: {
       query: string | SqlQuerySpec;
       options: any;
       expectedOrderIds?: any[];
+      expectedCount?: number;
     }) {
       options.populateQueryMetrics = true;
       const queryIterator = container.items.query(query, options);
 
-      const fetchAllResponse = await validateFetchAll(queryIterator, options, expectedOrderIds);
+      const fetchAllResponse = await validateFetchAll(queryIterator, options, expectedOrderIds, expectedCount);
       queryIterator.reset();
-      await validateFetchNextAndHasMoreResults(options, queryIterator, expectedOrderIds, fetchAllResponse);
+      await validateFetchNextAndHasMoreResults(
+        options,
+        queryIterator,
+        expectedOrderIds,
+        fetchAllResponse,
+        expectedCount
+      );
       queryIterator.reset();
-      await validateForEach(queryIterator, expectedOrderIds);
+      await validateForEach(queryIterator, expectedOrderIds, expectedCount);
     };
 
     it("Validate Parallel Query As String With maxDegreeOfParallelism = 0", async function() {
@@ -375,62 +391,6 @@ describe("Cross Partition", function() {
       const expectedOrderedIds = documentDefinitions.sort(compare("spam")).map(function(r) {
         return r["id"];
       });
-
-      // validates the results size and order
-      await executeQueryAndValidateResults({
-        query: querySpec,
-        options,
-        expectedOrderIds: expectedOrderedIds
-      });
-    });
-
-    it("Validate OrderBy Query With ASC and LIMIT 2 and OFFSET 10", async function() {
-      const limit = 2;
-      const offset = 10;
-
-      // an order by query with explicit ascending ordering
-      const querySpec = {
-        query: `SELECT * FROM root r order by r.spam ASC OFFSET ${offset} LIMIT ${limit}`
-      };
-      const options = {
-        enableCrossPartitionQuery: true,
-        maxItemCount: 2
-      };
-
-      const expectedOrderedIds = documentDefinitions
-        .sort(compare("spam"))
-        .map(function(r) {
-          return r["id"];
-        })
-        .splice(offset, limit);
-
-      // validates the results size and order
-      await executeQueryAndValidateResults({
-        query: querySpec,
-        options,
-        expectedOrderIds: expectedOrderedIds
-      });
-    });
-
-    it("Validate OrderBy Query With ASC and LIMIT 0 and OFFSET 5", async function() {
-      const limit = 5;
-      const offset = 0;
-
-      // an order by query with explicit ascending ordering
-      const querySpec = {
-        query: `SELECT * FROM root r order by r.spam ASC OFFSET ${offset} LIMIT ${limit}`
-      };
-      const options = {
-        enableCrossPartitionQuery: true,
-        maxItemCount: 2
-      };
-
-      const expectedOrderedIds = documentDefinitions
-        .sort(compare("spam"))
-        .map(function(r) {
-          return r["id"];
-        })
-        .splice(offset, limit);
 
       // validates the results size and order
       await executeQueryAndValidateResults({
@@ -762,6 +722,103 @@ describe("Cross Partition", function() {
         assert(results[index].id % 2 === 0);
         index++;
       }
+    });
+
+    it("Validate simple LIMIT OFFSET", async function() {
+      const limit = 1;
+      const offset = 2;
+
+      const querySpec = {
+        query: `SELECT * FROM root r OFFSET ${offset} LIMIT ${limit}`
+      };
+      const options = {
+        enableCrossPartitionQuery: true,
+        maxItemCount: 2
+      };
+
+      // validates the results size and order
+      await executeQueryAndValidateResults({
+        query: querySpec,
+        options,
+        expectedCount: 1
+      });
+    });
+
+    it("Validate filtered LIMIT OFFSET", async function() {
+      const limit = 1;
+      const offset = 2;
+
+      // an order by query with explicit ascending ordering
+      const querySpec = {
+        query: `SELECT * FROM root r WHERE r.number > 5 OFFSET ${offset} LIMIT ${limit}`
+      };
+      const options = {
+        enableCrossPartitionQuery: true,
+        maxItemCount: 2
+      };
+
+      // validates the results size and order
+      await executeQueryAndValidateResults({
+        query: querySpec,
+        options,
+        expectedCount: 1
+      });
+    });
+
+    it("Validate OrderBy Query With ASC and LIMIT 2 and OFFSET 10", async function() {
+      const limit = 2;
+      const offset = 10;
+
+      // an order by query with explicit ascending ordering
+      const querySpec = {
+        query: `SELECT * FROM root r order by r.spam ASC OFFSET ${offset} LIMIT ${limit}`
+      };
+      const options = {
+        enableCrossPartitionQuery: true,
+        maxItemCount: 2
+      };
+
+      const expectedOrderedIds = documentDefinitions
+        .sort(compare("spam"))
+        .map(function(r) {
+          return r["id"];
+        })
+        .splice(offset, limit);
+
+      // validates the results size and order
+      await executeQueryAndValidateResults({
+        query: querySpec,
+        options,
+        expectedOrderIds: expectedOrderedIds
+      });
+    });
+
+    it("Validate OrderBy Query With ASC and LIMIT 0 and OFFSET 5", async function() {
+      const limit = 5;
+      const offset = 0;
+
+      // an order by query with explicit ascending ordering
+      const querySpec = {
+        query: `SELECT * FROM root r order by r.spam ASC OFFSET ${offset} LIMIT ${limit}`
+      };
+      const options = {
+        enableCrossPartitionQuery: true,
+        maxItemCount: 2
+      };
+
+      const expectedOrderedIds = documentDefinitions
+        .sort(compare("spam"))
+        .map(function(r) {
+          return r["id"];
+        })
+        .splice(offset, limit);
+
+      // validates the results size and order
+      await executeQueryAndValidateResults({
+        query: querySpec,
+        options,
+        expectedOrderIds: expectedOrderedIds
+      });
     });
 
     it("Validate Failure", async function() {
