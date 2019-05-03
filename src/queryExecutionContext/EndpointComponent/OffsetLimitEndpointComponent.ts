@@ -4,7 +4,7 @@ import { getInitialHeader } from "../headerUtils";
 
 /** @hidden */
 export class OffsetLimitEndpointComponent implements ExecutionContext {
-  constructor(private executionContext: ExecutionContext, private limit: number, private offset: number) {}
+  constructor(private executionContext: ExecutionContext, private offset: number, private limit: number) {}
 
   public async nextItem(): Promise<Response<any>> {
     if (this.offset > 0) {

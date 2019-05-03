@@ -60,17 +60,17 @@ export class PipelinedQueryExecutionContext implements ExecutionContext {
       this.endpoint = new AggregateEndpointComponent(this.endpoint, aggregates);
     }
 
-    // If top then add that to the pipeline. TOP N is effectively LIMIT N OFFSET 0
+    // If top then add that to the pipeline. TOP N is effectively OFFSET 0 LIMIT N
     const top = partitionedQueryExecutionInfo.queryInfo.top;
     if (typeof top === "number") {
-      this.endpoint = new OffsetLimitEndpointComponent(this.endpoint, top, 0);
+      this.endpoint = new OffsetLimitEndpointComponent(this.endpoint, 0, top);
     }
 
     // If offset+limit then add that to the pipeline
     const limit = partitionedQueryExecutionInfo.queryInfo.limit;
     const offset = partitionedQueryExecutionInfo.queryInfo.offset;
     if (typeof limit === "number" && typeof offset === "number") {
-      this.endpoint = new OffsetLimitEndpointComponent(this.endpoint, limit, offset);
+      this.endpoint = new OffsetLimitEndpointComponent(this.endpoint, offset, limit);
     }
   }
 
