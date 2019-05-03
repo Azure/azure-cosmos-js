@@ -87,7 +87,7 @@ describe("Cross Partition", function() {
         expectedCount || (expectedOrderIds && expectedOrderIds.length) || documentDefinitions.length,
         "actual results length doesn't match with expected results length."
       );
-      if (expectedOrderIds) assert.deepStrictEqual(actualResults.map(doc => doc.id), expectedOrderIds);
+      if (expectedOrderIds) assert.deepStrictEqual(actualResults.map(doc => doc.id || doc), expectedOrderIds);
     };
 
     const validateFetchAll = async function(
@@ -341,7 +341,7 @@ describe("Cross Partition", function() {
       await executeQueryAndValidateResults({ query, options, expectedOrderIds: expectedOrderedIds });
     });
 
-    it("Validate DISTINCT Query", async function() {
+    it.only("Validate DISTINCT Query", async function() {
       // simple order by query in string format
       const query = "SELECT DISTINCT VALUE r.spam3 FROM root r";
       const options = {
@@ -349,21 +349,62 @@ describe("Cross Partition", function() {
         maxItemCount: 2
       };
 
-      const expectedOrderedIds = Array.from(new Set(documentDefinitions.map(r => r["spam3"])));
-
       // validates the results size and order
-      await executeQueryAndValidateResults({ query, options, expectedOrderIds: expectedOrderedIds });
+      await executeQueryAndValidateResults({ query, options, expectedCount: 3 });
     });
 
-    it("Validate DISTINCT OrderBy Query", async function() {
+    it.only("Validate DISTINCT OrderBy Query", async function() {
       // simple order by query in string format
-      const query = "SELECT DISTINCT VALUE r.spam3 FROM root r order by r.spam3";
+      const query = "SELECT DISTINCT VALUE r.spam3 FROM root r order by r.spam3 DESC";
       const options = {
         enableCrossPartitionQuery: true,
         maxItemCount: 2
       };
 
-      const expectedOrderedIds = Array.from(new Set(documentDefinitions.map(r => r["spam3"])));
+      const expectedOrderedIds = ["eggs2", "eggs1", "eggs0"];
+
+      // validates the results size and order
+      await executeQueryAndValidateResults({ query, options, expectedOrderIds: expectedOrderedIds });
+    });
+
+    it.only("Validate parallel DISTINCT Query", async function() {
+      // simple order by query in string format
+      const query = "SELECT DISTINCT VALUE r.spam3 FROM root r order by r.spam3";
+      const options = {
+        enableCrossPartitionQuery: true,
+        maxItemCount: 2,
+        maxDegreeOfParallelism: 3
+      };
+
+      const expectedOrderedIds = ["eggs0", "eggs1", "eggs2"];
+
+      // validates the results size and order
+      await executeQueryAndValidateResults({ query, options, expectedOrderIds: expectedOrderedIds });
+    });
+
+    it.only("Validate DISTINCT Query with maxItemCount = 1", async function() {
+      // simple order by query in string format
+      const query = "SELECT DISTINCT VALUE r.spam3 FROM root r order by r.spam3";
+      const options = {
+        enableCrossPartitionQuery: true,
+        maxItemCount: 1
+      };
+
+      const expectedOrderedIds = ["eggs0", "eggs1", "eggs2"];
+
+      // validates the results size and order
+      await executeQueryAndValidateResults({ query, options, expectedOrderIds: expectedOrderedIds });
+    });
+
+    it.only("Validate DISTINCT Query with maxItemCount = 20", async function() {
+      // simple order by query in string format
+      const query = "SELECT DISTINCT VALUE r.spam3 FROM root r order by r.spam3";
+      const options = {
+        enableCrossPartitionQuery: true,
+        maxItemCount: 20
+      };
+
+      const expectedOrderedIds = ["eggs0", "eggs1", "eggs2"];
 
       // validates the results size and order
       await executeQueryAndValidateResults({ query, options, expectedOrderIds: expectedOrderedIds });
