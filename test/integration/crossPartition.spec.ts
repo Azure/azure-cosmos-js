@@ -765,6 +765,8 @@ describe("Cross Partition", function() {
       });
     });
 
+    // TODO Add test for OFFSET LIMT filtered on partition
+
     it("Validate OrderBy Query With ASC and LIMIT 2 and OFFSET 10", async function() {
       const limit = 2;
       const offset = 10;
