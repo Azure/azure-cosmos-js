@@ -341,7 +341,7 @@ describe("Cross Partition", function() {
       await executeQueryAndValidateResults({ query, options, expectedOrderIds: expectedOrderedIds });
     });
 
-    it.only("Validate DISTINCT Query", async function() {
+    it("Validate DISTINCT Query", async function() {
       // simple order by query in string format
       const query = "SELECT DISTINCT VALUE r.spam3 FROM root r";
       const options = {
@@ -353,7 +353,7 @@ describe("Cross Partition", function() {
       await executeQueryAndValidateResults({ query, options, expectedCount: 3 });
     });
 
-    it.only("Validate DISTINCT OrderBy Query", async function() {
+    it("Validate DISTINCT OrderBy Query", async function() {
       // simple order by query in string format
       const query = "SELECT DISTINCT VALUE r.spam3 FROM root r order by r.spam3 DESC";
       const options = {
@@ -367,7 +367,7 @@ describe("Cross Partition", function() {
       await executeQueryAndValidateResults({ query, options, expectedOrderIds: expectedOrderedIds });
     });
 
-    it.only("Validate parallel DISTINCT Query", async function() {
+    it("Validate parallel DISTINCT Query", async function() {
       // simple order by query in string format
       const query = "SELECT DISTINCT VALUE r.spam3 FROM root r order by r.spam3";
       const options = {
@@ -382,7 +382,7 @@ describe("Cross Partition", function() {
       await executeQueryAndValidateResults({ query, options, expectedOrderIds: expectedOrderedIds });
     });
 
-    it.only("Validate DISTINCT Query with maxItemCount = 1", async function() {
+    it("Validate DISTINCT Query with maxItemCount = 1", async function() {
       // simple order by query in string format
       const query = "SELECT DISTINCT VALUE r.spam3 FROM root r order by r.spam3";
       const options = {
@@ -396,7 +396,7 @@ describe("Cross Partition", function() {
       await executeQueryAndValidateResults({ query, options, expectedOrderIds: expectedOrderedIds });
     });
 
-    it.only("Validate DISTINCT Query with maxItemCount = 20", async function() {
+    it("Validate DISTINCT Query with maxItemCount = 20", async function() {
       // simple order by query in string format
       const query = "SELECT DISTINCT VALUE r.spam3 FROM root r order by r.spam3";
       const options = {
