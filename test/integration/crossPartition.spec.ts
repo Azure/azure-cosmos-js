@@ -159,7 +159,7 @@ describe("Cross Partition", function() {
       );
     };
 
-    const validateForEach = async function(
+    const validateAsyncIterator = async function(
       queryIterator: QueryIterator<any>,
       expectedOrderIds: any[],
       expecetedCount: number
@@ -168,10 +168,8 @@ describe("Cross Partition", function() {
         expecetedCount || (expectedOrderIds && expectedOrderIds.length) || documentDefinitions.length;
       const results: any[] = [];
       let completed = false;
-      // forEach uses callbacks still, so just wrap in a promise
       for await (const { resources: items } of queryIterator.getAsyncIterator()) {
-        // if the previous invocation returned false, forEach must avoid invoking the callback again!
-        assert.equal(completed, false, "forEach called callback after the first false returned");
+        assert.equal(completed, false, "iterator called after all results returned");
         results.push(...items);
         if (results.length === expectedLength) {
           completed = true;
@@ -205,7 +203,7 @@ describe("Cross Partition", function() {
         expectedCount
       );
       queryIterator.reset();
-      await validateForEach(queryIterator, expectedOrderIds, expectedCount);
+      await validateAsyncIterator(queryIterator, expectedOrderIds, expectedCount);
     };
 
     it("Validate Parallel Query As String With maxDegreeOfParallelism = 0", async function() {
