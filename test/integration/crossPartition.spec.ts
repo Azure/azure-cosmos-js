@@ -192,7 +192,6 @@ describe("Cross Partition", function() {
     }) {
       options.populateQueryMetrics = true;
       const queryIterator = container.items.query(query, options);
-
       const fetchAllResponse = await validateFetchAll(queryIterator, options, expectedOrderIds, expectedCount);
       queryIterator.reset();
       await validateFetchNextAndHasMoreResults(
