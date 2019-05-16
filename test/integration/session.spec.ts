@@ -280,9 +280,8 @@ describe("Session Token", function() {
       for (const [coll, tokens] of oldTokens.entries()) {
         for (const [pk, token] of tokens.entries()) {
           (token as any).globalLsn = (token as any).globalLsn + 200;
-          console.log((token as any).globalLsn);
           const newToken = token.merge(token);
-          return `0:${newToken.toString()}`;
+          return `${pk}:${newToken.toString()}`;
         }
       }
       throw new Error("No valid token found to increase");
