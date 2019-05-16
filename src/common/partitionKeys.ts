@@ -9,4 +9,4 @@ export const DEFAULT_PARTITION_KEY_PATH = "/_partitionKey";
  * @hidden
  * @internal
  */
-export const EMPTY_PARTITION_KEY = [{}] as const;
+export const EMPTY_PARTITION_KEY = [{}] as [{}];
