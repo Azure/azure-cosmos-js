@@ -24,7 +24,7 @@ function getCollection2TokenMap(sessionContainer: SessionContainer): Map<string,
   return (sessionContainer as any).collectionResourceIdToSessionTokens;
 }
 
-describe.only("Session Token", function() {
+describe("Session Token", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 20000);
 
   const containerId = "sessionTestColl";
@@ -271,7 +271,7 @@ describe.only("Session Token", function() {
     spy.restore();
   });
 
-  it.only("validate 'lsn not caught up' error for higher lsn and clearing session token", async function() {
+  it("validate 'lsn not caught up' error for higher lsn and clearing session token", async function() {
     this.retries(2);
     const database = await getTestDatabase("session test", client);
 
