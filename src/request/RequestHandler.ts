@@ -42,7 +42,7 @@ async function httpRequest(requestContext: RequestContext) {
     requestContext.body = bodyFromData(requestContext.body);
   }
 
-  console.log(requestContext.path, requestContext.headers);
+  // console.log(requestContext.path, requestContext.headers);
 
   try {
     response = await fetch(trimSlashes(requestContext.endpoint) + requestContext.path, {
