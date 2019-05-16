@@ -24,7 +24,7 @@ function getCollection2TokenMap(sessionContainer: SessionContainer): Map<string,
   return (sessionContainer as any).collectionResourceIdToSessionTokens;
 }
 
-describe("Session Token", function() {
+describe.only("Session Token", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 20000);
 
   const containerId = "sessionTestColl";
@@ -201,7 +201,7 @@ describe("Session Token", function() {
       resourceType: ResourceType.item,
       resourceId: "1"
     });
-    await container.item(document13.id).replace({ id: "1", operation: "replace" }, { partitionKey: "1" });
+    await container.item(document13.id, "1").replace({ id: "1", operation: "replace" });
     assert.equal(
       spy.lastCall.args[0].headers[Constants.HttpHeaders.SessionToken],
       replaceToken,
@@ -271,7 +271,7 @@ describe("Session Token", function() {
     spy.restore();
   });
 
-  it("validate 'lsn not caught up' error for higher lsn and clearing session token", async function() {
+  it.only("validate 'lsn not caught up' error for higher lsn and clearing session token", async function() {
     this.retries(2);
     const database = await getTestDatabase("session test", client);
 
@@ -280,6 +280,7 @@ describe("Session Token", function() {
       for (const [coll, tokens] of oldTokens.entries()) {
         for (const [pk, token] of tokens.entries()) {
           (token as any).globalLsn = (token as any).globalLsn + 200;
+          console.log((token as any).globalLsn);
           const newToken = token.merge(token);
           return `0:${newToken.toString()}`;
         }
@@ -296,16 +297,18 @@ describe("Session Token", function() {
     });
     const applySessionTokenStub = sinon.stub(clientContext as any, "applySessionToken").callsFake(callbackSpy as any);
     try {
-      await container.item("1").read({ partitionKey: "1" });
+      const resp = await container.item("1", "1").read();
+      console.log(JSON.stringify(resp.resource, null, 2));
       assert.fail("readDocument must throw");
     } catch (err) {
+      console.log(err);
       assert.equal(err.substatus, 1002, "Substatus should indicate the LSN didn't catchup.");
       assert.equal(callbackSpy.callCount, 1);
       assert.equal(trimSlashes(callbackSpy.lastCall.args[0].path), containerLink + "/docs/1");
     } finally {
       applySessionTokenStub.restore();
     }
-    await container.item("1").read({ partitionKey: "1" });
+    await container.item("1", "1").read();
   });
 
   // TODO: chrande - looks like this might be broken by going name based?
@@ -349,16 +352,15 @@ describe("Session Token", function() {
     const { resource: createdDocument } = await createdContainer.items.create({
       id: "1"
     });
-    const requestOptions = { partitionKey: "1" };
     await client2
       .database(db.id)
       .container(createdContainerDef.id)
-      .item(createdDocument.id)
-      .delete(requestOptions);
+      .item(createdDocument.id, "1")
+      .delete();
     const setSessionTokenSpy = sinon.spy(sessionContainer, "set");
 
     try {
-      await createdContainer.item(createdDocument.id).read(requestOptions);
+      await createdContainer.item(createdDocument.id, "1").read();
       assert.fail("Must throw");
     } catch (err) {
       assert.equal(err.code, 404, "expecting 404 (Not found)");

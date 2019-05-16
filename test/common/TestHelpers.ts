@@ -1,5 +1,14 @@
 import assert from "assert";
-import { Container, CosmosClient, Database, DatabaseDefinition, Item, RequestOptions, Response } from "../../dist-esm";
+import {
+  Container,
+  CosmosClient,
+  Database,
+  DatabaseDefinition,
+  Item,
+  RequestOptions,
+  Response,
+  EMPTY_PARTITION_KEY
+} from "../../dist-esm";
 import {
   ContainerDefinition,
   ItemDefinition,
@@ -79,25 +88,31 @@ export async function bulkInsertItems(
   );
 }
 
-export async function bulkReadItems(container: Container, documents: any[], partitionKey: string) {
+export async function bulkReadItems(container: Container, documents: any[], partitionKeyProperty: string) {
   return await Promise.all(
     documents.map(async document => {
-      const options =
-        partitionKey && document.hasOwnProperty(partitionKey)
-          ? { partitionKey: document[partitionKey] }
-          : { partitionKey: {} };
+      const partitionKey = document.hasOwnProperty(partitionKeyProperty)
+        ? document[partitionKeyProperty]
+        : EMPTY_PARTITION_KEY;
 
       // TODO: should we block or do all requests in parallel?
-      const { resource: doc } = await container.item(document.id).read(options);
+      const { resource: doc } = await container.item(document.id, partitionKey).read();
       assert.deepStrictEqual(doc, document);
     })
   );
 }
 
-export async function bulkReplaceItems(container: Container, documents: any[]): Promise<any[]> {
+export async function bulkReplaceItems(
+  container: Container,
+  documents: any[],
+  partitionKeyProperty: string
+): Promise<any[]> {
   return Promise.all(
     documents.map(async document => {
-      const { resource: doc } = await container.item(document.id).replace(document);
+      const partitionKey = document.hasOwnProperty(partitionKeyProperty)
+        ? document[partitionKeyProperty]
+        : EMPTY_PARTITION_KEY;
+      const { resource: doc } = await container.item(document.id, partitionKey).replace(document);
       const { _etag: _1, _ts: _2, ...expectedModifiedDocument } = document;
       const { _etag: _4, _ts: _3, ...actualModifiedDocument } = doc;
       assert.deepStrictEqual(expectedModifiedDocument, actualModifiedDocument);
@@ -106,15 +121,18 @@ export async function bulkReplaceItems(container: Container, documents: any[]): 
   );
 }
 
-export async function bulkDeleteItems(container: Container, documents: any[], partitionKey: string): Promise<void> {
+export async function bulkDeleteItems(
+  container: Container,
+  documents: any[],
+  partitionKeyProperty: string
+): Promise<void> {
   await Promise.all(
     documents.map(async document => {
-      const options =
-        partitionKey && document.hasOwnProperty(partitionKey)
-          ? { partitionKey: document[partitionKey] }
-          : { partitionKey: {} };
+      const partitionKey = document.hasOwnProperty(partitionKeyProperty)
+        ? document[partitionKeyProperty]
+        : EMPTY_PARTITION_KEY;
 
-      await container.item(document.id).delete(options);
+      await container.item(document.id, partitionKey).delete();
     })
   );
 }
@@ -172,7 +190,7 @@ export async function replaceOrUpsertItem(
   if (isUpsertTest) {
     return container.items.upsert(body, options);
   } else {
-    return container.item(body.id).replace(body, options);
+    return container.item(body.id, EMPTY_PARTITION_KEY).replace(body, options);
   }
 }
 

@@ -1,3 +1,4 @@
+export { EMPTY_PARTITION_KEY } from "./common/partitionKeys";
 export { extractPartitionKey } from "./extractPartitionKey";
 export { setAuthorizationTokenHeaderUsingMasterKey } from "./auth";
 export {

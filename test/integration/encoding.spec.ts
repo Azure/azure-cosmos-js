@@ -1,6 +1,7 @@
 import assert from "assert";
 import { IndexingMode } from "../../dist-esm/documents";
 import { getTestDatabase, removeAllDatabases } from "../common/TestHelpers";
+import { EMPTY_PARTITION_KEY } from "../../dist-esm";
 
 const testDoc = {
   id: "ABC",
@@ -41,7 +42,9 @@ describe("Create And Read Validation", function() {
       assert.equal(doc.id, testDoc.id, "invalid document Id");
 
       // Read the container and see if it matches to the initial document
-      const { resource: resultDoc } = await container.item(doc.id).read<{ id: string; content: string }>();
+      const { resource: resultDoc } = await container
+        .item(doc.id, EMPTY_PARTITION_KEY)
+        .read<{ id: string; content: string }>();
       assert.equal(testDoc.content, resultDoc.content, "read document result is different from initial document");
     } catch (err) {
       throw err;
