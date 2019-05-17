@@ -303,48 +303,36 @@ describe("Containers", function() {
 
   describe("Validate response headers", function() {
     const createThenReadcontainer = async function(database: Database, definition: ContainerDefinition) {
-      try {
-        const { container: createdcontainer, headers } = await database.containers.create(definition);
-        const response = await database.container(createdcontainer.id).read({ populateQuotaInfo: true });
-        return response;
-      } catch (err) {
-        throw err;
-      }
+      const { container: createdcontainer, headers } = await database.containers.create(definition);
+      const response = await database.container(createdcontainer.id).read({ populateQuotaInfo: true });
+      return response;
     };
 
     const indexProgressHeadersTest = async function() {
-      try {
-        const database = await getTestDatabase("Validate response headers");
-        const { headers: headers1 } = await createThenReadcontainer(database, { id: "consistent_coll" });
-        assert.notEqual(headers1[Constants.HttpHeaders.IndexTransformationProgress], undefined);
-        assert.equal(headers1[Constants.HttpHeaders.LazyIndexingProgress], undefined);
+      const database = await getTestDatabase("Validate response headers");
+      const { headers: headers1 } = await createThenReadcontainer(database, { id: "consistent_coll" });
+      assert.notEqual(headers1[Constants.HttpHeaders.IndexTransformationProgress], undefined);
+      assert.equal(headers1[Constants.HttpHeaders.LazyIndexingProgress], undefined);
 
-        const lazyContainerDefinition = {
-          id: "lazy_coll",
-          indexingPolicy: { indexingMode: IndexingMode.lazy }
-        };
-        const { headers: headers2 } = await createThenReadcontainer(database, lazyContainerDefinition);
-        assert.notEqual(headers2[Constants.HttpHeaders.IndexTransformationProgress], undefined);
-        assert.notEqual(headers2[Constants.HttpHeaders.LazyIndexingProgress], undefined);
+      const lazyContainerDefinition = {
+        id: "lazy_coll",
+        indexingPolicy: { indexingMode: IndexingMode.lazy }
+      };
+      const { headers: headers2 } = await createThenReadcontainer(database, lazyContainerDefinition);
+      assert.notEqual(headers2[Constants.HttpHeaders.IndexTransformationProgress], undefined);
+      assert.notEqual(headers2[Constants.HttpHeaders.LazyIndexingProgress], undefined);
 
-        const noneContainerDefinition = {
-          id: "none_coll",
-          indexingPolicy: { indexingMode: IndexingMode.none, automatic: false }
-        };
-        const { headers: headers3 } = await createThenReadcontainer(database, noneContainerDefinition);
-        assert.notEqual(headers3[Constants.HttpHeaders.IndexTransformationProgress], undefined);
-        assert.equal(headers3[Constants.HttpHeaders.LazyIndexingProgress], undefined);
-      } catch (err) {
-        throw err;
-      }
+      const noneContainerDefinition = {
+        id: "none_coll",
+        indexingPolicy: { indexingMode: IndexingMode.none, automatic: false }
+      };
+      const { headers: headers3 } = await createThenReadcontainer(database, noneContainerDefinition);
+      assert.notEqual(headers3[Constants.HttpHeaders.IndexTransformationProgress], undefined);
+      assert.equal(headers3[Constants.HttpHeaders.LazyIndexingProgress], undefined);
     };
 
     it("nativeApi Validate index progress headers name based", async function() {
-      try {
-        await indexProgressHeadersTest();
-      } catch (err) {
-        throw err;
-      }
+      await indexProgressHeadersTest();
     });
   });
 });
