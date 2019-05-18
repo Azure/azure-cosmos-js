@@ -11,7 +11,7 @@
     "database",
     "cloud"
   ],
-  "version": "3.0.0-12",
+  "version": "3.0.0-15",
   "author": "Microsoft Corporation",
   "main": "./dist/index.js",
   "module": "./dist-esm/src/index.js",
@@ -36,6 +36,7 @@
   },
   "devDependencies": {
     "@microsoft/api-extractor": "6.3.0",
+    "@types/fast-json-stable-stringify": "2.0.0",
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.5.8",
     "@types/node-fetch": "2.1.7",
@@ -78,6 +79,8 @@
   "dependencies": {
     "@azure/cosmos-sign": "1.0.2",
     "binary-search-bounds": "2.0.3",
+    "crypto-hash": "1.1.0",
+    "fast-json-stable-stringify": "2.0.0",
     "node-abort-controller": "1.0.3",
     "node-fetch": "2.3.0",
     "priorityqueuejs": "1.0.0",

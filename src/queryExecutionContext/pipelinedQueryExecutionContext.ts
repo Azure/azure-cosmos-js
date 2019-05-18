@@ -2,22 +2,21 @@ import { ClientContext } from "../ClientContext";
 import { Response } from "../request";
 import { PartitionedQueryExecutionInfo } from "../request/ErrorResponse";
 import { CosmosHeaders } from "./CosmosHeaders";
-import {
-  AggregateEndpointComponent,
-  IEndpointComponent,
-  OrderByEndpointComponent,
-  TopEndpointComponent
-} from "./EndpointComponent";
+import { AggregateEndpointComponent } from "./EndpointComponent/AggregateEndpointComponent";
+import { OffsetLimitEndpointComponent } from "./EndpointComponent/OffsetLimitEndpointComponent";
+import { OrderByEndpointComponent } from "./EndpointComponent/OrderByEndpointComponent";
+import { OrderedDistinctEndpointComponent } from "./EndpointComponent/OrderedDistinctEndpointComponent";
+import { UnorderedDistinctEndpointComponent } from "./EndpointComponent/UnorderedDistinctEndpointComponent";
+import { ExecutionContext } from "./ExecutionContext";
 import { getInitialHeader, mergeHeaders } from "./headerUtils";
-import { IExecutionContext } from "./IExecutionContext";
 import { OrderByQueryExecutionContext } from "./orderByQueryExecutionContext";
 import { ParallelQueryExecutionContext } from "./parallelQueryExecutionContext";
 
 /** @hidden */
-export class PipelinedQueryExecutionContext implements IExecutionContext {
+export class PipelinedQueryExecutionContext implements ExecutionContext {
   private fetchBuffer: any[];
   private fetchMoreRespHeaders: CosmosHeaders;
-  private endpoint: IEndpointComponent;
+  private endpoint: ExecutionContext;
   private pageSize: number;
   private static DEFAULT_PAGE_SIZE = 10;
   constructor(
@@ -63,10 +62,26 @@ export class PipelinedQueryExecutionContext implements IExecutionContext {
       this.endpoint = new AggregateEndpointComponent(this.endpoint, aggregates);
     }
 
-    // If top then add that to the pipeline
+    // If top then add that to the pipeline. TOP N is effectively OFFSET 0 LIMIT N
     const top = partitionedQueryExecutionInfo.queryInfo.top;
     if (typeof top === "number") {
-      this.endpoint = new TopEndpointComponent(this.endpoint, top);
+      this.endpoint = new OffsetLimitEndpointComponent(this.endpoint, 0, top);
+    }
+
+    // If offset+limit then add that to the pipeline
+    const limit = partitionedQueryExecutionInfo.queryInfo.limit;
+    const offset = partitionedQueryExecutionInfo.queryInfo.offset;
+    if (typeof limit === "number" && typeof offset === "number") {
+      this.endpoint = new OffsetLimitEndpointComponent(this.endpoint, offset, limit);
+    }
+
+    // If distinct then add that to the pipeline
+    const distinctType = partitionedQueryExecutionInfo.queryInfo.distinctType;
+    if (distinctType === "Ordered") {
+      this.endpoint = new OrderedDistinctEndpointComponent(this.endpoint);
+    }
+    if (distinctType === "Unordered") {
+      this.endpoint = new UnorderedDistinctEndpointComponent(this.endpoint);
     }
   }
 
