@@ -297,10 +297,8 @@ describe("Session Token", function() {
     const applySessionTokenStub = sinon.stub(clientContext as any, "applySessionToken").callsFake(callbackSpy as any);
     try {
       const resp = await container.item("1", "1").read();
-      console.log(JSON.stringify(resp.resource, null, 2));
       assert.fail("readDocument must throw");
     } catch (err) {
-      console.log(err);
       assert.equal(err.substatus, 1002, "Substatus should indicate the LSN didn't catchup.");
       assert.equal(callbackSpy.callCount, 1);
       assert.equal(trimSlashes(callbackSpy.lastCall.args[0].path), containerLink + "/docs/1");

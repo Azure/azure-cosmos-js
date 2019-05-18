@@ -268,10 +268,7 @@ describe("Container TTL", function() {
     const { resources: results } = await container.items.query(query, { enableCrossPartitionQuery: true }).fetchAll();
     assert.equal(results.length, 0);
 
-    // Use a container definition without defaultTtl to disable ttl at container level
-    const containerDefinition2 = { id: container.id };
-
-    await container.replace(containerDefinition2);
+    await container.replace({ id: container.id, partitionKey: containerResult.partitionKey });
 
     itemDefinition.id = "doc2";
 
