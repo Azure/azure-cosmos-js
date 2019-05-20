@@ -42,41 +42,36 @@ describe("Non Partitioned Container", function() {
     assert(Array.isArray(items), "Value should be an array");
 
     // create an item
-    console.log("Create");
     const name = "sample document";
-    const { resource: item1 } = await container.items.create(
-      {
-        id: "a",
-        name,
-        foo: "bar",
-        key: "value"
-      },
-      { partitionKey: [] }
-    );
+    const { resource: item1 } = await container.items.create({
+      id: "a",
+      name,
+      foo: "bar",
+      key: "value"
+    });
 
     assert.equal(item1.name, name);
 
+    // read an item
+    const { resource: item2 } = await container.item(item1.id, undefined).read();
+    assert.equal(item2.id, item1.id);
+
     // upsert an item
-    console.log("Upsert");
-    const { resource: item2 } = await container.items.upsert(
-      {
-        id: "b",
-        name: "sample document",
-        foo: "bar",
-        key: "value"
-      },
-      { partitionKey: [] }
-    );
-    assert.equal(item2.name, name);
+    const { resource: item3 } = await container.items.upsert({
+      id: "b",
+      name: "sample document",
+      foo: "bar",
+      key: "value"
+    });
+    assert.equal(item3.name, name);
 
     // replace an item
-    console.log("Replace");
     const newProp = "baz";
-    const { resource: item3 } = await container.item("a", []).replace({
+    const { resource: item4 } = await container.item("a", undefined).replace({
       id: "a",
       newProp
     });
-    assert.equal(item3.newProp, newProp);
+    assert.equal(item4.newProp, newProp);
 
     // read documents after creation
     const { resources: documents } = await container.items.readAll({ enableCrossPartitionQuery: true }).fetchAll();
@@ -89,11 +84,11 @@ describe("Non Partitioned Container", function() {
     assert(results.length === 2, "Container should contain two items");
 
     // delete a document
-    await container.item(item1.id, []).delete();
+    await container.item(item1.id, undefined).delete();
 
     // read documents after deletion
     try {
-      await container.item(item1.id, []).read();
+      await container.item(item1.id, undefined).read();
       assert.fail("must throw if document doesn't exist");
     } catch (err) {
       const notFoundErrorCode = 404;
