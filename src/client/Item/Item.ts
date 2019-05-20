@@ -60,7 +60,7 @@ export class Item {
   public async read<T extends ItemDefinition = any>(options: RequestOptions = {}): Promise<ItemResponse<T>> {
     options = options || {};
     if (!options.partitionKey) {
-      if (this.partitionKey) {
+      if (this.partitionKey !== undefined) {
         options.partitionKey = this.partitionKey;
       } else {
         const { resource: partitionKeyDefinition } = await this.container.getPartitionKeyDefinition();
@@ -126,7 +126,7 @@ export class Item {
    */
   public async delete<T extends ItemDefinition = any>(options: RequestOptions = {}): Promise<ItemResponse<T>> {
     if (!options.partitionKey) {
-      if (this.partitionKey) {
+      if (this.partitionKey !== undefined) {
         options.partitionKey = this.partitionKey;
       } else {
         const { resource: partitionKeyDefinition } = await this.container.getPartitionKeyDefinition();
