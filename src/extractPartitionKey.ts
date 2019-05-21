@@ -17,12 +17,16 @@ export function extractPartitionKey(document: any, partitionKeyDefinition: Parti
       partitionKey.push(obj);
     });
     if (partitionKey.length === 1 && partitionKey[0] === undefined) {
-      if (partitionKeyDefinition.systemKey === true) {
-        return [];
-      } else {
-        return [{}];
-      }
+      return undefinedPartitionKey(partitionKeyDefinition);
     }
     return partitionKey;
+  }
+}
+
+export function undefinedPartitionKey(partitionKeyDefinition: PartitionKeyDefinition) {
+  if (partitionKeyDefinition.systemKey === true) {
+    return [];
+  } else {
+    return [{}];
   }
 }

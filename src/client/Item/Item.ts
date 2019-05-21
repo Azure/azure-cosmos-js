@@ -1,6 +1,6 @@
 import { ClientContext } from "../../ClientContext";
 import { createDocumentUri, getIdFromLink, getPathFromLink, isResourceValid, ResourceType } from "../../common";
-import { extractPartitionKey } from "../../extractPartitionKey";
+import { extractPartitionKey, undefinedPartitionKey } from "../../extractPartitionKey";
 import { RequestOptions } from "../../request";
 import { Container } from "../Container";
 import { ItemDefinition } from "./ItemDefinition";
@@ -64,7 +64,7 @@ export class Item {
         options.partitionKey = this.partitionKey;
       } else {
         const { resource: partitionKeyDefinition } = await this.container.getPartitionKeyDefinition();
-        options.partitionKey = extractPartitionKey(undefined, partitionKeyDefinition);
+        options.partitionKey = undefinedPartitionKey(partitionKeyDefinition);
       }
     }
     const path = getPathFromLink(this.url);
@@ -130,7 +130,7 @@ export class Item {
         options.partitionKey = this.partitionKey;
       } else {
         const { resource: partitionKeyDefinition } = await this.container.getPartitionKeyDefinition();
-        options.partitionKey = extractPartitionKey(undefined, partitionKeyDefinition);
+        options.partitionKey = undefinedPartitionKey(partitionKeyDefinition);
       }
     }
 
