@@ -1,5 +1,5 @@
 import assert from "assert";
-import { CosmosClient, PartitionKind, PermissionMode, EMPTY_PARTITION_KEY } from "../../dist-esm";
+import { CosmosClient, PartitionKind, PermissionMode } from "../../dist-esm";
 import { PermissionDefinition } from "../../dist-esm/client";
 import { endpoint, masterKey } from "../common/_testConfig";
 import { createOrUpsertPermission, getTestContainer, getTestDatabase, removeAllDatabases } from "../common/TestHelpers";
@@ -160,7 +160,7 @@ describe("NodeJS CRUD Tests", function() {
       const { resource: successDoc } = await col1Client
         .database(entities.database.id)
         .container(entities.coll1.id)
-        .item(entities.doc1.id, EMPTY_PARTITION_KEY)
+        .item(entities.doc1.id, undefined)
         .read();
       assert(successDoc !== undefined, "error reading document");
       assert.equal(successDoc.id, entities.doc1.id, "Expected to read children using parent permissions");
