@@ -27,7 +27,7 @@ const client = new CosmosClient({
   key: masterKey
 });
 
-describe.only("Non Partitioned Container", function() {
+describe("Non Partitioned Container", function() {
   let container: Container;
   before(async () => {
     await removeAllDatabases();
