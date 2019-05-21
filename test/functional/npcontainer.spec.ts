@@ -16,7 +16,6 @@ const legacyClient = new CosmosClient({
           context.body = JSON.stringify({ id: JSON.parse(context.body).id });
         }
         context.headers[Constants.HttpHeaders.Version] = "2018-06-18";
-        console.log(context.resourceType, context.method, context.body);
         return next(context);
       }
     }
@@ -28,7 +27,7 @@ const client = new CosmosClient({
   key: masterKey
 });
 
-describe("Non Partitioned Container", function() {
+describe.only("Non Partitioned Container", function() {
   let container: Container;
   before(async () => {
     await removeAllDatabases();
