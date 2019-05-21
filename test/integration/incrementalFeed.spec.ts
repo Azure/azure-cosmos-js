@@ -1,5 +1,5 @@
 import assert from "assert";
-import { RequestOptions, EMPTY_PARTITION_KEY } from "../../dist-esm";
+import { RequestOptions } from "../../dist-esm";
 import { Container, ContainerDefinition } from "../../dist-esm/client";
 import { getTestContainer, removeAllDatabases } from "../common/TestHelpers";
 

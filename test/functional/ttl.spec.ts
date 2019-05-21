@@ -1,7 +1,6 @@
 import assert from "assert";
 import { Container, ContainerDefinition, Database } from "../../dist-esm/client";
 import { getTestDatabase, removeAllDatabases } from "../common/TestHelpers";
-import { EMPTY_PARTITION_KEY } from "../../dist-esm";
 
 async function sleep(time: number) {
   return new Promise(resolve => {
@@ -75,7 +74,7 @@ describe("Container TTL", function() {
 
   async function checkItemGone(container: Container, createdItem: any) {
     try {
-      await container.item(createdItem.id, EMPTY_PARTITION_KEY).read();
+      await container.item(createdItem.id, undefined).read();
       assert.fail("Must throw if the Item isn't there");
     } catch (err) {
       const badRequestErrorCode = 404;
@@ -84,7 +83,7 @@ describe("Container TTL", function() {
   }
 
   async function checkItemExists(container: Container, createdItem: any) {
-    const { resource: readItem } = await container.item(createdItem.id, EMPTY_PARTITION_KEY).read();
+    const { resource: readItem } = await container.item(createdItem.id, undefined).read();
     assert.equal(readItem.ttl, createdItem.ttl);
   }
 
@@ -161,10 +160,10 @@ describe("Container TTL", function() {
     await checkItemGone(container, createdItem3);
 
     // The Items with id doc1 and doc2 will never expire
-    const { resource: readItem1 } = await container.item(createdItem1.id, EMPTY_PARTITION_KEY).read();
+    const { resource: readItem1 } = await container.item(createdItem1.id, undefined).read();
     assert.equal(readItem1.id, createdItem1.id);
 
-    const { resource: readItem2 } = await container.item(createdItem2.id, EMPTY_PARTITION_KEY).read();
+    const { resource: readItem2 } = await container.item(createdItem2.id, undefined).read();
     assert.equal(readItem2.id, createdItem2.id);
   }
 

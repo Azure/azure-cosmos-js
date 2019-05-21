@@ -1,13 +1,5 @@
 import assert from "assert";
-import {
-  Container,
-  CosmosClient,
-  Database,
-  DatabaseDefinition,
-  RequestOptions,
-  Response,
-  EMPTY_PARTITION_KEY
-} from "../../dist-esm";
+import { Container, CosmosClient, Database, DatabaseDefinition, RequestOptions, Response } from "../../dist-esm";
 import {
   ContainerDefinition,
   ItemDefinition,
@@ -87,9 +79,7 @@ export async function bulkInsertItems(
 export async function bulkReadItems(container: Container, documents: any[], partitionKeyProperty: string) {
   return await Promise.all(
     documents.map(async document => {
-      const partitionKey = document.hasOwnProperty(partitionKeyProperty)
-        ? document[partitionKeyProperty]
-        : EMPTY_PARTITION_KEY;
+      const partitionKey = document.hasOwnProperty(partitionKeyProperty) ? document[partitionKeyProperty] : undefined;
 
       // TODO: should we block or do all requests in parallel?
       const { resource: doc } = await container.item(document.id, partitionKey).read();
@@ -105,9 +95,7 @@ export async function bulkReplaceItems(
 ): Promise<any[]> {
   return Promise.all(
     documents.map(async document => {
-      const partitionKey = document.hasOwnProperty(partitionKeyProperty)
-        ? document[partitionKeyProperty]
-        : EMPTY_PARTITION_KEY;
+      const partitionKey = document.hasOwnProperty(partitionKeyProperty) ? document[partitionKeyProperty] : undefined;
       const { resource: doc } = await container.item(document.id, partitionKey).replace(document);
       const { _etag: _1, _ts: _2, ...expectedModifiedDocument } = document;
       const { _etag: _4, _ts: _3, ...actualModifiedDocument } = doc;
@@ -124,9 +112,7 @@ export async function bulkDeleteItems(
 ): Promise<void> {
   await Promise.all(
     documents.map(async document => {
-      const partitionKey = document.hasOwnProperty(partitionKeyProperty)
-        ? document[partitionKeyProperty]
-        : EMPTY_PARTITION_KEY;
+      const partitionKey = document.hasOwnProperty(partitionKeyProperty) ? document[partitionKeyProperty] : undefined;
 
       await container.item(document.id, partitionKey).delete();
     })
@@ -186,7 +172,7 @@ export async function replaceOrUpsertItem(
   if (isUpsertTest) {
     return container.items.upsert(body, options);
   } else {
-    return container.item(body.id, EMPTY_PARTITION_KEY).replace(body, options);
+    return container.item(body.id, undefined).replace(body, options);
   }
 }
 
