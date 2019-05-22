@@ -137,13 +137,7 @@ export class Items {
 
     const path = getPathFromLink(this.container.url, ResourceType.item);
     const id = getIdFromLink(this.container.url);
-    return new ChangeFeedIterator<T>(
-      this.clientContext,
-      id,
-      path,
-      partitionKey,
-      changeFeedOptions
-    );
+    return new ChangeFeedIterator<T>(this.clientContext, id, path, partitionKey, changeFeedOptions);
   }
 
   /**
