@@ -11,10 +11,56 @@ jobs:
     pool:
       vmImage: vs2017-win2016
     steps:
-      - task: azure-cosmosdb.emulator-public-preview.run-cosmosdbemulatorcontainer.CosmosDbEmulator@2
-        displayName: "Run Azure Cosmos DB Emulator container"
-        inputs:
-          defaultPartitionCount: 25
+      - powershell: |
+        Write-Host "Downloading Cosmos Emulator"
+        wget "https://aka.ms/cosmosdb-emulator" -outfile "$env:temp\azure-cosmosdb-emulator.msi"
+        Write-Host "Finished Downloading Cosmos Emulator - $env:temp\azure-cosmosdb-emulator.msi"
+        dir "$env:temp"
+        displayName: "Download Public Cosmos DB Emulator"
+
+      - script: |
+          echo "Deleting Azure Cosmos DB Emulator directory"
+          dir "%ProgramFiles%\"
+          rmdir /Q /S "%ProgramFiles%\Azure Cosmos DB Emulator"
+
+          echo "Directory after deleting"
+          dir "%ProgramFiles%\"
+        displayName: "Cleanup already installed Azure Cosmos DB Emulator"
+
+      - script: |
+          choco install lessmsi
+          choco upgrade lessmsi
+
+          echo "Checking directory" 
+          dir "%ProgramFiles%"
+          mkdir "%TEMP%\Azure Cosmos DB Emulator"
+
+          lessmsi x "%TEMP%\azure-cosmosdb-emulator.msi" "%TEMP%\Azure Cosmos DB Emulator\"
+
+          dir "%TEMP%"
+          dir "%Temp%\Azure Cosmos DB Emulator\"
+        displayName: "Install Public Cosmos DB Emulator"
+
+      - powershell: |
+          dir "$env:Temp\"
+          dir "$env:Temp\Azure Cosmos DB Emulator"
+          dir "$env:Temp\Azure Cosmos DB Emulator\SourceDir\"
+          dir "$env:Temp\Azure Cosmos DB Emulator\SourceDir\Azure Cosmos DB Emulator"
+          Write-Host "Starting Comsos DB Emulator"
+          Start-Process "$env:Temp\Azure Cosmos DB Emulator\SourceDir\Azure Cosmos DB Emulator\CosmosDB.Emulator.exe" "/NoExplorer /NoUI" -Verb RunAs
+        displayName: "Run Public Cosmos DB Emulator"
+
+      - powershell: |
+          Import-Module "$env:ProgramFiles\Azure Cosmos DB Emulator\PSModules\Microsoft.Azure.CosmosDB.Emulator"
+
+          Write-Host "Sleeping for 120 seconds"
+          sleep 120;
+
+          Write-Host "Cosmos DB Emulator Status:"
+          Get-CosmosDbEmulatorStatus
+
+        displayName: "Check Public Cosmos DB Emulator Status"
+        enabled: false
       - task: NodeTool@0
         inputs:
           versionSpec: "8.x"
@@ -31,30 +77,119 @@ jobs:
         displayName: "npm test"
         env:
           MOCHA_TIMEOUT: 100000
-  - job: NightlyEmulator
-    pool:
-      vmImage: vs2017-win2016
-    steps:
-      - task: azure-cosmosdb.emulator-internal-preview.run-cosmosdbemulatorcontainer.CosmosDbEmulator@2
-        displayName: "Run Azure Cosmos DB Emulator container"
-        inputs:
-          username: "$(cosmosdb.azurecr.io.Username)"
-          password: "$(cosmosdb.azurecr.io.Password)"
-          defaultPartitionCount: 25
-      - task: NodeTool@0
-        inputs:
-          versionSpec: "8.x"
-        displayName: "Install Node.js"
+  # - job: NightlyEmulator
+  #   pool:
+  #     vmImage: vs2017-win2016
+  #   steps:
+  #     - task: azure-cosmosdb.emulator-internal-preview.run-cosmosdbemulatorcontainer.CosmosDbEmulator@2
+  #       displayName: "Run Azure Cosmos DB Emulator container"
+  #       inputs:
+  #         username: "$(cosmosdb.azurecr.io.Username)"
+  #         password: "$(cosmosdb.azurecr.io.Password)"
+  #         defaultPartitionCount: 25
+  #     - task: NodeTool@0
+  #       inputs:
+  #         versionSpec: "8.x"
+  #       displayName: "Install Node.js"
 
-      - script: npm install
-        displayName: "npm install"
+  #     - script: npm install
+  #       displayName: "npm install"
 
-      - script: npm run build
-        displayName: "npm run build"
+  #     - script: npm run build
+  #       displayName: "npm run build"
 
-      - bash: ACCOUNT_HOST=$COSMOSDBEMULATOR_ENDPOINT NODE_TLS_REJECT_UNAUTHORIZED="0" npm run test
-        failOnStderr: true
-        continueOnError: true
-        displayName: "npm test"
-        env:
-          MOCHA_TIMEOUT: 100000
+  #     - bash: ACCOUNT_HOST=$COSMOSDBEMULATOR_ENDPOINT NODE_TLS_REJECT_UNAUTHORIZED="0" npm run test
+  #       failOnStderr: true
+  #       continueOnError: true
+  #       displayName: "npm test"
+  #       env:
+  #         MOCHA_TIMEOUT: 100000
+
+
+  - powershell: |
+      Write-Host "Downloading Cosmos Emulator - $(EmulatorMsiUrl)"
+      wget "$(EmulatorMsiUrl)" -outfile "$env:temp\azure-cosmosdb-emulator.msi"
+      Write-Host "Finished Downloading Cosmos Emulator - $env:temp\azure-cosmosdb-emulator.msi"
+      dir "$env:temp"
+    displayName: "Download Public Cosmos DB Emulator"
+
+  - script: |
+      echo "Deleting Azure Cosmos DB Emulator directory"
+      dir "%ProgramFiles%\"
+      rmdir /Q /S "%ProgramFiles%\Azure Cosmos DB Emulator"
+
+      echo "Directory after deleting"
+      dir "%ProgramFiles%\"
+    displayName: "Cleanup already installed Azure Cosmos DB Emulator"
+
+  - script: |
+      choco install lessmsi
+      choco upgrade lessmsi
+
+      echo "Checking directory" 
+      dir "%ProgramFiles%"
+      mkdir "%TEMP%\Azure Cosmos DB Emulator"
+
+      lessmsi x "%TEMP%\azure-cosmosdb-emulator.msi" "%TEMP%\Azure Cosmos DB Emulator\"
+
+      dir "%TEMP%"
+
+      dir "%Temp%\Azure Cosmos DB Emulator\"
+    displayName: "Install Public Cosmos DB Emulator"
+
+  - powershell: |
+      dir "$env:Temp\"
+
+
+      dir "$env:Temp\Azure Cosmos DB Emulator"
+
+      dir "$env:Temp\Azure Cosmos DB Emulator\SourceDir\"
+
+      dir "$env:Temp\Azure Cosmos DB Emulator\SourceDir\Azure Cosmos DB Emulator"
+
+      Write-Host "Starting Comsos DB Emulator"
+      Start-Process "$env:Temp\Azure Cosmos DB Emulator\SourceDir\Azure Cosmos DB Emulator\CosmosDB.Emulator.exe" "/NoExplorer /NoUI" -Verb RunAs
+    displayName: "Run Public Cosmos DB Emulator"
+
+  - powershell: |
+      Import-Module "$env:ProgramFiles\Azure Cosmos DB Emulator\PSModules\Microsoft.Azure.CosmosDB.Emulator"
+
+      Write-Host "Sleeping for 120 seconds"
+      sleep 120;
+
+      Write-Host "Cosmos DB Emulator Status:"
+      Get-CosmosDbEmulatorStatus
+
+    displayName: "Check Public Cosmos DB Emulator Status"
+    enabled: false
+
+  - task: UsePythonVersion@0
+    displayName: "Use Python ==2.7.14"
+    inputs:
+      versionSpec: "==2.7.14"
+
+  - powershell: |
+      $env:ACCOUNT_HOST="https://localhost:8081/"
+      cmd /c "python -m pip install --upgrade pip 2> 1"
+      cmd /c "pip install tox --no-warn-script-location 2> 1"
+      cmd /c "tox -e py -- -k 'not globaldb' "
+
+    displayName: "Python Run Tests"
+
+  - task: UsePythonVersion@0
+    displayName: "Use Python ==3.4.4"
+    inputs:
+      versionSpec: "==3.4.4"
+    condition: succeededOrFailed()
+
+  - powershell: |
+      $env:ACCOUNT_HOST="https://localhost:8081/"
+      cmd /c "python -m pip install --upgrade pip 2> 1"
+      cmd /c "pip install tox --no-warn-script-location 2> 1"
+      cmd /c "tox -e py -- -k 'not globaldb' "
+
+    displayName: "Python Run Tests"
+    condition: succeededOrFailed()
+
+  - task: PublishTestResults@2
+    displayName: "Publish Test Results **/TEST-*.xml"
