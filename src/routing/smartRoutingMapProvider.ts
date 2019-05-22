@@ -117,8 +117,8 @@ export class SmartRoutingMapProvider {
       // the overlapping ranges must contain the requested range
 
       if (SmartRoutingMapProvider._stringCompare(currentProvidedRange.max, lastKnownTargetRange.max) > 0) {
-        throw new Error(`error: returned overlapping ranges ${overlappingRanges} \
-        does not contain the requested range ${queryRange}`);
+        throw new Error(`error: returned overlapping ranges ${overlappingRanges.map(range => JSON.stringify(range))} \
+        does not contain the requested range ${JSON.stringify(queryRange)}`);
       }
 
       // the current range is contained in partitionKeyRanges just move forward
