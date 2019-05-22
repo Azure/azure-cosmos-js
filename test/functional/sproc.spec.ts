@@ -138,7 +138,7 @@ describe("NodeJS CRUD Tests", function() {
       const { resource: retrievedSproc3 } = await container.scripts.storedProcedures.create(sproc3);
       const { resource: result3 } = await container.scripts
         .storedProcedure(retrievedSproc3.id)
-        .execute([{ temp: "so" }]);
+        .execute(undefined, [{ temp: "so" }]);
       assert.equal(result3, "aso");
     });
   });

@@ -116,7 +116,8 @@ export class ClientContext {
       resourceType,
       options,
       body: query,
-      plugins: this.cosmosClientOptions.plugins
+      plugins: this.cosmosClientOptions.plugins,
+      partitionKey: options.partitionKey
     };
 
     if (query !== undefined) {

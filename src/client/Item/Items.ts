@@ -142,10 +142,6 @@ export class Items {
       id,
       path,
       partitionKey,
-      async () => {
-        const bodyWillBeTruthyIfPartitioned = (await this.container.getPartitionKeyDefinition()).resource;
-        return !!bodyWillBeTruthyIfPartitioned;
-      },
       changeFeedOptions
     );
   }

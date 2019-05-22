@@ -34,7 +34,6 @@ export class ChangeFeedIterator<T> {
     private resourceId: string,
     private resourceLink: string,
     private partitionKey: string | number | boolean,
-    private isPartitionedContainer: () => Promise<boolean>,
     private changeFeedOptions: ChangeFeedOptions
   ) {
     // partition key XOR partition key range id
@@ -94,8 +93,7 @@ export class ChangeFeedIterator<T> {
   }
 
   private async getFeedResponse(): Promise<ChangeFeedResponse<Array<T & Resource>>> {
-    const isParittionedContainer = await this.isPartitionedContainer();
-    if (!this.isPartitionSpecified && isParittionedContainer) {
+    if (!this.isPartitionSpecified) {
       throw new Error("Container is partitioned, but no partition key or partition key range id was specified.");
     }
     const feedOptions: FeedOptions = { initialHeaders: {}, useIncrementalFeed: true };
