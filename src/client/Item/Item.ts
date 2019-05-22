@@ -1,5 +1,6 @@
 import { ClientContext } from "../../ClientContext";
 import { createDocumentUri, getIdFromLink, getPathFromLink, isResourceValid, ResourceType } from "../../common";
+import { PartitionKey } from "../../documents";
 import { extractPartitionKey, undefinedPartitionKey } from "../../extractPartitionKey";
 import { RequestOptions } from "../../request";
 import { Container } from "../Container";
@@ -28,7 +29,7 @@ export class Item {
   constructor(
     public readonly container: Container,
     public readonly id: string,
-    public readonly partitionKey: string,
+    public partitionKey: PartitionKey,
     private readonly clientContext: ClientContext
   ) {}
 
@@ -58,18 +59,19 @@ export class Item {
    * ```
    */
   public async read<T extends ItemDefinition = any>(options: RequestOptions = {}): Promise<ItemResponse<T>> {
-    options = options || {};
-    if (!options.partitionKey) {
-      if (this.partitionKey !== undefined) {
-        options.partitionKey = this.partitionKey;
-      } else {
-        const { resource: partitionKeyDefinition } = await this.container.getPartitionKeyDefinition();
-        options.partitionKey = undefinedPartitionKey(partitionKeyDefinition);
-      }
+    if (this.partitionKey === undefined) {
+      const { resource: partitionKeyDefinition } = await this.container.getPartitionKeyDefinition();
+      this.partitionKey = undefinedPartitionKey(partitionKeyDefinition);
     }
     const path = getPathFromLink(this.url);
     const id = getIdFromLink(this.url);
-    const response = await this.clientContext.read<T>(path, ResourceType.item, id, options);
+    const response = await this.clientContext.read<T>({
+      path,
+      resourceType: ResourceType.item,
+      resourceId: id,
+      options,
+      partitionKey: this.partitionKey
+    });
 
     return new ItemResponse(response.result, response.headers, response.statusCode, this);
   }
@@ -96,12 +98,9 @@ export class Item {
    */
   public replace<T extends ItemDefinition>(body: T, options?: RequestOptions): Promise<ItemResponse<T>>;
   public async replace<T extends ItemDefinition>(body: T, options: RequestOptions = {}): Promise<ItemResponse<T>> {
-    if ((!options || !options.partitionKey) && this.partitionKey !== undefined) {
-      options.partitionKey = this.partitionKey;
-    }
-    if (options.partitionKey === undefined) {
+    if (this.partitionKey === undefined) {
       const { resource: partitionKeyDefinition } = await this.container.getPartitionKeyDefinition();
-      options.partitionKey = extractPartitionKey(body, partitionKeyDefinition);
+      this.partitionKey = extractPartitionKey(body, partitionKeyDefinition);
     }
 
     const err = {};
@@ -112,7 +111,14 @@ export class Item {
     const path = getPathFromLink(this.url);
     const id = getIdFromLink(this.url);
 
-    const response = await this.clientContext.replace<T>(body, path, ResourceType.item, id, options);
+    const response = await this.clientContext.replace<T>({
+      body,
+      path,
+      resourceType: ResourceType.item,
+      resourceId: id,
+      options,
+      partitionKey: this.partitionKey
+    });
     return new ItemResponse(response.result, response.headers, response.statusCode, this);
   }
 
@@ -125,19 +131,21 @@ export class Item {
    * @param options Additional options for the request, such as the partition key.
    */
   public async delete<T extends ItemDefinition = any>(options: RequestOptions = {}): Promise<ItemResponse<T>> {
-    if (!options.partitionKey) {
-      if (this.partitionKey !== undefined) {
-        options.partitionKey = this.partitionKey;
-      } else {
-        const { resource: partitionKeyDefinition } = await this.container.getPartitionKeyDefinition();
-        options.partitionKey = undefinedPartitionKey(partitionKeyDefinition);
-      }
+    if (this.partitionKey === undefined) {
+      const { resource: partitionKeyDefinition } = await this.container.getPartitionKeyDefinition();
+      this.partitionKey = undefinedPartitionKey(partitionKeyDefinition);
     }
 
     const path = getPathFromLink(this.url);
     const id = getIdFromLink(this.url);
 
-    const response = await this.clientContext.delete<T>(path, ResourceType.item, id, options);
+    const response = await this.clientContext.delete<T>({
+      path,
+      resourceType: ResourceType.item,
+      resourceId: id,
+      options,
+      partitionKey: this.partitionKey
+    });
     return new ItemResponse(response.result, response.headers, response.statusCode, this);
   }
 }
