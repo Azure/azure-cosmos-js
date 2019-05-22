@@ -12,10 +12,10 @@ jobs:
       vmImage: vs2017-win2016
     steps:
       - powershell: |
-        Write-Host "Downloading Cosmos Emulator"
-        wget "https://aka.ms/cosmosdb-emulator" -outfile "$env:temp\azure-cosmosdb-emulator.msi"
-        Write-Host "Finished Downloading Cosmos Emulator - $env:temp\azure-cosmosdb-emulator.msi"
-        dir "$env:temp"
+          Write-Host "Downloading Cosmos Emulator"
+          wget "https://aka.ms/cosmosdb-emulator" -outfile "$env:temp\azure-cosmosdb-emulator.msi"
+          Write-Host "Finished Downloading Cosmos Emulator - $env:temp\azure-cosmosdb-emulator.msi"
+          dir "$env:temp"
         displayName: "Download Public Cosmos DB Emulator"
 
       - script: |
@@ -104,7 +104,6 @@ jobs:
   #       displayName: "npm test"
   #       env:
   #         MOCHA_TIMEOUT: 100000
-
 
   - powershell: |
       Write-Host "Downloading Cosmos Emulator - $(EmulatorMsiUrl)"
