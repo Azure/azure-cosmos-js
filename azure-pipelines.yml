@@ -13,8 +13,12 @@ jobs:
     steps:
       - powershell: |
           $localEtag = Get-Content "$env:ProgramFiles\Azure Cosmos DB Emulator\etag.txt"
+          Write-Host "Local emulator etag:"
+          Write-Host $localEtag
           $headResponse = Invoke-WebRequest 'https://aka.ms/cosmosdb-emulator' -Method 'HEAD'
           $remoteEtag = $response.headers.Etag
+          Write-Host "Remote emulator etag:"
+          Write-Host $remoteEtag
           if($localEtag -ne $remoteEtag){
             Write-Host "Emulator is out of date"
             Write-Host "Downloading Cosmos Emulator"
@@ -40,6 +44,7 @@ jobs:
           Write-Host "Starting Comsos DB Emulator"
           Start-Process "$env:Temp\Azure Cosmos DB Emulator\SourceDir\Azure Cosmos DB Emulator\CosmosDB.Emulator.exe" "/NoExplorer /NoUI" -Verb RunAs
         displayName: "Refresh and Run Public Cosmos DB Emulator"
+        errorActionPreference: "continue"
       - task: NodeTool@0
         inputs:
           versionSpec: "8.x"
