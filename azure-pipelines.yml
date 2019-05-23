@@ -12,7 +12,11 @@ jobs:
       vmImage: windows-2019
     steps:
       - powershell: |
-          $localEtag = Get-Content "$env:ProgramFiles\Azure Cosmos DB Emulator\etag.txt"
+          $localEtag = ""
+          try {
+            $localEtag = Get-Content "$env:ProgramFiles\Azure Cosmos DB Emulator\etag.txt"
+          catch {
+          }
           Write-Host "Local emulator etag $localEtag"
           $headResponse = Invoke-WebRequest 'https://aka.ms/cosmosdb-emulator' -Method 'HEAD'
           Write-Host $headResponse.headers
@@ -43,7 +47,6 @@ jobs:
           Write-Host "Starting Comsos DB Emulator"
           Start-Process "$env:ProgramFiles\Azure Cosmos DB Emulator\SourceDir\Azure Cosmos DB Emulator\CosmosDB.Emulator.exe" "/NoExplorer /NoUI" -Verb RunAs
         displayName: "Refresh and Run Public Cosmos DB Emulator"
-        errorActionPreference: "continue"
       - task: NodeTool@0
         inputs:
           versionSpec: "8.x"
