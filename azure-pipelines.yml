@@ -16,6 +16,7 @@ jobs:
           try {
             $localEtag = Get-Content "$env:ProgramFiles\Azure Cosmos DB Emulator\etag.txt"
           catch {
+            $localEtag = ""
           }
           Write-Host "Local emulator etag $localEtag"
           $headResponse = Invoke-WebRequest 'https://aka.ms/cosmosdb-emulator' -Method 'HEAD'
