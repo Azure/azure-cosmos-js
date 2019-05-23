@@ -12,28 +12,31 @@ jobs:
       vmImage: windows-2019
     steps:
       - powershell: |
-          gci env:* | sort-object name
-          Write-Host "Downloading Cosmos Emulator"
-          wget "https://aka.ms/cosmosdb-emulator" -outfile "$env:temp\azure-cosmosdb-emulator.msi"
-          Write-Host "Finished Downloading Cosmos Emulator - $env:temp\azure-cosmosdb-emulator.msi"
-          dir "$env:temp"
-          echo "Deleting Azure Cosmos DB Emulator directory"
-          dir "%ProgramFiles%\"
-          rmdir /Q /S "%ProgramFiles%\Azure Cosmos DB Emulator"
-          echo "Directory after deleting"
-          dir "%ProgramFiles%\"
-          choco install lessmsi
-          choco upgrade lessmsi
-          echo "Checking directory" 
-          dir "%ProgramFiles%"
-          mkdir "%TEMP%\Azure Cosmos DB Emulator"
-          lessmsi x "%TEMP%\azure-cosmosdb-emulator.msi" "%TEMP%\Azure Cosmos DB Emulator\"
-          dir "%TEMP%"
-          dir "%Temp%\Azure Cosmos DB Emulator\"
-          dir "$env:Temp\"
-          dir "$env:Temp\Azure Cosmos DB Emulator"
-          dir "$env:Temp\Azure Cosmos DB Emulator\SourceDir\"
-          dir "$env:Temp\Azure Cosmos DB Emulator\SourceDir\Azure Cosmos DB Emulator"
+          $localEtag = Get-Content "$env:ProgramFiles\Azure Cosmos DB Emulator\etag.txt"
+          $headResponse = Invoke-WebRequest 'https://aka.ms/cosmosdb-emulator' -Method 'HEAD'
+          $remoteEtag = $response.headers.Etag
+          if($localEtag -ne $remoteEtag){
+            Write-Host "Emulator is out of date"
+            Write-Host "Downloading Cosmos Emulator"
+            wget "https://aka.ms/cosmosdb-emulator" -outfile "$env:temp\azure-cosmosdb-emulator.msi"
+            Write-Host "Finished Downloading Cosmos Emulator - $env:temp\azure-cosmosdb-emulator.msi"
+            dir "$env:temp"
+            echo "Deleting Azure Cosmos DB Emulator directory"
+            dir "$env:ProgramFiles\"
+            rmdir /Q /S "$env:ProgramFiles\Azure Cosmos DB Emulator"
+            echo "Directory after deleting"
+            dir "$env:ProgramFiles\"
+            choco install lessmsi
+            choco upgrade lessmsi
+            echo "Checking directory" 
+            dir "$env:ProgramFiles"
+            mkdir "$env:ProgramFiles\Azure Cosmos DB Emulator"
+            lessmsi x "$env:ProgramFiles\azure-cosmosdb-emulator.msi" "$env:ProgramFiles\Azure Cosmos DB Emulator\"
+            Set-Content -Path "$env:ProgramFiles\Azure Cosmos DB Emulator\etag.txt" -Value $remoteEtag
+          } else {
+            Write-Host "Emulator is already up to date"
+          }
+
           Write-Host "Starting Comsos DB Emulator"
           Start-Process "$env:Temp\Azure Cosmos DB Emulator\SourceDir\Azure Cosmos DB Emulator\CosmosDB.Emulator.exe" "/NoExplorer /NoUI" -Verb RunAs
         displayName: "Refresh and Run Public Cosmos DB Emulator"
