@@ -16,7 +16,7 @@ jobs:
           Write-Host "Local emulator etag $localEtag"
           $headResponse = Invoke-WebRequest 'https://aka.ms/cosmosdb-emulator' -Method 'HEAD'
           Write-Host $headResponse.headers
-          $remoteEtag = $response.headers.Etag
+          $remoteEtag = $response.headers.ETag
           Write-Host "Remote emulator etag $remoteEtag"
           if($localEtag -ne $remoteEtag){
             Write-Host "Emulator is out of date"
