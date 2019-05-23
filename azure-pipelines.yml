@@ -20,7 +20,7 @@ jobs:
           Write-Host "Local emulator etag $localEtag"
           $headResponse = Invoke-WebRequest 'https://aka.ms/cosmosdb-emulator' -Method 'HEAD'
           Write-Host $headResponse.headers
-          $remoteEtag = $response.headers.ETag
+          $remoteEtag = $headResponse.headers.ETag
           Write-Host "Remote emulator etag $remoteEtag"
           if($localEtag -ne $remoteEtag){
             Write-Host "Emulator is out of date"
@@ -30,7 +30,7 @@ jobs:
             dir "$env:temp"
             echo "Deleting Azure Cosmos DB Emulator directory"
             dir "$env:ProgramFiles\"
-            rmdir /Q /S "$env:ProgramFiles\Azure Cosmos DB Emulator"
+            rm "$env:ProgramFiles\Azure Cosmos DB Emulator" -Recurse -Force
             echo "Directory after deleting"
             dir "$env:ProgramFiles\"
             choco install lessmsi
