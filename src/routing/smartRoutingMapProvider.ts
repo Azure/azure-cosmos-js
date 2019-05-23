@@ -116,6 +116,12 @@ export class SmartRoutingMapProvider {
       }
       // the overlapping ranges must contain the requested range
 
+      console.log("current", JSON.stringify(currentProvidedRange, null, 2));
+      console.log("last", JSON.stringify(lastKnownTargetRange, null, 2));
+
+      console.log("overlapping", JSON.stringify(overlappingRanges, null, 2));
+      console.log("queryRange", JSON.stringify(queryRange, null, 2));
+
       if (SmartRoutingMapProvider._stringCompare(currentProvidedRange.max, lastKnownTargetRange.max) > 0) {
         console.log(JSON.stringify(overlappingRanges, null, 2));
         console.log(JSON.stringify(queryRange, null, 2));
