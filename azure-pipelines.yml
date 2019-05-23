@@ -12,7 +12,7 @@ jobs:
       vmImage: windows-2019
     steps:
       - powershell: |
-          Get-ChildItem Env
+          gci env:* | sort-object name
           Write-Host "Downloading Cosmos Emulator"
           wget "https://aka.ms/cosmosdb-emulator" -outfile "$env:temp\azure-cosmosdb-emulator.msi"
           Write-Host "Finished Downloading Cosmos Emulator - $env:temp\azure-cosmosdb-emulator.msi"
