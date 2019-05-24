@@ -42,10 +42,7 @@ async function httpRequest(requestContext: RequestContext) {
   }
 
   try {
-    console.log("method:", requestContext.method);
-    console.log("path:", requestContext.path);
-    console.log("headers:", requestContext.headers);
-    console.log("body:", requestContext.body);
+    console.log(requestContext.path);
     response = await fetch(trimSlashes(requestContext.endpoint) + requestContext.path, {
       method: requestContext.method,
       headers: requestContext.headers as any,
@@ -75,7 +72,6 @@ async function httpRequest(requestContext: RequestContext) {
   });
 
   if (response.status >= 400) {
-    console.log(result);
     const errorResponse: ErrorResponse = {
       code: response.status,
       body: result,

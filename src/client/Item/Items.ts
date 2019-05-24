@@ -76,7 +76,7 @@ export class Items {
       );
     };
 
-    return new QueryIterator(this.clientContext, query, options, fetchFunction, this.container.url);
+    return new QueryIterator(this.clientContext, query, options, fetchFunction, this.container.url, ResourceType.item);
   }
 
   /**

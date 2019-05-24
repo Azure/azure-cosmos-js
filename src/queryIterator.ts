@@ -1,6 +1,6 @@
 /// <reference lib="esnext.asynciterable" />
 import { ClientContext } from "./ClientContext";
-import { StatusCodes, SubStatusCodes } from "./common";
+import { ResourceType, getPathFromLink } from "./common";
 import {
   CosmosHeaders,
   DefaultQueryExecutionContext,
@@ -11,7 +11,7 @@ import {
   PipelinedQueryExecutionContext,
   SqlQuerySpec
 } from "./queryExecutionContext";
-import { ErrorResponse, PartitionedQueryExecutionInfo } from "./request/ErrorResponse";
+import { PartitionedQueryExecutionInfo } from "./request/ErrorResponse";
 import { FeedOptions } from "./request/FeedOptions";
 import { FeedResponse } from "./request/FeedResponse";
 
@@ -24,6 +24,7 @@ export class QueryIterator<T> {
   private fetchAllTempResources: T[]; // TODO
   private fetchAllLastResHeaders: CosmosHeaders;
   private queryExecutionContext: ExecutionContext;
+  private queryPlan: PartitionedQueryExecutionInfo;
   /**
    * @hidden
    */
@@ -32,7 +33,8 @@ export class QueryIterator<T> {
     private query: SqlQuerySpec | string,
     private options: FeedOptions,
     private fetchFunctions: FetchFunctionCallback | FetchFunctionCallback[],
-    private resourceLink?: string
+    private resourceLink?: string,
+    private resourceType?: ResourceType
   ) {
     this.query = query;
     this.fetchFunctions = fetchFunctions;
@@ -67,7 +69,11 @@ export class QueryIterator<T> {
   public async *getAsyncIterator(): AsyncIterable<FeedResponse<T>> {
     this.reset();
     while (this.queryExecutionContext.hasMoreResults()) {
-      const result = await this.executeMethod("fetchMore");
+      if (this.resourceType === ResourceType.item) {
+        await this.getQueryPlan();
+        this.queryExecutionContext = this.createPipelinedExecutionContext(this.queryPlan);
+      }
+      const result = await this.queryExecutionContext.fetchMore();
       const feedResponse = new FeedResponse<T>(
         result.result,
         result.headers,
@@ -106,7 +112,11 @@ export class QueryIterator<T> {
    * before returning the first batch of responses.
    */
   public async fetchNext(): Promise<FeedResponse<T>> {
-    const response = await this.executeMethod("fetchMore");
+    if (this.resourceType === ResourceType.item) {
+      await this.getQueryPlan();
+      this.queryExecutionContext = this.createPipelinedExecutionContext(this.queryPlan);
+    }
+    const response = await this.queryExecutionContext.fetchMore();
     return new FeedResponse<T>(response.result, response.headers, this.queryExecutionContext.hasMoreResults());
   }
 
@@ -114,12 +124,17 @@ export class QueryIterator<T> {
    * Reset the QueryIterator to the beginning and clear all the resources inside it
    */
   public reset() {
+    this.queryPlan = undefined;
     this.queryExecutionContext = new DefaultQueryExecutionContext(this.options, this.fetchFunctions);
   }
 
   private async toArrayImplementation(): Promise<FeedResponse<T>> {
     while (this.queryExecutionContext.hasMoreResults()) {
-      const { result, headers } = await this.executeMethod("nextItem");
+      if (this.resourceType === ResourceType.item) {
+        await this.getQueryPlan();
+        this.queryExecutionContext = this.createPipelinedExecutionContext(this.queryPlan);
+      }
+      const { result, headers } = await this.queryExecutionContext.nextItem();
       // concatenate the results and fetch more
       mergeHeaders(this.fetchAllLastResHeaders, headers);
 
@@ -144,26 +159,17 @@ export class QueryIterator<T> {
     );
   }
 
-  private isPartitionedExecutionError(error: any): error is ErrorResponse {
-    return (
-      error.code === StatusCodes.BadRequest &&
-      "substatus" in error &&
-      error["substatus"] === SubStatusCodes.CrossPartitionQueryNotServable
-    );
-  }
-
-  private async executeMethod(methodName: Exclude<keyof ExecutionContext, "hasMoreResults">) {
-    try {
-      return await this.queryExecutionContext[methodName]();
-    } catch (err) {
-      if (this.isPartitionedExecutionError(err)) {
-        // if this's a partitioned execution info switches the execution context
-        const partitionedExecutionInfo = err.body.additionalErrorInfo;
-        this.queryExecutionContext = this.createPipelinedExecutionContext(partitionedExecutionInfo);
-        return this.queryExecutionContext[methodName]();
-      } else {
-        throw err;
-      }
+  private async getQueryPlan() {
+    if (!this.queryPlan) {
+      const response = await this.clientContext.getQueryPlan(
+        getPathFromLink(this.resourceLink) + "/docs",
+        ResourceType.item,
+        this.resourceLink,
+        this.query
+      );
+      this.queryPlan = response.result;
+      console.log(this.queryPlan);
     }
+    return this.queryPlan;
   }
 }

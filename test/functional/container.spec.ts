@@ -360,16 +360,3 @@ describe("createIfNotExists", function() {
     assert.equal(def.id, readDef.id);
   });
 });
-
-describe.only("getQueryPlan", function() {
-  let container: Container;
-  before(async function() {
-    await removeAllDatabases();
-    container = await getTestContainer("getQueryPlan");
-  });
-
-  it("should handle container does not exist", async function() {
-    const response = await container.getQueryPlan("SELECT * from c");
-    console.log(response);
-  });
-});

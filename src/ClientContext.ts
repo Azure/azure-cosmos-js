@@ -17,6 +17,7 @@ import { RequestContext } from "./request/RequestContext";
 import { request as executeRequest } from "./request/RequestHandler";
 import { SessionContainer } from "./session/sessionContainer";
 import { SessionContext } from "./session/SessionContext";
+import { PartitionedQueryExecutionInfo } from "./request/ErrorResponse";
 
 /**
  * @hidden
@@ -123,7 +124,7 @@ export class ClientContext {
     resourceId: string,
     query: SqlQuerySpec | string,
     options: FeedOptions = {}
-  ): Promise<Response<Resource>> {
+  ): Promise<Response<PartitionedQueryExecutionInfo>> {
     // Query operations will use ReadEndpoint even though it uses
     // GET(for queryFeed) and POST(for regular query operations)
 

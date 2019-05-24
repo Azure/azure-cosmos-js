@@ -205,7 +205,7 @@ describe("Cross Partition", function() {
       await validateAsyncIterator(queryIterator, expectedOrderIds, expectedCount);
     };
 
-    it("Validate Parallel Query As String With maxDegreeOfParallelism = 0", async function() {
+    it.only("Validate Parallel Query As String With maxDegreeOfParallelism = 0", async function() {
       // simple order by query in string format
       const query = "SELECT * FROM root r";
       const options = {
