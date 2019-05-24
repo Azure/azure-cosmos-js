@@ -43,7 +43,7 @@ export async function getHeaders({
   path,
   resourceId,
   resourceType,
-  options,
+  options = {},
   partitionKeyRangeId,
   useMultipleWriteLocations
 }: GetHeadersOptions): Promise<CosmosHeaders> {

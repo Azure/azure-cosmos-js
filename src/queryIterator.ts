@@ -68,11 +68,8 @@ export class QueryIterator<T> {
    */
   public async *getAsyncIterator(): AsyncIterable<FeedResponse<T>> {
     this.reset();
+    await this.ensureQueryPlan();
     while (this.queryExecutionContext.hasMoreResults()) {
-      if (this.resourceType === ResourceType.item) {
-        await this.getQueryPlan();
-        this.queryExecutionContext = this.createPipelinedExecutionContext(this.queryPlan);
-      }
       const result = await this.queryExecutionContext.fetchMore();
       const feedResponse = new FeedResponse<T>(
         result.result,
@@ -112,10 +109,7 @@ export class QueryIterator<T> {
    * before returning the first batch of responses.
    */
   public async fetchNext(): Promise<FeedResponse<T>> {
-    if (this.resourceType === ResourceType.item) {
-      await this.getQueryPlan();
-      this.queryExecutionContext = this.createPipelinedExecutionContext(this.queryPlan);
-    }
+    await this.ensureQueryPlan();
     const response = await this.queryExecutionContext.fetchMore();
     return new FeedResponse<T>(response.result, response.headers, this.queryExecutionContext.hasMoreResults());
   }
@@ -129,11 +123,9 @@ export class QueryIterator<T> {
   }
 
   private async toArrayImplementation(): Promise<FeedResponse<T>> {
+    await this.ensureQueryPlan();
+
     while (this.queryExecutionContext.hasMoreResults()) {
-      if (this.resourceType === ResourceType.item) {
-        await this.getQueryPlan();
-        this.queryExecutionContext = this.createPipelinedExecutionContext(this.queryPlan);
-      }
       const { result, headers } = await this.queryExecutionContext.nextItem();
       // concatenate the results and fetch more
       mergeHeaders(this.fetchAllLastResHeaders, headers);
@@ -159,17 +151,22 @@ export class QueryIterator<T> {
     );
   }
 
-  private async getQueryPlan() {
-    if (!this.queryPlan) {
-      const response = await this.clientContext.getQueryPlan(
-        getPathFromLink(this.resourceLink) + "/docs",
-        ResourceType.item,
-        this.resourceLink,
-        this.query
-      );
-      this.queryPlan = response.result;
-      console.log(this.queryPlan);
+  private async ensureQueryPlan() {
+    if (!this.queryPlan && this.resourceType === ResourceType.item) {
+      try {
+        const response = await this.clientContext.getQueryPlan(
+          getPathFromLink(this.resourceLink) + "/docs",
+          ResourceType.item,
+          this.resourceLink,
+          this.query
+        );
+        this.queryPlan = response.result;
+        this.queryExecutionContext = this.createPipelinedExecutionContext(this.queryPlan);
+      } catch (e) {
+        console.log(this.resourceLink, this.query);
+        console.log(e);
+        throw new Error(e);
+      }
     }
-    return this.queryPlan;
   }
 }

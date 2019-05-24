@@ -181,7 +181,6 @@ export class Container {
 
   public async getQueryPlan(query: string | SqlQuerySpec) {
     const path = getPathFromLink(this.url);
-    console.log(path + "/docs");
     return this.clientContext.getQueryPlan(path + "/docs", ResourceType.item, getIdFromLink(this.url), query);
   }
 

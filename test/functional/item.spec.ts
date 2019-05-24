@@ -169,13 +169,6 @@ describe("Item CRUD", function() {
     const querySpec = {
       query: "SELECT * FROM Root"
     };
-    try {
-      const { resources: badUpdate } = await container.items.query(querySpec, { enableScanInQuery: true }).fetchAll();
-      assert.fail("Must fail");
-    } catch (err) {
-      const badRequestErrorCode = 400;
-      assert.equal(err.code, badRequestErrorCode, "response should return error code " + badRequestErrorCode);
-    }
     const { resources: results } = await container.items
       .query<ItemDefinition>(querySpec, { enableScanInQuery: true, enableCrossPartitionQuery: true })
       .fetchAll();
