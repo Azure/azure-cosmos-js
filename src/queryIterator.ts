@@ -4,9 +4,9 @@ import { StatusCodes, SubStatusCodes } from "./common";
 import {
   CosmosHeaders,
   DefaultQueryExecutionContext,
+  ExecutionContext,
   FetchFunctionCallback,
   getInitialHeader,
-  IExecutionContext,
   mergeHeaders,
   PipelinedQueryExecutionContext,
   SqlQuerySpec
@@ -23,7 +23,7 @@ import { FeedResponse } from "./request/FeedResponse";
 export class QueryIterator<T> {
   private fetchAllTempResources: T[]; // TODO
   private fetchAllLastResHeaders: CosmosHeaders;
-  private queryExecutionContext: IExecutionContext;
+  private queryExecutionContext: ExecutionContext;
   /**
    * @hidden
    */
@@ -43,43 +43,6 @@ export class QueryIterator<T> {
   }
 
   /**
-   * Calls a specified callback for each item returned from the query.
-   * Runs serially; each callback blocks the next.
-   *
-   * @param callback Specified callback.
-   * First param is the result,
-   * second param (optional) is the current headers object state,
-   * third param (optional) is current index.
-   * No more callbacks will be called if one of them results false.
-   *
-   * @returns Promise<void> - you should await or .catch the Promise in case there are any errors
-   *
-   * @example Iterate over all databases
-   * ```typescript
-   * await client.databases.readAll().forEach((db, headers, index) => {
-   *   console.log(`Got ${db.id} from forEach`);
-   * })
-   * ```
-   */
-  public async forEach(
-    callback: (result: T, headers?: CosmosHeaders, index?: number) => boolean | void
-  ): Promise<void> {
-    this.reset();
-    let index = 0;
-    while (this.queryExecutionContext.hasMoreResults()) {
-      const result = await this.executeMethod("nextItem");
-      if (result.result === undefined) {
-        return;
-      }
-      if (callback(result.result, result.headers, index) === false) {
-        return;
-      } else {
-        ++index;
-      }
-    }
-  }
-
-  /**
    * Gets an async iterator that will yield results until completion.
    *
    * NOTE: AsyncIterators are a very new feature and you might need to
@@ -93,8 +56,6 @@ export class QueryIterator<T> {
    *   (Symbol as any).asyncIterator = Symbol.for("Symbol.asyncIterator");
    * }
    * ```
-   *
-   * @see QueryIterator.forEach for very similar functionality.
    *
    * @example Iterate over all databases
    * ```typescript
@@ -112,10 +73,9 @@ export class QueryIterator<T> {
         result.headers,
         this.queryExecutionContext.hasMoreResults()
       );
-      if (result.result === undefined) {
-        return;
+      if (result.result !== undefined) {
+        yield feedResponse;
       }
-      yield feedResponse;
     }
   }
 
@@ -163,12 +123,9 @@ export class QueryIterator<T> {
       // concatenate the results and fetch more
       mergeHeaders(this.fetchAllLastResHeaders, headers);
 
-      if (result === undefined) {
-        // no more results
-        break;
+      if (result !== undefined) {
+        this.fetchAllTempResources.push(result);
       }
-
-      this.fetchAllTempResources.push(result);
     }
     return new FeedResponse(
       this.fetchAllTempResources,
@@ -195,7 +152,7 @@ export class QueryIterator<T> {
     );
   }
 
-  private async executeMethod(methodName: Exclude<keyof IExecutionContext, "hasMoreResults">) {
+  private async executeMethod(methodName: Exclude<keyof ExecutionContext, "hasMoreResults">) {
     try {
       return await this.queryExecutionContext[methodName]();
     } catch (err) {
