@@ -7,6 +7,7 @@ import {
   ResourceType
 } from "../../common";
 import { PartitionKeyDefinition } from "../../documents";
+import { SqlQuerySpec } from "../../queryExecutionContext";
 import { QueryIterator } from "../../queryIterator";
 import { FeedOptions, RequestOptions, ResourceResponse } from "../../request";
 import { Conflict, Conflicts } from "../Conflict";
@@ -176,6 +177,12 @@ export class Container {
       headers,
       statusCode
     );
+  }
+
+  public async getQueryPlan(query: string | SqlQuerySpec) {
+    const path = getPathFromLink(this.url);
+    console.log(path + "/docs");
+    return this.clientContext.getQueryPlan(path + "/docs", ResourceType.item, getIdFromLink(this.url), query);
   }
 
   public readPartitionKeyRanges(feedOptions?: FeedOptions): QueryIterator<PartitionKeyRange> {

@@ -1,9 +1,9 @@
 import assert from "assert";
 import { Constants, PartitionKind } from "../../dist-esm";
-import { ContainerDefinition, Database } from "../../dist-esm/client";
+import { ContainerDefinition, Database, Container } from "../../dist-esm/client";
 import { ContainerRequest } from "../../dist-esm/client/Container/ContainerRequest";
 import { DataType, Index, IndexedPath, IndexingMode, IndexingPolicy, IndexKind } from "../../dist-esm/documents";
-import { getTestDatabase, removeAllDatabases } from "../common/TestHelpers";
+import { getTestDatabase, removeAllDatabases, getTestContainer } from "../common/TestHelpers";
 
 describe("Containers", function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 10000);
@@ -358,5 +358,18 @@ describe("createIfNotExists", function() {
     const { container } = await database.containers.createIfNotExists(def);
     const { resource: readDef } = await container.read();
     assert.equal(def.id, readDef.id);
+  });
+});
+
+describe.only("getQueryPlan", function() {
+  let container: Container;
+  before(async function() {
+    await removeAllDatabases();
+    container = await getTestContainer("getQueryPlan");
+  });
+
+  it("should handle container does not exist", async function() {
+    const response = await container.getQueryPlan("SELECT * from c");
+    console.log(response);
   });
 });

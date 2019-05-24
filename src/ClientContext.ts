@@ -117,6 +117,48 @@ export class ClientContext {
     return this.processQueryFeedResponse(response, !!query, resultFn);
   }
 
+  public async getQueryPlan(
+    path: string,
+    resourceType: ResourceType,
+    resourceId: string,
+    query: SqlQuerySpec | string,
+    options: FeedOptions = {}
+  ): Promise<Response<Resource>> {
+    // Query operations will use ReadEndpoint even though it uses
+    // GET(for queryFeed) and POST(for regular query operations)
+
+    const request: RequestContext = {
+      globalEndpointManager: this.globalEndpointManager,
+      requestAgent: this.cosmosClientOptions.agent,
+      connectionPolicy: this.connectionPolicy,
+      method: HTTPMethod.post,
+      path,
+      operationType: OperationType.Read,
+      client: this,
+      resourceId,
+      resourceType,
+      options,
+      body: query,
+      plugins: this.cosmosClientOptions.plugins
+    };
+
+    request.endpoint = await this.globalEndpointManager.resolveServiceEndpoint(request);
+    request.headers = await this.buildHeaders(request);
+    request.headers[Constants.HttpHeaders.IsQueryPlan] = "True";
+    request.headers[Constants.HttpHeaders.QueryVersion] = "1.4";
+    request.headers[Constants.HttpHeaders.SupportedQueryFeatures] =
+      "Aggregate, Distinct, MultipleOrderBy, OffsetAndLimit, OrderBy, Top";
+    request.headers[Constants.HttpHeaders.ContentType] = Constants.MediaTypes.QueryJson;
+    if (typeof query === "string") {
+      request.body = { query }; // Converts query text to query object.
+    }
+
+    this.applySessionToken(request);
+    const response = await executeRequest(request);
+    this.captureSessionToken(undefined, path, OperationType.Query, response.headers);
+    return response as any;
+  }
+
   public queryPartitionKeyRanges(collectionLink: string, query?: string | SqlQuerySpec, options?: FeedOptions) {
     const path = getPathFromLink(collectionLink, ResourceType.pkranges);
     const id = getIdFromLink(collectionLink);
