@@ -1,6 +1,6 @@
 /// <reference lib="esnext.asynciterable" />
 import { ClientContext } from "./ClientContext";
-import { ResourceType, getPathFromLink } from "./common";
+import { getPathFromLink, ResourceType } from "./common";
 import {
   CosmosHeaders,
   DefaultQueryExecutionContext,
@@ -153,20 +153,14 @@ export class QueryIterator<T> {
 
   private async ensureQueryPlan() {
     if (!this.queryPlan && this.resourceType === ResourceType.item) {
-      try {
-        const response = await this.clientContext.getQueryPlan(
-          getPathFromLink(this.resourceLink) + "/docs",
-          ResourceType.item,
-          this.resourceLink,
-          this.query
-        );
-        this.queryPlan = response.result;
-        this.queryExecutionContext = this.createPipelinedExecutionContext(this.queryPlan);
-      } catch (e) {
-        console.log(this.resourceLink, this.query);
-        console.log(e);
-        throw new Error(e);
-      }
+      const response = await this.clientContext.getQueryPlan(
+        getPathFromLink(this.resourceLink) + "/docs",
+        ResourceType.item,
+        this.resourceLink,
+        this.query
+      );
+      this.queryPlan = response.result;
+      this.queryExecutionContext = this.createPipelinedExecutionContext(this.queryPlan);
     }
   }
 }
