@@ -1,5 +1,4 @@
 import assert from "assert";
-import * as util from "util";
 import { Container, ContainerDefinition, Database } from "../../dist-esm/client";
 import { DataType, IndexKind, PartitionKind } from "../../dist-esm/documents";
 import { QueryIterator } from "../../dist-esm/index";
@@ -8,13 +7,12 @@ import { FeedOptions } from "../../dist-esm/request";
 import { TestData } from "../common/TestData";
 import { bulkInsertItems, getTestContainer, removeAllDatabases } from "../common/TestHelpers";
 
-describe("NodeJS Aggregate Query Tests", async function() {
+describe.only("NodeJS Aggregate Query Tests", async function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 20000);
   const partitionKey = "key";
   const uniquePartitionKey = "uniquePartitionKey";
   const testdata = new TestData(partitionKey, uniquePartitionKey);
   const documentDefinitions = testdata.docs;
-  let db: Database;
   let container: Container;
 
   const containerDefinition: ContainerDefinition = {
@@ -45,10 +43,6 @@ describe("NodeJS Aggregate Query Tests", async function() {
   const containerOptions = { offerThroughput: 10100 };
 
   describe("Validate Aggregate Document Query", function() {
-    // - removes all the databases,
-    //  - creates a new database,
-    //      - creates a new collecton,
-    //          - bulk inserts documents to the container
     before(async function() {
       await removeAllDatabases();
       container = await getTestContainer(
@@ -57,7 +51,6 @@ describe("NodeJS Aggregate Query Tests", async function() {
         containerDefinition,
         containerOptions
       );
-      db = container.database;
       await bulkInsertItems(container, documentDefinitions);
     });
 
@@ -80,9 +73,6 @@ describe("NodeJS Aggregate Query Tests", async function() {
       options: any,
       expectedResults: any[]
     ) {
-      ////////////////////////////////
-      // validate executeNext()
-      ////////////////////////////////
       const pageSize = options["maxItemCount"];
       const listOfResultPages: any[] = [];
       let totalFetchedResults: any[] = [];
@@ -123,10 +113,6 @@ describe("NodeJS Aggregate Query Tests", async function() {
     };
 
     const ValidateAsyncIterator = async function(queryIterator: QueryIterator<any>, expectedResults: any[]) {
-      ////////////////////////////////
-      // validate AsyncIterator()
-      ////////////////////////////////
-
       const results: any[] = [];
       let completed = false;
       // forEach uses callbacks still, so just wrap in a promise
@@ -155,13 +141,11 @@ describe("NodeJS Aggregate Query Tests", async function() {
 
     const generateTestConfigs = function() {
       const testConfigs: any[] = [];
-      const aggregateQueryFormat = "SELECT VALUE %s(r.%s) FROM r WHERE %s";
-      const aggregateOrderByQueryFormat = "SELECT VALUE %s(r.%s) FROM r WHERE %s ORDER BY r.%s";
       const aggregateConfigs = [
         {
           operator: "AVG",
           expected: testdata.sum / testdata.numberOfDocumentsWithNumbericId,
-          condition: util.format("IS_NUMBER(r.%s)", partitionKey)
+          condition: `IS_NUMBER(r.${partitionKey})`
         },
         {
           operator: "COUNT",
@@ -173,30 +157,29 @@ describe("NodeJS Aggregate Query Tests", async function() {
         {
           operator: "SUM",
           expected: testdata.sum,
-          condition: util.format("IS_NUMBER(r.%s)", partitionKey)
+          condition: `IS_NUMBER(r.${partitionKey})`
         }
       ];
 
-      aggregateConfigs.forEach(function(config) {
-        let query = util.format(aggregateQueryFormat, config.operator, partitionKey, config.condition);
-        let testName = util.format("%s %s", config.operator, config.condition);
+      aggregateConfigs.forEach(function({ operator, condition, expected }) {
+        let query = `SELECT VALUE ${operator}(r.${partitionKey}) FROM r WHERE ${condition}`;
+        let testName = `${operator} ${condition}`;
+
         testConfigs.push({
           testName,
           query,
-          expected: config.expected
+          expected
         });
 
-        query = util.format(aggregateOrderByQueryFormat, config.operator, partitionKey, config.condition, partitionKey);
-        testName = util.format("%s %s OrderBy", config.operator, config.condition);
+        query = `SELECT VALUE ${operator}(r.${partitionKey}) FROM r WHERE ${condition} ORDER BY ${partitionKey}`;
+        testName = `${operator} ${condition} OrderBy`;
         testConfigs.push({
           testName,
           query,
-          expected: config.expected
+          expected
         });
       });
 
-      const aggregateSinglePartitionQueryFormat = "SELECT VALUE %s(r.%s) FROM r WHERE r.%s = '%s'";
-      const aggregateSinglePartitionQueryFormatSelect = "SELECT %s(r.%s) FROM r WHERE r.%s = '%s'";
       const samePartitionSum =
         (testdata.numberOfDocsWithSamePartitionKey * (testdata.numberOfDocsWithSamePartitionKey + 1)) / 2.0;
       const aggregateSinglePartitionConfigs = [
@@ -216,33 +199,15 @@ describe("NodeJS Aggregate Query Tests", async function() {
         { operator: "SUM", expected: samePartitionSum }
       ];
 
-      aggregateSinglePartitionConfigs.forEach(function(config) {
-        let query = util.format(
-          aggregateSinglePartitionQueryFormat,
-          config.operator,
-          testdata.field,
-          partitionKey,
-          uniquePartitionKey
-        );
-        let testName = util.format("%s SinglePartition %s", config.operator, "SELECT VALUE");
+      aggregateSinglePartitionConfigs.forEach(function({ operator, expected }) {
+        const query = `SELECT VALUE ${operator}(r.${
+          testdata.field
+        }) FROM r WHERE r.${partitionKey} = '${uniquePartitionKey}'`;
+        let testName = `${operator} SinglePartition SELECT VALUE`;
         testConfigs.push({
           testName,
           query,
-          expected: config.expected
-        });
-
-        query = util.format(
-          aggregateSinglePartitionQueryFormatSelect,
-          config.operator,
-          testdata.field,
-          partitionKey,
-          uniquePartitionKey
-        );
-        testName = util.format("%s SinglePartition %s", config.operator, "SELECT");
-        testConfigs.push({
-          testName,
-          query,
-          expected: { $1: config.expected }
+          expected
         });
       });
 
@@ -251,12 +216,8 @@ describe("NodeJS Aggregate Query Tests", async function() {
 
     generateTestConfigs().forEach(function(test) {
       it(test.testName, async function() {
-        try {
-          const expected = test.expected === undefined ? [] : [test.expected];
-          await executeQueryAndValidateResults(test.query, expected);
-        } catch (err) {
-          throw err;
-        }
+        const expected = test.expected === undefined ? [] : [test.expected];
+        await executeQueryAndValidateResults(test.query, expected);
       });
     });
   });
