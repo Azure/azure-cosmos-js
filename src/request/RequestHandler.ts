@@ -76,9 +76,6 @@ async function httpRequest(requestContext: RequestContext) {
       body: result,
       headers
     };
-    if (result.additionalErrorInfo) {
-      errorResponse.body.additionalErrorInfo = JSON.parse(result.additionalErrorInfo);
-    }
     if (Constants.HttpHeaders.ActivityId in headers) {
       errorResponse.activityId = headers[Constants.HttpHeaders.ActivityId];
     }

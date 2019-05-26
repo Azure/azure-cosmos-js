@@ -125,9 +125,6 @@ export class ClientContext {
     query: SqlQuerySpec | string,
     options: FeedOptions = {}
   ): Promise<Response<PartitionedQueryExecutionInfo>> {
-    // Query operations will use ReadEndpoint even though it uses
-    // GET(for queryFeed) and POST(for regular query operations)
-
     const request: RequestContext = {
       globalEndpointManager: this.globalEndpointManager,
       requestAgent: this.cosmosClientOptions.agent,
@@ -157,7 +154,6 @@ export class ClientContext {
     this.applySessionToken(request);
     const response = await executeRequest(request);
     this.captureSessionToken(undefined, path, OperationType.Query, response.headers);
-    console.log(response.result);
     return response as any;
   }
 

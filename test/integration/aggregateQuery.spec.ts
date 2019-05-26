@@ -7,7 +7,7 @@ import { FeedOptions } from "../../dist-esm/request";
 import { TestData } from "../common/TestData";
 import { bulkInsertItems, getTestContainer, removeAllDatabases } from "../common/TestHelpers";
 
-describe.only("NodeJS Aggregate Query Tests", async function() {
+describe("NodeJS Aggregate Query Tests", async function() {
   this.timeout(process.env.MOCHA_TIMEOUT || 20000);
   const partitionKey = "key";
   const uniquePartitionKey = "uniquePartitionKey";
@@ -59,14 +59,9 @@ describe.only("NodeJS Aggregate Query Tests", async function() {
     };
 
     const validateToArray = async function(queryIterator: QueryIterator<any>, expectedResults: any) {
-      try {
-        const { resources: results } = await queryIterator.fetchAll();
-        console.log(results);
-        assert.equal(results.length, expectedResults.length, "invalid number of results");
-        assert.equal(queryIterator.hasMoreResults(), false, "hasMoreResults: no more results is left");
-      } catch (err) {
-        throw err;
-      }
+      const { resources: results } = await queryIterator.fetchAll();
+      assert.equal(results.length, expectedResults.length, "invalid number of results");
+      assert.equal(queryIterator.hasMoreResults(), false, "hasMoreResults: no more results is left");
     };
 
     const validateExecuteNextAndHasMoreResults = async function(
@@ -134,10 +129,10 @@ describe.only("NodeJS Aggregate Query Tests", async function() {
 
       const queryIterator = container.items.query(query, options);
       await validateToArray(queryIterator, expectedResults);
-      // queryIterator.reset();
-      // await validateExecuteNextAndHasMoreResults(queryIterator, options, expectedResults);
-      // queryIterator.reset();
-      // await ValidateAsyncIterator(queryIterator, expectedResults);
+      queryIterator.reset();
+      await validateExecuteNextAndHasMoreResults(queryIterator, options, expectedResults);
+      queryIterator.reset();
+      await ValidateAsyncIterator(queryIterator, expectedResults);
     };
 
     const generateTestConfigs = function() {
