@@ -61,6 +61,7 @@ describe.only("NodeJS Aggregate Query Tests", async function() {
     const validateToArray = async function(queryIterator: QueryIterator<any>, expectedResults: any) {
       try {
         const { resources: results } = await queryIterator.fetchAll();
+        console.log(results);
         assert.equal(results.length, expectedResults.length, "invalid number of results");
         assert.equal(queryIterator.hasMoreResults(), false, "hasMoreResults: no more results is left");
       } catch (err) {
@@ -133,10 +134,10 @@ describe.only("NodeJS Aggregate Query Tests", async function() {
 
       const queryIterator = container.items.query(query, options);
       await validateToArray(queryIterator, expectedResults);
-      queryIterator.reset();
-      await validateExecuteNextAndHasMoreResults(queryIterator, options, expectedResults);
-      queryIterator.reset();
-      await ValidateAsyncIterator(queryIterator, expectedResults);
+      // queryIterator.reset();
+      // await validateExecuteNextAndHasMoreResults(queryIterator, options, expectedResults);
+      // queryIterator.reset();
+      // await ValidateAsyncIterator(queryIterator, expectedResults);
     };
 
     const generateTestConfigs = function() {
@@ -171,7 +172,7 @@ describe.only("NodeJS Aggregate Query Tests", async function() {
           expected
         });
 
-        query = `SELECT VALUE ${operator}(r.${partitionKey}) FROM r WHERE ${condition} ORDER BY ${partitionKey}`;
+        query = `SELECT VALUE ${operator}(r.${partitionKey}) FROM r WHERE ${condition} ORDER BY r.${partitionKey}`;
         testName = `${operator} ${condition} OrderBy`;
         testConfigs.push({
           testName,
