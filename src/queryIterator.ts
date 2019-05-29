@@ -157,7 +157,8 @@ export class QueryIterator<T> {
         getPathFromLink(this.resourceLink) + "/docs",
         ResourceType.item,
         this.resourceLink,
-        this.query
+        this.query,
+        this.options
       );
       this.queryPlan = response.result;
       this.queryExecutionContext = this.createPipelinedExecutionContext(this.queryPlan);

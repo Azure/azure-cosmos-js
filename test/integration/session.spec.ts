@@ -234,6 +234,7 @@ describe("Session Token", function() {
       resourceAddress: container.url,
       resourceType: ResourceType.item
     });
+    console.log("FETCH ALL");
     await queryIterator.fetchAll();
     assert.equal(spy.lastCall.args[0].headers[Constants.HttpHeaders.SessionToken], queryToken);
 
@@ -259,6 +260,7 @@ describe("Session Token", function() {
       resourceType: ResourceType.container,
       resourceId: container.id
     });
+    console.log("DELETE");
     await container.delete();
     assert.equal(
       spy.lastCall.args[0].headers[Constants.HttpHeaders.SessionToken],
