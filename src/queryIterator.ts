@@ -160,6 +160,10 @@ export class QueryIterator<T> {
         this.query,
         this.options
       );
+      const queryInfo = response.result.queryInfo;
+      if (queryInfo.aggregates.length > 0 && queryInfo.hasSelectValue === false) {
+        throw new Error("Aggregate queries must use the VALUE keyword");
+      }
       this.queryPlan = response.result;
       this.queryExecutionContext = this.createPipelinedExecutionContext(this.queryPlan);
     }
