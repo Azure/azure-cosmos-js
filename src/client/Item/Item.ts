@@ -13,6 +13,7 @@ import { ItemResponse } from "./ItemResponse";
  * @see {@link Items} for operations on all items; see `container.items`.
  */
 export class Item {
+  private partitionKey: PartitionKey;
   /**
    * Returns a reference URL to the resource. Used for linking in Permissions.
    */
@@ -29,9 +30,11 @@ export class Item {
   constructor(
     public readonly container: Container,
     public readonly id: string,
-    public partitionKey: PartitionKey,
+    partitionKey: PartitionKey,
     private readonly clientContext: ClientContext
-  ) {}
+  ) {
+    this.partitionKey = partitionKey;
+  }
 
   /**
    * Read the item's definition.
