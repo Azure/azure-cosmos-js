@@ -4,7 +4,7 @@ import { Constants, HTTPMethod, OperationType, ResourceType } from "./common/con
 import { getIdFromLink, getPathFromLink, parseLink } from "./common/helper";
 import { StatusCodes, SubStatusCodes } from "./common/statusCodes";
 import { CosmosClientOptions } from "./CosmosClientOptions";
-import { ConnectionPolicy, ConsistencyLevel, DatabaseAccount } from "./documents";
+import { ConnectionPolicy, ConsistencyLevel, DatabaseAccount, PartitionKey } from "./documents";
 import { GlobalEndpointManager } from "./globalEndpointManager";
 import { executePlugins, PluginOn } from "./plugins/Plugin";
 import { FetchFunctionCallback, SqlQuerySpec } from "./queryExecutionContext";
@@ -37,12 +37,19 @@ export class ClientContext {
     this.partitionKeyDefinitionCache = {};
   }
   /** @ignore */
-  public async read<T>(
-    path: string,
-    resourceType: ResourceType,
-    resourceId: string,
-    options: RequestOptions = {}
-  ): Promise<Response<T & Resource>> {
+  public async read<T>({
+    path,
+    resourceType,
+    resourceId,
+    options = {},
+    partitionKey
+  }: {
+    path: string;
+    resourceType: ResourceType;
+    resourceId: string;
+    options?: RequestOptions;
+    partitionKey?: PartitionKey;
+  }): Promise<Response<T & Resource>> {
     try {
       const request: RequestContext = {
         globalEndpointManager: this.globalEndpointManager,
@@ -55,7 +62,8 @@ export class ClientContext {
         resourceId,
         options,
         resourceType,
-        plugins: this.cosmosClientOptions.plugins
+        plugins: this.cosmosClientOptions.plugins,
+        partitionKey
       };
 
       request.headers = await this.buildHeaders(request);
@@ -72,15 +80,27 @@ export class ClientContext {
     }
   }
 
-  public async queryFeed<T>(
-    path: string,
-    resourceType: ResourceType,
-    resourceId: string,
-    resultFn: (result: { [key: string]: any }) => any[], // TODO: any
-    query: SqlQuerySpec | string,
-    options: FeedOptions,
-    partitionKeyRangeId?: string
-  ): Promise<Response<T & Resource>> {
+  public async queryFeed<T>({
+    path,
+    resourceType,
+    resourceId,
+    resultFn,
+    query,
+    options,
+    partitionKeyRangeId
+  }: {
+    path: string;
+    resourceType: ResourceType;
+    resourceId: string;
+    resultFn: (
+      result: {
+        [key: string]: any;
+      }
+    ) => any[];
+    query: SqlQuerySpec | string;
+    options: FeedOptions;
+    partitionKeyRangeId?: string;
+  }): Promise<Response<T & Resource>> {
     // Query operations will use ReadEndpoint even though it uses
     // GET(for queryFeed) and POST(for regular query operations)
 
@@ -97,7 +117,8 @@ export class ClientContext {
       resourceType,
       options,
       body: query,
-      plugins: this.cosmosClientOptions.plugins
+      plugins: this.cosmosClientOptions.plugins,
+      partitionKey: options.partitionKey
     };
 
     if (query !== undefined) {
@@ -161,17 +182,31 @@ export class ClientContext {
     const path = getPathFromLink(collectionLink, ResourceType.pkranges);
     const id = getIdFromLink(collectionLink);
     const cb: FetchFunctionCallback = innerOptions => {
-      return this.queryFeed(path, ResourceType.pkranges, id, result => result.PartitionKeyRanges, query, innerOptions);
+      return this.queryFeed({
+        path,
+        resourceType: ResourceType.pkranges,
+        resourceId: id,
+        resultFn: result => result.PartitionKeyRanges,
+        query,
+        options: innerOptions
+      });
     };
     return new QueryIterator<PartitionKeyRange>(this, query, options, cb);
   }
 
-  public async delete<T>(
-    path: string,
-    resourceType: ResourceType,
-    resourceId: string,
-    options: RequestOptions = {}
-  ): Promise<Response<T & Resource>> {
+  public async delete<T>({
+    path,
+    resourceType,
+    resourceId,
+    options = {},
+    partitionKey
+  }: {
+    path: string;
+    resourceType: ResourceType;
+    resourceId: string;
+    options?: RequestOptions;
+    partitionKey?: PartitionKey;
+  }): Promise<Response<T & Resource>> {
     try {
       const request: RequestContext = {
         globalEndpointManager: this.globalEndpointManager,
@@ -184,7 +219,8 @@ export class ClientContext {
         resourceType,
         options,
         resourceId,
-        plugins: this.cosmosClientOptions.plugins
+        plugins: this.cosmosClientOptions.plugins,
+        partitionKey
       };
 
       request.headers = await this.buildHeaders(request);
@@ -204,13 +240,21 @@ export class ClientContext {
     }
   }
 
-  public async create<T, U = T>(
-    body: T,
-    path: string,
-    resourceType: ResourceType,
-    resourceId: string,
-    options: RequestOptions = {}
-  ): Promise<Response<T & U & Resource>> {
+  public async create<T, U = T>({
+    body,
+    path,
+    resourceType,
+    resourceId,
+    options = {},
+    partitionKey
+  }: {
+    body: T;
+    path: string;
+    resourceType: ResourceType;
+    resourceId: string;
+    options?: RequestOptions;
+    partitionKey?: PartitionKey;
+  }): Promise<Response<T & U & Resource>> {
     try {
       const request: RequestContext = {
         globalEndpointManager: this.globalEndpointManager,
@@ -224,7 +268,8 @@ export class ClientContext {
         resourceId,
         body,
         options,
-        plugins: this.cosmosClientOptions.plugins
+        plugins: this.cosmosClientOptions.plugins,
+        partitionKey
       };
 
       request.headers = await this.buildHeaders(request);
@@ -280,13 +325,21 @@ export class ClientContext {
     }
   }
 
-  public async replace<T>(
-    body: any,
-    path: string,
-    resourceType: ResourceType,
-    resourceId: string,
-    options: RequestOptions = {}
-  ): Promise<Response<T & Resource>> {
+  public async replace<T>({
+    body,
+    path,
+    resourceType,
+    resourceId,
+    options = {},
+    partitionKey
+  }: {
+    body: any;
+    path: string;
+    resourceType: ResourceType;
+    resourceId: string;
+    options?: RequestOptions;
+    partitionKey?: PartitionKey;
+  }): Promise<Response<T & Resource>> {
     try {
       const request: RequestContext = {
         globalEndpointManager: this.globalEndpointManager,
@@ -300,7 +353,8 @@ export class ClientContext {
         body,
         resourceId,
         options,
-        plugins: this.cosmosClientOptions.plugins
+        plugins: this.cosmosClientOptions.plugins,
+        partitionKey
       };
 
       request.headers = await this.buildHeaders(request);
@@ -317,13 +371,21 @@ export class ClientContext {
     }
   }
 
-  public async upsert<T, U = T>(
-    body: T,
-    path: string,
-    resourceType: ResourceType,
-    resourceId: string,
-    options: RequestOptions = {}
-  ): Promise<Response<T & U & Resource>> {
+  public async upsert<T, U = T>({
+    body,
+    path,
+    resourceType,
+    resourceId,
+    options = {},
+    partitionKey
+  }: {
+    body: T;
+    path: string;
+    resourceType: ResourceType;
+    resourceId: string;
+    options?: RequestOptions;
+    partitionKey?: PartitionKey;
+  }): Promise<Response<T & U & Resource>> {
     try {
       const request: RequestContext = {
         globalEndpointManager: this.globalEndpointManager,
@@ -337,7 +399,8 @@ export class ClientContext {
         body,
         resourceId,
         options,
-        plugins: this.cosmosClientOptions.plugins
+        plugins: this.cosmosClientOptions.plugins,
+        partitionKey
       };
 
       request.headers = await this.buildHeaders(request);
@@ -355,11 +418,17 @@ export class ClientContext {
     }
   }
 
-  public async execute<T>(
-    sprocLink: string,
-    params?: any[], // TODO: any
-    options: RequestOptions = {}
-  ): Promise<Response<T>> {
+  public async execute<T>({
+    sprocLink,
+    params,
+    options = {},
+    partitionKey
+  }: {
+    sprocLink: string;
+    params?: any[];
+    options?: RequestOptions;
+    partitionKey?: PartitionKey;
+  }): Promise<Response<T>> {
     // Accept a single parameter or an array of parameters.
     // Didn't add type annotation for this because we should legacy this behavior
     if (params !== null && params !== undefined && !Array.isArray(params)) {
@@ -380,7 +449,8 @@ export class ClientContext {
       options,
       resourceId: id,
       body: params,
-      plugins: this.cosmosClientOptions.plugins
+      plugins: this.cosmosClientOptions.plugins,
+      partitionKey
     };
 
     request.headers = await this.buildHeaders(request);
@@ -494,7 +564,8 @@ export class ClientContext {
       resourceType: requestContext.resourceType,
       options: requestContext.options,
       partitionKeyRangeId: requestContext.partitionKeyRangeId,
-      useMultipleWriteLocations: this.connectionPolicy.useMultipleWriteLocations
+      useMultipleWriteLocations: this.connectionPolicy.useMultipleWriteLocations,
+      partitionKey: requestContext.partitionKey
     });
   }
 }
