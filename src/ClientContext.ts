@@ -87,7 +87,8 @@ export class ClientContext {
     resultFn,
     query,
     options,
-    partitionKeyRangeId
+    partitionKeyRangeId,
+    partitionKey
   }: {
     path: string;
     resourceType: ResourceType;
@@ -100,6 +101,7 @@ export class ClientContext {
     query: SqlQuerySpec | string;
     options: FeedOptions;
     partitionKeyRangeId?: string;
+    partitionKey?: PartitionKey;
   }): Promise<Response<T & Resource>> {
     // Query operations will use ReadEndpoint even though it uses
     // GET(for queryFeed) and POST(for regular query operations)
@@ -118,7 +120,7 @@ export class ClientContext {
       options,
       body: query,
       plugins: this.cosmosClientOptions.plugins,
-      partitionKey: options.partitionKey
+      partitionKey
     };
 
     if (query !== undefined) {
