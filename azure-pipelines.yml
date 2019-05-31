@@ -57,12 +57,9 @@ jobs:
       - script: npm install
         displayName: "npm install"
 
-      - script: npm run build
-        displayName: "npm run build"
-
-      - bash: ACCOUNT_HOST=$COSMOSDBEMULATOR_ENDPOINT NODE_TLS_REJECT_UNAUTHORIZED="0" npm run test
+      - bash: npm run ci
         failOnStderr: true
-        displayName: "npm test"
+        displayName: "npm build and test"
         env:
           MOCHA_TIMEOUT: 100000
   # - job: NightlyEmulator
