@@ -1,5 +1,6 @@
 ﻿import * as http from "http";
 import * as net from "net";
+import { URL } from "url";
 import ProxyAgent from "proxy-agent";
 import { CosmosClient } from "../../dist-esm/index";
 import { endpoint, masterKey } from "../common/_testConfig";
@@ -7,7 +8,7 @@ import { addEntropy } from "../common/TestHelpers";
 
 const isBrowser = new Function("try {return this===window;}catch(e){ return false;}");
 if (!isBrowser()) {
-  describe("Validate http proxy setting in environment variable", function() {
+  describe.only("Validate http proxy setting in environment variable", function() {
     const proxy = http.createServer((req, resp) => {
       resp.writeHead(200, { "Content-Type": "text/plain" });
       resp.end();
