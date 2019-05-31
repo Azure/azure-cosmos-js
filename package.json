@@ -32,7 +32,7 @@
     "test": "tsc -b --verbose && mocha -r esm -r dotenv/config -r ./test/common/setup.js \"./test/**/*.spec.js\" --timeout 100000",
     "prepack": "npm install && npm run build",
     "test-browser": "karma start ./karma.config.js --single-run",
-    "ci": "npm run build && npm run test -- --forbid-only && node consumer-test.js"
+    "test:ci": "npm run test -- --forbid-only && node consumer-test.js"
   },
   "devDependencies": {
     "@microsoft/api-extractor": "6.3.0",

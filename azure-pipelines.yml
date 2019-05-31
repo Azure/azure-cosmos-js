@@ -57,9 +57,12 @@ jobs:
       - script: npm install
         displayName: "npm install"
 
-      - bash: npm run ci
+      - script: npm run build
+        displayName: "npm run build"
+
+      - bash: npm run test:ci
         failOnStderr: true
-        displayName: "npm build and test"
+        displayName: "npm test:ci"
         env:
           MOCHA_TIMEOUT: 100000
   # - job: NightlyEmulator
