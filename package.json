@@ -86,7 +86,8 @@
     "node-fetch": "2.3.0",
     "priorityqueuejs": "1.0.0",
     "semaphore": "1.0.5",
-    "tslib": "^1.9.3"
+    "tslib": "^1.9.3",
+    "universal-user-agent": "2.1.0"
   },
   "repository": {
     "type": "git",
