@@ -74,7 +74,6 @@ export class SessionContainer {
   private validateOwnerID(ownerId: string) {
     // If ownerId contains exactly 8 bytes it represents a unique database+collection identifier. Otherwise it represents another resource
     // The first 4 bytes are the database. The last 4 bytes are the collection.
-    Buffer.from("sdsd");
     return atob(ownerId).length === 8;
   }
 
