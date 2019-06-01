@@ -17,8 +17,7 @@
     "resolveJsonModule": true,
     "composite": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "types": []
+    "noUnusedParameters": true
   },
   "include": ["./**/*"]
 }
