@@ -1,6 +1,6 @@
 import assert from "assert";
 import { Container, ContainerDefinition, Database } from "../../dist-esm/client";
-import { DataType, IndexKind, PartitionKind } from "../../dist-esm/documents";
+import { DataType, IndexKind } from "../../dist-esm/documents";
 import { QueryIterator } from "../../dist-esm/index";
 import { SqlQuerySpec } from "../../dist-esm/queryExecutionContext";
 import { FeedOptions } from "../../dist-esm/request";
@@ -35,8 +35,7 @@ describe("Aggregate Query", function() {
       ]
     },
     partitionKey: {
-      paths: ["/" + partitionKey],
-      kind: PartitionKind.Hash
+      paths: ["/" + partitionKey]
     }
   };
 

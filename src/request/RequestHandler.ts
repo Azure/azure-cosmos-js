@@ -72,11 +72,12 @@ async function httpRequest(requestContext: RequestContext) {
   });
 
   if (response.status >= 400) {
-    const errorResponse: ErrorResponse = {
-      code: response.status,
-      body: result,
-      headers
-    };
+    const errorResponse: ErrorResponse = new Error();
+
+    errorResponse.code = response.status;
+    errorResponse.body = result;
+    errorResponse.headers = headers;
+
     if (Constants.HttpHeaders.ActivityId in headers) {
       errorResponse.activityId = headers[Constants.HttpHeaders.ActivityId];
     }

@@ -11,7 +11,7 @@
     "database",
     "cloud"
   ],
-  "version": "3.0.0-16",
+  "version": "3.0.0-18",
   "author": "Microsoft Corporation",
   "main": "./dist/index.js",
   "module": "./dist-esm/src/index.js",
@@ -32,7 +32,7 @@
     "test": "tsc -b --verbose && mocha -r esm -r dotenv/config -r ./test/common/setup.js \"./test/**/*.spec.js\" --timeout 100000",
     "prepack": "npm install && npm run build",
     "test-browser": "karma start ./karma.config.js --single-run",
-    "ci": "npm run build && npm run test -- --forbid-only && node consumer-test.js"
+    "test-consumer": "node consumer-test.js"
   },
   "devDependencies": {
     "@microsoft/api-extractor": "6.3.0",
@@ -75,10 +75,11 @@
     "tslint": "5.16.0",
     "tslint-config-prettier": "^1.14.0",
     "typedoc": "0.14.2",
-    "typescript": "3.4.5"
+    "typescript": "3.5.1"
   },
   "dependencies": {
     "@azure/cosmos-sign": "1.0.2",
+    "atob": "2.1.2",
     "binary-search-bounds": "2.0.3",
     "crypto-hash": "1.1.0",
     "fast-json-stable-stringify": "2.0.0",
@@ -86,7 +87,8 @@
     "node-fetch": "2.3.0",
     "priorityqueuejs": "1.0.0",
     "semaphore": "1.0.5",
-    "tslib": "^1.9.3"
+    "tslib": "^1.9.3",
+    "universal-user-agent": "2.1.0"
   },
   "repository": {
     "type": "git",

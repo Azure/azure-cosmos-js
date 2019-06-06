@@ -31,7 +31,7 @@ interface QueryInfo {
   hasSelectValue: boolean;
 }
 
-export interface ErrorResponse {
+export interface ErrorResponse extends Error {
   code?: number;
   substatus?: number;
   body?: ErrorBody;
