@@ -93,16 +93,15 @@ describe("Queries", function() {
       assert.equal(docs2.length, 1, "second batch size is unexpected");
       assert.equal(docs2[0].id, resources.doc3.id, "second batch element should be doc3");
 
-      // TODO: Continuation tokens are no longer returned by fetchNext because it goes down the pipelines execution context path - stfaul
-      // // validate Iterator.executeNext with continuation token
-      // queryIterator = resources.container.items.readAll({
-      //   maxItemCount: 2,
-      //   continuation: firstResponse.continuation as string
-      // });
-      // const secondResponse = await queryIterator.fetchNext();
-      // assert(secondResponse.requestCharge > 0, "RequestCharge has to be non-zero");
-      // assert.equal(secondResponse.resources.length, 1, "second batch size with continuation token is unexpected");
-      // assert.equal(secondResponse.resources[0].id, resources.doc3.id, "second batch element should be doc3");
+      // validate Iterator.executeNext with continuation token
+      queryIterator = resources.container.items.readAll({
+        maxItemCount: 2,
+        continuation: firstResponse.continuation as string
+      });
+      const secondResponse = await queryIterator.fetchNext();
+      assert(secondResponse.requestCharge > 0, "RequestCharge has to be non-zero");
+      assert.equal(secondResponse.resources.length, 1, "second batch size with continuation token is unexpected");
+      assert.equal(secondResponse.resources[0].id, resources.doc3.id, "second batch element should be doc3");
     });
   });
 });
