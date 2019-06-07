@@ -56,7 +56,7 @@ describe("Test Query Metrics", function() {
 
       await createdContainer.items.create(document);
       const query = "SELECT * from " + collectionId;
-      const queryOptions: FeedOptions = { populateQueryMetrics: true, enableCrossPartitionQuery: true };
+      const queryOptions: FeedOptions = { populateQueryMetrics: true };
       const queryIterator = createdContainer.items.query(query, queryOptions);
 
       while (queryIterator.hasMoreResults()) {

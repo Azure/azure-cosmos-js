@@ -118,9 +118,7 @@ export async function getHeaders({
     headers[Constants.HttpHeaders.EnableScanInQuery] = options.enableScanInQuery;
   }
 
-  if (options.enableCrossPartitionQuery) {
-    headers[Constants.HttpHeaders.EnableCrossPartitionQuery] = options.enableCrossPartitionQuery;
-  }
+  headers[Constants.HttpHeaders.EnableCrossPartitionQuery] = true;
 
   if (options.populateQuotaInfo) {
     headers[Constants.HttpHeaders.PopulateQuotaInfo] = options.populateQuotaInfo;

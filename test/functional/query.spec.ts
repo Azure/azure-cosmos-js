@@ -82,7 +82,9 @@ describe("Queries", function() {
     });
 
     it("executeNext", async function() {
-      let queryIterator = resources.container.items.readAll({ maxItemCount: 2 });
+      let queryIterator = resources.container.items.readAll({
+        maxItemCount: 2
+      });
       const firstResponse = await queryIterator.fetchNext();
 
       assert(firstResponse.requestCharge > 0, "RequestCharge has to be non-zero");

@@ -115,7 +115,7 @@ describe("Aggregate Query", function() {
   };
 
   const executeQueryAndValidateResults = async function(query: string | SqlQuerySpec, expectedResults: any[]) {
-    const options: FeedOptions = { enableCrossPartitionQuery: true, maxDegreeOfParallelism: 2, maxItemCount: 1 };
+    const options: FeedOptions = { maxDegreeOfParallelism: 2, maxItemCount: 1 };
 
     const queryIterator = container.items.query(query, options);
     await validateToArray(queryIterator, expectedResults);
@@ -209,9 +209,7 @@ describe("Aggregate Query", function() {
 
   it("should error for non-VALUE queries", async () => {
     try {
-      const queryIterator = container.items.query("SELECT SUM(r.key) from r WHERE IS_NUMBER(r.key)", {
-        enableCrossPartitionQuery: true
-      });
+      const queryIterator = container.items.query("SELECT SUM(r.key) from r WHERE IS_NUMBER(r.key)");
       const response = await queryIterator.fetchAll();
       assert.fail("Should throw an error");
     } catch (error) {

@@ -72,7 +72,7 @@ async function httpRequest(requestContext: RequestContext) {
   });
 
   if (response.status >= 400) {
-    const errorResponse: ErrorResponse = new Error();
+    const errorResponse: ErrorResponse = new Error(result.message);
 
     errorResponse.code = response.status;
     errorResponse.body = result;
