@@ -96,7 +96,7 @@ describe("Queries", function() {
       // validate Iterator.executeNext with continuation token
       queryIterator = resources.container.items.readAll({
         maxItemCount: 2,
-        continuation: firstResponse.continuation as string
+        continuation: firstResponse.continuation
       });
       const secondResponse = await queryIterator.fetchNext();
       assert(secondResponse.requestCharge > 0, "RequestCharge has to be non-zero");
