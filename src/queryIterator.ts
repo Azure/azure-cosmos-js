@@ -69,7 +69,7 @@ export class QueryIterator<T> {
    */
   public async *getAsyncIterator(): AsyncIterable<FeedResponse<T>> {
     this.reset();
-    this.fetchQueryPlan();
+    this.queryPlanPromise = this.fetchQueryPlan();
     while (this.queryExecutionContext.hasMoreResults()) {
       let response: Response<any>;
       try {
@@ -120,7 +120,7 @@ export class QueryIterator<T> {
    * before returning the first batch of responses.
    */
   public async fetchNext(): Promise<FeedResponse<T>> {
-    this.fetchQueryPlan();
+    this.queryPlanPromise = this.fetchQueryPlan();
     let response: Response<any>;
     try {
       response = await this.queryExecutionContext.fetchMore();
@@ -144,7 +144,7 @@ export class QueryIterator<T> {
   }
 
   private async toArrayImplementation(): Promise<FeedResponse<T>> {
-    this.fetchQueryPlan();
+    this.queryPlanPromise = this.fetchQueryPlan();
 
     while (this.queryExecutionContext.hasMoreResults()) {
       let response: Response<any>;
@@ -191,7 +191,7 @@ export class QueryIterator<T> {
 
   private async fetchQueryPlan() {
     if (!this.queryPlanPromise && this.resourceType === ResourceType.item) {
-      this.queryPlanPromise = this.clientContext.getQueryPlan(
+      return this.clientContext.getQueryPlan(
         getPathFromLink(this.resourceLink) + "/docs",
         ResourceType.item,
         this.resourceLink,
@@ -199,6 +199,7 @@ export class QueryIterator<T> {
         this.options
       );
     }
+    return this.queryPlanPromise;
   }
 
   private needsQueryPlan(error: any): error is ErrorResponse {
