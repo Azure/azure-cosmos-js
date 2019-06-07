@@ -1,7 +1,7 @@
 import { generateHeaders } from "@azure/cosmos-sign";
 import { Constants, getResourceIdFromPath, HTTPMethod, ResourceType } from "./common";
-import { CosmosHeaders } from "./queryExecutionContext";
 import { CosmosClientOptions } from "./CosmosClientOptions";
+import { CosmosHeaders } from "./queryExecutionContext";
 
 /** @hidden */
 export interface RequestInfo {
