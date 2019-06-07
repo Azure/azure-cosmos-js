@@ -50,7 +50,7 @@ export async function getHeaders({
   useMultipleWriteLocations,
   partitionKey
 }: GetHeadersOptions): Promise<CosmosHeaders> {
-  const headers: CosmosHeaders = { ...defaultHeaders };
+  const headers: CosmosHeaders = { [Constants.HttpHeaders.EnableCrossPartitionQuery]: true, ...defaultHeaders };
 
   if (useMultipleWriteLocations) {
     headers[Constants.HttpHeaders.ALLOW_MULTIPLE_WRITES] = true;
@@ -117,8 +117,6 @@ export async function getHeaders({
   if (options.enableScanInQuery) {
     headers[Constants.HttpHeaders.EnableScanInQuery] = options.enableScanInQuery;
   }
-
-  headers[Constants.HttpHeaders.EnableCrossPartitionQuery] = true;
 
   if (options.populateQuotaInfo) {
     headers[Constants.HttpHeaders.PopulateQuotaInfo] = options.populateQuotaInfo;
