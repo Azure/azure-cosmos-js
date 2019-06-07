@@ -16,7 +16,7 @@ import { RequestContext } from "../../dist-esm/request/RequestContext";
 
 const client = new CosmosClient({
   endpoint,
-  auth: { masterKey },
+  key: masterKey,
   consistencyLevel: ConsistencyLevel.Session
 });
 
@@ -311,7 +311,7 @@ describe("Session Token", function() {
   it.skip("client should not have session token of a container created by another client", async function() {
     const client2 = new CosmosClient({
       endpoint,
-      auth: { masterKey },
+      key: masterKey,
       consistencyLevel: ConsistencyLevel.Session
     });
     const database = await getTestDatabase("clientshouldnothaveanotherclienttoken");
@@ -334,7 +334,7 @@ describe("Session Token", function() {
   it("validate session container update on 'Not found' with 'undefined' status code for non master resource", async function() {
     const client2 = new CosmosClient({
       endpoint,
-      auth: { masterKey },
+      key: masterKey,
       consistencyLevel: ConsistencyLevel.Session
     });
 
