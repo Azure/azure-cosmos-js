@@ -125,7 +125,7 @@ export class Container {
       options
     });
     this.clientContext.partitionKeyDefinitionCache[this.url] = response.result.partitionKey;
-    return new ContainerResponse(response.result, response.headers, response.statusCode, this);
+    return new ContainerResponse(response.result, response.headers, response.code, this);
   }
 
   /** Replace the container's definition */
@@ -145,7 +145,7 @@ export class Container {
       resourceId: id,
       options
     });
-    return new ContainerResponse(response.result, response.headers, response.statusCode, this);
+    return new ContainerResponse(response.result, response.headers, response.code, this);
   }
 
   /** Delete the container */
@@ -159,7 +159,7 @@ export class Container {
       resourceId: id,
       options
     });
-    return new ContainerResponse(response.result, response.headers, response.statusCode, this);
+    return new ContainerResponse(response.result, response.headers, response.code, this);
   }
 
   /**

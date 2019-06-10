@@ -210,7 +210,7 @@ export class Items {
     });
 
     const ref = new Item(this.container, (response.result as any).id, partitionKey, this.clientContext);
-    return new ItemResponse(response.result, response.headers, response.statusCode, ref);
+    return new ItemResponse(response.result, response.headers, response.code, ref);
   }
 
   /**
@@ -262,6 +262,6 @@ export class Items {
     });
 
     const ref = new Item(this.container, (response.result as any).id, partitionKey, this.clientContext);
-    return new ItemResponse(response.result, response.headers, response.statusCode, ref);
+    return new ItemResponse(response.result, response.headers, response.code, ref);
   }
 }

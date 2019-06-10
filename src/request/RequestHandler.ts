@@ -97,7 +97,7 @@ async function httpRequest(requestContext: RequestContext) {
   return {
     headers,
     result,
-    statusCode: response.status
+    code: response.status
   };
 }
 
