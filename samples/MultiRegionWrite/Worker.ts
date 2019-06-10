@@ -1,5 +1,5 @@
 import { v4 as guid } from "uuid";
-import { Container } from "../../../dist";
+import { Container } from "../../dist-esm";
 
 // tslint:disable:no-console
 export class Worker {

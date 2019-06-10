@@ -1,7 +1,7 @@
 // tslint:disable:no-console
 
 import { v4 as guid } from "uuid";
-import { CosmosClient, Item, ItemDefinition, Items, OperationType, Resource, StatusCode } from "../../../dist";
+import { CosmosClient, Item, ItemDefinition, Items, OperationType, Resource, StatusCodes } from "../../dist-esm";
 import logger from "./logger";
 import lwwSprocDef from "./lwwSprocDef";
 
@@ -46,7 +46,7 @@ export class ConflictWorker {
     });
 
     // See ./lwwSprocDef for the stored procedure definition include the logic
-    const { sproc: lwwSproc } = await udpContainer.storedProcedures.upsert(lwwSprocDef);
+    const { sproc: lwwSproc } = await udpContainer.scripts.storedProcedures.upsert(lwwSprocDef);
   }
 
   public async RunManualConflict() {
@@ -253,7 +253,7 @@ export class ConflictWorker {
               console.log(`Document from region ${item.regionId} won the conflict @ ${clientRegion}`);
               return false;
             } catch (err) {
-              if (err.code && err.code === StatusCode.NotFound) {
+              if (err.code && err.code === StatusCodes.NotFound) {
                 console.log(`Item from region ${item.regionId} not found @ ${clientRegion}`);
               }
             }
@@ -419,7 +419,7 @@ export class ConflictWorker {
         try {
           await container.item(items[0].id, undefined).read();
         } catch (err) {
-          if (err.code === StatusCode.NotFound) {
+          if (err.code === StatusCodes.NotFound) {
             console.log(`Delete conflict won @ ${regionName}`);
             return;
           }
@@ -598,7 +598,7 @@ export class ConflictWorker {
         try {
           const { resource: shouldNotExist } = await container.item(items[0].id, undefined).read();
         } catch (err) {
-          if (err.code === StatusCode.NotFound) {
+          if (err.code === StatusCodes.NotFound) {
             console.log(`Delete conflict won @ ${regionName}`);
             return;
           }
@@ -636,7 +636,7 @@ export class ConflictWorker {
       return (await items.create(newDef)).resource;
     } catch (err) {
       // Handle conflict error silently
-      if (err.code === StatusCode.Conflict) {
+      if (err.code === StatusCodes.Conflict) {
         return null;
       }
       throw err;
@@ -653,7 +653,7 @@ export class ConflictWorker {
         }
       })).resource;
     } catch (err) {
-      if (err.code === StatusCode.PreconditionFailed || err.code === StatusCode.NotFound) {
+      if (err.code === StatusCodes.PreconditionFailed || err.code === StatusCodes.NotFound) {
         console.log(`${await item.container.database.client.getWriteEndpoint()} hit ${err.code} at ${time}`);
         return null; // Lost synchronously or not document yet. No conflict is induced.
       } else {
@@ -673,7 +673,7 @@ export class ConflictWorker {
       });
       return newDef;
     } catch (err) {
-      if (err.code === StatusCode.PreconditionFailed || err.code === StatusCode.NotFound) {
+      if (err.code === StatusCodes.PreconditionFailed || err.code === StatusCodes.NotFound) {
         return null; // Lost synchronously or not document yet. No conflict is induced.
       } else {
         throw new Error(err);
