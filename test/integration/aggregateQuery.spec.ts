@@ -216,4 +216,14 @@ describe("Aggregate Query", function() {
       assert(error);
     }
   });
+
+  it("should error for GROUP BY queries", async () => {
+    try {
+      const queryIterator = container.items.query("SELECT * from r GROUP BY r.key");
+      const response = await queryIterator.fetchAll();
+      assert.fail("Should throw an error");
+    } catch (error) {
+      assert(error);
+    }
+  });
 });
