@@ -61,7 +61,6 @@ describe("Test Query Metrics", function() {
 
       while (queryIterator.hasMoreResults()) {
         const { resources: results, queryMetrics, activityId, requestCharge } = await queryIterator.fetchNext();
-        // TODO: stfaul - plumb activityId and requestCharge through the iterator and renable these
         assert(activityId, "activityId must exist");
         assert(requestCharge, "requestCharge must exist");
 
