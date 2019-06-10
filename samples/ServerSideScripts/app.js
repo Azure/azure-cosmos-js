@@ -10,7 +10,7 @@ console.log();
 /*jshint node:true */
 ("use strict");
 
-const cosmos = require("../../dist/");
+const cosmos = require("../../../dist/");
 const CosmosClient = cosmos.CosmosClient;
 const config = require("../Shared/config");
 const fs = require("fs");

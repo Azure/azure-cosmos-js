@@ -1,5 +1,5 @@
 import { v4 as guid } from "uuid";
-import { Container, CosmosClient } from "../../dist";
+import { Container } from "../../../dist";
 
 // tslint:disable:no-console
 export class Worker {

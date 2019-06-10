@@ -1,7 +1,7 @@
 // tslint:disable:no-console
 
 import { v4 as guid } from "uuid";
-import { CosmosClient, Item, ItemDefinition, Items, OperationType, Resource, StatusCode } from "../../dist";
+import { CosmosClient, Item, ItemDefinition, Items, OperationType, Resource, StatusCode } from "../../../dist";
 import logger from "./logger";
 import lwwSprocDef from "./lwwSprocDef";
 
@@ -46,7 +46,7 @@ export class ConflictWorker {
     });
 
     // See ./lwwSprocDef for the stored procedure definition include the logic
-    const { sproc: lwwSproc } = await udpContainer.scripts.storedProcedures.upsert(lwwSprocDef);
+    const { sproc: lwwSproc } = await udpContainer.storedProcedures.upsert(lwwSprocDef);
   }
 
   public async RunManualConflict() {

@@ -1,4 +1,4 @@
-import { ConnectionPolicy, ConsistencyLevel, CosmosClient } from "../../dist";
+import { ConsistencyLevel, CosmosClient } from "../../../dist";
 import config from "./config";
 import { ConflictWorker } from "./ConflictWorker";
 import { Worker } from "./Worker";
