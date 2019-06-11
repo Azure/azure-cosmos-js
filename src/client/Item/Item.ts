@@ -11,9 +11,9 @@ import { PartitionKey } from "../../documents";
 import { extractPartitionKey, undefinedPartitionKey } from "../../extractPartitionKey";
 import { RequestOptions, Response } from "../../request";
 import { Container } from "../Container";
+import { Resource } from "../Resource";
 import { ItemDefinition } from "./ItemDefinition";
 import { ItemResponse } from "./ItemResponse";
-import { Resource } from "../Resource";
 
 /**
  * Used to perform operations on a specific item.
