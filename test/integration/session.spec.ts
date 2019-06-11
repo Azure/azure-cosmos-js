@@ -294,7 +294,7 @@ describe("Session Token", function() {
     const applySessionTokenStub = sinon.stub(clientContext as any, "applySessionToken").callsFake(callbackSpy as any);
     const resp = await container.item("1", "1").read();
     assert.equal(resp.resource, undefined);
-    assert.equal(resp.substatusCode, 1002, "Substatus should indicate the LSN didn't catchup.");
+    assert.equal(resp.substatus, 1002, "Substatus should indicate the LSN didn't catchup.");
     assert.equal(callbackSpy.callCount, 1);
     assert.equal(trimSlashes(callbackSpy.lastCall.args[0].path), containerLink + "/docs/1");
     applySessionTokenStub.restore();
@@ -352,7 +352,7 @@ describe("Session Token", function() {
     const resp = await createdContainer.item(createdDocument.id, "1").read();
     assert.equal(resp.resource, undefined);
     assert.equal(resp.statusCode, 404, "expecting 404 (Not found)");
-    assert.equal(resp.substatusCode, undefined, "expecting substatus code to be undefined");
+    assert.equal(resp.substatus, undefined, "expecting substatus code to be undefined");
     assert.equal(setSessionTokenSpy.callCount, 1, "unexpected number of calls to sesSessionToken");
     setSessionTokenSpy.restore();
   });
