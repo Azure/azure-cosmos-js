@@ -92,7 +92,7 @@ export class Item {
       response = error;
     }
 
-    return new ItemResponse(response.result, response.headers, response.code, this);
+    return new ItemResponse(response.result, response.headers, response.code, response.substatusCode, this);
   }
 
   /**
@@ -138,7 +138,7 @@ export class Item {
       options,
       partitionKey: this.partitionKey
     });
-    return new ItemResponse(response.result, response.headers, response.code, this);
+    return new ItemResponse(response.result, response.headers, response.code, response.substatusCode, this);
   }
 
   /**
@@ -165,6 +165,6 @@ export class Item {
       options,
       partitionKey: this.partitionKey
     });
-    return new ItemResponse(response.result, response.headers, response.code, this);
+    return new ItemResponse(response.result, response.headers, response.code, response.substatusCode, this);
   }
 }

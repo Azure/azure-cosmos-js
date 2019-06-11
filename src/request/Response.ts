@@ -4,4 +4,5 @@ export interface Response<T> {
   headers: CosmosHeaders;
   result?: T;
   code?: number;
+  substatusCode?: number;
 }

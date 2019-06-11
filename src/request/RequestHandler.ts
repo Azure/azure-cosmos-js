@@ -70,8 +70,10 @@ async function httpRequest(requestContext: RequestContext) {
     headers[key] = value;
   });
 
+  const substatusCode = parseInt(headers[Constants.HttpHeaders.SubStatus], 10);
+
   if (response.status >= 400) {
-    const errorResponse: ErrorResponse = new Error();
+    const errorResponse: ErrorResponse = new Error(result.message);
 
     errorResponse.code = response.status;
     errorResponse.body = result;
@@ -85,7 +87,7 @@ async function httpRequest(requestContext: RequestContext) {
     }
 
     if (Constants.HttpHeaders.SubStatus in headers) {
-      errorResponse.substatus = parseInt(headers[Constants.HttpHeaders.SubStatus], 10);
+      errorResponse.substatus = substatusCode;
     }
 
     if (Constants.HttpHeaders.RetryAfterInMilliseconds in headers) {
@@ -97,7 +99,8 @@ async function httpRequest(requestContext: RequestContext) {
   return {
     headers,
     result,
-    code: response.status
+    code: response.status,
+    substatusCode
   };
 }
 
