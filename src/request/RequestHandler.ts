@@ -1,7 +1,8 @@
 import AbortController from "node-abort-controller";
 import fetch, { RequestInit, Response } from "node-fetch";
-import { trimSlashes } from "../common";
+import { isNode, trimSlashes } from "../common";
 import { Constants } from "../common/constants";
+import { Agent } from "../CosmosClientOptions";
 import { executePlugins, PluginOn } from "../plugins/Plugin";
 import * as RetryUtility from "../retry/retryUtility";
 import { ErrorResponse } from "./ErrorResponse";
@@ -9,6 +10,22 @@ import { bodyFromData } from "./request";
 import { RequestContext } from "./RequestContext";
 import { Response as CosmosResponse } from "./Response";
 import { TimeoutError } from "./TimeoutError";
+
+let defaultHttpAgent: Agent;
+let defaultHttpsAgent: Agent;
+
+if (isNode) {
+  // tslint:disable-next-line:no-var-requires
+  const https = require("https");
+  defaultHttpsAgent = new https.Agent({
+    keepAlive: true
+  });
+  // tslint:disable-next-line:no-var-requires
+  const http = require("http");
+  defaultHttpAgent = new http.Agent({
+    keepAlive: true
+  });
+}
 
 /** @hidden */
 export async function executeRequest(requestContext: RequestContext) {
@@ -45,7 +62,12 @@ async function httpRequest(requestContext: RequestContext) {
     response = await fetch(trimSlashes(requestContext.endpoint) + requestContext.path, {
       method: requestContext.method,
       headers: requestContext.headers as any,
-      agent: requestContext.requestAgent,
+      agent: ((parsedUrl: URL) => {
+        if (requestContext.requestAgent) {
+          return requestContext.requestAgent;
+        }
+        return parsedUrl.protocol === "http" ? defaultHttpAgent : defaultHttpsAgent;
+      }) as any, // TODO: Remove any once https://github.com/DefinitelyTyped/DefinitelyTyped/pull/36057/files is merged
       signal,
       body: requestContext.body
     } as RequestInit);
