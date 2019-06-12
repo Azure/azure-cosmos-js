@@ -1,5 +1,5 @@
 import assert from "assert";
-import { CosmosClient, Constants, Container } from "../../dist-esm";
+import { CosmosClient, Constants, Container, PluginConfig } from "../../dist-esm";
 import { removeAllDatabases, getTestContainer } from "../common/TestHelpers";
 import { endpoint, masterKey } from "../common/_testConfig";
 import { ResourceType, HTTPMethod, StatusCodes } from "../../dist-esm/common";
@@ -19,8 +19,8 @@ const legacyClient = new CosmosClient({
         return next(context);
       }
     }
-  ]
-});
+  ] as PluginConfig[]
+} as any);
 
 const client = new CosmosClient({
   endpoint,

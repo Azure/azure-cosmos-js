@@ -1,6 +1,6 @@
 import { CosmosClient } from "../../dist-esm";
 import { RequestContext } from "../../dist-esm/request/RequestContext";
-import { Plugin, Next } from "../../dist-esm/plugins/Plugin";
+import { Plugin, Next, PluginConfig } from "../../dist-esm/plugins/Plugin";
 
 import * as assert from "assert";
 
@@ -33,8 +33,8 @@ describe("Plugin", function() {
           on: "request",
           plugin: sometimesThrow
         }
-      ]
-    });
+      ] as PluginConfig[]
+    } as any);
     const response = await client.database("foo").read();
     assert.equal(requestCount, FAILCOUNT + 1); // Get Database Account + FAILED GET Database + Get Database
     assert.notEqual(response, undefined);
@@ -71,8 +71,8 @@ describe("Plugin", function() {
           on: "operation",
           plugin: alwaysSucceed
         }
-      ]
-    });
+      ] as PluginConfig[]
+    } as any);
     const response = await client.database("foo").read();
     assert.equal(requestCount, 2); // Get Database Account + Get Database
     assert.notEqual(response, undefined);
@@ -115,8 +115,8 @@ describe("Plugin", function() {
           on: "operation",
           plugin: alwaysSucceed
         }
-      ]
-    });
+      ] as PluginConfig[]
+    } as any);
     const response = await client.database("foo").read();
     assert.equal(requestCount, 2); // Get Database Account + Get Database
     assert.equal(responseCount, 2); // Get Database Account + Get Database
