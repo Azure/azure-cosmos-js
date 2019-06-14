@@ -57,7 +57,7 @@ describe("Partition Splits", () => {
               throw error;
             }
             if (partitionKeyRangeId) {
-              partitionKeyRanges.add(partitionKeyRangeId)
+              partitionKeyRanges.add(partitionKeyRangeId);
               console.log(partitionKeyRangeId);
             }
             return next(context);
