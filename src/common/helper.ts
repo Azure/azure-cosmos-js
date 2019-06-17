@@ -1,5 +1,5 @@
-import { Constants, OperationType, ResourceType } from "./constants";
 import { CosmosClientOptions } from "../CosmosClientOptions";
+import { Constants, OperationType, ResourceType } from "./constants";
 
 /** @hidden */
 const Regexes = Constants.RegularExpressions;
