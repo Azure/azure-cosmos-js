@@ -1,4 +1,5 @@
 import { Constants, OperationType, ResourceType } from "./constants";
+import { CosmosClientOptions } from "../CosmosClientOptions";
 
 /** @hidden */
 const Regexes = Constants.RegularExpressions;
@@ -277,4 +278,25 @@ export function getResourceIdFromPath(resourcePath: string) {
   }
 
   return pathSegments[pathSegments.length - 1];
+}
+
+interface ConnectionObject {
+  AccountEndpoint: string;
+  AccountKey: string;
+}
+
+export function parseConnectionString(connectionString: string): CosmosClientOptions {
+  const keyValueStrings = connectionString.split(";");
+  const { AccountEndpoint, AccountKey } = keyValueStrings.reduce(
+    (connectionObject, keyValueString: string) => {
+      const [key, ...value] = keyValueString.split("=");
+      (connectionObject as any)[key] = value.join("=");
+      return connectionObject;
+    },
+    {} as ConnectionObject
+  );
+  return {
+    endpoint: AccountEndpoint,
+    key: AccountKey
+  };
 }

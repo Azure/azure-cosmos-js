@@ -1,6 +1,7 @@
 import { Database, Databases } from "./client/Database";
 import { Offer, Offers } from "./client/Offer";
 import { ClientContext } from "./ClientContext";
+import { parseConnectionString } from "./common";
 import { Constants } from "./common/constants";
 import { getPlatformDefaultHeaders, getUserAgent } from "./common/platform";
 import { CosmosClientOptions } from "./CosmosClientOptions";
@@ -51,7 +52,11 @@ export class CosmosClient {
    */
 
   private clientContext: ClientContext;
-  constructor(private options: CosmosClientOptions) {
+  constructor(options: string | CosmosClientOptions) {
+    if (typeof options === "string") {
+      options = parseConnectionString(options);
+    }
+
     options.connectionPolicy = Object.assign({}, defaultConnectionPolicy, options.connectionPolicy);
 
     options.defaultHeaders = options.defaultHeaders || {};
@@ -68,7 +73,7 @@ export class CosmosClient {
 
     options.defaultHeaders[Constants.HttpHeaders.UserAgent] = getUserAgent();
 
-    const globalEndpointManager = new GlobalEndpointManager(this.options, async (opts: RequestOptions) =>
+    const globalEndpointManager = new GlobalEndpointManager(options, async (opts: RequestOptions) =>
       this.getDatabaseAccount(opts)
     );
     this.clientContext = new ClientContext(options, globalEndpointManager);

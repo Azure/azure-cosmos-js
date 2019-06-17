@@ -31,6 +31,10 @@ describe("NodeJS CRUD Tests", function() {
       });
       assert.ok(client !== undefined, "client shouldn't be undefined if it succeeded");
     });
+    it("Accepts a connection string", function() {
+      const client = new CosmosClient(`AccountEndpoint=${endpoint};AccountKey=${masterKey};`);
+      assert.ok(client !== undefined, "client shouldn't be undefined if it succeeded");
+    });
   });
   describe("Validate user passed AbortController.signal", function() {
     it("should throw exception if aborted during the request", async function() {
