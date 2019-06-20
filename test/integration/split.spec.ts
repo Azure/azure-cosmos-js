@@ -38,7 +38,7 @@ describe("Partition Splits", () => {
     await bulkInsertItems(container, documentDefinitions);
   });
 
-  it.only("handles one split part way through iteration", async () => {
+  it("handles one split part way through iteration", async () => {
     let hasSplit = false;
     const partitionKeyRanges = new Set();
     const client = new CosmosClient({
