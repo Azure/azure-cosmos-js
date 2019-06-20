@@ -1,4 +1,4 @@
-import { CosmosClient } from "../../dist-esm";
+import { CosmosClient, CosmosClientOptions } from "../../dist-esm";
 import { RequestContext } from "../../dist-esm/request/RequestContext";
 import { Plugin, Next, PluginConfig } from "../../dist-esm/plugins/Plugin";
 
@@ -59,20 +59,23 @@ describe("Plugin", function() {
       throw new Error("I always throw!");
     };
 
-    const client = new CosmosClient({
+    const options: CosmosClientOptions = {
       endpoint: "https://faaaaaaaaaaaaake.com",
-      key: "THIS IS A FAKE KEY",
-      plugins: [
-        {
-          on: "request",
-          plugin: alwaysThrow // I'll never be called since operation will always succeed.
-        },
-        {
-          on: "operation",
-          plugin: alwaysSucceed
-        }
-      ] as PluginConfig[]
-    } as any);
+      key: "THIS IS A FAKE KEY"
+    };
+
+    const plugins: PluginConfig[] = [
+      {
+        on: "request",
+        plugin: alwaysThrow // I'll never be called since operation will always succeed.
+      },
+      {
+        on: "operation",
+        plugin: alwaysSucceed
+      }
+    ];
+
+    const client = new CosmosClient({ ...options, plugins });
     const response = await client.database("foo").read();
     assert.equal(requestCount, 2); // Get Database Account + Get Database
     assert.notEqual(response, undefined);
@@ -103,20 +106,23 @@ describe("Plugin", function() {
       return response;
     };
 
-    const client = new CosmosClient({
+    const options: CosmosClientOptions = {
       endpoint: "https://faaaaaaaaaaaaake.com",
-      key: "THIS IS A FAKE KEY",
-      plugins: [
-        {
-          on: "operation",
-          plugin: counts // I'll never be called since operation will always succeed.
-        },
-        {
-          on: "operation",
-          plugin: alwaysSucceed
-        }
-      ] as PluginConfig[]
-    } as any);
+      key: "THIS IS A FAKE KEY"
+    };
+
+    const plugins: PluginConfig[] = [
+      {
+        on: "operation",
+        plugin: counts // I'll never be called since operation will always succeed.
+      },
+      {
+        on: "operation",
+        plugin: alwaysSucceed
+      }
+    ];
+
+    const client = new CosmosClient({ ...options, plugins } as any);
     const response = await client.database("foo").read();
     assert.equal(requestCount, 2); // Get Database Account + Get Database
     assert.equal(responseCount, 2); // Get Database Account + Get Database
