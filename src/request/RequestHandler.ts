@@ -1,31 +1,15 @@
 import AbortController from "node-abort-controller";
 import fetch, { RequestInit, Response } from "node-fetch";
-import { isNode, trimSlashes } from "../common";
+import { trimSlashes } from "../common";
 import { Constants } from "../common/constants";
-import { Agent } from "../CosmosClientOptions";
 import { executePlugins, PluginOn } from "../plugins/Plugin";
 import * as RetryUtility from "../retry/retryUtility";
+import { defaultHttpAgent, defaultHttpsAgent } from "./defaultAgent";
 import { ErrorResponse } from "./ErrorResponse";
 import { bodyFromData } from "./request";
 import { RequestContext } from "./RequestContext";
 import { Response as CosmosResponse } from "./Response";
 import { TimeoutError } from "./TimeoutError";
-
-let defaultHttpAgent: Agent;
-let defaultHttpsAgent: Agent;
-
-if (isNode) {
-  // tslint:disable-next-line:no-var-requires
-  const https = require("https");
-  defaultHttpsAgent = new https.Agent({
-    keepAlive: true
-  });
-  // tslint:disable-next-line:no-var-requires
-  const http = require("http");
-  defaultHttpAgent = new http.Agent({
-    keepAlive: true
-  });
-}
 
 /** @hidden */
 export async function executeRequest(requestContext: RequestContext) {
