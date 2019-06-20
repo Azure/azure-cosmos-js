@@ -78,7 +78,7 @@ describe("Plugin", function() {
       }
     ];
 
-    const client = new CosmosClient({ ...options, plugins });
+    const client = new CosmosClient({ ...options, plugins } as any);
     const response = await client.database("foo").read();
     assert.equal(requestCount, 2); // Get Database Account + Get Database
     assert.notEqual(response, undefined);
