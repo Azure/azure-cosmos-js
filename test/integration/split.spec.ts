@@ -38,7 +38,7 @@ describe("Partition Splits", () => {
     await bulkInsertItems(container, documentDefinitions);
   });
 
-  it("handles one split part way through iteration", async () => {
+  it.only("handles one split part way through iteration", async () => {
     let hasSplit = false;
     const partitionKeyRanges = new Set();
     const client = new CosmosClient({
@@ -51,7 +51,6 @@ describe("Partition Splits", () => {
             const partitionKeyRangeId = context.headers[Constants.HttpHeaders.PartitionKeyRangeID];
             if (partitionKeyRanges.has(partitionKeyRangeId) && hasSplit === false) {
               hasSplit = true;
-              console.log("Simulating split of", partitionKeyRangeId);
               const error = new Error("Fake Partition Split") as any;
               error.code = 410;
               error.substatus = SubStatusCodes.PartitionKeyRangeGone;
@@ -59,7 +58,6 @@ describe("Partition Splits", () => {
             }
             if (partitionKeyRangeId) {
               partitionKeyRanges.add(partitionKeyRangeId);
-              console.log(partitionKeyRangeId);
             }
             return next(context);
           }
