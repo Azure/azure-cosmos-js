@@ -66,6 +66,9 @@ jobs:
           MOCHA_TIMEOUT: 100000
       - bash: npm run test-consumer
         displayName: "TypeScript consumer tests"
+      
+      - bash: npm run compile:samples
+        displayName: "Typecheck Samples"
 
       - bash: |
           npm run UserManagement --prefix ./samples

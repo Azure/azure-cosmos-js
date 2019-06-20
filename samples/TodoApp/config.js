@@ -1,3 +1,4 @@
+// @ts-check
 const config = {};
 
 config.host = process.env.HOST || "https://localhost:8081/";

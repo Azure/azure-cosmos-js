@@ -1,3 +1,5 @@
+// @ts-check
+
 const CosmosClient = require("../../").CosmosClient;
 const config = require("./config");
 const TaskList = require("./routes/tasklist");
@@ -30,21 +32,15 @@ app.use(express.static(path.join(__dirname, "public")));
 //Todo App:
 const docDbClient = new CosmosClient({
   endpoint: config.host,
-  auth: {
-    masterKey: config.authKey
-  }
+  key: config.authKey
 });
 const taskDao = new TaskDao(docDbClient, config.databaseId, config.collectionId);
 const taskList = new TaskList(taskDao);
-taskDao
-  .init(err => {
-    console.error(err);
-  })
-  .catch(err => {
-    console.error(err);
-    console.error("Shutting down");
-    process.exit(1);
-  });
+taskDao.init().catch(err => {
+  console.error(err);
+  console.error("Shutting down");
+  process.exit(1);
+});
 
 app.get("/", (req, res, next) => taskList.showTasks(req, res).catch(next));
 app.post("/addtask", (req, res, next) => taskList.addTask(req, res).catch(next));
@@ -53,6 +49,7 @@ app.set("view engine", "jade");
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
+  /** @type {any} */
   const err = new Error("Not Found");
   err.status = 404;
   next(err);
