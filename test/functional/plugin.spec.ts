@@ -25,16 +25,19 @@ describe("Plugin", function() {
       return successResponse;
     };
 
-    const client = new CosmosClient({
+    const options: CosmosClientOptions = {
       endpoint: "https://faaaaaaaaaaaaake.com",
-      key: "THIS IS A FAKE KEY",
-      plugins: [
-        {
-          on: "request",
-          plugin: sometimesThrow
-        }
-      ] as PluginConfig[]
-    } as any);
+      key: "THIS IS A FAKE KEY"
+    };
+
+    const plugins: PluginConfig[] = [
+      {
+        on: "request",
+        plugin: sometimesThrow
+      }
+    ];
+
+    const client = new CosmosClient({ ...options, plugins } as any);
     const response = await client.database("foo").read();
     assert.equal(requestCount, FAILCOUNT + 1); // Get Database Account + FAILED GET Database + Get Database
     assert.notEqual(response, undefined);
