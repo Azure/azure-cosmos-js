@@ -3,6 +3,7 @@ import { bulkInsertItems, getTestContainer, removeAllDatabases } from "../common
 import { Constants, CosmosClient, PluginOn } from "../../dist-esm";
 import { masterKey, endpoint } from "../common/_testConfig";
 import { SubStatusCodes } from "../../dist-esm/common";
+import assert from "assert";
 
 const splitError = new Error("Fake Partition Split") as any;
 splitError.code = 410;
@@ -65,10 +66,15 @@ describe("Partition Splits", () => {
         }
       ]
     });
-    await client
+    const { resources } = await client
       .database(container.database.id)
       .container(container.id)
       .items.query("SELECT * FROM root r", { maxItemCount: 2, maxDegreeOfParallelism: 1 })
       .fetchAll();
+
+    // TODO. These should be equal but right now they are not
+    // I suspect injecting a random 410 with out actually splitting the documents
+    // results in duplicates by trying to read from two partitions
+    assert(resources.length >= documentDefinitions.length);
   });
 });
