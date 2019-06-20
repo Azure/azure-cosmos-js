@@ -46,12 +46,12 @@ async function httpRequest(requestContext: RequestContext) {
     response = await fetch(trimSlashes(requestContext.endpoint) + requestContext.path, {
       method: requestContext.method,
       headers: requestContext.headers as any,
-      agent: ((parsedUrl: URL) => {
+      agent: (parsedUrl: URL) => {
         if (requestContext.requestAgent) {
           return requestContext.requestAgent;
         }
         return parsedUrl.protocol === "http" ? defaultHttpAgent : defaultHttpsAgent;
-      }) as any, // TODO: Remove any once https://github.com/DefinitelyTyped/DefinitelyTyped/pull/36057/files is merged
+      },
       signal,
       body: requestContext.body
     } as RequestInit);
