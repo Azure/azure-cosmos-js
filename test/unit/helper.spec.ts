@@ -20,5 +20,9 @@ describe("Helper methods", function() {
       assert.equal(connectionObject.endpoint, "https://test-account.documents.azure.com:443/");
       assert.equal(connectionObject.key, "c213asdasdefgdfgrtweaYPpgoeCsHbpRTHhxuMsTaw==");
     });
+    it("throws on invalid connection string", function() {
+      const connectionString = "asdqweqsdfd==;==sfd;asdqwe;asdqwe";
+      assert.throws(() => parseConnectionString(connectionString));
+    });
   });
 });

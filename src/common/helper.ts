@@ -295,6 +295,9 @@ export function parseConnectionString(connectionString: string): CosmosClientOpt
     },
     {} as ConnectionObject
   );
+  if (!AccountEndpoint || !AccountKey) {
+    throw new Error("Could not parse the provided connection string");
+  }
   return {
     endpoint: AccountEndpoint,
     key: AccountKey
