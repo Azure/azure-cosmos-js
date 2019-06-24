@@ -13,6 +13,7 @@
     "DatabaseManagement": "npx ts-node ./DatabaseManagement",
     "IndexeManagement": "npx ts-node ./IndexeManagement",
     "ChangeFeed": "npx ts-node ./ChangeFeed",
-    "BulkUpdateWithSproc": "npx ts-node ./BulkUpdateWithSproc"
+    "BulkUpdateWithSproc": "npx ts-node ./BulkUpdateWithSproc",
+    "CustomAgent": "npx ts-node ./CustomAgent"
   }
 }
