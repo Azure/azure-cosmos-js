@@ -99,6 +99,9 @@ export class RetryUtility {
     resourceType: string
   ): Promise<Response<any>> {
     // TODO: any response
+
+    // TODO: This should not be necessary. We have had reports of auth headers getting dropped by the SDK
+    // As a temporary we fix we try and set it again right before the request if missing.
     if (!requestOptions.headers[Constants.HttpHeaders.Authorization]) {
       requestOptions.headers[Constants.HttpHeaders.Authorization] = await AuthHandler.getAuthorizationHeader(
         authOptions,
