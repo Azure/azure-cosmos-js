@@ -196,7 +196,6 @@ describe("Cross Partition", function() {
       const fetchAllResponse = await validateFetchAll(queryIterator, options, expectedOrderIds, expectedCount);
       if (expectedRus) {
         const percentDifference = Math.abs(fetchAllResponse.requestCharge - expectedRus) / expectedRus;
-        console.log(fetchAllResponse.requestCharge);
         assert(
           percentDifference <= 0.05,
           "difference between fetchAll request charge and expected request charge should be less than 5%"
