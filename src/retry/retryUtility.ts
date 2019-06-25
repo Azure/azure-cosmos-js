@@ -1,6 +1,7 @@
 ﻿import { RequestOptions } from "https";
 import * as url from "url";
 import { EndpointDiscoveryRetryPolicy, ResourceThrottleRetryPolicy, SessionRetryPolicy } from ".";
+import { AuthHandler, AuthOptions } from "../auth";
 import { Constants, Helper, StatusCodes, SubStatusCodes } from "../common";
 import { ConnectionPolicy } from "../documents";
 import { GlobalEndpointManager } from "../globalEndpointManager";
@@ -35,7 +36,10 @@ export class RetryUtility {
     createRequestObjectFunc: CreateRequestObjectStubFunction,
     connectionPolicy: ConnectionPolicy,
     requestOptions: RequestOptions,
-    request: RequestContext
+    request: RequestContext,
+    authOptions: AuthOptions,
+    resourceId: string,
+    resourceType: string
   ): Promise<Response<any>> {
     // TODO: any request
     const r: RequestContext = typeof request !== "string" ? request : { path: "", operationType: "nonReadOps" };
@@ -60,7 +64,10 @@ export class RetryUtility {
       defaultRetryPolicy,
       globalEndpointManager,
       request,
-      {}
+      {},
+      authOptions,
+      resourceId,
+      resourceType
     );
   }
 
@@ -86,9 +93,22 @@ export class RetryUtility {
     defaultRetryPolicy: DefaultRetryPolicy,
     globalEndpointManager: GlobalEndpointManager,
     request: RequestContext,
-    retryContext: RetryContext
+    retryContext: RetryContext,
+    authOptions: AuthOptions,
+    resourceId: string,
+    resourceType: string
   ): Promise<Response<any>> {
     // TODO: any response
+    if (!requestOptions.headers[Constants.HttpHeaders.Authorization]) {
+      requestOptions.headers[Constants.HttpHeaders.Authorization] = await AuthHandler.getAuthorizationHeader(
+        authOptions,
+        requestOptions.method,
+        requestOptions.path,
+        resourceId,
+        resourceType,
+        requestOptions.headers
+      );
+    }
     const httpsRequest = createRequestObjectFunc(connectionPolicy, requestOptions, body);
     if (!request.locationRouting) {
       request.locationRouting = new LocationRouting();
@@ -150,7 +170,10 @@ export class RetryUtility {
           defaultRetryPolicy,
           globalEndpointManager,
           request,
-          retryContext
+          retryContext,
+          authOptions,
+          resourceId,
+          resourceType
         );
       }
     }
