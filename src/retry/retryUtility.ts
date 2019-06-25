@@ -103,7 +103,7 @@ export class RetryUtility {
     // TODO: This should not be necessary. We have had reports of auth headers getting dropped by the SDK
     // As a temporary we fix we try and set it again right before the request if missing.
     if (!requestOptions.headers[Constants.HttpHeaders.Authorization]) {
-      requestOptions.headers[Constants.HttpHeaders.Authorization] = await AuthHandler.getAuthorizationHeader(
+      const header = await AuthHandler.getAuthorizationHeader(
         authOptions,
         requestOptions.method,
         requestOptions.path,
@@ -111,6 +111,9 @@ export class RetryUtility {
         resourceType,
         requestOptions.headers
       );
+      if (header) {
+        requestOptions.headers[Constants.HttpHeaders.Authorization] = header;
+      }
     }
     const httpsRequest = createRequestObjectFunc(connectionPolicy, requestOptions, body);
     if (!request.locationRouting) {
