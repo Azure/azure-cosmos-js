@@ -4,7 +4,7 @@ import { CosmosHeaders } from "../../dist-esm/queryExecutionContext/CosmosHeader
 import { SessionContainer } from "../../dist-esm/session/sessionContainer";
 import { SessionContext } from "../../dist-esm/session/SessionContext";
 
-describe.only("SessionContainer", function() {
+describe("SessionContainer", function() {
   const collectionLink = "dbs/testDatabase/colls/testCollection";
   const collectionRid = "-EdBAKsiRLM=";
 
