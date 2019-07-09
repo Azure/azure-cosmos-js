@@ -1,0 +1,571 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>QueryMetrics | @azure/cosmos</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.js" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">@azure/cosmos</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+							<input type="checkbox" id="tsd-filter-only-exported" />
+							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../globals.html">Globals</a>
+				</li>
+				<li>
+					<a href="querymetrics.html">QueryMetrics</a>
+				</li>
+			</ul>
+			<h1>Class QueryMetrics</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="target">QueryMetrics</span>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Constructors</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="querymetrics.html#constructor" class="tsd-kind-icon">constructor</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="querymetrics.html#clientsidemetrics" class="tsd-kind-icon">client<wbr>Side<wbr>Metrics</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="querymetrics.html#documentloadtime" class="tsd-kind-icon">document<wbr>Load<wbr>Time</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="querymetrics.html#documentwritetime" class="tsd-kind-icon">document<wbr>Write<wbr>Time</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="querymetrics.html#indexhitdocumentcount" class="tsd-kind-icon">index<wbr>Hit<wbr>Document<wbr>Count</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="querymetrics.html#indexlookuptime" class="tsd-kind-icon">index<wbr>Lookup<wbr>Time</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="querymetrics.html#outputdocumentcount" class="tsd-kind-icon">output<wbr>Document<wbr>Count</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="querymetrics.html#outputdocumentsize" class="tsd-kind-icon">output<wbr>Document<wbr>Size</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="querymetrics.html#querypreparationtimes" class="tsd-kind-icon">query<wbr>Preparation<wbr>Times</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="querymetrics.html#retrieveddocumentcount" class="tsd-kind-icon">retrieved<wbr>Document<wbr>Count</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="querymetrics.html#retrieveddocumentsize" class="tsd-kind-icon">retrieved<wbr>Document<wbr>Size</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="querymetrics.html#runtimeexecutiontimes" class="tsd-kind-icon">runtime<wbr>Execution<wbr>Times</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="querymetrics.html#totalqueryexecutiontime" class="tsd-kind-icon">total<wbr>Query<wbr>Execution<wbr>Time</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="querymetrics.html#vmexecutiontime" class="tsd-kind-icon">vm<wbr>Execution<wbr>Time</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><a href="querymetrics.html#zero" class="tsd-kind-icon">zero</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Methods</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querymetrics.html#add" class="tsd-kind-icon">add</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="querymetrics.html#createfromarray" class="tsd-kind-icon">create<wbr>From<wbr>Array</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="querymetrics.html#createfromdelimitedstring" class="tsd-kind-icon">create<wbr>From<wbr>Delimited<wbr>String</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Constructors</h2>
+				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class">
+					<a name="constructor" class="tsd-anchor"></a>
+					<h3>constructor</h3>
+					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Query<wbr>Metrics<span class="tsd-signature-symbol">(</span>retrievedDocumentCount<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, retrievedDocumentSize<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, outputDocumentCount<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, outputDocumentSize<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, indexHitDocumentCount<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, totalQueryExecutionTime<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TimeSpan</span>, queryPreparationTimes<span class="tsd-signature-symbol">: </span><a href="querypreparationtimes.html" class="tsd-signature-type">QueryPreparationTimes</a>, indexLookupTime<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TimeSpan</span>, documentLoadTime<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TimeSpan</span>, vmExecutionTime<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TimeSpan</span>, runtimeExecutionTimes<span class="tsd-signature-symbol">: </span><a href="runtimeexecutiontimes.html" class="tsd-signature-type">RuntimeExecutionTimes</a>, documentWriteTime<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TimeSpan</span>, clientSideMetrics<span class="tsd-signature-symbol">: </span><a href="clientsidemetrics.html" class="tsd-signature-type">ClientSideMetrics</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="querymetrics.html" class="tsd-signature-type">QueryMetrics</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/queryMetrics/queryMetrics.ts#L8">queryMetrics/queryMetrics.ts:8</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>retrievedDocumentCount: <span class="tsd-signature-type">number</span></h5>
+								</li>
+								<li>
+									<h5>retrievedDocumentSize: <span class="tsd-signature-type">number</span></h5>
+								</li>
+								<li>
+									<h5>outputDocumentCount: <span class="tsd-signature-type">number</span></h5>
+								</li>
+								<li>
+									<h5>outputDocumentSize: <span class="tsd-signature-type">number</span></h5>
+								</li>
+								<li>
+									<h5>indexHitDocumentCount: <span class="tsd-signature-type">number</span></h5>
+								</li>
+								<li>
+									<h5>totalQueryExecutionTime: <span class="tsd-signature-type">TimeSpan</span></h5>
+								</li>
+								<li>
+									<h5>queryPreparationTimes: <a href="querypreparationtimes.html" class="tsd-signature-type">QueryPreparationTimes</a></h5>
+								</li>
+								<li>
+									<h5>indexLookupTime: <span class="tsd-signature-type">TimeSpan</span></h5>
+								</li>
+								<li>
+									<h5>documentLoadTime: <span class="tsd-signature-type">TimeSpan</span></h5>
+								</li>
+								<li>
+									<h5>vmExecutionTime: <span class="tsd-signature-type">TimeSpan</span></h5>
+								</li>
+								<li>
+									<h5>runtimeExecutionTimes: <a href="runtimeexecutiontimes.html" class="tsd-signature-type">RuntimeExecutionTimes</a></h5>
+								</li>
+								<li>
+									<h5>documentWriteTime: <span class="tsd-signature-type">TimeSpan</span></h5>
+								</li>
+								<li>
+									<h5>clientSideMetrics: <a href="clientsidemetrics.html" class="tsd-signature-type">ClientSideMetrics</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="querymetrics.html" class="tsd-signature-type">QueryMetrics</a></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="clientsidemetrics" class="tsd-anchor"></a>
+					<h3>client<wbr>Side<wbr>Metrics</h3>
+					<div class="tsd-signature tsd-kind-icon">client<wbr>Side<wbr>Metrics<span class="tsd-signature-symbol">:</span> <a href="clientsidemetrics.html" class="tsd-signature-type">ClientSideMetrics</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/queryMetrics/queryMetrics.ts#L22">queryMetrics/queryMetrics.ts:22</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="documentloadtime" class="tsd-anchor"></a>
+					<h3>document<wbr>Load<wbr>Time</h3>
+					<div class="tsd-signature tsd-kind-icon">document<wbr>Load<wbr>Time<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">TimeSpan</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/queryMetrics/queryMetrics.ts#L18">queryMetrics/queryMetrics.ts:18</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="documentwritetime" class="tsd-anchor"></a>
+					<h3>document<wbr>Write<wbr>Time</h3>
+					<div class="tsd-signature tsd-kind-icon">document<wbr>Write<wbr>Time<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">TimeSpan</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/queryMetrics/queryMetrics.ts#L21">queryMetrics/queryMetrics.ts:21</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="indexhitdocumentcount" class="tsd-anchor"></a>
+					<h3>index<wbr>Hit<wbr>Document<wbr>Count</h3>
+					<div class="tsd-signature tsd-kind-icon">index<wbr>Hit<wbr>Document<wbr>Count<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/queryMetrics/queryMetrics.ts#L14">queryMetrics/queryMetrics.ts:14</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="indexlookuptime" class="tsd-anchor"></a>
+					<h3>index<wbr>Lookup<wbr>Time</h3>
+					<div class="tsd-signature tsd-kind-icon">index<wbr>Lookup<wbr>Time<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">TimeSpan</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/queryMetrics/queryMetrics.ts#L17">queryMetrics/queryMetrics.ts:17</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="outputdocumentcount" class="tsd-anchor"></a>
+					<h3>output<wbr>Document<wbr>Count</h3>
+					<div class="tsd-signature tsd-kind-icon">output<wbr>Document<wbr>Count<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/queryMetrics/queryMetrics.ts#L12">queryMetrics/queryMetrics.ts:12</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="outputdocumentsize" class="tsd-anchor"></a>
+					<h3>output<wbr>Document<wbr>Size</h3>
+					<div class="tsd-signature tsd-kind-icon">output<wbr>Document<wbr>Size<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/queryMetrics/queryMetrics.ts#L13">queryMetrics/queryMetrics.ts:13</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="querypreparationtimes" class="tsd-anchor"></a>
+					<h3>query<wbr>Preparation<wbr>Times</h3>
+					<div class="tsd-signature tsd-kind-icon">query<wbr>Preparation<wbr>Times<span class="tsd-signature-symbol">:</span> <a href="querypreparationtimes.html" class="tsd-signature-type">QueryPreparationTimes</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/queryMetrics/queryMetrics.ts#L16">queryMetrics/queryMetrics.ts:16</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="retrieveddocumentcount" class="tsd-anchor"></a>
+					<h3>retrieved<wbr>Document<wbr>Count</h3>
+					<div class="tsd-signature tsd-kind-icon">retrieved<wbr>Document<wbr>Count<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/queryMetrics/queryMetrics.ts#L10">queryMetrics/queryMetrics.ts:10</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="retrieveddocumentsize" class="tsd-anchor"></a>
+					<h3>retrieved<wbr>Document<wbr>Size</h3>
+					<div class="tsd-signature tsd-kind-icon">retrieved<wbr>Document<wbr>Size<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/queryMetrics/queryMetrics.ts#L11">queryMetrics/queryMetrics.ts:11</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="runtimeexecutiontimes" class="tsd-anchor"></a>
+					<h3>runtime<wbr>Execution<wbr>Times</h3>
+					<div class="tsd-signature tsd-kind-icon">runtime<wbr>Execution<wbr>Times<span class="tsd-signature-symbol">:</span> <a href="runtimeexecutiontimes.html" class="tsd-signature-type">RuntimeExecutionTimes</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/queryMetrics/queryMetrics.ts#L20">queryMetrics/queryMetrics.ts:20</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="totalqueryexecutiontime" class="tsd-anchor"></a>
+					<h3>total<wbr>Query<wbr>Execution<wbr>Time</h3>
+					<div class="tsd-signature tsd-kind-icon">total<wbr>Query<wbr>Execution<wbr>Time<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">TimeSpan</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/queryMetrics/queryMetrics.ts#L15">queryMetrics/queryMetrics.ts:15</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="vmexecutiontime" class="tsd-anchor"></a>
+					<h3>vm<wbr>Execution<wbr>Time</h3>
+					<div class="tsd-signature tsd-kind-icon">vm<wbr>Execution<wbr>Time<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">TimeSpan</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/queryMetrics/queryMetrics.ts#L19">queryMetrics/queryMetrics.ts:19</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-static">
+					<a name="zero" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> zero</h3>
+					<div class="tsd-signature tsd-kind-icon">zero<span class="tsd-signature-symbol">:</span> <a href="querymetrics.html" class="tsd-signature-type">QueryMetrics</a><span class="tsd-signature-symbol"> =&nbsp;new QueryMetrics(0,0,0,0,0,TimeSpan.zero,QueryPreparationTimes.zero,TimeSpan.zero,TimeSpan.zero,TimeSpan.zero,RuntimeExecutionTimes.zero,TimeSpan.zero,ClientSideMetrics.zero)</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/queryMetrics/queryMetrics.ts#L144">queryMetrics/queryMetrics.ts:144</a></li>
+						</ul>
+					</aside>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="add" class="tsd-anchor"></a>
+					<h3>add</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">add<span class="tsd-signature-symbol">(</span>queryMetricsArray<span class="tsd-signature-symbol">: </span><a href="querymetrics.html" class="tsd-signature-type">QueryMetrics</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="querymetrics.html" class="tsd-signature-type">QueryMetrics</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/queryMetrics/queryMetrics.ts#L38">queryMetrics/queryMetrics.ts:38</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>returns a new QueryMetrics instance that is the addition of this and the arguments.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>queryMetricsArray: <a href="querymetrics.html" class="tsd-signature-type">QueryMetrics</a><span class="tsd-signature-symbol">[]</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="querymetrics.html" class="tsd-signature-type">QueryMetrics</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-static">
+					<a name="createfromarray" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> create<wbr>From<wbr>Array</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
+						<li class="tsd-signature tsd-kind-icon">create<wbr>From<wbr>Array<span class="tsd-signature-symbol">(</span>queryMetricsArray<span class="tsd-signature-symbol">: </span><a href="querymetrics.html" class="tsd-signature-type">QueryMetrics</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="querymetrics.html" class="tsd-signature-type">QueryMetrics</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/queryMetrics/queryMetrics.ts#L165">queryMetrics/queryMetrics.ts:165</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns a new instance of the QueryMetrics class that is the aggregation of an array of query metrics.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>memberof</dt>
+									<dd><p>QueryMetrics</p>
+									</dd>
+									<dt>instance</dt>
+									<dd></dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>queryMetricsArray: <a href="querymetrics.html" class="tsd-signature-type">QueryMetrics</a><span class="tsd-signature-symbol">[]</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="querymetrics.html" class="tsd-signature-type">QueryMetrics</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-static">
+					<a name="createfromdelimitedstring" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> create<wbr>From<wbr>Delimited<wbr>String</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
+						<li class="tsd-signature tsd-kind-icon">create<wbr>From<wbr>Delimited<wbr>String<span class="tsd-signature-symbol">(</span>delimitedString<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, clientSideMetrics<span class="tsd-signature-symbol">?: </span><a href="clientsidemetrics.html" class="tsd-signature-type">ClientSideMetrics</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="querymetrics.html" class="tsd-signature-type">QueryMetrics</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/queryMetrics/queryMetrics.ts#L178">queryMetrics/queryMetrics.ts:178</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns a new instance of the QueryMetrics class this is deserialized from a delimited string.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>memberof</dt>
+									<dd><p>QueryMetrics</p>
+									</dd>
+									<dt>instance</dt>
+									<dd></dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>delimitedString: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> clientSideMetrics: <a href="clientsidemetrics.html" class="tsd-signature-type">ClientSideMetrics</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="querymetrics.html" class="tsd-signature-type">QueryMetrics</a></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="../globals.html"><em>Globals</em></a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-class">
+						<a href="querymetrics.html" class="tsd-kind-icon">Query<wbr>Metrics</a>
+						<ul>
+							<li class=" tsd-kind-constructor tsd-parent-kind-class">
+								<a href="querymetrics.html#constructor" class="tsd-kind-icon">constructor</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="querymetrics.html#clientsidemetrics" class="tsd-kind-icon">client<wbr>Side<wbr>Metrics</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="querymetrics.html#documentloadtime" class="tsd-kind-icon">document<wbr>Load<wbr>Time</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="querymetrics.html#documentwritetime" class="tsd-kind-icon">document<wbr>Write<wbr>Time</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="querymetrics.html#indexhitdocumentcount" class="tsd-kind-icon">index<wbr>Hit<wbr>Document<wbr>Count</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="querymetrics.html#indexlookuptime" class="tsd-kind-icon">index<wbr>Lookup<wbr>Time</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="querymetrics.html#outputdocumentcount" class="tsd-kind-icon">output<wbr>Document<wbr>Count</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="querymetrics.html#outputdocumentsize" class="tsd-kind-icon">output<wbr>Document<wbr>Size</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="querymetrics.html#querypreparationtimes" class="tsd-kind-icon">query<wbr>Preparation<wbr>Times</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="querymetrics.html#retrieveddocumentcount" class="tsd-kind-icon">retrieved<wbr>Document<wbr>Count</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="querymetrics.html#retrieveddocumentsize" class="tsd-kind-icon">retrieved<wbr>Document<wbr>Size</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="querymetrics.html#runtimeexecutiontimes" class="tsd-kind-icon">runtime<wbr>Execution<wbr>Times</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="querymetrics.html#totalqueryexecutiontime" class="tsd-kind-icon">total<wbr>Query<wbr>Execution<wbr>Time</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="querymetrics.html#vmexecutiontime" class="tsd-kind-icon">vm<wbr>Execution<wbr>Time</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-static">
+								<a href="querymetrics.html#zero" class="tsd-kind-icon">zero</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="querymetrics.html#add" class="tsd-kind-icon">add</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
+								<a href="querymetrics.html#createfromarray" class="tsd-kind-icon">create<wbr>From<wbr>Array</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
+								<a href="querymetrics.html#createfromdelimitedstring" class="tsd-kind-icon">create<wbr>From<wbr>Delimited<wbr>String</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-module"><span class="tsd-kind-icon">Module</span></li>
+				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-enum-member"><span class="tsd-kind-icon">Enumeration member</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-enum"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-enum"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-interface"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-interface"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-class"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
+				<li class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="http://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+<script>if (location.protocol == 'file:') document.write('<script src="../assets/js/search.js"><' + '/script>');</script>
+</body>
+</html>

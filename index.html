@@ -1,0 +1,758 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>@azure/cosmos</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.js" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">@azure/cosmos</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+							<input type="checkbox" id="tsd-filter-only-exported" />
+							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="globals.html">Globals</a>
+				</li>
+			</ul>
+			<h1> @azure/cosmos</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<h1 id="microsoft-azure-cosmos-javascript-sdk">Microsoft Azure Cosmos JavaScript SDK</h1>
+				<p>This project provides JavaScript &amp; Node.js SDK library for <a href="https://docs.microsoft.com/en-us/azure/cosmos-db/sql-api-sql-query">SQL API</a> of <a href="https://azure.microsoft.com/en-us/services/cosmos-db/">Azure Cosmos
+				Database Service</a>. This project also includes samples, tools, and utilities.</p>
+				<p><a href="https://www.npmjs.com/package/@azure/cosmos"><img src="https://img.shields.io/npm/v/%40azure%2Fcosmos/latest.svg" alt="latest npm badge"></a> <a href="https://travis-ci.org/Azure/azure-cosmos-js"><img src="https://travis-ci.org/Azure/azure-cosmos-js.svg?branch=master" alt="Build Status"></a> <a href="https://cosmos-db-sdk-public.visualstudio.com/cosmos-db-sdk-public/_build/latest?definitionId=1"><img src="https://cosmos-db-sdk-public.visualstudio.com/cosmos-db-sdk-public/_apis/build/status/azure-cosmos-js-Emulator" alt="Build Status"></a></p>
+				<pre><code class="language-js"><span class="hljs-comment">// JavaScript</span>
+<span class="hljs-keyword">const</span> cosmos = <span class="hljs-built_in">require</span>(<span class="hljs-string">"@azure/cosmos"</span>);
+<span class="hljs-keyword">const</span> CosmosClient = cosmos.CosmosClient;
+
+<span class="hljs-keyword">const</span> endpoint = <span class="hljs-string">"[hostendpoint]"</span>; <span class="hljs-comment">// Add your endpoint</span>
+<span class="hljs-keyword">const</span> masterKey = <span class="hljs-string">"[database account masterkey]"</span>; <span class="hljs-comment">// Add the masterkey of the endpoint</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> CosmosClient({ endpoint, <span class="hljs-attr">key</span>: masterKey });
+
+<span class="hljs-keyword">const</span> databaseDefinition = { <span class="hljs-attr">id</span>: <span class="hljs-string">"sample database"</span> };
+<span class="hljs-keyword">const</span> collectionDefinition = { <span class="hljs-attr">id</span>: <span class="hljs-string">"sample collection"</span> };
+<span class="hljs-keyword">const</span> documentDefinition = { <span class="hljs-attr">id</span>: <span class="hljs-string">"hello world doc"</span>, <span class="hljs-attr">content</span>: <span class="hljs-string">"Hello World!"</span> };
+
+<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">helloCosmos</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">const</span> { <span class="hljs-attr">database</span>: db } = <span class="hljs-keyword">await</span> client.databases.create(databaseDefinition);
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"created db"</span>);
+
+  <span class="hljs-keyword">const</span> { container } = <span class="hljs-keyword">await</span> db.containers.create(collectionDefinition);
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"created collection"</span>);
+
+  <span class="hljs-keyword">const</span> { body } = <span class="hljs-keyword">await</span> container.items.create(documentDefinition);
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Created item with content: "</span>, body.content);
+
+  <span class="hljs-keyword">await</span> db.delete();
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Deleted database"</span>);
+}
+
+helloCosmos().catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> {
+  <span class="hljs-built_in">console</span>.error(err);
+});</code></pre>
+				<h2 id="useful-links">Useful links</h2>
+				<ul>
+					<li><a href="https://docs.microsoft.com/en-us/azure/cosmos-db/community">Welcome to Azure Cosmos DB</a></li>
+					<li><a href="https://docs.microsoft.com/en-us/azure/cosmos-db/sql-api-nodejs-get-started">Quick start</a></li>
+					<li><a href="https://docs.microsoft.com/en-us/azure/cosmos-db/sql-api-nodejs-application">Tutorial</a></li>
+					<li><a href="https://github.com/Azure/azure-cosmos-js/tree/master/samples">Samples</a></li>
+					<li><a href="https://docs.microsoft.com/en-us/azure/cosmos-db/sql-api-resources">Introduction to Resource Model of Azure Cosmos DB Service</a></li>
+					<li><a href="https://docs.microsoft.com/en-us/azure/cosmos-db/sql-api-sql-query">Introduction to SQL API of Azure Cosmos DB Service</a></li>
+					<li><a href="https://docs.microsoft.com/en-us/azure/cosmos-db/sql-api-partition-data">Partitioning</a></li>
+					<li><a href="https://docs.microsoft.com/en-us/javascript/api/%40azure/cosmos/?view=azure-node-latest">API Documentation</a></li>
+				</ul>
+				<h2 id="need-help-">Need Help?</h2>
+				<p>Tweet us with #CosmosDB and we&#39;ll respond on Twitter. Be sure to check out the Microsoft Azure <a href="https://social.msdn.microsoft.com/forums/azure/en-US/home?forum=AzureDocument">Developer Forums on MSDN</a> or the <a href="https://stackoverflow.com/questions/tagged/azure-cosmosdb">Developer Forums on Stack Overflow</a> if you have trouble with the provided code.</p>
+				<h2 id="contribute-code-or-provide-feedback">Contribute Code or Provide Feedback</h2>
+				<p>For our rules and guidelines on contributing, please see [Microsoft&#39;s contributor guide].(<a href="https://docs.microsoft.com/en-us/contribute/)">https://docs.microsoft.com/en-us/contribute/)</a>.</p>
+				<p>For information on how build and test this repo, please see <a href="./dev.md">./dev.md</a>.</p>
+				<p>If you encounter any bugs with the library please file an issue in the <a href="https://github.com/Azure/azure-cosmos-js/issues">Issues</a> section of the project.</p>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="globals.html"><em>Globals</em></a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+					<li class=" tsd-kind-enum">
+						<a href="enums/conflictresolutionmode.html" class="tsd-kind-icon">Conflict<wbr>Resolution<wbr>Mode</a>
+					</li>
+					<li class=" tsd-kind-enum">
+						<a href="enums/connectionmode.html" class="tsd-kind-icon">Connection<wbr>Mode</a>
+					</li>
+					<li class=" tsd-kind-enum">
+						<a href="enums/consistencylevel.html" class="tsd-kind-icon">Consistency<wbr>Level</a>
+					</li>
+					<li class=" tsd-kind-enum">
+						<a href="enums/datatype.html" class="tsd-kind-icon">Data<wbr>Type</a>
+					</li>
+					<li class=" tsd-kind-enum">
+						<a href="enums/httpmethod.html" class="tsd-kind-icon">HTTPMethod</a>
+					</li>
+					<li class=" tsd-kind-enum">
+						<a href="enums/indexkind.html" class="tsd-kind-icon">Index<wbr>Kind</a>
+					</li>
+					<li class=" tsd-kind-enum">
+						<a href="enums/indexingmode.html" class="tsd-kind-icon">Indexing<wbr>Mode</a>
+					</li>
+					<li class=" tsd-kind-enum">
+						<a href="enums/operationtype.html" class="tsd-kind-icon">Operation<wbr>Type</a>
+					</li>
+					<li class=" tsd-kind-enum">
+						<a href="enums/permissionmode.html" class="tsd-kind-icon">Permission<wbr>Mode</a>
+					</li>
+					<li class=" tsd-kind-enum">
+						<a href="enums/pluginon.html" class="tsd-kind-icon">Plugin<wbr>On</a>
+					</li>
+					<li class=" tsd-kind-enum">
+						<a href="enums/resourcetype.html" class="tsd-kind-icon">Resource<wbr>Type</a>
+					</li>
+					<li class=" tsd-kind-enum">
+						<a href="enums/triggeroperation.html" class="tsd-kind-icon">Trigger<wbr>Operation</a>
+					</li>
+					<li class=" tsd-kind-enum">
+						<a href="enums/triggertype.html" class="tsd-kind-icon">Trigger<wbr>Type</a>
+					</li>
+					<li class=" tsd-kind-enum">
+						<a href="enums/userdefinedfunctiontype.html" class="tsd-kind-icon">User<wbr>Defined<wbr>Function<wbr>Type</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="classes/changefeediterator.html" class="tsd-kind-icon">Change<wbr>Feed<wbr>Iterator</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="classes/changefeedresponse.html" class="tsd-kind-icon">Change<wbr>Feed<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/clientsidemetrics.html" class="tsd-kind-icon">Client<wbr>Side<wbr>Metrics</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/conflict.html" class="tsd-kind-icon">Conflict</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/conflictresponse.html" class="tsd-kind-icon">Conflict<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/conflicts.html" class="tsd-kind-icon">Conflicts</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/container.html" class="tsd-kind-icon">Container</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/containerresponse.html" class="tsd-kind-icon">Container<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/containers.html" class="tsd-kind-icon">Containers</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/cosmosclient.html" class="tsd-kind-icon">Cosmos<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/database.html" class="tsd-kind-icon">Database</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/databaseaccount.html" class="tsd-kind-icon">Database<wbr>Account</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/databaseresponse.html" class="tsd-kind-icon">Database<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/databases.html" class="tsd-kind-icon">Databases</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="classes/feedresponse.html" class="tsd-kind-icon">Feed<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/item.html" class="tsd-kind-icon">Item</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="classes/itemresponse.html" class="tsd-kind-icon">Item<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/items.html" class="tsd-kind-icon">Items</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/locationrouting.html" class="tsd-kind-icon">Location<wbr>Routing</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/offer.html" class="tsd-kind-icon">Offer</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/offerresponse.html" class="tsd-kind-icon">Offer<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/offers.html" class="tsd-kind-icon">Offers</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/permission.html" class="tsd-kind-icon">Permission</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/permissionresponse.html" class="tsd-kind-icon">Permission<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/permissions.html" class="tsd-kind-icon">Permissions</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="classes/queryiterator.html" class="tsd-kind-icon">Query<wbr>Iterator</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/querymetrics.html" class="tsd-kind-icon">Query<wbr>Metrics</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/querypreparationtimes.html" class="tsd-kind-icon">Query<wbr>Preparation<wbr>Times</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="classes/resourceresponse.html" class="tsd-kind-icon">Resource<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/runtimeexecutiontimes.html" class="tsd-kind-icon">Runtime<wbr>Execution<wbr>Times</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/scripts.html" class="tsd-kind-icon">Scripts</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/storedprocedure.html" class="tsd-kind-icon">Stored<wbr>Procedure</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/storedprocedureresponse.html" class="tsd-kind-icon">Stored<wbr>Procedure<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/storedprocedures.html" class="tsd-kind-icon">Stored<wbr>Procedures</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/timeouterror.html" class="tsd-kind-icon">Timeout<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/trigger.html" class="tsd-kind-icon">Trigger</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/triggerresponse.html" class="tsd-kind-icon">Trigger<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/triggers.html" class="tsd-kind-icon">Triggers</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/user.html" class="tsd-kind-icon">User</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/userdefinedfunction.html" class="tsd-kind-icon">User<wbr>Defined<wbr>Function</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/userdefinedfunctionresponse.html" class="tsd-kind-icon">User<wbr>Defined<wbr>Function<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/userdefinedfunctions.html" class="tsd-kind-icon">User<wbr>Defined<wbr>Functions</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/userresponse.html" class="tsd-kind-icon">User<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/users.html" class="tsd-kind-icon">Users</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/agent.html" class="tsd-kind-icon">Agent</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/changefeedoptions.html" class="tsd-kind-icon">Change<wbr>Feed<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/conflictdefinition.html" class="tsd-kind-icon">Conflict<wbr>Definition</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/conflictresolutionpolicy.html" class="tsd-kind-icon">Conflict<wbr>Resolution<wbr>Policy</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-not-exported">
+						<a href="interfaces/connectionobject.html" class="tsd-kind-icon">Connection<wbr>Object</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/connectionpolicy.html" class="tsd-kind-icon">Connection<wbr>Policy</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/containerdefinition.html" class="tsd-kind-icon">Container<wbr>Definition</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/containerrequest.html" class="tsd-kind-icon">Container<wbr>Request</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/cosmosclientoptions.html" class="tsd-kind-icon">Cosmos<wbr>Client<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/cosmosheaders.html" class="tsd-kind-icon">Cosmos<wbr>Headers</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/databasedefinition.html" class="tsd-kind-icon">Database<wbr>Definition</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/databaserequest.html" class="tsd-kind-icon">Database<wbr>Request</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/document.html" class="tsd-kind-icon">Document</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-not-exported">
+						<a href="interfaces/errorbody.html" class="tsd-kind-icon">Error<wbr>Body</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/errorresponse.html" class="tsd-kind-icon">Error<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-not-exported">
+						<a href="interfaces/executeargs.html" class="tsd-kind-icon">Execute<wbr>Args</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/feedoptions.html" class="tsd-kind-icon">Feed<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-not-exported">
+						<a href="interfaces/getheadersoptions.html" class="tsd-kind-icon">Get<wbr>Headers<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/index.html" class="tsd-kind-icon">Index</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/indexedpath.html" class="tsd-kind-icon">Indexed<wbr>Path</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/indexingpolicy.html" class="tsd-kind-icon">Indexing<wbr>Policy</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/itemdefinition.html" class="tsd-kind-icon">Item<wbr>Definition</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/jsonarray.html" class="tsd-kind-icon">JSONArray</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/jsonobject.html" class="tsd-kind-icon">JSONObject</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/location.html" class="tsd-kind-icon">Location</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/offerdefinition.html" class="tsd-kind-icon">Offer<wbr>Definition</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/partitionkeydefinition.html" class="tsd-kind-icon">Partition<wbr>Key<wbr>Definition</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/partitionkeyrange.html" class="tsd-kind-icon">Partition<wbr>Key<wbr>Range</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/partitionedqueryexecutioninfo.html" class="tsd-kind-icon">Partitioned<wbr>Query<wbr>Execution<wbr>Info</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/permissionbody.html" class="tsd-kind-icon">Permission<wbr>Body</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/permissiondefinition.html" class="tsd-kind-icon">Permission<wbr>Definition</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/pluginconfig.html" class="tsd-kind-icon">Plugin<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-not-exported">
+						<a href="interfaces/queryinfo.html" class="tsd-kind-icon">Query<wbr>Info</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/requestcontext.html" class="tsd-kind-icon">Request<wbr>Context</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/requestoptions.html" class="tsd-kind-icon">Request<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/resource.html" class="tsd-kind-icon">Resource</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/response.html" class="tsd-kind-icon">Response</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/retrycontext.html" class="tsd-kind-icon">Retry<wbr>Context</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/retryoptions.html" class="tsd-kind-icon">Retry<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-not-exported">
+						<a href="interfaces/retrypolicies.html" class="tsd-kind-icon">Retry<wbr>Policies</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/retrypolicy.html" class="tsd-kind-icon">Retry<wbr>Policy</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/sessioncontext.html" class="tsd-kind-icon">Session<wbr>Context</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/sharedoptions.html" class="tsd-kind-icon">Shared<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/sqlparameter.html" class="tsd-kind-icon">Sql<wbr>Parameter</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/sqlqueryspec.html" class="tsd-kind-icon">Sql<wbr>Query<wbr>Spec</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/storedproceduredefinition.html" class="tsd-kind-icon">Stored<wbr>Procedure<wbr>Definition</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/triggerdefinition.html" class="tsd-kind-icon">Trigger<wbr>Definition</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/uniquekey.html" class="tsd-kind-icon">Unique<wbr>Key</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/uniquekeypolicy.html" class="tsd-kind-icon">Unique<wbr>Key<wbr>Policy</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/userdefinedfunctiondefinition.html" class="tsd-kind-icon">User<wbr>Defined<wbr>Function<wbr>Definition</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/userdefinition.html" class="tsd-kind-icon">User<wbr>Definition</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#jsonvalue" class="tsd-kind-icon">JSONValue</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="globals.html#next" class="tsd-kind-icon">Next</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#partitionkey" class="tsd-kind-icon">Partition<wbr>Key</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="globals.html#plugin" class="tsd-kind-icon">Plugin</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#tokenprovider" class="tsd-kind-icon">Token<wbr>Provider</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-not-exported">
+						<a href="globals.html#connection_error_codes" class="tsd-kind-icon">CONNECTION_<wbr>ERROR_<wbr>CODES</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-not-exported">
+						<a href="globals.html#linuxconnectionreset" class="tsd-kind-icon">Linux<wbr>Connection<wbr>Reset</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#timeouterrorcode" class="tsd-kind-icon">Timeout<wbr>Error<wbr>Code</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-not-exported">
+						<a href="globals.html#windowsaddressalreadyinuse" class="tsd-kind-icon">Windows<wbr>Address<wbr>Already<wbr>InUse</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-not-exported">
+						<a href="globals.html#windowsbadaddress" class="tsd-kind-icon">Windows<wbr>Bad<wbr>Address</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-not-exported">
+						<a href="globals.html#windowscannotsendaftersocketshutdown" class="tsd-kind-icon">Windows<wbr>Cannot<wbr>Send<wbr>After<wbr>Socket<wbr>Shutdown</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-not-exported">
+						<a href="globals.html#windowsconnectionrefused" class="tsd-kind-icon">Windows<wbr>Connection<wbr>Refused</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-not-exported">
+						<a href="globals.html#windowsconnectionresetbypeer" class="tsd-kind-icon">Windows<wbr>Connection<wbr>Reset<wbr>ByPeer</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-not-exported">
+						<a href="globals.html#windowsconnectiontimedout" class="tsd-kind-icon">Windows<wbr>Connection<wbr>Timed<wbr>Out</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-not-exported">
+						<a href="globals.html#windowsfilehandlenotvalid" class="tsd-kind-icon">Windows<wbr>File<wbr>Handle<wbr>Not<wbr>Valid</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-not-exported">
+						<a href="globals.html#windowshostisdown" class="tsd-kind-icon">Windows<wbr>Host<wbr>IsDown</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-not-exported">
+						<a href="globals.html#windowsinterruptedfunctioncall" class="tsd-kind-icon">Windows<wbr>Interrupted<wbr>Function<wbr>Call</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-not-exported">
+						<a href="globals.html#windowsinvalidargumnet" class="tsd-kind-icon">Windows<wbr>Invalid<wbr>Argumnet</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-not-exported">
+						<a href="globals.html#windowsnametoolong" class="tsd-kind-icon">Windows<wbr>Name<wbr>Too<wbr>Long</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-not-exported">
+						<a href="globals.html#windowsnoroutetohost" class="tsd-kind-icon">Windows<wbr>NoRoute<wbr>Tohost</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-not-exported">
+						<a href="globals.html#windowsoperationnowinprogress" class="tsd-kind-icon">Windows<wbr>Operation<wbr>Now<wbr>InProgress</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-not-exported">
+						<a href="globals.html#windowspermissiondenied" class="tsd-kind-icon">Windows<wbr>Permission<wbr>Denied</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-not-exported">
+						<a href="globals.html#windowsresourcetemporarilyunavailable" class="tsd-kind-icon">Windows<wbr>Resource<wbr>Temporarily<wbr>Unavailable</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#defaultconnectionpolicy" class="tsd-kind-icon">default<wbr>Connection<wbr>Policy</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#defaulthttpagent" class="tsd-kind-icon">default<wbr>Http<wbr>Agent</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#defaulthttpsagent" class="tsd-kind-icon">default<wbr>Https<wbr>Agent</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#defaultretryoptions" class="tsd-kind-icon">default<wbr>Retry<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#isnode" class="tsd-kind-icon">is<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-not-exported">
+						<a href="globals.html#compareranges" class="tsd-kind-icon">compare<wbr>Ranges</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#createattachmenturi" class="tsd-kind-icon">create<wbr>Attachment<wbr>Uri</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#createconflicturi" class="tsd-kind-icon">create<wbr>Conflict<wbr>Uri</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#createdatabaseuri" class="tsd-kind-icon">create<wbr>Database<wbr>Uri</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#createdocumentcollectionuri" class="tsd-kind-icon">create<wbr>Document<wbr>Collection<wbr>Uri</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#createdocumenturi" class="tsd-kind-icon">create<wbr>Document<wbr>Uri</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#createpartitionkeyrangesuri" class="tsd-kind-icon">create<wbr>Partition<wbr>Key<wbr>Ranges<wbr>Uri</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#createpermissionuri" class="tsd-kind-icon">create<wbr>Permission<wbr>Uri</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#createstoredprocedureuri" class="tsd-kind-icon">create<wbr>Stored<wbr>Procedure<wbr>Uri</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#createtriggeruri" class="tsd-kind-icon">create<wbr>Trigger<wbr>Uri</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#createuserdefinedfunctionuri" class="tsd-kind-icon">create<wbr>User<wbr>Defined<wbr>Function<wbr>Uri</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#createuseruri" class="tsd-kind-icon">create<wbr>User<wbr>Uri</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#execute" class="tsd-kind-icon">execute</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#extractpartitionkey" class="tsd-kind-icon">extract<wbr>Partition<wbr>Key</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-not-exported">
+						<a href="globals.html#getauthorizationtokenusingresourcetokens" class="tsd-kind-icon">get<wbr>Authorization<wbr>Token<wbr>Using<wbr>Resource<wbr>Tokens</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#getcontainerlink" class="tsd-kind-icon">get<wbr>Container<wbr>Link</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#getheaders" class="tsd-kind-icon">get<wbr>Headers</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#gethexadigit" class="tsd-kind-icon">get<wbr>Hexa<wbr>Digit</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#getinitialheader" class="tsd-kind-icon">get<wbr>Initial<wbr>Header</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#getresourceidfrompath" class="tsd-kind-icon">get<wbr>Resource<wbr>IdFrom<wbr>Path</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#getuseragent" class="tsd-kind-icon">get<wbr>User<wbr>Agent</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-not-exported">
+						<a href="globals.html#httprequest" class="tsd-kind-icon">http<wbr>Request</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-not-exported">
+						<a href="globals.html#ischangefeedoptions" class="tsd-kind-icon">is<wbr>Change<wbr>Feed<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-not-exported">
+						<a href="globals.html#iscompletesetofrange" class="tsd-kind-icon">is<wbr>Complete<wbr>Set<wbr>OfRange</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#isnumeric" class="tsd-kind-icon">is<wbr>Numeric</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#isreadrequest" class="tsd-kind-icon">is<wbr>Read<wbr>Request</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#isresourcevalid" class="tsd-kind-icon">is<wbr>Resource<wbr>Valid</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#isstringnullorempty" class="tsd-kind-icon">is<wbr>String<wbr>Null<wbr>OrEmpty</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-not-exported">
+						<a href="globals.html#max" class="tsd-kind-icon">max</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#mergeheaders" class="tsd-kind-icon">merge<wbr>Headers</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-not-exported">
+						<a href="globals.html#needsretry" class="tsd-kind-icon">needs<wbr>Retry</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#parseconnectionstring" class="tsd-kind-icon">parse<wbr>Connection<wbr>String</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#parsedelimitedstring" class="tsd-kind-icon">parse<wbr>Delimited<wbr>String</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#parselink" class="tsd-kind-icon">parse<wbr>Link</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#parsepath" class="tsd-kind-icon">parse<wbr>Path</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="globals.html#request" class="tsd-kind-icon">request</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#setauthorizationheader" class="tsd-kind-icon">set<wbr>Authorization<wbr>Header</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#setauthorizationtokenheaderusingmasterkey" class="tsd-kind-icon">set<wbr>Authorization<wbr>Token<wbr>Header<wbr>Using<wbr>Master<wbr>Key</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#sleep" class="tsd-kind-icon">sleep</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#timespanfrommetrics" class="tsd-kind-icon">time<wbr>Span<wbr>From<wbr>Metrics</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#trimslashfromleftandright" class="tsd-kind-icon">trim<wbr>Slash<wbr>From<wbr>Left<wbr>And<wbr>Right</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#trimslashes" class="tsd-kind-icon">trim<wbr>Slashes</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#undefinedpartitionkey" class="tsd-kind-icon">undefined<wbr>Partition<wbr>Key</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#validateresourceid" class="tsd-kind-icon">validate<wbr>Resource<wbr>Id</a>
+					</li>
+					<li class=" tsd-kind-object-literal">
+						<a href="globals.html#constants" class="tsd-kind-icon">Constants</a>
+					</li>
+					<li class=" tsd-kind-object-literal">
+						<a href="globals.html#statuscode" class="tsd-kind-icon">Status<wbr>Code</a>
+					</li>
+					<li class=" tsd-kind-object-literal">
+						<a href="globals.html#statuscodes" class="tsd-kind-icon">Status<wbr>Codes</a>
+					</li>
+					<li class=" tsd-kind-object-literal">
+						<a href="globals.html#substatuscode" class="tsd-kind-icon">Sub<wbr>Status<wbr>Code</a>
+					</li>
+					<li class=" tsd-kind-object-literal">
+						<a href="globals.html#substatuscodes" class="tsd-kind-icon">Sub<wbr>Status<wbr>Codes</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-module"><span class="tsd-kind-icon">Module</span></li>
+				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-enum-member"><span class="tsd-kind-icon">Enumeration member</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-enum"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-enum"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-interface"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-interface"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-class"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
+				<li class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="http://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+<script>if (location.protocol == 'file:') document.write('<script src="assets/js/search.js"><' + '/script>');</script>
+</body>
+</html>

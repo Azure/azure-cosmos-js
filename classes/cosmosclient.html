@@ -1,0 +1,494 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>CosmosClient | @azure/cosmos</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.js" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">@azure/cosmos</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+							<input type="checkbox" id="tsd-filter-only-exported" />
+							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../globals.html">Globals</a>
+				</li>
+				<li>
+					<a href="cosmosclient.html">CosmosClient</a>
+				</li>
+			</ul>
+			<h1>Class CosmosClient</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>Provides a client-side logical representation of the Azure Cosmos DB database account.
+						This client is used to configure and execute requests in the Azure Cosmos DB database service.</p>
+					</div>
+					<dl class="tsd-comment-tags">
+						<dt>example</dt>
+						<dd><p>Instantiate a client and create a new database</p>
+							<pre><code class="language-typescript"><span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> CosmosClient({endpoint: <span class="hljs-string">"&lt;URL HERE&gt;"</span>, auth: {masterKey: <span class="hljs-string">"&lt;KEY HERE&gt;"</span>}});
+<span class="hljs-keyword">await</span> client.databases.create({id: <span class="hljs-string">"&lt;datbase name here&gt;"</span>});</code></pre>
+						</dd>
+						<dt>example</dt>
+						<dd><p>Instantiate a client with custom Connection Policy</p>
+							<pre><code class="language-typescript"><span class="hljs-keyword">const</span> connectionPolicy = <span class="hljs-keyword">new</span> ConnectionPolicy();
+connectionPolicy.RequestTimeout = <span class="hljs-number">10000</span>;
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> CosmosClient({
+   endpoint: <span class="hljs-string">"&lt;URL HERE&gt;"</span>,
+   auth: {masterKey: <span class="hljs-string">"&lt;KEY HERE&gt;"</span>},
+   connectionPolicy
+});</code></pre>
+						</dd>
+					</dl>
+				</div>
+			</section>
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="target">CosmosClient</span>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Constructors</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="cosmosclient.html#constructor" class="tsd-kind-icon">constructor</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="cosmosclient.html#databases" class="tsd-kind-icon">databases</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="cosmosclient.html#offers" class="tsd-kind-icon">offers</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Methods</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="cosmosclient.html#database" class="tsd-kind-icon">database</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="cosmosclient.html#getdatabaseaccount" class="tsd-kind-icon">get<wbr>Database<wbr>Account</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="cosmosclient.html#getreadendpoint" class="tsd-kind-icon">get<wbr>Read<wbr>Endpoint</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="cosmosclient.html#getwriteendpoint" class="tsd-kind-icon">get<wbr>Write<wbr>Endpoint</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="cosmosclient.html#offer" class="tsd-kind-icon">offer</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Constructors</h2>
+				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class">
+					<a name="constructor" class="tsd-anchor"></a>
+					<h3>constructor</h3>
+					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Cosmos<wbr>Client<span class="tsd-signature-symbol">(</span>connectionString<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="cosmosclient.html" class="tsd-signature-type">CosmosClient</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Cosmos<wbr>Client<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">: </span><a href="../interfaces/cosmosclientoptions.html" class="tsd-signature-type">CosmosClientOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="cosmosclient.html" class="tsd-signature-type">CosmosClient</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/CosmosClient.ts#L49">CosmosClient.ts:49</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Creates a new <a href="cosmosclient.html">CosmosClient</a> object from a connection string. Your database connection string can be found in the Azure Portal</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>connectionString: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="cosmosclient.html" class="tsd-signature-type">CosmosClient</a></h4>
+						</li>
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/CosmosClient.ts#L53">CosmosClient.ts:53</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Creates a new <a href="cosmosclient.html">CosmosClient</a> object. See <a href="../interfaces/cosmosclientoptions.html">CosmosClientOptions</a> for more details on what options you can use.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>options: <a href="../interfaces/cosmosclientoptions.html" class="tsd-signature-type">CosmosClientOptions</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>bag of options - require at least endpoint and auth to be configured</p>
+										</div>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="cosmosclient.html" class="tsd-signature-type">CosmosClient</a></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="databases" class="tsd-anchor"></a>
+					<h3>databases</h3>
+					<div class="tsd-signature tsd-kind-icon">databases<span class="tsd-signature-symbol">:</span> <a href="databases.html" class="tsd-signature-type">Databases</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/CosmosClient.ts#L42">CosmosClient.ts:42</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Used for creating new databases, or querying/reading all databases.</p>
+						</div>
+						<p>Use <code>.database(id)</code> to read, replace, or delete a specific, existing database by id.</p>
+						<dl class="tsd-comment-tags">
+							<dt>example</dt>
+							<dd><p>Create a new database</p>
+								<pre><code class="language-typescript"><span class="hljs-keyword">const</span> {resource: databaseDefinition, database} = <span class="hljs-keyword">await</span> client.databases.create({id: <span class="hljs-string">"&lt;name here&gt;"</span>});</code></pre>
+							</dd>
+						</dl>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="offers" class="tsd-anchor"></a>
+					<h3>offers</h3>
+					<div class="tsd-signature tsd-kind-icon">offers<span class="tsd-signature-symbol">:</span> <a href="offers.html" class="tsd-signature-type">Offers</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/CosmosClient.ts#L48">CosmosClient.ts:48</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Used for querying &amp; reading all offers.</p>
+						</div>
+						<p>Use <code>.offer(id)</code> to read, or replace existing offers.</p>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="database" class="tsd-anchor"></a>
+					<h3>database</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">database<span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="database.html" class="tsd-signature-type">Database</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/CosmosClient.ts#L136">CosmosClient.ts:136</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Used for reading, updating, or deleting a existing database by id or accessing containers belonging to that database.</p>
+								</div>
+								<p>This does not make a network call. Use <code>.read</code> to get info about the database after getting the <a href="database.html">Database</a> object.</p>
+								<dl class="tsd-comment-tags">
+									<dt>example</dt>
+									<dd><p>Create a new container off of an existing database</p>
+										<pre><code class="language-typescript"><span class="hljs-keyword">const</span> container = client.database(<span class="hljs-string">"&lt;database id&gt;"</span>).containers.create(<span class="hljs-string">"&lt;container id&gt;"</span>);</code></pre>
+									</dd>
+									<dt>example</dt>
+									<dd><p>Delete an existing database</p>
+										<pre><code class="language-typescript"><span class="hljs-keyword">await</span> client.database(<span class="hljs-string">"&lt;id here&gt;"</span>).delete();</code></pre>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>id: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The id of the database.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="database.html" class="tsd-signature-type">Database</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="getdatabaseaccount" class="tsd-anchor"></a>
+					<h3>get<wbr>Database<wbr>Account</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Database<wbr>Account<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/requestoptions.html" class="tsd-signature-type">RequestOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="resourceresponse.html" class="tsd-signature-type">ResourceResponse</a><span class="tsd-signature-symbol">&lt;</span><a href="databaseaccount.html" class="tsd-signature-type">DatabaseAccount</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/CosmosClient.ts#L97">CosmosClient.ts:97</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Get information about the current <a href="databaseaccount.html">DatabaseAccount</a> (including which regions are supported, etc.)</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <a href="../interfaces/requestoptions.html" class="tsd-signature-type">RequestOptions</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="resourceresponse.html" class="tsd-signature-type">ResourceResponse</a><span class="tsd-signature-symbol">&lt;</span><a href="databaseaccount.html" class="tsd-signature-type">DatabaseAccount</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="getreadendpoint" class="tsd-anchor"></a>
+					<h3>get<wbr>Read<wbr>Endpoint</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Read<wbr>Endpoint<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/CosmosClient.ts#L116">CosmosClient.ts:116</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the currently used read endpoint. Useful for troubleshooting purposes.</p>
+								</div>
+								<p>The url may contain a region suffix (e.g. &quot;-eastus&quot;) if we&#39;re using location specific endpoints.</p>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="getwriteendpoint" class="tsd-anchor"></a>
+					<h3>get<wbr>Write<wbr>Endpoint</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Write<wbr>Endpoint<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/CosmosClient.ts#L107">CosmosClient.ts:107</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the currently used write endpoint url. Useful for troubleshooting purposes.</p>
+								</div>
+								<p>The url may contain a region suffix (e.g. &quot;-eastus&quot;) if we&#39;re using location specific endpoints.</p>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="offer" class="tsd-anchor"></a>
+					<h3>offer</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">offer<span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="offer.html" class="tsd-signature-type">Offer</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/Azure/azure-cosmos-js/blob/111fda5/src/CosmosClient.ts#L144">CosmosClient.ts:144</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Used for reading, or updating a existing offer by id.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>id: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The id of the offer.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="offer.html" class="tsd-signature-type">Offer</a></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="../globals.html"><em>Globals</em></a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-class">
+						<a href="cosmosclient.html" class="tsd-kind-icon">Cosmos<wbr>Client</a>
+						<ul>
+							<li class=" tsd-kind-constructor tsd-parent-kind-class">
+								<a href="cosmosclient.html#constructor" class="tsd-kind-icon">constructor</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="cosmosclient.html#databases" class="tsd-kind-icon">databases</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="cosmosclient.html#offers" class="tsd-kind-icon">offers</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="cosmosclient.html#database" class="tsd-kind-icon">database</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="cosmosclient.html#getdatabaseaccount" class="tsd-kind-icon">get<wbr>Database<wbr>Account</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="cosmosclient.html#getreadendpoint" class="tsd-kind-icon">get<wbr>Read<wbr>Endpoint</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="cosmosclient.html#getwriteendpoint" class="tsd-kind-icon">get<wbr>Write<wbr>Endpoint</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="cosmosclient.html#offer" class="tsd-kind-icon">offer</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-module"><span class="tsd-kind-icon">Module</span></li>
+				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-enum-member"><span class="tsd-kind-icon">Enumeration member</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-enum"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-enum"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-interface"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-interface"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-class"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
+				<li class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="http://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+<script>if (location.protocol == 'file:') document.write('<script src="../assets/js/search.js"><' + '/script>');</script>
+</body>
+</html>
