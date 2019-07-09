@@ -77,7 +77,6 @@ describe("Aggregate Query", function() {
 
     while (totalFetchedResults.length <= expectedResults.length) {
       const { resources: results, requestCharge } = await queryIterator.fetchNext();
-      // console.log("REQUEST CHARGE", requestCharge);
       listOfResultPages.push(results);
 
       if (results === undefined || totalFetchedResults.length === expectedResults.length) {
