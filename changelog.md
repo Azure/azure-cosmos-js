@@ -155,18 +155,18 @@ While it was possible to use the v2 SDK in the browser it was not an ideal exper
 
 ### Bug Fixes
 
-a27dfbf Fix offer read and bring back offer tests (#224)
-fffca68 Fix EnableEndpointDiscovery (#207)
-5ff03c5 Fix missing RUs on paginated results (#360)
-d9f8ea7 Expand SQL query parameter type (#346)
-51fc20c Add ttl to ItemDefinition (#341)
-2b25e5c Fix CP query metrics (#311)
-ee7c49f Add activityId to FeedResponse (#293)
-00f5845 Switch _ts type from string to number (#252)(#295)
-946d695 Fix Request Charge Aggregation (#289)
-9a47c70 Allow blank string partition keys (#277)
-3689903 Add string to conflict query type (#237)
-5d6dbd0 Add uniqueKeyPolicy to container (#234)
+- Fix offer read and bring back offer tests (#224)
+- Fix EnableEndpointDiscovery (#207)
+- Fix missing RUs on paginated results (#360)
+- Expand SQL query parameter type (#346)
+- Add ttl to ItemDefinition (#341)
+- Fix CP query metrics (#311)
+- Add activityId to FeedResponse (#293)
+- Switch _ts type from string to number (#252)(#295)
+- Fix Request Charge Aggregation (#289)
+- Allow blank string partition keys (#277)
+- Add string to conflict query type (#237)
+- Add uniqueKeyPolicy to container (#234)
 
 ### Engineering Systems
 
