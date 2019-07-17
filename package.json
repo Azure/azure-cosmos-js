@@ -15,6 +15,9 @@
   "author": "Microsoft Corporation",
   "main": "./dist/index.js",
   "module": "./dist-esm/index.js",
+  "browser": {
+    "dist-esm/request/defaultAgent.ts": "dist-esm/request/defaultAgent.browser.ts"
+  },
   "types": "./dist/index.d.ts",
   "engine": {
     "node": ">=6.0.0"
