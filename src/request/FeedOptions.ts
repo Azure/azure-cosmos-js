@@ -6,6 +6,12 @@ import { SharedOptions } from "./SharedOptions";
 export interface FeedOptions extends SharedOptions {
   /** Opaque token for continuing the enumeration. */
   continuation?: string;
+  /**
+   * Continuation tokens will sometimes contain extra serialized data that is not necessary for operation but helpful to the backend service.
+   * In JavaScript we default this value to 1kb to
+   * prevent hitting the Node.js 8kb header limit.
+   */
+  continuationTokenLimitInKB: number;
   /** Allow scan on the queries which couldn't be served as indexing was opted out on the requested paths. */
   enableScanInQuery?: boolean;
   /**
