@@ -11,7 +11,7 @@ export interface FeedOptions extends SharedOptions {
    * In JavaScript we default this value to 1kb to
    * prevent hitting the Node.js 8kb header limit.
    */
-  continuationTokenLimitInKB: number;
+  continuationTokenLimitInKB?: number;
   /** Allow scan on the queries which couldn't be served as indexing was opted out on the requested paths. */
   enableScanInQuery?: boolean;
   /**
