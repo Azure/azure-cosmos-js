@@ -1,6 +1,6 @@
 import { Constants } from "../common";
 import { ClientSideMetrics, QueryMetrics } from "../queryMetrics";
-import { Response } from "../request";
+import { Response, FeedOptions } from "../request";
 import { getInitialHeader } from "./headerUtils";
 import { ExecutionContext } from "./index";
 
@@ -17,13 +17,14 @@ enum STATES {
 /** @hidden */
 export class DefaultQueryExecutionContext implements ExecutionContext {
   private static readonly STATES = STATES;
-  private resources: any; // TODO: any resources
+  private resources: any[]; // TODO: any resources
   private currentIndex: number;
   private currentPartitionIndex: number;
   private fetchFunctions: FetchFunctionCallback[];
-  private options: any; // TODO: any options
-  public continuation: any; // TODO: any continuation
+  private options: FeedOptions; // TODO: any options
+  public continuation: string; // TODO: any continuation
   private state: STATES;
+  private nextNext: Promise<Response<any>>;
   /**
    * Provides the basic Query Execution Context.
    * This wraps the internal logic query execution using provided fetch functions
@@ -114,7 +115,21 @@ export class DefaultQueryExecutionContext implements ExecutionContext {
    * @memberof DefaultQueryExecutionContext
    * @instance
    */
-  public async fetchMore(): Promise<Response<any>> {
+  public async fetchMore(): Promise<Response<any[]>> {
+    if (this.nextNext !== undefined) {
+      const p = this.nextNext;
+      this.nextNext = undefined;
+      return p;
+    }
+
+    const results = await this._fetchMore();
+
+    this.nextNext = this._fetchMore();
+
+    return results;
+  }
+
+  private async _fetchMore(): Promise<Response<any[]>> {
     if (this.currentPartitionIndex >= this.fetchFunctions.length) {
       return { headers: getInitialHeader(), result: undefined };
     }
