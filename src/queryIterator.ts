@@ -121,6 +121,9 @@ export class QueryIterator<T> {
    */
   public async fetchNext(): Promise<FeedResponse<T>> {
     this.queryPlanPromise = this.fetchQueryPlan();
+    if (this.options.maxDegreeOfParallelism > 0) {
+      await this.createPipelinedExecutionContext();
+    }
     let response: Response<any>;
     try {
       response = await this.queryExecutionContext.fetchMore();

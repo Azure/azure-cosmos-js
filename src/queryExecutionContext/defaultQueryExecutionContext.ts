@@ -5,7 +5,7 @@ import { getInitialHeader } from "./headerUtils";
 import { ExecutionContext } from "./index";
 
 /** @hidden */
-export type FetchFunctionCallback = (options: any) => Promise<Response<any>>;
+export type FetchFunctionCallback = (options: FeedOptions) => Promise<Response<any>>;
 
 /** @hidden */
 enum STATES {
@@ -24,7 +24,7 @@ export class DefaultQueryExecutionContext implements ExecutionContext {
   private options: FeedOptions; // TODO: any options
   public continuation: string; // TODO: any continuation
   private state: STATES;
-  private nextNext: Promise<Response<any>>;
+  private nextFetchFunction: Promise<Response<any>>;
   /**
    * Provides the basic Query Execution Context.
    * This wraps the internal logic query execution using provided fetch functions
@@ -115,23 +115,12 @@ export class DefaultQueryExecutionContext implements ExecutionContext {
    * @memberof DefaultQueryExecutionContext
    * @instance
    */
-  public async fetchMore(): Promise<Response<any[]>> {
-    let p: Promise<Response<any>>;
-    if (this.nextNext !== undefined) {
-      p = this.nextNext;
-      this.nextNext = undefined;
-    } else {
-      p = this._fetchMore();
-    }
-
-    const results = await p;
-
-    this.nextNext = this._fetchMore();
-
-    return results;
-  }
-
-  private async _fetchMore(): Promise<Response<any[]>> {
+  /**
+   * Fetches the next batch of the feed and pass them as an array to a callback
+   * @memberof DefaultQueryExecutionContext
+   * @instance
+   */
+  public async fetchMore(): Promise<Response<any>> {
     if (this.currentPartitionIndex >= this.fetchFunctions.length) {
       return { headers: getInitialHeader(), result: undefined };
     }
@@ -145,23 +134,34 @@ export class DefaultQueryExecutionContext implements ExecutionContext {
       return { headers: getInitialHeader(), result: undefined };
     }
 
-    const fetchFunction = this.fetchFunctions[this.currentPartitionIndex];
     let resources;
     let responseHeaders;
     try {
-      const response = await fetchFunction(this.options);
+      let p: Promise<Response<any>>;
+      if (this.nextFetchFunction !== undefined) {
+        p = this.nextFetchFunction;
+        this.nextFetchFunction = undefined;
+      } else {
+        p = this.fetchFunctions[this.currentPartitionIndex](this.options);
+      }
+      const response = await p;
       resources = response.result;
       responseHeaders = response.headers;
+
+      this.continuation = responseHeaders[Constants.HttpHeaders.Continuation];
+      if (!this.continuation) {
+        ++this.currentPartitionIndex;
+      }
+
+      // const fetchFunction = this.fetchFunctions[this.currentPartitionIndex];
+      // this.nextFetchFunction = fetchFunction
+      //   ? fetchFunction({ ...this.options, continuation: this.continuation })
+      //   : undefined;
     } catch (err) {
       this.state = DefaultQueryExecutionContext.STATES.ended;
       // return callback(err, undefined, responseHeaders);
       // TODO: Error and data being returned is an antipattern, this might broken
       throw err;
-    }
-
-    this.continuation = responseHeaders[Constants.HttpHeaders.Continuation];
-    if (!this.continuation) {
-      ++this.currentPartitionIndex;
     }
 
     this.state = DefaultQueryExecutionContext.STATES.inProgress;
