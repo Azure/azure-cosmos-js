@@ -1,6 +1,6 @@
 import { Constants } from "../common";
 import { ClientSideMetrics, QueryMetrics } from "../queryMetrics";
-import { Response, FeedOptions } from "../request";
+import { FeedOptions, Response } from "../request";
 import { getInitialHeader } from "./headerUtils";
 import { ExecutionContext } from "./index";
 
