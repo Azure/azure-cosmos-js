@@ -116,13 +116,15 @@ export class DefaultQueryExecutionContext implements ExecutionContext {
    * @instance
    */
   public async fetchMore(): Promise<Response<any[]>> {
+    let p: Promise<Response<any>>;
     if (this.nextNext !== undefined) {
-      const p = this.nextNext;
+      p = this.nextNext;
       this.nextNext = undefined;
-      return p;
+    } else {
+      p = this._fetchMore();
     }
 
-    const results = await this._fetchMore();
+    const results = await p;
 
     this.nextNext = this._fetchMore();
 
