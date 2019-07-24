@@ -1,8 +1,12 @@
 import { Constants } from "../common";
+import { logger } from "../common/logger";
 import { ClientSideMetrics, QueryMetrics } from "../queryMetrics";
 import { FeedOptions, Response } from "../request";
 import { getInitialHeader } from "./headerUtils";
 import { ExecutionContext } from "./index";
+
+/** @hidden */
+const log = logger("defaultQueryExecutionContext");
 
 /** @hidden */
 export type FetchFunctionCallback = (options: FeedOptions) => Promise<Response<any>>;
@@ -37,6 +41,7 @@ export class DefaultQueryExecutionContext implements ExecutionContext {
    * @ignore
    */
   constructor(options: any, fetchFunctions: FetchFunctionCallback | FetchFunctionCallback[]) {
+    log("silly", "new");
     // TODO: any options
     this.resources = [];
     this.currentIndex = 0;
@@ -139,9 +144,11 @@ export class DefaultQueryExecutionContext implements ExecutionContext {
     try {
       let p: Promise<Response<any>>;
       if (this.nextFetchFunction !== undefined) {
+        log("info", "using prefetch");
         p = this.nextFetchFunction;
         this.nextFetchFunction = undefined;
       } else {
+        log("info", "using fresh fetch");
         p = this.fetchFunctions[this.currentPartitionIndex](this.options);
       }
       const response = await p;
@@ -153,10 +160,10 @@ export class DefaultQueryExecutionContext implements ExecutionContext {
         ++this.currentPartitionIndex;
       }
 
-      // const fetchFunction = this.fetchFunctions[this.currentPartitionIndex];
-      // this.nextFetchFunction = fetchFunction
-      //   ? fetchFunction({ ...this.options, continuation: this.continuation })
-      //   : undefined;
+      const fetchFunction = this.fetchFunctions[this.currentPartitionIndex];
+      this.nextFetchFunction = fetchFunction
+        ? fetchFunction({ ...this.options, continuation: this.continuation })
+        : undefined;
     } catch (err) {
       this.state = DefaultQueryExecutionContext.STATES.ended;
       // return callback(err, undefined, responseHeaders);

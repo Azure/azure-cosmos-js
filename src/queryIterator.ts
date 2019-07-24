@@ -124,7 +124,7 @@ export class QueryIterator<T> {
   public async fetchNext(): Promise<FeedResponse<T>> {
     this.queryPlanPromise = this.fetchQueryPlan();
     if (!this.isInitialied) {
-      this.init();
+      await this.init();
     }
 
     let response: Response<any>;
@@ -152,7 +152,7 @@ export class QueryIterator<T> {
   private async toArrayImplementation(): Promise<FeedResponse<T>> {
     this.queryPlanPromise = this.fetchQueryPlan();
     if (!this.isInitialied) {
-      this.init();
+      await this.init();
     }
     while (this.queryExecutionContext.hasMoreResults()) {
       let response: Response<any>;

@@ -141,7 +141,10 @@ export class ClientContext {
       }
     }
     this.applySessionToken(request);
-    log("info", "query " + requestId + " started");
+    log(
+      "info",
+      "query " + requestId + " started" + (request.partitionKeyRangeId ? " pkrid: " + request.partitionKeyRangeId : "")
+    );
     log("debug", request);
     const start = Date.now();
     const response = await executeRequest(request);

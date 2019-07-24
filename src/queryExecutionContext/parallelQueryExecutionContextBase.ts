@@ -2,6 +2,7 @@ import * as bs from "binary-search-bounds";
 import PriorityQueue from "priorityqueuejs";
 import semaphore from "semaphore";
 import { ClientContext } from "../ClientContext";
+import { logger } from "../common/logger";
 import { StatusCodes, SubStatusCodes } from "../common/statusCodes";
 import { Response } from "../request";
 import { PartitionedQueryExecutionInfo } from "../request/ErrorResponse";
@@ -11,6 +12,9 @@ import { CosmosHeaders } from "./CosmosHeaders";
 import { DocumentProducer } from "./documentProducer";
 import { ExecutionContext } from "./ExecutionContext";
 import { getInitialHeader, mergeHeaders } from "./headerUtils";
+
+/** @hidden */
+const log = logger("parallelQueryExecutionContextBase");
 
 /** @hidden */
 export enum ParallelQueryExecutionContextBaseStates {
@@ -91,6 +95,7 @@ export abstract class ParallelQueryExecutionContextBase implements ExecutionCont
       try {
         const targetPartitionRanges = await this._onTargetPartitionRanges();
         this.waitingForInternalExecutionContexts = targetPartitionRanges.length;
+        log("info", "Query starting against " + targetPartitionRanges.length + " ranges");
         // default to 1 if none is provided.
         const maxDegreeOfParallelism =
           options.maxDegreeOfParallelism > 0

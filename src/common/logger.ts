@@ -12,7 +12,7 @@ export type logLevel = "silly" | "debug" | "info" | "warn" | "error";
 export const logger = (namespace: string) => {
   return (level: logLevel, message: string | { [key: string]: any }) => {
     if (cosmosLevelFilter.includes(level)) {
-      cosmosDebug("[" + new Date().toUTCString() + "][" + level + "][" + namespace + "]: %o", message);
+      cosmosDebug("[" + new Date().toISOString() + "][" + level + "][" + namespace + "]: %o", message);
     }
   };
 };
