@@ -89,7 +89,7 @@ async function httpRequest(requestContext: RequestContext) {
   if (response.status >= 400) {
     const errorResponse: ErrorResponse = new Error(result.message);
 
-    log("warn", response.status + " " + requestContext.endpoint + " " + requestContext.path + " " + result.message);
+    log.warn(response.status + " " + requestContext.endpoint + " " + requestContext.path + " " + result.message);
 
     errorResponse.code = response.status;
     errorResponse.body = result;

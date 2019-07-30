@@ -141,14 +141,13 @@ export class ClientContext {
       }
     }
     this.applySessionToken(request);
-    log(
-      "info",
+    log.info(
       "query " + requestId + " started" + (request.partitionKeyRangeId ? " pkrid: " + request.partitionKeyRangeId : "")
     );
-    log("debug", request);
+    log.silly(request);
     const start = Date.now();
     const response = await executeRequest(request);
-    log("info", "query " + requestId + " finished - " + (Date.now() - start) + "ms");
+    log.info("query " + requestId + " finished - " + (Date.now() - start) + "ms");
     this.captureSessionToken(undefined, path, OperationType.Query, response.headers);
     return this.processQueryFeedResponse(response, !!query, resultFn);
   }

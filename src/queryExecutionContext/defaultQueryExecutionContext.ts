@@ -41,7 +41,6 @@ export class DefaultQueryExecutionContext implements ExecutionContext {
    * @ignore
    */
   constructor(options: any, fetchFunctions: FetchFunctionCallback | FetchFunctionCallback[]) {
-    log("silly", "new");
     // TODO: any options
     this.resources = [];
     this.currentIndex = 0;
@@ -144,11 +143,11 @@ export class DefaultQueryExecutionContext implements ExecutionContext {
     try {
       let p: Promise<Response<any>>;
       if (this.nextFetchFunction !== undefined) {
-        log("debug", "using prefetch");
+        log.debug("using prefetch");
         p = this.nextFetchFunction;
         this.nextFetchFunction = undefined;
       } else {
-        log("debug", "using fresh fetch");
+        log.debug("using fresh fetch");
         p = this.fetchFunctions[this.currentPartitionIndex](this.options);
       }
       const response = await p;

@@ -95,7 +95,7 @@ export abstract class ParallelQueryExecutionContextBase implements ExecutionCont
       try {
         const targetPartitionRanges = await this._onTargetPartitionRanges();
         this.waitingForInternalExecutionContexts = targetPartitionRanges.length;
-        log("info", "Query starting against " + targetPartitionRanges.length + " ranges");
+        log.info("Query starting against " + targetPartitionRanges.length + " ranges");
         // default to 1 if none is provided.
         const maxDegreeOfParallelism =
           options.maxDegreeOfParallelism > 0
