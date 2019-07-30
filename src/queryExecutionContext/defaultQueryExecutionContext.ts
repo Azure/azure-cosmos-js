@@ -144,11 +144,11 @@ export class DefaultQueryExecutionContext implements ExecutionContext {
     try {
       let p: Promise<Response<any>>;
       if (this.nextFetchFunction !== undefined) {
-        log("info", "using prefetch");
+        log("debug", "using prefetch");
         p = this.nextFetchFunction;
         this.nextFetchFunction = undefined;
       } else {
-        log("info", "using fresh fetch");
+        log("debug", "using fresh fetch");
         p = this.fetchFunctions[this.currentPartitionIndex](this.options);
       }
       const response = await p;

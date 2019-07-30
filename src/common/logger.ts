@@ -1,6 +1,6 @@
 import debugLib from "debug";
 
-const cosmosLevelFilter = process.env.COSMOS_LOG_LEVEL || "error|warn";
+const cosmosLevelFilter = process.env.COSMOS_LOG_LEVEL || "warn|error";
 
 /** @hidden */
 const cosmosDebug = debugLib("cosmos");
