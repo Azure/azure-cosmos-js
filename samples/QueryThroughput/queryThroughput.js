@@ -20,7 +20,8 @@ async function run() {
   const container = client.database(dbId).container(containerId);
   const options = {
     maxItemCount: 10000,
-    maxDegreeOfParallelism: 1000
+    maxDegreeOfParallelism: 1000,
+    bufferItems: false
   };
 
   const scenarios = [];
