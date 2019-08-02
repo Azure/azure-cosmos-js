@@ -5,7 +5,7 @@ import { DataType, IndexKind } from "../../dist-esm/documents";
 import { SqlQuerySpec } from "../../dist-esm/queryExecutionContext";
 import { QueryIterator } from "../../dist-esm/queryIterator";
 import { bulkInsertItems, getTestContainer, removeAllDatabases } from "../common/TestHelpers";
-import { FeedResponse } from "../../dist-esm";
+import { FeedResponse, FeedOptions } from "../../dist-esm";
 
 function compare(key: string) {
   return function(a: any, b: any): number {
@@ -262,9 +262,10 @@ describe("Cross Partition", function() {
     it("Validate Parallel Query As String With maxDegreeOfParallelism: 3", async function() {
       // simple order by query in string format
       const query = "SELECT * FROM root r";
-      const options = {
+      const options: FeedOptions = {
         maxItemCount: 2,
-        maxDegreeOfParallelism: 3
+        maxDegreeOfParallelism: 3,
+        bufferItems: true
       };
 
       // validates the results size and order
@@ -367,7 +368,8 @@ describe("Cross Partition", function() {
       const query = "SELECT DISTINCT VALUE r.spam3 FROM root r order by r.spam3";
       const options = {
         maxItemCount: 2,
-        maxDegreeOfParallelism: 3
+        maxDegreeOfParallelism: 3,
+        bufferItems: true
       };
 
       const expectedOrderedIds = ["eggs0", "eggs1", "eggs2"];
@@ -539,7 +541,8 @@ describe("Cross Partition", function() {
       const query = util.format("SELECT top %d * FROM root r", topCount);
       const options = {
         maxItemCount: 2,
-        maxDegreeOfParallelism: 3
+        maxDegreeOfParallelism: 3,
+        bufferItems: true
       };
 
       // prepare expected behaviour verifier

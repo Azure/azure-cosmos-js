@@ -159,10 +159,12 @@ export class DefaultQueryExecutionContext implements ExecutionContext {
         ++this.currentPartitionIndex;
       }
 
-      const fetchFunction = this.fetchFunctions[this.currentPartitionIndex];
-      this.nextFetchFunction = fetchFunction
-        ? fetchFunction({ ...this.options, continuation: this.continuation })
-        : undefined;
+      if (this.options && this.options.bufferItems === true) {
+        const fetchFunction = this.fetchFunctions[this.currentPartitionIndex];
+        this.nextFetchFunction = fetchFunction
+          ? fetchFunction({ ...this.options, continuation: this.continuation })
+          : undefined;
+      }
     } catch (err) {
       this.state = DefaultQueryExecutionContext.STATES.ended;
       // return callback(err, undefined, responseHeaders);
