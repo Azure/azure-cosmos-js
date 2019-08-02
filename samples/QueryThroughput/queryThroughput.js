@@ -21,7 +21,7 @@ async function run() {
   const options = {
     maxItemCount: 10000,
     maxDegreeOfParallelism: 1000,
-    bufferItems: false
+    bufferItems: true
   };
 
   const scenarios = [];
