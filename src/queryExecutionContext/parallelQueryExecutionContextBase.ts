@@ -4,7 +4,7 @@ import semaphore from "semaphore";
 import { ClientContext } from "../ClientContext";
 import { logger } from "../common/logger";
 import { StatusCodes, SubStatusCodes } from "../common/statusCodes";
-import { Response } from "../request";
+import { FeedOptions, Response } from "../request";
 import { PartitionedQueryExecutionInfo } from "../request/ErrorResponse";
 import { QueryRange } from "../routing/QueryRange";
 import { PARITIONKEYRANGE, SmartRoutingMapProvider } from "../routing/smartRoutingMapProvider";
@@ -56,7 +56,7 @@ export abstract class ParallelQueryExecutionContextBase implements ExecutionCont
     private clientContext: ClientContext,
     private collectionLink: string,
     private query: any, // TODO: any - It's not SQLQuerySpec
-    private options: any,
+    private options: FeedOptions,
     private partitionedQueryExecutionInfo: PartitionedQueryExecutionInfo
   ) {
     this.clientContext = clientContext;
@@ -95,12 +95,22 @@ export abstract class ParallelQueryExecutionContextBase implements ExecutionCont
       try {
         const targetPartitionRanges = await this._onTargetPartitionRanges();
         this.waitingForInternalExecutionContexts = targetPartitionRanges.length;
-        log.info("Query starting against " + targetPartitionRanges.length + " ranges");
-        // default to 1 if none is provided.
+
+        // default to 1 if 0 or undefined is provided.
         const maxDegreeOfParallelism =
-          options.maxDegreeOfParallelism > 0
-            ? Math.min(options.maxDegreeOfParallelism, targetPartitionRanges.length)
-            : targetPartitionRanges.length;
+          options.maxDegreeOfParallelism === 0 || options.maxDegreeOfParallelism === undefined
+            ? 1
+            : // use maximum parallelism if -1 (or less) is provided
+              options.maxDegreeOfParallelism > 0
+              ? Math.min(options.maxDegreeOfParallelism + 1, targetPartitionRanges.length)
+              : targetPartitionRanges.length;
+
+        log.info(
+          "Query starting against " +
+            targetPartitionRanges.length +
+            " ranges with parallelism of " +
+            maxDegreeOfParallelism
+        );
 
         const parallelismSem = semaphore(maxDegreeOfParallelism);
         let filteredPartitionKeyRanges = [];
