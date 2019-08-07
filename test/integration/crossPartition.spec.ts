@@ -780,7 +780,7 @@ describe("Cross Partition", function() {
       }
     });
 
-    it.only("Validate simple LIMIT OFFSET", async function() {
+    it("Validate simple LIMIT OFFSET", async function() {
       const limit = 1;
       const offset = 7;
 
@@ -788,7 +788,7 @@ describe("Cross Partition", function() {
         query: `SELECT * FROM root r OFFSET ${offset} LIMIT ${limit}`
       };
       const options = {
-        maxItemCount: 3
+        maxItemCount: 2
       };
 
       // validates the results size and order
@@ -796,7 +796,7 @@ describe("Cross Partition", function() {
         query: querySpec,
         options,
         expectedCount: 1,
-        expectedIteratorCalls: 8
+        expectedIteratorCalls: 1
       });
     });
 
