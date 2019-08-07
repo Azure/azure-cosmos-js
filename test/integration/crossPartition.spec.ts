@@ -114,16 +114,19 @@ describe("Cross Partition", function() {
       queryIterator: QueryIterator<any>,
       expectedOrderIds: string[],
       fetchAllResponse: FeedResponse<any>,
-      expectedCount: number
+      expectedCount: number,
+      expectedIteratorCalls: number
     ) {
       const pageSize = options["maxItemCount"];
       let totalExecuteNextRequestCharge = 0;
+      let totalIteratorCalls = 0;
       let totalFetchedResults: any[] = [];
       const expectedLength =
         expectedCount || (expectedOrderIds && expectedOrderIds.length) || documentDefinitions.length;
 
       while (queryIterator.hasMoreResults()) {
         const { resources: results, queryMetrics, requestCharge } = await queryIterator.fetchNext();
+        totalIteratorCalls++;
         assert(queryMetrics, "expected response have query metrics");
 
         if (totalFetchedResults.length > expectedLength) {
@@ -144,6 +147,10 @@ describe("Cross Partition", function() {
           // no more results
           assert.equal(expectedLength, totalFetchedResults.length, "executeNext: didn't fetch all the results");
         }
+      }
+
+      if (expectedIteratorCalls) {
+        assert.equal(totalIteratorCalls, expectedIteratorCalls);
       }
 
       // no more results
@@ -183,13 +190,15 @@ describe("Cross Partition", function() {
       options,
       expectedOrderIds,
       expectedCount,
-      expectedRus
+      expectedRus,
+      expectedIteratorCalls
     }: {
       query: string | SqlQuerySpec;
       options: any;
       expectedOrderIds?: any[];
       expectedCount?: number;
       expectedRus?: number;
+      expectedIteratorCalls?: number;
     }) {
       options.populateQueryMetrics = true;
       const queryIterator = container.items.query(query, options);
@@ -207,7 +216,8 @@ describe("Cross Partition", function() {
         queryIterator,
         expectedOrderIds,
         fetchAllResponse,
-        expectedCount
+        expectedCount,
+        expectedIteratorCalls
       );
       queryIterator.reset();
       await validateAsyncIterator(queryIterator, expectedOrderIds, expectedCount);
@@ -770,22 +780,23 @@ describe("Cross Partition", function() {
       }
     });
 
-    it("Validate simple LIMIT OFFSET", async function() {
+    it.only("Validate simple LIMIT OFFSET", async function() {
       const limit = 1;
-      const offset = 2;
+      const offset = 7;
 
       const querySpec = {
         query: `SELECT * FROM root r OFFSET ${offset} LIMIT ${limit}`
       };
       const options = {
-        maxItemCount: 2
+        maxItemCount: 3
       };
 
       // validates the results size and order
       await executeQueryAndValidateResults({
         query: querySpec,
         options,
-        expectedCount: 1
+        expectedCount: 1,
+        expectedIteratorCalls: 8
       });
     });
 
