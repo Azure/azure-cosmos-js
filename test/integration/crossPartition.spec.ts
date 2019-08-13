@@ -33,6 +33,7 @@ describe("Cross Partition", function() {
         spam2: i === 3 ? "eggs" + i.toString() : i,
         spam3: `eggs${i % 3}`,
         boolVar: i % 2 === 0,
+        sometimesNull: i === 3 ? null : "eggs" + i.toString(),
         number: 1.1 * i
       };
       docs.push(d);
@@ -437,6 +438,27 @@ describe("Cross Partition", function() {
       };
 
       const expectedOrderedIds = documentDefinitions.sort(compare("spam")).map(function(r) {
+        return r["id"];
+      });
+
+      // validates the results size and order
+      await executeQueryAndValidateResults({
+        query: querySpec,
+        options,
+        expectedOrderIds: expectedOrderedIds
+      });
+    });
+
+    it.only("Validate OrderBy Query where values are sometimes null", async function() {
+      // simple order by query
+      const querySpec = {
+        query: "SELECT * FROM root r order by r.sometimesNull"
+      };
+      const options = {
+        maxItemCount: 2
+      };
+
+      const expectedOrderedIds = documentDefinitions.sort(compare("sometimesNull")).map(function(r) {
         return r["id"];
       });
 

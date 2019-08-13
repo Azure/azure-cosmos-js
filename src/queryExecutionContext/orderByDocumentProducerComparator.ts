@@ -8,7 +8,7 @@ const TYPEORDCOMPARATOR: {
   NoValue: {
     ord: 0
   },
-  undefined: {
+  null: {
     ord: 1
   },
   boolean: {
@@ -85,7 +85,7 @@ export class OrderByDocumentProducerComparator {
     }
 
     // both are of the same type
-    if (type1Ord === TYPEORDCOMPARATOR["undefined"].ord || type1Ord === TYPEORDCOMPARATOR["NoValue"].ord) {
+    if (type1Ord === TYPEORDCOMPARATOR.null.ord || type1Ord === TYPEORDCOMPARATOR.NoValue.ord) {
       // if both types are undefined or Null they are equal
       return 0;
     }
@@ -105,13 +105,19 @@ export class OrderByDocumentProducerComparator {
   }
 
   public validateOrderByItems(res1: string[], res2: string[]) {
-    this._throwIf(res1.length !== res2.length, `Expected ${res1.length}, but got ${res2.length}.`);
-    this._throwIf(res1.length !== this.sortOrder.length, "orderByItems cannot have a different size than sort orders.");
+    if (res1.length !== res2.length) {
+      throw new Error(`Expected ${res1.length}, but got ${res2.length}.`);
+    }
+    if (res1.length !== this.sortOrder.length) {
+      throw new Error("orderByItems cannot have a different size than sort orders.");
+    }
 
     for (let i = 0; i < this.sortOrder.length; i++) {
       const type1 = this.getType(res1[i]);
       const type2 = this.getType(res2[i]);
-      this._throwIf(type1 !== type2, `Expected ${type1}, but got ${type2}.`);
+      if (type1 !== type2) {
+        throw new Error(`Expected ${type1}, but got ${type2}.`);
+      }
     }
   }
 
@@ -120,20 +126,18 @@ export class OrderByDocumentProducerComparator {
     if (orderByItem === undefined || orderByItem.item === undefined) {
       return "NoValue";
     }
+    if (orderByItem === null || orderByItem.item === null) {
+      return "null";
+    }
     const type = typeof orderByItem.item;
-    this._throwIf(TYPEORDCOMPARATOR[type] === undefined, `unrecognizable type ${type}`);
+    if (TYPEORDCOMPARATOR[type] === undefined) {
+      throw new Error(`unrecognizable type ${type}`);
+    }
     return type;
   }
 
   public getOrderByItems(res: any) {
     // TODO: any res?
     return res["orderByItems"];
-  }
-
-  // TODO: this should be done differently...
-  public _throwIf(condition: boolean, msg: string) {
-    if (condition) {
-      throw Error(msg);
-    }
   }
 }
