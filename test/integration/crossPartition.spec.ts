@@ -231,9 +231,10 @@ describe("Cross Partition", function() {
     it("Validate Parallel Query As String With maxDegreeOfParallelism: -1", async function() {
       // simple order by query in string format
       const query = "SELECT * FROM root r";
-      const options = {
+      const options: FeedOptions = {
         maxItemCount: 2,
         maxDegreeOfParallelism: -1,
+        forceQueryPlan: true,
         populateQueryMetrics: true
       };
 
@@ -542,6 +543,7 @@ describe("Cross Partition", function() {
       const options = {
         maxItemCount: 2,
         maxDegreeOfParallelism: 3,
+        forceQueryPlan: true,
         bufferItems: true
       };
 

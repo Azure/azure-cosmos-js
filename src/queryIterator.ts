@@ -237,7 +237,7 @@ export class QueryIterator<T> {
     return this.initPromise;
   }
   private async _init() {
-    if (this.options.maxDegreeOfParallelism > 0) {
+    if (this.options.forceQueryPlan === true) {
       await this.createPipelinedExecutionContext();
     }
     this.isInitialied = true;
