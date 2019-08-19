@@ -1,4 +1,4 @@
-import uuid from "uuid";
+import uuid from "uuid/v4";
 import { PartitionKeyRange } from "./client/Container/PartitionKeyRange";
 import { Resource } from "./client/Resource";
 import { Constants, HTTPMethod, OperationType, ResourceType } from "./common/constants";
@@ -127,7 +127,7 @@ export class ClientContext {
       plugins: this.cosmosClientOptions.plugins,
       partitionKey
     };
-    const requestId = uuid.v4();
+    const requestId = uuid();
     if (query !== undefined) {
       request.method = HTTPMethod.post;
     }
