@@ -2,7 +2,7 @@ import assert from "assert";
 import { Agent } from "http";
 import { CosmosClient } from "../../dist-esm";
 import { endpoint, masterKey } from "../common/_testConfig";
-import { getTestDatabase } from "../common/TestHelpers";
+import { getTestDatabase, getTestContainer } from "../common/TestHelpers";
 import { AbortController } from "abort-controller";
 
 describe("NodeJS CRUD Tests", function() {
@@ -42,6 +42,7 @@ describe("NodeJS CRUD Tests", function() {
   describe("Validate user passed AbortController.signal", function() {
     it("should throw exception if aborted during the request", async function() {
       const client = new CosmosClient({ endpoint, key: masterKey });
+      const start = Date.now();
       try {
         const controller = new AbortController();
         const signal = controller.signal;
@@ -49,6 +50,7 @@ describe("NodeJS CRUD Tests", function() {
         await client.getDatabaseAccount({ abortSignal: signal });
         assert.fail("Must throw when trying to connect to database");
       } catch (err) {
+        console.log(Date.now() - start);
         assert.equal(err.name, "AbortError", "client should throw exception");
       }
     });
@@ -60,6 +62,18 @@ describe("NodeJS CRUD Tests", function() {
         controller.abort();
         await client.getDatabaseAccount({ abortSignal: signal });
         assert.fail("Must throw when trying to connect to database");
+      } catch (err) {
+        assert.equal(err.name, "AbortError", "client should throw exception");
+      }
+    });
+    it("should abort a query", async function() {
+      const container = await getTestContainer("abort query");
+      try {
+        const controller = new AbortController();
+        const signal = controller.signal;
+        setTimeout(() => controller.abort(), 10);
+        await container.items.query("SELECT * from c", { abortSignal: signal }).fetchAll();
+        assert.fail("Must throw");
       } catch (err) {
         assert.equal(err.name, "AbortError", "client should throw exception");
       }
