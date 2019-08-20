@@ -42,7 +42,6 @@ describe("NodeJS CRUD Tests", function() {
   describe("Validate user passed AbortController.signal", function() {
     it("should throw exception if aborted during the request", async function() {
       const client = new CosmosClient({ endpoint, key: masterKey });
-      const start = Date.now();
       try {
         const controller = new AbortController();
         const signal = controller.signal;
@@ -50,7 +49,6 @@ describe("NodeJS CRUD Tests", function() {
         await client.getDatabaseAccount({ abortSignal: signal });
         assert.fail("Must throw when trying to connect to database");
       } catch (err) {
-        console.log(Date.now() - start);
         assert.equal(err.name, "AbortError", "client should throw exception");
       }
     });
