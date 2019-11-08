@@ -1,3 +1,5 @@
+### 🚨This SDK is now maintained at https://github.com/Azure/azure-sdk-for-js 🚨
+
 # Microsoft Azure Cosmos JavaScript SDK
 
 This project provides JavaScript & Node.js SDK library for [SQL API](https://docs.microsoft.com/en-us/azure/cosmos-db/sql-api-sql-query) of [Azure Cosmos
