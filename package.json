@@ -72,7 +72,7 @@
     "mocha-junit-reporter": "1.23.1",
     "mocha-multi-reporters": "^1.1.6",
     "prettier": "1.14.3",
-    "proxy-agent": "3.0.3",
+    "proxy-agent": "5.0.0",
     "requirejs": "^2.3.5",
     "rollup": "^0.64.1",
     "rollup-plugin-json": "3.1.0",
