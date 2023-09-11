@@ -42,7 +42,7 @@ export class LocationCache {
     this.locationInfo = new LocationInfo(options.connectionPolicy.preferredLocations, options.endpoint);
   }
 
-  public get prefferredLocations(): string[] {
+  public get preferredLocations(): string[] {
     return this.options.connectionPolicy.preferredLocations;
   }
 

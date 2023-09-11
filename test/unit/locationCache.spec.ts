@@ -71,174 +71,289 @@ addScenario({ numberOfRegions: 2, useMultipleWriteLocations: true });
 addScenario({ numberOfRegions: 3, useMultipleWriteLocations: true });
 addScenario({ numberOfRegions: 5, useMultipleWriteLocations: true });
 
-describe("Location Cache", function() {
+describe("Location Cache", function () {
   this.timeout(process.env.MOCHA_TIMEOUT || 2000);
   for (const scenario of scenarios) {
-    describe(`when there is a DatabaseAccount refresh and ${
-      scenario.connectionPolicy.preferredLocations.length
-    } preferred region and multi-region write is ${scenario.connectionPolicy.useMultipleWriteLocations}.`, function() {
-      const connectionPolicy: ConnectionPolicy = scenario.connectionPolicy;
-      const endpoint = scenario.defaultEndpoint;
-      const cosmosClientOptions: CosmosClientOptions = { endpoint, connectionPolicy };
-      const locationCache = new LocationCache(cosmosClientOptions);
+    describe(`when there is a DatabaseAccount refresh and ${scenario.connectionPolicy.preferredLocations.length
+      } preferred region and multi-region write is ${scenario.connectionPolicy.useMultipleWriteLocations}.`, function () {
+        const connectionPolicy: ConnectionPolicy = scenario.connectionPolicy;
+        const endpoint = scenario.defaultEndpoint;
+        const cosmosClientOptions: CosmosClientOptions = { endpoint, connectionPolicy };
+        const locationCache = new LocationCache(cosmosClientOptions);
 
-      before(function() {
-        locationCache.onDatabaseAccountRead(scenario.databaseAccount);
-      });
-
-      it("shouldn't refresh", function() {
-        const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
-        assert.equal(shouldRefresh, false, "shouldn't need to refresh");
-      });
-
-      it("preferred locations should match the connection policy preferred locations", function() {
-        const preferredLocations = locationCache.prefferredLocations;
-        assert.equal(
-          preferredLocations.length,
-          scenario.connectionPolicy.preferredLocations.length,
-          "preffered locations size should match"
-        );
-      });
-
-      it("read endpoint should match most preferred endpoint", function() {
-        const readEndpoint = locationCache.getReadEndpoint();
-        assert.equal(
-          readEndpoint,
-          scenario.connectionPolicy.preferredLocations.length > 0 ? getEndpointFromRegion(regions[0]) : endpoint,
-          "read endpoint should match most preferred endpoint after database account info refresh"
-        );
-      });
-
-      it("write endpoint should match default endpoint", function() {
-        const writeEndpoint = locationCache.getWriteEndpoint();
-        const expectedEndpoint =
-          scenario.connectionPolicy.preferredLocations.length > 0
-            ? getEndpointFromRegion(scenario.connectionPolicy.preferredLocations[0])
-            : endpoint;
-        assert.equal(
-          writeEndpoint,
-          expectedEndpoint,
-          "write endpoint should match most preferred endpoint after database account info refresh"
-        );
-      });
-
-      it(`read request for resolve endpoint, retry count 0, should match read endpoint`, function() {
-        const resolveEndpoint = locationCache.resolveServiceEndpoint({
-          operationType: OperationType.Read,
-          resourceType: ResourceType.item,
-          retryCount: 0
+        before(function () {
+          locationCache.onDatabaseAccountRead(scenario.databaseAccount);
         });
 
-        const readEndpoint = locationCache.getReadEndpoint();
-        assert.equal(resolveEndpoint, readEndpoint, "resolve endpoint should match read endpoint");
-      });
-
-      it(`write request for resolve endpoint, retry count 0, should match write endpoint`, function() {
-        const resolveEndpoint = locationCache.resolveServiceEndpoint({
-          operationType: OperationType.Replace,
-          resourceType: ResourceType.item,
-          retryCount: 0
+        it("shouldn't refresh", function () {
+          const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
+          assert.equal(shouldRefresh, false, "shouldn't need to refresh");
         });
 
-        const writeEndpoint = locationCache.getWriteEndpoint();
-        assert.equal(resolveEndpoint, writeEndpoint, "resolve endpoint should match write endpoint");
-      });
+        it("preferred locations should match the connection policy preferred locations", function () {
+          const preferredLocations = locationCache.preferredLocations;
+          assert.equal(
+            preferredLocations.length,
+            scenario.connectionPolicy.preferredLocations.length,
+            "preffered locations size should match"
+          );
+        });
 
-      // After this, there are side effects. All the "markUnavailable" ones will remove locations from the list.
-      // It's probably best to not add new "it"s below here to avoid unreliable tests.
-      if (scenario.connectionPolicy.preferredLocations.length > 0) {
-        if (!scenario.connectionPolicy.useMultipleWriteLocations) {
-          it("write endpoint should match default endpoint even after being marked unavailable", function() {
-            locationCache.markCurrentLocationUnavailableForWrite(locationCache.getWriteEndpoint());
-            const writeEndpoint = locationCache.getWriteEndpoint();
+        it("read endpoint should match most preferred endpoint", function () {
+          const readEndpoint = locationCache.getReadEndpoint();
+          assert.equal(
+            readEndpoint,
+            scenario.connectionPolicy.preferredLocations.length > 0 ? getEndpointFromRegion(regions[0]) : endpoint,
+            "read endpoint should match most preferred endpoint after database account info refresh"
+          );
+        });
+
+        it("write endpoint should match default endpoint", function () {
+          const writeEndpoint = locationCache.getWriteEndpoint();
+          const expectedEndpoint =
+            scenario.connectionPolicy.preferredLocations.length > 0
+              ? getEndpointFromRegion(scenario.connectionPolicy.preferredLocations[0])
+              : endpoint;
+          assert.equal(
+            writeEndpoint,
+            expectedEndpoint,
+            "write endpoint should match most preferred endpoint after database account info refresh"
+          );
+        });
+
+        it(`read request for resolve endpoint, retry count 0, should match read endpoint`, function () {
+          const resolveEndpoint = locationCache.resolveServiceEndpoint({
+            operationType: OperationType.Read,
+            resourceType: ResourceType.item,
+            retryCount: 0
+          });
+
+          const readEndpoint = locationCache.getReadEndpoint();
+          assert.equal(resolveEndpoint, readEndpoint, "resolve endpoint should match read endpoint");
+        });
+
+        it(`write request for resolve endpoint, retry count 0, should match write endpoint`, function () {
+          const resolveEndpoint = locationCache.resolveServiceEndpoint({
+            operationType: OperationType.Replace,
+            resourceType: ResourceType.item,
+            retryCount: 0
+          });
+
+          const writeEndpoint = locationCache.getWriteEndpoint();
+          assert.equal(resolveEndpoint, writeEndpoint, "resolve endpoint should match write endpoint");
+        });
+
+        // After this, there are side effects. All the "markUnavailable" ones will remove locations from the list.
+        // It's probably best to not add new "it"s below here to avoid unreliable tests.
+        if (scenario.connectionPolicy.preferredLocations.length > 0) {
+          if (!scenario.connectionPolicy.useMultipleWriteLocations) {
+            it("write endpoint should match default endpoint even after being marked unavailable", function () {
+              locationCache.markCurrentLocationUnavailableForWrite(locationCache.getWriteEndpoint());
+              const writeEndpoint = locationCache.getWriteEndpoint();
+              assert.equal(
+                writeEndpoint,
+                scenario.databaseAccount.writableLocations[0].databaseAccountEndpoint,
+                "write endpoint should match default endpoint prior to any database account info"
+              );
+              const resolveEndpoint = locationCache.resolveServiceEndpoint({
+                operationType: OperationType.Replace,
+                resourceType: ResourceType.item,
+                retryCount: 1
+              });
+
+              assert.equal(resolveEndpoint, writeEndpoint, "resolve endpoint should match write endpoint");
+              const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
+              assert.equal(shouldRefresh, true, "should need to refresh");
+            });
+          }
+        } else {
+          if (!scenario.connectionPolicy.useMultipleWriteLocations) {
+            it("write endpoint should match default endpoint even after being marked unavailable", function () {
+              locationCache.markCurrentLocationUnavailableForWrite(locationCache.getWriteEndpoint());
+              const writeEndpoint = locationCache.getWriteEndpoint();
+              assert.equal(
+                writeEndpoint,
+                endpoint,
+                "write endpoint should match default endpoint prior to any database account info"
+              );
+              const resolveEndpoint = locationCache.resolveServiceEndpoint({
+                operationType: OperationType.Replace,
+                resourceType: ResourceType.item,
+                retryCount: 1
+              });
+
+              assert.equal(resolveEndpoint, writeEndpoint, "resolve endpoint should match write endpoint");
+              const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
+              assert.equal(
+                shouldRefresh,
+                scenario.connectionPolicy.preferredLocations.length > 0,
+                "should need to refresh"
+              );
+            });
+          }
+        }
+
+        if (scenario.connectionPolicy.preferredLocations.length > 1) {
+          it("read endpoint should return next endpoint after being marked unavailable", function () {
+            locationCache.markCurrentLocationUnavailableForRead(locationCache.getReadEndpoint());
+            const readEndpoint = locationCache.getReadEndpoint();
             assert.equal(
-              writeEndpoint,
-              scenario.databaseAccount.writableLocations[0].databaseAccountEndpoint,
-              "write endpoint should match default endpoint prior to any database account info"
+              readEndpoint,
+              getEndpointFromRegion(regions[1]),
+              "read endpoint should match default endpoint prior to any database account info even if unavailable"
             );
             const resolveEndpoint = locationCache.resolveServiceEndpoint({
-              operationType: OperationType.Replace,
+              operationType: OperationType.Read,
               resourceType: ResourceType.item,
               retryCount: 1
             });
+            assert.equal(resolveEndpoint, readEndpoint, "resolve endpoint should match read endpoint");
+            const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
+            assert.equal(shouldRefresh, true, "should need to refresh");
+          });
 
-            assert.equal(resolveEndpoint, writeEndpoint, "resolve endpoint should match write endpoint");
+          if (scenario.connectionPolicy.useMultipleWriteLocations) {
+            it("write endpoint should return next endpoint after being marked unavailable", function () {
+              locationCache.markCurrentLocationUnavailableForWrite(locationCache.getWriteEndpoint());
+              const writeEndpoint = locationCache.getWriteEndpoint();
+              assert.equal(
+                writeEndpoint,
+                getEndpointFromRegion(regions[1]),
+                "write endpoint should match default endpoint prior to any database account info"
+              );
+              const resolveEndpoint = locationCache.resolveServiceEndpoint({
+                operationType: OperationType.Replace,
+                resourceType: ResourceType.item,
+                retryCount: 1
+              });
+
+              assert.equal(resolveEndpoint, writeEndpoint, "resolve endpoint should match write endpoint");
+              const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
+              assert.equal(
+                shouldRefresh,
+                scenario.connectionPolicy.preferredLocations.length > 0,
+                "should need to refresh"
+              );
+            });
+          }
+        } else {
+          it("read endpoint should match default endpoint even after being marked unavailable", function () {
+            locationCache.markCurrentLocationUnavailableForRead(locationCache.getReadEndpoint());
+            const readEndpoint = locationCache.getReadEndpoint();
+            assert.equal(
+              readEndpoint,
+              endpoint,
+              "read endpoint should match default endpoint prior to any database account info even if unavailable"
+            );
+
+            const resolveEndpoint = locationCache.resolveServiceEndpoint({
+              operationType: OperationType.Read,
+              resourceType: ResourceType.item,
+              retryCount: 1
+            });
+            assert.equal(resolveEndpoint, readEndpoint, "resolve endpoint should match read endpoint");
+            const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
+            assert.equal(
+              shouldRefresh,
+              scenario.connectionPolicy.preferredLocations.length > 0,
+              "shouldn't need to refresh"
+            );
+          });
+
+          if (scenario.connectionPolicy.useMultipleWriteLocations) {
+            it("write endpoint should match default endpoint even after being marked unavailable", function () {
+              locationCache.markCurrentLocationUnavailableForWrite(locationCache.getWriteEndpoint());
+              const writeEndpoint = locationCache.getWriteEndpoint();
+              assert.equal(
+                writeEndpoint,
+                endpoint,
+                "write endpoint should match default endpoint prior to any database account info"
+              );
+              const resolveEndpoint = locationCache.resolveServiceEndpoint({
+                operationType: OperationType.Replace,
+                resourceType: ResourceType.item,
+                retryCount: 1
+              });
+
+              assert.equal(resolveEndpoint, writeEndpoint, "resolve endpoint should match write endpoint");
+              const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
+              assert.equal(shouldRefresh, true, "should need to refresh");
+            });
+          }
+        }
+      });
+
+    describe(`when there is not a DatabaseAccount refresh and ${scenario.connectionPolicy.preferredLocations.length
+      } preferred regions and multi-region write is ${scenario.connectionPolicy.useMultipleWriteLocations}.`, function () {
+        const connectionPolicy: ConnectionPolicy = scenario.connectionPolicy;
+        const endpoint = scenario.defaultEndpoint;
+        const cosmosClientOptions: CosmosClientOptions = { endpoint, connectionPolicy };
+        const locationCache = new LocationCache(cosmosClientOptions);
+
+        if (!scenario.connectionPolicy.useMultipleWriteLocations) {
+          it("shouldn't refresh", function () {
+            const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
+            assert.equal(shouldRefresh, false, "shouldn't need to refresh");
+          });
+        } else {
+          it("should refresh", function () {
             const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
             assert.equal(shouldRefresh, true, "should need to refresh");
           });
         }
-      } else {
-        if (!scenario.connectionPolicy.useMultipleWriteLocations) {
-          it("write endpoint should match default endpoint even after being marked unavailable", function() {
-            locationCache.markCurrentLocationUnavailableForWrite(locationCache.getWriteEndpoint());
-            const writeEndpoint = locationCache.getWriteEndpoint();
-            assert.equal(
-              writeEndpoint,
-              endpoint,
-              "write endpoint should match default endpoint prior to any database account info"
-            );
-            const resolveEndpoint = locationCache.resolveServiceEndpoint({
-              operationType: OperationType.Replace,
-              resourceType: ResourceType.item,
-              retryCount: 1
-            });
 
-            assert.equal(resolveEndpoint, writeEndpoint, "resolve endpoint should match write endpoint");
-            const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
-            assert.equal(
-              shouldRefresh,
-              scenario.connectionPolicy.preferredLocations.length > 0,
-              "should need to refresh"
-            );
-          });
-        }
-      }
+        it("preferred locations should match the connection policy preferred locations", function () {
+          const preferredLocations = locationCache.preferredLocations;
+          assert.equal(
+            preferredLocations.length,
+            scenario.connectionPolicy.preferredLocations.length,
+            "preffered locations size should match"
+          );
+        });
 
-      if (scenario.connectionPolicy.preferredLocations.length > 1) {
-        it("read endpoint should return next endpoint after being marked unavailable", function() {
-          locationCache.markCurrentLocationUnavailableForRead(locationCache.getReadEndpoint());
+        it("read endpoint should match default endpoint", function () {
           const readEndpoint = locationCache.getReadEndpoint();
           assert.equal(
             readEndpoint,
-            getEndpointFromRegion(regions[1]),
-            "read endpoint should match default endpoint prior to any database account info even if unavailable"
+            endpoint,
+            "read endpoint should match default endpoint prior to any database account info"
           );
+        });
+
+        it("write endpoint should match default endpoint", function () {
+          const writeEndpoint = locationCache.getWriteEndpoint();
+          assert.equal(
+            writeEndpoint,
+            endpoint,
+            "write endpoint should match default endpoint prior to any database account info"
+          );
+        });
+
+        it(`read request for resolve endpoint, retry count 0, should match read endpoint`, function () {
           const resolveEndpoint = locationCache.resolveServiceEndpoint({
             operationType: OperationType.Read,
             resourceType: ResourceType.item,
-            retryCount: 1
+            retryCount: 0
           });
+
+          const readEndpoint = locationCache.getReadEndpoint();
           assert.equal(resolveEndpoint, readEndpoint, "resolve endpoint should match read endpoint");
-          const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
-          assert.equal(shouldRefresh, true, "should need to refresh");
         });
 
-        if (scenario.connectionPolicy.useMultipleWriteLocations) {
-          it("write endpoint should return next endpoint after being marked unavailable", function() {
-            locationCache.markCurrentLocationUnavailableForWrite(locationCache.getWriteEndpoint());
-            const writeEndpoint = locationCache.getWriteEndpoint();
-            assert.equal(
-              writeEndpoint,
-              getEndpointFromRegion(regions[1]),
-              "write endpoint should match default endpoint prior to any database account info"
-            );
-            const resolveEndpoint = locationCache.resolveServiceEndpoint({
-              operationType: OperationType.Replace,
-              resourceType: ResourceType.item,
-              retryCount: 1
-            });
-
-            assert.equal(resolveEndpoint, writeEndpoint, "resolve endpoint should match write endpoint");
-            const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
-            assert.equal(
-              shouldRefresh,
-              scenario.connectionPolicy.preferredLocations.length > 0,
-              "should need to refresh"
-            );
+        it(`write request for resolve endpoint, retry count 0, should match write endpoint`, function () {
+          const resolveEndpoint = locationCache.resolveServiceEndpoint({
+            operationType: OperationType.Replace,
+            resourceType: ResourceType.item,
+            retryCount: 0
           });
-        }
-      } else {
-        it("read endpoint should match default endpoint even after being marked unavailable", function() {
+
+          const writeEndpoint = locationCache.getWriteEndpoint();
+          assert.equal(resolveEndpoint, writeEndpoint, "resolve endpoint should match write endpoint");
+        });
+
+        // After this, there are side effects. All the "markUnavailable" ones will remove locations from the list.
+        // It's probably best to not add new "it"s below here to avoid unreliable tests.
+        it("read endpoint should match default endpoint even after being marked unavailable", function () {
           locationCache.markCurrentLocationUnavailableForRead(locationCache.getReadEndpoint());
           const readEndpoint = locationCache.getReadEndpoint();
           assert.equal(
@@ -246,147 +361,30 @@ describe("Location Cache", function() {
             endpoint,
             "read endpoint should match default endpoint prior to any database account info even if unavailable"
           );
-
           const resolveEndpoint = locationCache.resolveServiceEndpoint({
             operationType: OperationType.Read,
             resourceType: ResourceType.item,
             retryCount: 1
           });
           assert.equal(resolveEndpoint, readEndpoint, "resolve endpoint should match read endpoint");
-          const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
+        });
+
+        it("write endpoint should match default endpoint even after being marked unavailable", function () {
+          locationCache.markCurrentLocationUnavailableForWrite(locationCache.getWriteEndpoint());
+          const writeEndpoint = locationCache.getWriteEndpoint();
           assert.equal(
-            shouldRefresh,
-            scenario.connectionPolicy.preferredLocations.length > 0,
-            "shouldn't need to refresh"
+            writeEndpoint,
+            endpoint,
+            "write endpoint should match default endpoint prior to any database account info"
           );
-        });
-
-        if (scenario.connectionPolicy.useMultipleWriteLocations) {
-          it("write endpoint should match default endpoint even after being marked unavailable", function() {
-            locationCache.markCurrentLocationUnavailableForWrite(locationCache.getWriteEndpoint());
-            const writeEndpoint = locationCache.getWriteEndpoint();
-            assert.equal(
-              writeEndpoint,
-              endpoint,
-              "write endpoint should match default endpoint prior to any database account info"
-            );
-            const resolveEndpoint = locationCache.resolveServiceEndpoint({
-              operationType: OperationType.Replace,
-              resourceType: ResourceType.item,
-              retryCount: 1
-            });
-
-            assert.equal(resolveEndpoint, writeEndpoint, "resolve endpoint should match write endpoint");
-            const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
-            assert.equal(shouldRefresh, true, "should need to refresh");
+          const resolveEndpoint = locationCache.resolveServiceEndpoint({
+            operationType: OperationType.Replace,
+            resourceType: ResourceType.item,
+            retryCount: 1
           });
-        }
-      }
-    });
 
-    describe(`when there is not a DatabaseAccount refresh and ${
-      scenario.connectionPolicy.preferredLocations.length
-    } preferred regions and multi-region write is ${scenario.connectionPolicy.useMultipleWriteLocations}.`, function() {
-      const connectionPolicy: ConnectionPolicy = scenario.connectionPolicy;
-      const endpoint = scenario.defaultEndpoint;
-      const cosmosClientOptions: CosmosClientOptions = { endpoint, connectionPolicy };
-      const locationCache = new LocationCache(cosmosClientOptions);
-
-      if (!scenario.connectionPolicy.useMultipleWriteLocations) {
-        it("shouldn't refresh", function() {
-          const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
-          assert.equal(shouldRefresh, false, "shouldn't need to refresh");
+          assert.equal(resolveEndpoint, writeEndpoint, "resolve endpoint should match write endpoint");
         });
-      } else {
-        it("should refresh", function() {
-          const { shouldRefresh, canRefreshInBackground } = locationCache.shouldRefreshEndpoints();
-          assert.equal(shouldRefresh, true, "should need to refresh");
-        });
-      }
-
-      it("preferred locations should match the connection policy preferred locations", function() {
-        const preferredLocations = locationCache.prefferredLocations;
-        assert.equal(
-          preferredLocations.length,
-          scenario.connectionPolicy.preferredLocations.length,
-          "preffered locations size should match"
-        );
       });
-
-      it("read endpoint should match default endpoint", function() {
-        const readEndpoint = locationCache.getReadEndpoint();
-        assert.equal(
-          readEndpoint,
-          endpoint,
-          "read endpoint should match default endpoint prior to any database account info"
-        );
-      });
-
-      it("write endpoint should match default endpoint", function() {
-        const writeEndpoint = locationCache.getWriteEndpoint();
-        assert.equal(
-          writeEndpoint,
-          endpoint,
-          "write endpoint should match default endpoint prior to any database account info"
-        );
-      });
-
-      it(`read request for resolve endpoint, retry count 0, should match read endpoint`, function() {
-        const resolveEndpoint = locationCache.resolveServiceEndpoint({
-          operationType: OperationType.Read,
-          resourceType: ResourceType.item,
-          retryCount: 0
-        });
-
-        const readEndpoint = locationCache.getReadEndpoint();
-        assert.equal(resolveEndpoint, readEndpoint, "resolve endpoint should match read endpoint");
-      });
-
-      it(`write request for resolve endpoint, retry count 0, should match write endpoint`, function() {
-        const resolveEndpoint = locationCache.resolveServiceEndpoint({
-          operationType: OperationType.Replace,
-          resourceType: ResourceType.item,
-          retryCount: 0
-        });
-
-        const writeEndpoint = locationCache.getWriteEndpoint();
-        assert.equal(resolveEndpoint, writeEndpoint, "resolve endpoint should match write endpoint");
-      });
-
-      // After this, there are side effects. All the "markUnavailable" ones will remove locations from the list.
-      // It's probably best to not add new "it"s below here to avoid unreliable tests.
-      it("read endpoint should match default endpoint even after being marked unavailable", function() {
-        locationCache.markCurrentLocationUnavailableForRead(locationCache.getReadEndpoint());
-        const readEndpoint = locationCache.getReadEndpoint();
-        assert.equal(
-          readEndpoint,
-          endpoint,
-          "read endpoint should match default endpoint prior to any database account info even if unavailable"
-        );
-        const resolveEndpoint = locationCache.resolveServiceEndpoint({
-          operationType: OperationType.Read,
-          resourceType: ResourceType.item,
-          retryCount: 1
-        });
-        assert.equal(resolveEndpoint, readEndpoint, "resolve endpoint should match read endpoint");
-      });
-
-      it("write endpoint should match default endpoint even after being marked unavailable", function() {
-        locationCache.markCurrentLocationUnavailableForWrite(locationCache.getWriteEndpoint());
-        const writeEndpoint = locationCache.getWriteEndpoint();
-        assert.equal(
-          writeEndpoint,
-          endpoint,
-          "write endpoint should match default endpoint prior to any database account info"
-        );
-        const resolveEndpoint = locationCache.resolveServiceEndpoint({
-          operationType: OperationType.Replace,
-          resourceType: ResourceType.item,
-          retryCount: 1
-        });
-
-        assert.equal(resolveEndpoint, writeEndpoint, "resolve endpoint should match write endpoint");
-      });
-    });
   }
 });
