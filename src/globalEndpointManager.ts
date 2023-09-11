@@ -176,8 +176,8 @@ export class GlobalEndpointManager {
       // TODO: Tracing
     }
 
-    if (this.locationCache.prefferredLocations) {
-      for (const location of this.locationCache.prefferredLocations) {
+    if (this.locationCache.preferredLocations) {
+      for (const location of this.locationCache.preferredLocations) {
         try {
           const locationalEndpoint = GlobalEndpointManager.getLocationalEndpoint(this.defaultEndpoint, location);
           const options = { urlConnection: locationalEndpoint };
